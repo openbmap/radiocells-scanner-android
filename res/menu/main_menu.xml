@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/menu_create_new_session"
+        android:icon="@android:drawable/ic_menu_add"
+        android:title="New session">
+    </item>
+    <item
+        android:id="@+id/menu_settings"
+        android:icon="@android:drawable/ic_menu_preferences"
+        android:title="Settings">
+    </item>
+    <item
+        android:id="@+id/menu_credits"
+        android:icon="@android:drawable/ic_menu_help" 
+        android:title="Credits">
+    </item>
+
+</menu>

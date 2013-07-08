@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tab1"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical" >
+
+    <TableLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+
+        <TableRow
+            android:id="@+id/tableRow1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/wifidetails_ssid"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/ssid"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+        </TableRow>
+        <TableRow>
+            <TextView
+                android:id="@+id/wifidetails_capa"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/capabilities" />
+        </TableRow>
+        <TableRow>
+
+            <TextView
+                android:id="@+id/wifidetails_freq"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/frequency" />
+        </TableRow>
+    </TableLayout>
+    <fragment
+        android:id="@+id/wifiDetailsFragment"
+        android:name="org.openbmap.activity.WifiDetailsFragment"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" >
+    </fragment>
+
+    <TextView
+        android:id="@+id/credits_client_version_caption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:text="@string/tap_measurement_to_see_on_map"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+</LinearLayout>
