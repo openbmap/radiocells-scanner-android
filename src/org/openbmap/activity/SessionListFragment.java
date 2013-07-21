@@ -166,8 +166,8 @@ public class SessionListFragment extends ListFragment implements LoaderCallbacks
 					// Fallback mechanism if version validation fails..
 					new AlertDialog.Builder(this.getActivity())
 					.setTitle("Next steps")
-					.setMessage("It seems your client is outdated or you're offline.\r\n"
-							+ "Try to upload your data nevertheless (without warranty..)?\r\n"
+					.setMessage("It seems your client is outdated or you're offline.\n"
+							+ "Try to upload your data nevertheless (without warranty..)?\n"
 							)
 							.setCancelable(true)
 							.setIcon(android.R.drawable.ic_dialog_alert)

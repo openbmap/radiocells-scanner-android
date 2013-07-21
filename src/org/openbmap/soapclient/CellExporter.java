@@ -45,7 +45,7 @@ public class CellExporter implements UploadTaskListener {
 	/**
 	 * XML template for logfile header
 	 */
-	private static final String	OPEN_LOGFILE = "\r\n<logfile manufacturer=\"%s\""
+	private static final String	OPEN_LOGFILE = "\n<logfile manufacturer=\"%s\""
 			+ " model=\"%s\""
 			+ " revision=\"%s\""
 			+ " swid=\"%s\""
@@ -54,13 +54,13 @@ public class CellExporter implements UploadTaskListener {
 	/**
 	 * XML template closing logfile
 	 */
-	private static final String	CLOSE_LOGFILE	= "\r\n</logfile>";
+	private static final String	CLOSE_LOGFILE	= "\n</logfile>";
 
 
 	/**
 	 * XML template closing scan tag
 	 */
-	private static final String	CLOSE_SCAN_TAG	= "\r\n</scan>";
+	private static final String	CLOSE_SCAN_TAG	= "\n</scan>";
 
 	/**
 	 * Entries per log file
@@ -351,7 +351,7 @@ public class CellExporter implements UploadTaskListener {
 
 				if (i == 0) {
 					// Write first scan and gps tag at the beginning
-					bw.append("\r\n<scan time=\"" +  cursor.getLong(colTimestamp) + "\" >");
+					bw.append("\n<scan time=\"" +  cursor.getLong(colTimestamp) + "\" >");
 					bw.append(currentBegin);
 				} else {
 					// Later on, scan and gps tags are only needed, if we have a new scan
@@ -395,7 +395,7 @@ public class CellExporter implements UploadTaskListener {
 	}
 
 	private String cursorToBeginPositionXml(final Cursor chunk) {
-		return "\r\n\t<gps time=\"" + chunk.getString(colReqTimestamp) + "\""
+		return "\n\t<gps time=\"" + chunk.getString(colReqTimestamp) + "\""
 				+ " lng=\"" + chunk.getString(colReqLat) + "\""
 				+ " lat=\"" + chunk.getString(colReqLon) + "\""
 				+ " alt=\"" + chunk.getString(colReqAlt) + "\""
@@ -414,7 +414,7 @@ public class CellExporter implements UploadTaskListener {
 		String result = "";
 		if (cursor.getLong(colIsServing) != 0) {
 
-			result = "\r\n\t\t<gsmserving mcc=\"" + cursor.getString(colMcc) + "\"" 
+			result = "\n\t\t<gsmserving mcc=\"" + cursor.getString(colMcc) + "\"" 
 					+ " mnc=\"" + cursor.getString(colMnc) + "\""
 					+ " lac=\"" + cursor.getString(colLac) + "\""
 					+ " id=\"" + cursor.getString(colCellId) + "\""
@@ -424,7 +424,7 @@ public class CellExporter implements UploadTaskListener {
 
 		} else if (cursor.getLong(colIsNeigbor) != 0) {
 			// TODO: Check act
-			result	= "\r\n\t\t<gsmneighbour mcc=\"" + cursor.getString(colMcc) + "\"" 
+			result	= "\n\t\t<gsmneighbour mcc=\"" + cursor.getString(colMcc) + "\"" 
 					+ " mnc=\"" + cursor.getString(colMnc) + "\""
 					+ " lac=\"" + cursor.getString(colLac) + "\""
 					+ " id=\"" + cursor.getString(colCellId) + "\""

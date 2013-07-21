@@ -39,7 +39,7 @@ public class WifiExporter implements UploadTaskListener {
 	/**
 	 * XML template for logfile header
 	 */
-	private static final String	OPEN_LOGFILE = "\r\n<logfile manufacturer=\"%s\""
+	private static final String	OPEN_LOGFILE = "\n<logfile manufacturer=\"%s\""
 			+ " model=\"%s\""
 			+ " revision=\"%s\""
 			+ " swid=\"%s\""
@@ -48,13 +48,13 @@ public class WifiExporter implements UploadTaskListener {
 	/**
 	 * XML template closing logfile
 	 */
-	private static final String	CLOSE_LOGFILE	= "\r\n</logfile>";
+	private static final String	CLOSE_LOGFILE	= "\n</logfile>";
 
 
 	/**
 	 * XML template closing scan tag
 	 */
-	private static final String	CLOSE_SCAN_TAG	= "\r\n</scan>";
+	private static final String	CLOSE_SCAN_TAG	= "\n</scan>";
 
 	/**
 	 * Entries per log file
@@ -341,7 +341,7 @@ public class WifiExporter implements UploadTaskListener {
 
 				if (i == 0) {
 					// Write first scan and gps tag at the beginning
-					bw.append("\r\n<scan time=\"" +  cursor.getLong(colTimestamp) + "\" >");
+					bw.append("\n<scan time=\"" +  cursor.getLong(colTimestamp) + "\" >");
 					bw.append(currentBegin);
 				} else {
 					// Later on, scan and gps tags are only needed, if we have a new scan
@@ -385,7 +385,7 @@ public class WifiExporter implements UploadTaskListener {
 	}
 
 	private String cursorToEndPositionXml(final Cursor chunk) {
-		return "\r\n\t<gps time=\"" + chunk.getString(colLastTimestamp) + "\""
+		return "\n\t<gps time=\"" + chunk.getString(colLastTimestamp) + "\""
 				+ " lng=\"" + chunk.getString(colLastLat) + "\""
 				+ " lat=\"" + chunk.getString(colLastLon) + "\""
 				+ " alt=\"" + chunk.getString(colLastAlt) + "\""
@@ -396,7 +396,7 @@ public class WifiExporter implements UploadTaskListener {
 	}
 
 	private String cursorToBeginPositionXml(final Cursor chunk) {
-		return "\r\n\t<gps time=\"" + chunk.getString(colReqTimestamp) + "\""
+		return "\n\t<gps time=\"" + chunk.getString(colReqTimestamp) + "\""
 				+ " lng=\"" + chunk.getString(colReqLat) + "\""
 				+ " lat=\"" + chunk.getString(colReqLon) + "\""
 				+ " alt=\"" + chunk.getString(colReqAlt) + "\""
@@ -411,7 +411,7 @@ public class WifiExporter implements UploadTaskListener {
 	 * @return
 	 */
 	private String cursorToXml(final Cursor cursor) {
-		return "\r\n\t\t<wifiap bssid=\"" + cursor.getString(colBssid) + "\""
+		return "\n\t\t<wifiap bssid=\"" + cursor.getString(colBssid) + "\""
 				+ " md5essid=\"" + cursor.getString(colMd5Ssid) + "\""
 				+ " ssid=\"" + cursor.getString(colSsid) + "\""
 				+ " capa=\"" + cursor.getString(colCapa) + "\""
