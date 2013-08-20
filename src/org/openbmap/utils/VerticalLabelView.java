@@ -28,13 +28,17 @@ import android.graphics.Paint.Align;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 
 public class VerticalLabelView extends View {
 	
 	private static final String TAG = VerticalLabelView.class.getSimpleName();
 	
-	private static final int DEFAULT_TEXT_SIZE = 15;
+	/**
+	 * Default label text size in SP
+	 */
+	private static final int DEFAULT_TEXT_SIZE = 14;
 	private static final int DEFAULT_PADDING = 3;
 	private static final int DEFAULT_COLOR = 0xFF000000;
 	
@@ -76,9 +80,12 @@ public class VerticalLabelView extends View {
 	}
 
 	private void initLabelView() {
+	
+		
 		mTextPaint = new TextPaint();
 		mTextPaint.setAntiAlias(true);
-		mTextPaint.setTextSize(DEFAULT_TEXT_SIZE);
+		mTextPaint.setTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,
+				DEFAULT_TEXT_SIZE, getResources().getDisplayMetrics()));
 		mTextPaint.setColor(DEFAULT_COLOR);
 		mTextPaint.setTextAlign(Align.CENTER);
 		setPadding(DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING, DEFAULT_PADDING);

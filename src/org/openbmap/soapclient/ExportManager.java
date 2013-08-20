@@ -102,7 +102,7 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> {
 		mDialog = new ProgressDialog(mContext);
 		mDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 		//mDialog.setIndeterminate(true);
-		mDialog.setTitle("Preparing export..");
+		mDialog.setTitle(mContext.getString(R.string.preparing_export));
 		mDialog.setCancelable(false);
 		mDialog.setIndeterminate(true);
 		mDialog.show();

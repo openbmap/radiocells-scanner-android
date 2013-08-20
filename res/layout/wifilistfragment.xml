@@ -9,14 +9,14 @@
     <TextView
         android:id="@+id/wifilistfragment_id"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="32dp"
         android:layout_weight="0.3"
         android:padding="2dp"
         android:visibility="gone" />
      <TextView
         android:id="@+id/wifilistfragment_bssid"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="32dp"
         android:layout_weight="0.3"
         android:padding="2dp"
         android:visibility="gone" />
@@ -24,28 +24,28 @@
     <TextView
         android:id="@+id/wifilistfragment_ssid"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="32dp"
         android:layout_weight="0.7"
         android:padding="2dp" />
 
     <TextView
         android:id="@+id/wifilistfragment_level"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="32dp"
         android:layout_weight="0.3"
         android:padding="2dp" />
     
     <ImageView
         android:id="@+id/wifilistfragment_statusicon"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="32dp"
         android:src="@android:drawable/stat_notify_more"
         tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/wifilistfragment_capabilities"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="32dp"
         android:layout_weight="0.3"
         android:padding="2dp"
         android:visibility="gone" />

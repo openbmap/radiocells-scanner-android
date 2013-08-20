@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
-import org.openbmap.Preferences;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.DatabaseHelper;
 import org.openbmap.db.Schema;
@@ -20,11 +19,8 @@ import org.openbmap.db.model.CellRecord;
 import org.openbmap.db.model.LogFile;
 import org.openbmap.soapclient.FileUploader.UploadTaskListener;
 
-import android.R.bool;
 import android.content.Context;
 import android.database.Cursor;
-import android.os.Environment;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 

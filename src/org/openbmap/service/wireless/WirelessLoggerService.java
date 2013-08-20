@@ -15,7 +15,6 @@ import java.util.List;
 
 import org.openbmap.Preferences;
 import org.openbmap.RadioBeacon;
-import org.openbmap.R.string;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.model.CellRecord;
 import org.openbmap.db.model.LogFile;
@@ -143,7 +142,7 @@ public class WirelessLoggerService extends AbstractService {
 	 * WakeLock to prevent cpu from going into sleep mode
 	 */
 	private WakeLock mWakeLock;
-	
+
 	/**
 	 * WakeLock Tag
 	 */
@@ -158,7 +157,7 @@ public class WirelessLoggerService extends AbstractService {
 	 * WifiLock tag
 	 */
 	private static final String	WIFILOCK_NAME = "WakeLock.WIFI";
-	
+
 	/*
 	 * DataHelper for persisting recorded information in database
 	 */
@@ -302,7 +301,6 @@ public class WirelessLoggerService extends AbstractService {
 					gsmBitErrorRate = signalStrength.getGsmBitErrorRate();
 					gsmStrengthAsu = signalStrength.getGsmSignalStrength();
 					gsmStrengthDbm = -113 + 2 * gsmStrengthAsu; // conversion ASU in dBm
-					//signalStrengthIsGsm = signalStrength.isGsm();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -375,12 +373,12 @@ public class WirelessLoggerService extends AbstractService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		if (mWifiLock != null) {
 			mWifiLock = mWifiManager.createWifiLock(WifiManager.WIFI_MODE_SCAN_ONLY , WIFILOCK_NAME);
 			mWifiLock.acquire();
 		}
-		
+
 	}
 
 	/**
@@ -391,7 +389,7 @@ public class WirelessLoggerService extends AbstractService {
 			mWakeLock.release();
 		}
 		mWakeLock = null;
-		
+
 		if (mWifiLock != null && mWifiLock.isHeld()) {
 			mWifiLock.release();
 		}
@@ -538,28 +536,28 @@ public class WirelessLoggerService extends AbstractService {
 			Log.i(TAG, "Didn't save cells: cells tracking is disabled.");
 			return;
 		}
-	
+
 		// Do we have gps?
 		if 	(!isValidLocation(location)) {
 			Log.e(TAG, "GPS location invalid (null or default value)");
 			return;
 		}
-	
+
 		// TODO is signal strength update too old?
-	
+
 		/* 
 		 * Determine, whether we are on GSM or CDMA network.
 		 * Decision is based on voice-call technology used (i.e. getPhoneType instead of getNetworkType)
 		 */
 		GsmCellLocation gsmLocation = new GsmCellLocation();
 		CdmaCellLocation cdmaLocation = new CdmaCellLocation();
-	
+
 		if (mTelephonyManager.getPhoneType() != TelephonyManager.PHONE_TYPE_CDMA) {
 			gsmLocation = (GsmCellLocation) mTelephonyManager.getCellLocation();	
 		} else if (mTelephonyManager.getPhoneType() == TelephonyManager.PHONE_TYPE_CDMA) {
 			cdmaLocation = (CdmaCellLocation) mTelephonyManager.getCellLocation();
 		}
-	
+
 		// Either CDMA OR GSM must be available ..
 		// 		1) check for null values (typically airplane mode)
 		//		2) check for valid cell / base station id
@@ -567,24 +565,26 @@ public class WirelessLoggerService extends AbstractService {
 			Log.e(TAG, "Neither CDMA nor GSM network.. Skipping cells update");
 			return;
 		}
-	
+
 		ArrayList<CellRecord> cells = new ArrayList<CellRecord>(); 
-	
+
 		// Common data across all cells from scan:
 		// 		All cells share same position
 		// 		Neighbor cells share mnc, mcc and operator with serving cell
 		PositionRecord pos = new PositionRecord(location, mSessionId, providerName);
-	
+
 		CellRecord serving = processServing(gsmLocation, cdmaLocation, pos);
-		cells.add(serving);
-	
+		if (serving != null) {
+			cells.add(serving);
+		}
+
 		ArrayList<CellRecord> neigbors = processNeighbors(serving, pos);
 		cells.addAll(neigbors);
-	
+
 		// now persist cells in database
 		// Please note: So far we set end position = begin position
 		mDataHelper.storeCellsScanResults(cells, pos, pos);
-	
+
 		broadcastCellInfos(serving);
 		broadcastCellUpdate();
 	}
@@ -618,10 +618,19 @@ public class WirelessLoggerService extends AbstractService {
 
 			// GSM specific
 			serving.setCid(gsmLocation.getCid());
-			serving.setOperator(mTelephonyManager.getNetworkOperator());
+
+			String operator = mTelephonyManager.getNetworkOperator();
+			serving.setOperator(operator);
+			// getNetworkOperator() may return empty string, probably due to dropped connection
+			if (operator.length() > 3) {
+				serving.setMcc(operator.substring(0, 3));
+				serving.setMnc(operator.substring(3));
+			} else {
+				Log.e(TAG, "Couldn't determine network operator, skipping cell");
+				return null;
+			}
 			serving.setOperatorName(mTelephonyManager.getNetworkOperatorName());
-			serving.setMcc(mTelephonyManager.getNetworkOperator().substring(0,3));
-			serving.setMnc(mTelephonyManager.getNetworkOperator().substring(3));
+
 			serving.setLac(gsmLocation.getLac());
 			serving.setStrengthdBm(gsmStrengthDbm);
 
@@ -646,12 +655,18 @@ public class WirelessLoggerService extends AbstractService {
 			serving.setIsNeighbor(false);
 
 			// getNetworkOperator can be unreliable in CDMA networks, thus be careful
-			serving.setOperator(mTelephonyManager.getNetworkOperator());
+			String operator = mTelephonyManager.getNetworkOperator();
+			serving.setOperator(operator);
+			if (operator.length() > 3) {
+				serving.setMcc(operator.substring(0, 3));
+				serving.setMnc(operator.substring(3));
+			} else {
+				Log.i(TAG, "Couldn't determine network operator, this might happen in CDMA network");
+				serving.setMcc("");
+				serving.setMnc("");
+			}	
 			serving.setOperatorName(mTelephonyManager.getNetworkOperatorName());
-			if (mTelephonyManager.getNetworkOperator().length() > 3) {
-				serving.setMcc(mTelephonyManager.getNetworkOperator().substring(0,3));
-				serving.setMnc(mTelephonyManager.getNetworkOperator().substring(3));
-			}
+		
 			// CDMA specific
 			serving.setStrengthdBm(cdmaStrengthDbm);
 			return serving;
@@ -673,11 +688,11 @@ public class WirelessLoggerService extends AbstractService {
 	 */
 	private ArrayList<CellRecord> processNeighbors(final CellRecord serving, final PositionRecord cellPos) {
 		ArrayList<CellRecord> neighbors = new ArrayList<CellRecord>();
-	
+
 		ArrayList<NeighboringCellInfo> neighboringCellInfos = (ArrayList<NeighboringCellInfo>) mTelephonyManager.getNeighboringCellInfo();
 		// TODO: neighbor cell information in 3G mode is unreliable: lots of n/a in data.. Skip neighbor cell logging when in 3G mode or try to autocomplete missing data
 		if (neighboringCellInfos != null) {
-	
+
 			for (NeighboringCellInfo ci : neighboringCellInfos) {
 				// add neigboring cells		
 				CellRecord neighbor = new CellRecord(mSessionId);
@@ -688,7 +703,7 @@ public class WirelessLoggerService extends AbstractService {
 				neighbor.setEndPosition(cellPos);
 				neighbor.setIsServing(false);
 				neighbor.setIsNeighbor(true);
-	
+
 				/*
 				 * TelephonyManager doesn't provide all data for NEIGHBOURING cells:
 				 * MCC, MNC, Operator and Operator name are missing.
@@ -698,23 +713,23 @@ public class WirelessLoggerService extends AbstractService {
 				 * 	- near country border, where NEIGHBOURING cell can have a different MCC, MNC or Operator
 				 *   - ... ?
 				 */
-	
+
 				neighbor.setMnc(serving.getMnc());
 				neighbor.setMcc(serving.getMcc());
 				neighbor.setOperator(serving.getOperator());
 				neighbor.setOperatorName(serving.getOperatorName());
-	
+
 				int networkType = ci.getNetworkType();
 				neighbor.setNetworkType(networkType);
-				
+
 				if (networkType == TelephonyManager.NETWORK_TYPE_GPRS || networkType ==  TelephonyManager.NETWORK_TYPE_EDGE) {
 					// GSM cell
 					neighbor.setIsCdma(false);
-	
+
 					neighbor.setCid(ci.getCid());
 					neighbor.setLac(ci.getLac());
 					neighbor.setStrengthdBm(-113 + 2 * ci.getRssi());
-					
+
 				} else if (networkType == TelephonyManager.NETWORK_TYPE_UMTS || networkType ==  TelephonyManager.NETWORK_TYPE_HSDPA
 						|| networkType == TelephonyManager.NETWORK_TYPE_HSUPA || networkType == TelephonyManager.NETWORK_TYPE_HSPA) {
 					// UMTS cell
@@ -723,20 +738,19 @@ public class WirelessLoggerService extends AbstractService {
 					// TODO do UMTS specific dbm conversion from ci.getRssi());
 					// @see http://developer.android.com/reference/android/telephony/NeighboringCellInfo.html#getRssi()
 					neighbor.setStrengthdBm(ci.getRssi());
-	
+
 				} else if (networkType == TelephonyManager.NETWORK_TYPE_CDMA) {
 					// TODO what's the strength in cdma mode? API unclear
 					neighbor.setIsCdma(true);
 				}
-	
+
 				// not available for neighboring cells
 				//cell.setMcc(mcc);
 				//cell.setMnc(mnc);
 				//cell.setOperator(operator);
 				//cell.setOperatorName(operatorName);
-	
+
 				neighbors.add(neighbor);
-				//mDataHelper.storeCell(neighbor);
 			}
 		}
 		return neighbors;
@@ -931,7 +945,7 @@ public class WirelessLoggerService extends AbstractService {
 
 		return true;
 	}
-	
+
 	/**
 	 * Checks whether accuracy is good enough by testing whether accuracy is available and below settings threshold
 	 * @param location
@@ -941,7 +955,7 @@ public class WirelessLoggerService extends AbstractService {
 		return location.hasAccuracy() && (location.getAccuracy() <= Float.parseFloat(
 				prefs.getString(Preferences.KEY_REQ_GPS_ACCURACY, Preferences.VAL_REQ_GPS_ACCURACY)));
 	}
-	
+
 	/**
 	 * Ensures that there is a minimum distance and minimum time delay between two cell updates.
 	 * If in DEMO_MODE this behaviour is overridden and cell updates are triggered as fast as possible
@@ -953,10 +967,10 @@ public class WirelessLoggerService extends AbstractService {
 	 */
 	private boolean acceptableCellDistance(final Location current, final Location last) { 
 		return (current.distanceTo(last) > Float.parseFloat(
-			prefs.getString(Preferences.KEY_MIN_CELL_DISTANCE, Preferences.VAL_MIN_CELL_DISTANCE))
-			&& (current.getTime() - last.getTime() > MIN_CELL_TIME_INTERVAL) || DEMO_MODE);
+				prefs.getString(Preferences.KEY_MIN_CELL_DISTANCE, Preferences.VAL_MIN_CELL_DISTANCE))
+				&& (current.getTime() - last.getTime() > MIN_CELL_TIME_INTERVAL) || DEMO_MODE);
 	}
-	
+
 	/**
 	 * Ensures that cell there is a minimum distance between two wifi scans.
 	 * If in DEMO_MODE this behaviour is overridden and wifi scans are triggered as fast as possible
@@ -967,8 +981,8 @@ public class WirelessLoggerService extends AbstractService {
 	 * @return true if distance and time since last cell update are ok or if in demo mode
 	 */
 	private boolean acceptableWifiDistance(final Location current, final Location last) {
-			return (current.distanceTo(last) > Float.parseFloat(
-			prefs.getString(Preferences.KEY_MIN_WIFI_DISTANCE, Preferences.VAL_MIN_WIFI_DISTANCE))
-			|| DEMO_MODE);
+		return (current.distanceTo(last) > Float.parseFloat(
+				prefs.getString(Preferences.KEY_MIN_WIFI_DISTANCE, Preferences.VAL_MIN_WIFI_DISTANCE))
+				|| DEMO_MODE);
 	}
 }

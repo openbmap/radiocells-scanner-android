@@ -5,7 +5,7 @@
     <string name="operator">Operator</string>
     <string name="type">Type</string>
     <string name="dbm">dBm</string>
-    <string name="ssid">Ssid</string>
+    <string name="ssid">SSID</string>
     <string name="level">Level</string>
     <string name="turnOnGpsQuestion">GPS is switched off! Would you like to activate GPS now?</string>
     <string name="networkTypeCaption">Network Type</string>
@@ -15,7 +15,7 @@
     <string name="operatorCaption">Operator</string>
     <string name="mccCaption">MCC</string>
     <string name="mncCaption">MNC</string>
-    <string name="strenghtDbmCaption">Strenght (dbm)</string>
+    <string name="strenghtDbmCaption">Strength (dbm)</string>
     <string name="isServingCellCaption">Is serving cell?</string>
     <string name="openbmap_data_source">Data: OpenBmap</string>
     <string name="openbmap_license">CC-by-SA 3.0 / Odbl Licence</string>
@@ -38,7 +38,7 @@
     <string name="frequency">Frequency</string>
     <string name="date">Date</string>
     <string name="please_select_map">Please select a map file first!</string>
-    <string name="error_dowload_error">Error: Dowload failed. Maybe connection was interrupted?</string>
+    <string name="error_dowload_error">Error: Download failed. Maybe connection was interrupted?</string>
     <string name="warning_outdated_client">Your client version is too old. Please update!</string>
     <string name="warning_client_version_not_checked">Couldn\'t verify client version. Either you\'re offline, server is down or this client is too old.</string>
     <string name="warning_session_closed">Can\'t resume! Session has already been uploaded.</string>
@@ -53,7 +53,7 @@
     <string name="deleted">Deleted!</string>
     <string name="warning_sd_not_writable">Can\'t write to SD card. Perhaps mounted on desktop pc?</string>
     <string name="error_save_file_failed">Error: Couldn\'t save wifi catalog! Check SD card / permissions!</string>
-    <string name="error_create_directory_failed">"Couldn't create data directory "</string>
+    <string name="error_create_directory_failed">Couldn\'t create data directory</string>
     <string name="tap_hotspot_to_see_details">Tap hotspot to see details</string>
     <string name="tap_measurement_to_see_on_map">Tap measurement to see on map</string>
     <string name="start_tracking">Start tracking</string>
@@ -64,13 +64,14 @@
     <string name="hint_notification">Tap here to display main screen</string>
     <string name="notification">RadioBeacon is tracking (#{0})</string>
     <string name="notification_caption">Radiobeacon is scanning</string>
-    <string name="exporting_wifis">Exporting wifis</string>
-    <string name="exporting_cells">Exporting cells</string>
-    <string name="exporting_gpx">Exporting gpx</string>
+    <string name="exporting_wifis">Uploading wifis</string>
+    <string name="exporting_cells">Uploading cells</string>
+    <string name="exporting_gpx">Exporting GPX to SD card</string>
     <string name="resume">Resume</string>
     <string name="stop">Stop</string>
     <string name="delete">Delete</string>
     <string name="upload">Upload</string>
     <string name="delete_all">DELETE ALL</string>
     <string name="upload_skipped">Upload skipped (If this happened accidently, check your debug settings)</string>
+    <string name="preparing_export">Preparing export..</string>
 </resources>
