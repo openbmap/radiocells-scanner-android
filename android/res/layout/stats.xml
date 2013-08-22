@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <TableRow
+        android:id="@+id/tableRow1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/stats_id_caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/id"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <TextView
+            android:id="@+id/stats_session_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.21"
+            android:text="@string/n_a"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/tableRow4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="wrap_content"
+            android:baselineAlignBottom="true"
+            android:src="@drawable/ic_menu_wifi"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/stats_wifi_total"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/total_empty"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <TextView
+            android:id="@+id/stats_wifi_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/n_a"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/tableRow2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="wrap_content"
+            android:baselineAlignBottom="true"
+            android:src="@drawable/ic_menu_cell"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/stats_cell_total"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/total_empty"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <TextView
+            android:id="@+id/stats_cell_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/n_a"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+    </TableRow>
+
+</TableLayout>

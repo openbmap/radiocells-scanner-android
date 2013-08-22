@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="icon_svg.svg"
+   inkscape:export-filename="D:\ppem\workspace\radiobeacon\res\drawable-ldpi\icon.png"
+   inkscape:export-xdpi="36.990002"
+   inkscape:export-ydpi="36.990002">
+  <defs
+     id="defs4"><linearGradient
+   inkscape:collect="always"
+   id="linearGradient5430">
+  <stop
+     style="stop-color:#000000;stop-opacity:1;"
+     offset="0"
+     id="stop5432" />
+  <stop
+     style="stop-color:#000000;stop-opacity:0;"
+     offset="1"
+     id="stop5434" />
+</linearGradient>
+<linearGradient
+   inkscape:collect="always"
+   id="linearGradient5398">
+  <stop
+     style="stop-color:#000000;stop-opacity:1;"
+     offset="0"
+     id="stop5400" />
+  <stop
+     style="stop-color:#000000;stop-opacity:0;"
+     offset="1"
+     id="stop5402" />
+</linearGradient>
+
+		
+	
+			
+		
+		
+		
+	<linearGradient
+   inkscape:collect="always"
+   xlink:href="#linearGradient5398"
+   id="linearGradient5404"
+   x1="164.98415"
+   y1="524.19547"
+   x2="240.73015"
+   y2="524.19547"
+   gradientUnits="userSpaceOnUse" />
+<linearGradient
+   inkscape:collect="always"
+   xlink:href="#linearGradient5430"
+   id="linearGradient5436"
+   x1="15.094"
+   y1="44.906"
+   x2="87.094"
+   y2="44.906"
+   gradientUnits="userSpaceOnUse" />
+</defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="2.8"
+     inkscape:cx="268.21106"
+     inkscape:cy="459.99421"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1680"
+     inkscape:window-height="1003"
+     inkscape:window-x="-4"
+     inkscape:window-y="-4"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="_x35__content_picture"
+       transform="translate(257.71429,481.50504)"
+       inkscape:export-filename="D:\ppem\workspace\radiobeacon\res\drawable-ldpi\icon.png"
+       inkscape:export-xdpi="44.999981"
+       inkscape:export-ydpi="44.999981"
+       style="stroke:url(#linearGradient5436)">
+	<path
+   inkscape:export-ydpi="90"
+   inkscape:export-xdpi="90"
+   inkscape:export-filename="D:\ppem\workspace\radiobeacon\res\drawable-hdpi\icon.png"
+   style="fill:#3f6ba3;fill-opacity:1;stroke:url(#linearGradient5436)"
+   inkscape:connector-curvature="0"
+   d="m 15.094,8.906 v 72 h 72 v -72 h -72 z M 82.228869,76.043057 H 19.965695 V 13.778789 h 62.263174 v 62.264268 z"
+   id="path3009" />
+<polygon
+   inkscape:export-ydpi="90"
+   inkscape:export-xdpi="90"
+   inkscape:export-filename="D:\ppem\workspace\radiobeacon\res\drawable-hdpi\icon.png"
+   transform="matrix(1.1289815,0,0,1,-3.6310093,-0.17857143)"
+   style="fill:#3fa361;fill-opacity:1;stroke:url(#linearGradient5436)"
+   points="60.18,54.438 49.842,59.072 35.746,46.54 23.998,54.881 23.998,71.51 72.553,71.51 72.553,61.943 "
+   id="polygon3011" />
+
+</g>
+    <g
+       id="g3043"
+       transform="matrix(0.37691079,0,0,0.32439332,217.51116,344.24623)"
+       inkscape:export-filename="D:\ppem\workspace\radiobeacon\res\drawable-hdpi\icon.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"
+       style="fill:#3f6aa3;fill-opacity:1;stroke:#000000;stroke-opacity:1">
+      <g
+         transform="translate(154.85715,462.93436)"
+         id="_x31_0_device_access_network_wifi"
+         style="fill:#3f6aa3;fill-opacity:1;stroke:#000000;stroke-opacity:1">
+	<path
+   sodipodi:nodetypes="ccscccccsccscccsccsc"
+   style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-opacity:1"
+   inkscape:connector-curvature="0"
+   d="m 10.627,31.826 7.371,8.988 c 8.176,-6.662 18.622,-10.67 30.001,-10.67 11.37,0 21.815,4.008 30.003,10.68 l 7.371,-8.998 C 63.678,14.148 32.32,14.148 10.627,31.826 z m 18.246,22.274 7.773,9.484 c 3.065,-2.719 7.018,-4.373 11.353,-4.373 4.325,0 8.288,1.654 11.353,4.373 L 67.127,54.1 C 61.902,49.85 55.25,47.289 47.999,47.289 c -7.25,0 -13.913,2.561 -19.126,6.811 z m -9.138,-11.147 7.372,8.988 c 5.699,-4.643 12.969,-7.436 20.892,-7.436 7.913,0 15.192,2.793 20.892,7.436 l 7.363,-8.988 C 68.545,36.676 58.707,32.9 47.999,32.9 37.282,32.9 27.443,36.676 19.735,42.953 z"
+   id="path2992" />
+
+</g>
+      <g
+         transform="translate(193.8465,581.5882)"
+         id="_x35__content_merge"
+         style="fill:#3f6aa3;fill-opacity:1;stroke:none;stroke-opacity:1">
+	<path
+   sodipodi:nodetypes="cccccccccccccc"
+   style="fill:#ffffff;display:inline;fill-opacity:1;stroke:none;stroke-opacity:1"
+   inkscape:connector-curvature="0"
+   display="inline"
+   d="m 14.507127,-24.69711 c 2.557,2.791 15.174,9.998 15.174,9.998 l 4.836,-9.572 c 0,0 -20.293,-9.783 -20.01,-19.633 l 0,-12.224 -0.008,-0.059 c -10.786538,0.03295 -0.03502,0.07103 -10.781,0 l -0.006,0.059 0,12.224 c 0.281,9.85 -20.01,19.633 -20.01,19.633 l 4.837,9.572 c 0,0 12.617,-7.207 15.172,-9.998 l 5.365,-4.699 z"
+   id="path3048" />
+
+</g>
+    </g>
+    <g
+       id="g3043-1"
+       transform="matrix(0.37691079,0,0,0.32439332,245.77961,352.74419)"
+       inkscape:export-filename="D:\ppem\workspace\radiobeacon\res\drawable-hdpi\icon.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"
+       style="fill:#3f6aa3;fill-opacity:1;stroke:none">
+      <g
+         transform="translate(154.85715,462.93436)"
+         id="_x31_0_device_access_network_wifi-7"
+         style="fill:#3f6aa3;fill-opacity:1;stroke:none">
+        <path
+           sodipodi:nodetypes="ccscccccsccscccsccsc"
+           style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-opacity:1"
+           inkscape:connector-curvature="0"
+           d="m 10.627,31.826 7.371,8.988 c 8.176,-6.662 18.622,-10.67 30.001,-10.67 11.37,0 21.815,4.008 30.003,10.68 l 7.371,-8.998 C 63.678,14.148 32.32,14.148 10.627,31.826 z m 18.246,22.274 7.773,9.484 c 3.065,-2.719 7.018,-4.373 11.353,-4.373 4.325,0 8.288,1.654 11.353,4.373 L 67.127,54.1 C 61.902,49.85 55.25,47.289 47.999,47.289 c -7.25,0 -13.913,2.561 -19.126,6.811 z m -9.138,-11.147 7.372,8.988 c 5.699,-4.643 12.969,-7.436 20.892,-7.436 7.913,0 15.192,2.793 20.892,7.436 l 7.363,-8.988 C 68.545,36.676 58.707,32.9 47.999,32.9 37.282,32.9 27.443,36.676 19.735,42.953 z"
+           id="path2992-4" />
+      </g>
+      <g
+         transform="translate(193.8465,581.5882)"
+         id="_x35__content_merge-0"
+         style="fill:#3f6aa3;fill-opacity:1;stroke:none">
+        <path
+           sodipodi:nodetypes="cccccccccccccc"
+           style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-opacity:1;display:inline"
+           inkscape:connector-curvature="0"
+           display="inline"
+           d="m 14.507127,-24.69711 c 2.557,2.791 15.174,9.998 15.174,9.998 l 4.836,-9.572 c 0,0 -20.293,-9.783 -20.01,-19.633 l 0,-12.224 -0.008,-0.059 c -10.786538,0.03295 -0.03502,0.07103 -10.781,0 l -0.006,0.059 0,12.224 c 0.281,9.85 -20.01,19.633 -20.01,19.633 l 4.837,9.572 c 0,0 12.617,-7.207 15.172,-9.998 l 5.365,-4.699 z"
+           id="path3048-9" />
+      </g>
+    </g>
+  </g>
+</svg>

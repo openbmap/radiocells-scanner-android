@@ -1,0 +1,7 @@
+<resources>
+     <declare-styleable name="VerticalLabelView">
+        <attr name="text" format="string" />
+        <attr name="textColor" format="color" />
+        <attr name="textSize" format="dimension" />
+    </declare-styleable>
+</resources>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="listDisplayWord">
+        <item>Albania</item>
+        <item>Andorra</item>
+        <item>Austria</item>
+        <item>Azores</item>
+        <item>Belarus</item>
+        <item>Belgium</item>
+        <item>Bosnia-Herzegovina</item>
+        <item>Bulgaria</item>
+        <item>Croatia</item>
+        <item>Cyprus</item>
+        <item>Czech Republic</item>
+        <item>Denmark</item>
+        <item>Estonia</item>
+        <item>Faroe Islands</item>
+        <item>Finland</item>
+        <item>Germany</item>
+        <item>Great Britain</item>
+        <item>Greece</item>
+        <item>Hungary</item>
+        <item>Iceland</item>
+        <item>Ireland</item>
+        <item>Isle Of Man</item>
+        <item>Italy</item>
+        <item>Kosovo</item>
+        <item>Latvia</item>
+        <item>Liechtenstein</item>
+        <item>Lithuania</item>
+        <item>Luxembourg</item>
+        <item>Macedonia</item>
+        <item>Madeira</item>
+        <item>Malta</item>
+        <item>Moldova</item>
+        <item>Monaco</item>
+        <item>Montenegro</item>
+        <item>Netherlands</item>
+        <item>Norway</item>
+        <item>Poland</item>
+        <item>Portugal</item>
+        <item>Romania</item>
+        <item>Russia</item>
+        <item>Serbia</item>
+        <item>Slovakia</item>
+        <item>Slovenia</item>
+        <item>Spain</item>
+        <item>Sweden</item>
+        <item>Switzerland</item>
+        <item>Turkey</item>
+        <item>Ukraine</item>
+    </string-array>
+    <string-array name="listReturnValue">
+        <item>http://download.mapsforge.org/maps/europe/albania.map</item>
+        <item>http://download.mapsforge.org/maps/europe/andorra.map</item>
+        <item>http://download.mapsforge.org/maps/europe/austria.map</item>
+        <item>http://download.mapsforge.org/maps/europe/azores.map</item>
+        <item>http://download.mapsforge.org/maps/europe/belarus.map</item>
+        <item>http://download.mapsforge.org/maps/europe/belgium.map</item>
+        <item>http://download.mapsforge.org/maps/europe/bosnia-herzegovina.map</item>
+        <item>http://download.mapsforge.org/maps/europe/bulgaria.map</item>
+        <item>http://download.mapsforge.org/maps/europe/croatia.map</item>
+        <item>http://download.mapsforge.org/maps/europe/cyprus.map</item>
+        <item>http://download.mapsforge.org/maps/europe/czech_republic.map</item>
+        <item>http://download.mapsforge.org/maps/europe/denmark.map</item>
+        <item>http://download.mapsforge.org/maps/europe/estonia.map</item>
+        <item>http://download.mapsforge.org/maps/europe/faroe_islands.map</item>
+        <item>http://download.mapsforge.org/maps/europe/finland.map</item>
+        <item>http://download.mapsforge.org/maps/europe/germany.map</item>
+        <item>http://download.mapsforge.org/maps/europe/great_britain.map</item>
+        <item>http://download.mapsforge.org/maps/europe/greece.map</item>
+        <item>http://download.mapsforge.org/maps/europe/hungary.map</item>
+        <item>http://download.mapsforge.org/maps/europe/iceland.map</item>
+        <item>http://download.mapsforge.org/maps/europe/ireland.map</item>
+        <item>http://download.mapsforge.org/maps/europe/isle_of_man.map</item>
+        <item>http://download.mapsforge.org/maps/europe/italy.map</item>
+        <item>http://download.mapsforge.org/maps/europe/kosovo.map</item>
+        <item>http://download.mapsforge.org/maps/europe/latvia.map</item>
+        <item>http://download.mapsforge.org/maps/europe/liechtenstein.map</item>
+        <item>http://download.mapsforge.org/maps/europe/lithuania.map</item>
+        <item>http://download.mapsforge.org/maps/europe/luxembourg.map</item>
+        <item>http://download.mapsforge.org/maps/europe/macedonia.map</item>
+        <item>http://download.mapsforge.org/maps/europe/madeira.map</item>
+        <item>http://download.mapsforge.org/maps/europe/malta.map</item>
+        <item>http://download.mapsforge.org/maps/europe/moldova.map</item>
+        <item>http://download.mapsforge.org/maps/europe/monaco.map</item>
+        <item>http://download.mapsforge.org/maps/europe/montenegro.map</item>
+        <item>http://download.mapsforge.org/maps/europe/netherlands.map</item>
+        <item>http://download.mapsforge.org/maps/europe/norway.map</item>
+        <item>http://download.mapsforge.org/maps/europe/poland.map</item>
+        <item>http://download.mapsforge.org/maps/europe/portugal.map</item>
+        <item>http://download.mapsforge.org/maps/europe/romania.map</item>
+        <item>http://download.mapsforge.org/maps/europe/russia.map</item>
+        <item>http://download.mapsforge.org/maps/europe/serbia.map</item>
+        <item>http://download.mapsforge.org/maps/europe/slovakia.map</item>
+        <item>http://download.mapsforge.org/maps/europe/slovenia.map</item>
+        <item>http://download.mapsforge.org/maps/europe/spain.map</item>
+        <item>http://download.mapsforge.org/maps/europe/sweden.map</item>
+        <item>http://download.mapsforge.org/maps/europe/switzerland.map</item>
+        <item>http://download.mapsforge.org/maps/europe/turkey.map</item>
+        <item>http://download.mapsforge.org/maps/europe/ukraine.map</item>
+    </string-array>
+
+</resources>
