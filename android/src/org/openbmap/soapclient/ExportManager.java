@@ -10,9 +10,7 @@ import org.openbmap.R;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -91,7 +89,7 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> {
 		this.mUser = user;
 		this.mPassword = password;
 		this.mListener = listener;
-		
+
 		// by default: upload and delete local temp files afterward
 		this.setSkipUpload(false);
 		this.setSkipDelete(false);
@@ -114,14 +112,22 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> {
 	@Override
 	protected final Boolean doInBackground(final Void... params) {
 		if (mExportCells) {
-			publishProgress(mContext.getResources().getString(R.string.exporting_cells), 0);
+			if (getSkipUpload()) {
+				publishProgress(mContext.getResources().getString(R.string.exporting_cells), 0);
+			} else {
+				publishProgress(mContext.getResources().getString(R.string.uploading_cells), 0);
+			}
 			new CellExporter(mContext, mSession, mTargetPath, mUser, mPassword, getSkipUpload(), getSkipDelete()).doInBackground();
 		} else {
 			Log.i(TAG, "Cell export skipped");
 		}
 
 		if (mExportWifis) {
-			publishProgress(mContext.getResources().getString(R.string.exporting_wifis), 50);
+			if (getSkipUpload()) {
+				publishProgress(mContext.getResources().getString(R.string.exporting_wifis), 50);
+			} else {
+				publishProgress(mContext.getResources().getString(R.string.uploading_wifis), 50);
+			}
 			new WifiExporter(mContext, mSession, mTargetPath, mUser, mPassword, getSkipUpload(), getSkipDelete()).doInBackground();
 		} else {
 			Log.i(TAG, "Wifi export skipped");
@@ -141,7 +147,7 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> {
 		} else {
 			Log.i(TAG, "GPX export skipped");
 		}
-		
+
 		return true;
 	}
 

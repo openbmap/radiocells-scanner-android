@@ -64,8 +64,10 @@
     <string name="hint_notification">Tap here to display main screen</string>
     <string name="notification">RadioBeacon is tracking (#{0})</string>
     <string name="notification_caption">Radiobeacon is scanning</string>
-    <string name="exporting_wifis">Uploading wifis</string>
-    <string name="exporting_cells">Uploading cells</string>
+    <string name="exporting_wifis">Exporting wifis to SD card\r\n(Upload deactivated)</string>
+    <string name="uploading_wifis">Uploading wifis</string>
+    <string name="exporting_cells">Exporting cells to SD card\r\n(Upload deactivated)</string>
+    <string name="uploading_cells">Uploading cells</string>
     <string name="exporting_gpx">Exporting GPX to SD card</string>
     <string name="resume">Resume</string>
     <string name="stop">Stop</string>

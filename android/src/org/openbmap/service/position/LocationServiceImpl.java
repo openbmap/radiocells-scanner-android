@@ -64,9 +64,8 @@ public class LocationServiceImpl implements LocationService {
 		 */
 
 		if (force 
-				|| location.getTime() >= mLocation.getTime() ||
-				(
-						mLocation.getAccuracy() == -1
+				|| location.getTime() >= mLocation.getTime()
+				|| (mLocation.getAccuracy() == -1
 						|| location.getAccuracy() >= 0 && (location.getAccuracy() < mLocation.getAccuracy()))
 				) {
 			mLocation = location;

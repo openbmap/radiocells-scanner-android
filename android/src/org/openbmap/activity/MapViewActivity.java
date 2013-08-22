@@ -225,7 +225,7 @@ OnGpxLoadedListener {
 
 		// Register our gps broadcast mReceiver
 		registerReceiver();
-		initControls();
+		initUi();
 
 	}
 
@@ -258,19 +258,23 @@ OnGpxLoadedListener {
 	 * as database helper to retrieve current wifi scan results.
 	 */
 	private void initDatabases() {
-		// Open tracking database helper
 		dbHelper = new DataHelper(this);
 	}
 
-	private void initControls() {
+	/**
+	 * Initializes UI componensts
+	 */
+	private void initUi() {
 		mSnapToLocation = (ToggleButton) findViewById(R.id.mapview_tb_snap_to_location);
+		mMapView = (MapView) findViewById(R.id.mvMap);
 	}
 
+	/**
+	 * Initializes map view
+	 * TODO: proper error handling, if file doesn't exist
+	 */
 	private void initMap() {
-		// initialize map view
 		mMapView = (MapView) findViewById(R.id.mvMap);
-
-		// TODO: proper error handling, if file doesn't exist
 		File mapFile = new File(
 				Environment.getExternalStorageDirectory().getPath()
 				+ prefs.getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
@@ -463,8 +467,8 @@ OnGpxLoadedListener {
 		task.execute(bbox.minLatitude, bbox.maxLatitude, bbox.minLongitude, bbox.maxLatitude);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openbmap.utils.GpxMapObjectsLoader.OnGpxLoadedListener#onGpxLoaded(java.util.ArrayList)
+	/**
+	 * Callback function for loadGpxObjects()
 	 */
 	@Override
 	public final void onGpxLoaded(final ArrayList<GeoPoint> points) {

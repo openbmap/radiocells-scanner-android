@@ -270,7 +270,7 @@ public class WifiExporter implements UploadTaskListener {
 		long startTime = System.currentTimeMillis();
 
 		int i = 0;
-		// creates cursorWifiss of 100 wifis per logfile
+		// creates cursor of [CHUNK_SIZE] wifis per file
 		while (!cursorWifis.isAfterLast()) {
 			Log.i(TAG, "Cycle " + i);
 			String fileName  = mTempPath + generateFilename(mUser);

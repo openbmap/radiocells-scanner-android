@@ -10,25 +10,17 @@ import org.openbmap.service.position.LocationServiceFactory;
 import org.openbmap.service.position.PositioningService;
 
 import android.content.Context;
-import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.NetworkInfo.State;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 /**
  * @author power
  *
  */
 public class GpsProvider extends LocationProviderImpl implements LocationListener {
-
-	/**
-	 * 
-	 */
-	private static final double	INERTIAL_THRESHOLD	= 10.0;
 
 	private static final String	TAG	= GpsProvider.class.getSimpleName();
 
@@ -41,11 +33,12 @@ public class GpsProvider extends LocationProviderImpl implements LocationListene
 
 	private boolean	isGpsEnabled;
 
-	private long	gpsLoggingInterval;
+	private long gpsLoggingInterval;
 
-	private long	mLastGPSTimestamp;
+	private long mLastGPSTimestamp;
 	private Location mLastLocation = new Location("dummy");
 
+	// TODO: use barometer if available
 	public GpsProvider(final Context ctx) {
 		this(ctx, LocationServiceFactory.getLocationService());
 	}
