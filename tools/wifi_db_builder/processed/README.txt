@@ -1,0 +1,1 @@
+Folder for files which have sucessfully been imported
