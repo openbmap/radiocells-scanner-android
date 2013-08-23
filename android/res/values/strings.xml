@@ -17,6 +17,7 @@
     <string name="mncCaption">MNC</string>
     <string name="strenghtDbmCaption">Strength (dbm)</string>
     <string name="isServingCellCaption">Is serving cell?</string>
+    <string name="radiobeacon_licence">Licensed under AGPL v3&amp;gt;</string>
     <string name="openbmap_data_source">Data: OpenBmap</string>
     <string name="openbmap_license">CC-by-SA 3.0 / Odbl Licence</string>
     <string name="mapsforge_source">Maps library: Mapsforge Library</string>
@@ -54,7 +55,7 @@
     <string name="warning_sd_not_writable">Can\'t write to SD card. Perhaps mounted on desktop pc?</string>
     <string name="error_save_file_failed">Error: Couldn\'t save wifi catalog! Check SD card / permissions!</string>
     <string name="error_create_directory_failed">Couldn\'t create data directory</string>
-    <string name="tap_hotspot_to_see_details">Tap hotspot to see details</string>
+    <string name="tap_hotspot_to_see_details">Tap wifi to see details</string>
     <string name="tap_measurement_to_see_on_map">Tap measurement to see on map</string>
     <string name="start_tracking">Start tracking</string>
     <string name="stop_tracking">Stop tracking</string>
@@ -76,4 +77,5 @@
     <string name="delete_all">DELETE ALL</string>
     <string name="upload_skipped">Upload skipped (If this happened accidently, check your debug settings)</string>
     <string name="preparing_export">Preparing export..</string>
+    <string name="app_description">Openbmap.org wifi and cell logger</string>
 </resources>
