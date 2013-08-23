@@ -1,3 +1,21 @@
+/*
+	Radiobeacon - Openbmap wifi and cell logger
+    Copyright (C) 2013  wish7
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package org.openbmap.activity;
 
 import org.openbmap.R;
@@ -14,6 +32,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
+/**
+ * Activity for displaying basic session infos (# of cells, wifis, etc.)
+ */
 public class StatsActivity extends Activity {
 	private static final String TAG = StatsActivity.class.getSimpleName();
 
@@ -65,7 +86,7 @@ public class StatsActivity extends Activity {
 		super.onCreate(savedInstanceState);
 
 		// setup UI controls
-		initControls();
+		initUi();
 
 		// setup broadcast filters
 		registerReceiver();	
@@ -75,7 +96,7 @@ public class StatsActivity extends Activity {
 	/**
 	 * 
 	 */
-	private void initControls() {
+	private void initUi() {
 		setContentView(R.layout.stats);
 		tvLastCell = (TextView) findViewById(R.id.stats_cell_description);
 		tvLastWifi = (TextView) findViewById(R.id.stats_wifi_description);

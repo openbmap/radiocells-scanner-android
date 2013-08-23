@@ -31,6 +31,9 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 
+/** 
+ * Vertical label control
+ */
 public class VerticalLabelView extends View {
 	
 	private static final String TAG = VerticalLabelView.class.getSimpleName();

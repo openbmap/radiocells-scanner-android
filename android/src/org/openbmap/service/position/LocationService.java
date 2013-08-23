@@ -1,7 +1,23 @@
 /*
- * Created on Dec 7, 2011
- * Author: Paul Woelfel
- * Email: frig@frig.at
+	Radiobeacon - Openbmap wifi and cell logger
+    Copyright (C) 2013  wish7
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
+   Inspirations from Paul Woelfel, Email: frig@frig.at
  */
 package org.openbmap.service.position;
 
@@ -11,22 +27,18 @@ import org.openbmap.service.position.providers.LocationProvider;
 
 import android.location.Location;
 
-/**
- * @author   Paul Woelfel (paul@woelfel.at)
- */
 public interface LocationService {
 
 	/**
-	 * return current location
+	 * Returns current location
 	 * 
 	 * @return current location
-	 * @see at.fhstp.wificompass.model.Location
 	 */
 	Location getLocation();
 
 	/**
 	 * <p>
-	 * update the location service with the current position.<br />
+	 * Updates the location service with the current position.<br />
 	 * This method checks which position is more accurate and uses the most accurate. If force is set, the location will be forced to overwrite the current location.
 	 * </p>
 	 * 
@@ -38,11 +50,10 @@ public interface LocationService {
 
 	/**
 	 * <p>
-	 * update the location service with the current position.<br />
+	 * Updates the location service with the current position.<br />
 	 * This method checks which position is more accurate and uses the most accurate
 	 * </p>
 	 * @param mLocation current position
-	 * @see LocationService#updateLocation(Location, boolean)
 	 */
 	void updateLocation(Location pos);
 	
@@ -55,7 +66,7 @@ public interface LocationService {
 	void registerProvider(LocationProvider provider);
 	
 	/**
-	 * <p>unregister a  LocationProvider<br />
+	 * <p>Unregisters a LocationProvider<br />
 	 * should call the LocationProvider.setLocationService</p>
 	 * @param provider currently registerd LocationProvider
 	 * @see LocationProvider
@@ -63,7 +74,7 @@ public interface LocationService {
 	void unregisterProvider(LocationProvider provider);
 	
 	/**
-	 * <p>register a new LocationProvider by its class name.<br />
+	 * <p>Registers a new LocationProvider by its class name.<br />
 	 * This method uses the default constructor of the object to create an instance</p>
 	 * @param provider classname of the LocationProvider
 	 * @throws InstantiationException if the Class could not be instanced or the class is not a subclass of LocationProvider 
@@ -78,18 +89,5 @@ public interface LocationService {
 	 * @return List of registered LocationProviders
 	 */
 	List<LocationProvider> getLocationProviders();
-	
-	/**
-	 * <p>define in which angle the magnetic north is to the map</p> <p>The angle must be between 0 and 2*π.</p>
-	 * @param  angle
-	 * @uml.property  name="relativeNorth"
-	 */
-	void setRelativeNorth(float angle);
-	
-	/**
-	 * @return   angle of the direction to magnetic north
-	 * @uml.property  name="relativeNorth"
-	 */
-	float getRelativeNorth();
-	
+
 }

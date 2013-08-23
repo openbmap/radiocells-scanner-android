@@ -1,10 +1,21 @@
-/**
- * HostActity for "tracking" mode. It hosts the tabs "Stats", "Wifi Overview", "Cell Overview" and "Map".
- * HostActity is also in charge of service communication. 
- * Services are automatically started onCreate() and onResume()
- * They can be manually stopped by calling INTENT_STOP_SERVICES.
- * 
- */
+/*
+	Radiobeacon - Openbmap wifi and cell logger
+    Copyright (C) 2013  wish7
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package org.openbmap.activity;
 
 import java.lang.ref.WeakReference;
@@ -45,6 +56,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.TabHost;
 
+/**
+ * HostActity for "tracking" mode. It hosts the tabs "Stats", "Wifi Overview", "Cell Overview" and "Map".
+ * HostActity is also in charge of service communication. 
+ * Services are automatically started onCreate() and onResume()
+ * They can be manually stopped by calling INTENT_STOP_SERVICES.
+ * 
+ */
 public class HostActivity extends TabActivity {
 	private static final String	TAG	= HostActivity.class.getSimpleName();
 

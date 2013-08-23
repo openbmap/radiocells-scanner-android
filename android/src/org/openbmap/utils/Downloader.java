@@ -1,7 +1,21 @@
-/**
- * Downloads a file from an url. If download was successful, i.e. downloaded size equals total size callback function
- * "onDownloadCompleted" is called on mListener, "onDownloadFailed" otherwise.
- */
+/*
+	Radiobeacon - Openbmap wifi and cell logger
+    Copyright (C) 2013  wish7
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package org.openbmap.utils;
 
 import java.io.File;
@@ -17,6 +31,11 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+/**
+ * Downloads a file from an url. If download was successful, i.e. downloaded size equals total size callback function
+ * "onDownloadCompleted" is called on mListener, "onDownloadFailed" otherwise.
+ * TODO: check if we can use http://developer.android.com/reference/android/app/DownloadManager.html
+ */
 public class Downloader extends AsyncTask<Object, Object, Integer> {
 
 	private static final String	TAG	= Downloader.class.getSimpleName();

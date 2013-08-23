@@ -1,24 +1,35 @@
 /*
- * Created on Dec 8, 2011
- * Author: Paul Woelfel
- * Email: frig@frig.at
- */
+	Radiobeacon - Openbmap wifi and cell logger
+    Copyright (C) 2013  wish7
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package org.openbmap.service.position;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
-
+import org.openbmap.service.position.providers.LocationProvider;
 
 import android.location.Location;
 import android.util.Log;
-import org.openbmap.service.position.providers.LocationProvider;
-import org.openbmap.utils.GeometryToolBox;
 
 /**
- * @author  Paul Woelfel
- */
+ * Inspirations from Paul Woelfel, Email: frig@frig.at
+*/
 public class LocationServiceImpl implements LocationService {
 
 	protected static final String TAG = LocationServiceImpl.class.getSimpleName();
@@ -116,16 +127,4 @@ public class LocationServiceImpl implements LocationService {
 		return mProviders;
 	}
 
-	/* (non-Javadoc)
-	 * @see at.fhstp.wificompass.userlocation.LocationService#setRelativeNorth(float)
-	 */
-	@Override
-	public void setRelativeNorth(float angle) {
-		this.angle =GeometryToolBox.normalizeAngle(angle);
-	}
-
-	@Override
-	public float getRelativeNorth() {
-		return angle;
-	}
 }

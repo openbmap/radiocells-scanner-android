@@ -1,15 +1,28 @@
 /*
- * Created on Feb 22, 2012
- * Author: Paul Woelfel
- * Email: frig@frig.at
- */
-package org.openbmap.service.position;
+	Radiobeacon - Openbmap wifi and cell logger
+    Copyright (C) 2013  wish7
 
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /**
- * @author  Paul Woelfel (paul@woelfel.at)
+ *  Inspirations from Paul Woelfel, Email: frig@frig.at
  */
-public class LocationServiceFactory {
+
+package org.openbmap.service.position;
+
+public final class LocationServiceFactory {
 	
 	protected static LocationService ls = null;
 	
@@ -24,4 +37,8 @@ public class LocationServiceFactory {
 		}
 		return ls;
 	}
+	
+	private LocationServiceFactory() {
+	}
+	
 }

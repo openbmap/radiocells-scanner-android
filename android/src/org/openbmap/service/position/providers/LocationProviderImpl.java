@@ -1,8 +1,21 @@
 /*
- * Created on Mar 19, 2012
- * Author: Paul Woelfel
- * Email: frig@frig.at
- */
+	Radiobeacon - Openbmap wifi and cell logger
+    Copyright (C) 2013  wish7
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package org.openbmap.service.position.providers;
 
 import org.openbmap.service.position.LocationService;
@@ -13,8 +26,9 @@ import android.content.Context;
 import android.location.Location;
 
 /**
- * @author  Paul Woelfel (paul@woelfel.at)
- */
+Inspirations from Paul Woelfel, Email: frig@frig.at
+*/
+
 public abstract class LocationProviderImpl implements LocationProvider {
 
 	private Location mLocation;
@@ -64,20 +78,12 @@ public abstract class LocationProviderImpl implements LocationProvider {
 		return mLocation;
 	}
 	
-
-	/* (non-Javadoc)
-	 * @see at.fhstp.wificompass.userlocation.LocationProvider#start()
-	 */
 	@Override
 	public void start(final PositioningService service) {
 		mIsRunning = true;
 		serviceContext = service;
 	}
 
-
-	/* (non-Javadoc)
-	 * @see at.fhstp.wificompass.userlocation.LocationProvider#stop()
-	 */
 	@Override
 	public void stop() {
 		mIsRunning = false;
@@ -91,10 +97,6 @@ public abstract class LocationProviderImpl implements LocationProvider {
 		return mIsRunning;
 	}
 
-
-	/* (non-Javadoc)
-	 * @see at.fhstp.wificompass.userlocation.LocationProvider#setLocationChangeListener(at.fhstp.wificompass.userlocation.LocationChangeListener)
-	 */
 	@Override
 	public final void setLocationChangeListener(final LocationChangeListener listener) {
 		this.mListener = listener;

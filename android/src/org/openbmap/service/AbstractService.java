@@ -1,5 +1,26 @@
-/* 
- * This example demonstrates a good way to communicate between Activity and Service.
+/*
+	Radiobeacon - Openbmap wifi and cell logger
+    Copyright (C) 2013  wish7
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/** 
+ * Idea to communicate between Activity and Service comes from:
+ * @Author: Philipp C. Heckel; based on code by Lance Lefebure 
+ * @see: http://stackoverflow.com/questions/4300291/example-communication-between-activity-and-service-using-messaging         
+ * @see: https://code.launchpad.net/~binwiederhier/+junk/android-service-example
  * 
  * 1. Implement a service by inheriting from AbstractService
  * 2. Add a ServiceManager to your activity
@@ -7,11 +28,6 @@
  *   - Send messages to the service via ServiceManager.send() 
  *   - Receive messages with by passing a Handler in the constructor
  * 3. Send and receive messages on the service-side using send() and onReceiveMessage()
- * 
- * @Author: Philipp C. Heckel; based on code by Lance Lefebure 
- * @see: http://stackoverflow.com/questions/4300291/example-communication-between-activity-and-service-using-messaging         
- * @see: https://code.launchpad.net/~binwiederhier/+junk/android-service-example
- * 
  */
 package org.openbmap.service;
 
