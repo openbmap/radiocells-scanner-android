@@ -124,12 +124,25 @@ public final class RadioBeacon {
 	public static final String SWID = "Radiobeacon";
 	
 	/**
-	 * SW Version string for XML files
-	 * Caution: If you change client version, always rember to change current_version.xml on server at the same time!
-	 * Otherwise {@link StaleVersionChecker} will deny upload
+	 * SW Version string for XML files and credit screens
+	 * Caution: If you change client version, check whether you need to adjust current_version.xml on server and {@link VERSION_COMPATIBILITY} 
 	 */
-	public static final String SW_VERSION = "00.6.00";
-
+	public static final String SW_VERSION = "00.6.01";
+	
+	/**
+	 * {@link StaleVersionChecker} compares server version against VERSION_COMPATIBILITY to check whether client is outdated.
+	 * If server's current_version.xml version differs from VERSION_COMPATIBILITY upload is denied.
+	 * VERSION_COMPATIBILITY is typically set to the last major release.
+	 * 
+	 * If you just have minor improvements on the client side, increase SW_VERSION, e.g. 00.6.01 and leave VERSION_COMPATIBILITY
+	 * at the server's current_version.xml version, e.g. 00.6.00. Thus the StaleVersionChecker will still allow uploads.
+	 * 
+	 * On major changes adjust server's current_version.xml version, SW_VERSION and VERSION_COMPATIBILITY 
+	 * 
+	
+	 */
+	public static final String VERSION_COMPATIBILITY = "00.6.00";
+	
 	/**
 	 * Private dummy constructor
 	 */

@@ -14,7 +14,7 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.utils;
 
@@ -54,29 +54,55 @@ public class Downloader extends AsyncTask<Object, Object, Integer> {
 	 */
 	private DownloadListener mListener;
 
+	/**
+	 * Source url
+	 */
 	private URL	mSource;
 
+	/**
+	 * Target, format: absolute path + File.separator + filename
+	 */
 	private String	mTarget;
-	
+
+	/**
+	 * Don't show download dialog
+	 */
+	private boolean headless = false;
+
 	/**
 	 * Defines callback function once download has been completed
 	 */
 	public interface DownloadListener {
-		void onDownloadCompleted(String filename);
-		void onDownloadFailed(String filename);
+		/**
+		 * Called on successful download
+		 * @param filename
+		 */
+		void onDownloadCompleted(final String filename);
+		/** 
+		 * Called on failed download
+		 * @param filename
+		 */
+		void onDownloadFailed(final String filename);
 	}
 
 	public Downloader(final Context context) {
-		mDialog = new ProgressDialog(context);	
+		headless = false;
+		mDialog = new ProgressDialog(context);
+	}
+
+	public Downloader() {
+		headless = true;
 	}
 
 	@Override
 	protected final void onPreExecute() {
-		mDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-		mDialog.setTitle("Downloading ..");
-		mDialog.setCancelable(false);
-		mDialog.setProgress(0);
-		mDialog.show();
+		if (!headless) {
+			mDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+			mDialog.setTitle("Downloading ..");
+			mDialog.setCancelable(false);
+			mDialog.setProgress(0);
+			mDialog.show();
+		}
 	}
 
 	/**
@@ -85,8 +111,10 @@ public class Downloader extends AsyncTask<Object, Object, Integer> {
 	 */
 	@Override
 	protected final void onProgressUpdate(final Object... values) {
-		mDialog.setProgress((Integer) values[0]);
-		mDialog.setMax((Integer) values[1]);
+		if (!headless) {
+			mDialog.setProgress((Integer) values[0]);
+			mDialog.setMax((Integer) values[1]);
+		}
 	}
 
 	/**
@@ -97,10 +125,10 @@ public class Downloader extends AsyncTask<Object, Object, Integer> {
 	 */
 	@Override
 	protected final Integer doInBackground(final Object... args) {         
-		
+
 		mSource = (URL) args[0];
 		mTarget = (String) args[1];
-		
+
 		Log.i(TAG, "Save " + mSource + " @ " + mTarget);
 		int downloadedSize = 0;
 		try {
@@ -126,8 +154,9 @@ public class Downloader extends AsyncTask<Object, Object, Integer> {
 			while ((bufferLength = inputStream.read(buffer)) > 0) {
 				fileOutput.write(buffer, 0, bufferLength);
 				downloadedSize += bufferLength;
-				publishProgress(downloadedSize, mTotalSize);
-
+				if (!headless) {
+					publishProgress(downloadedSize, mTotalSize);
+				}
 			}
 
 			fileOutput.close();
@@ -142,18 +171,20 @@ public class Downloader extends AsyncTask<Object, Object, Integer> {
 
 	@Override
 	protected final void onPostExecute(final Integer result) {
-		if (this.mDialog.isShowing()) {
+		if (!headless && mDialog.isShowing()) {
 			this.mDialog.dismiss();
+		}
+
+		if (mListener != null) {
 			if (result != mTotalSize) {
-				Log.e(TAG, "Downloaded size doesn't match total file size");
-				if (mListener != null) {
-					mListener.onDownloadFailed(mTarget);
-				}
+				Log.e(TAG, "Downloaded file's size differs from expected file size! Not completed?");
+				mListener.onDownloadFailed(mTarget);
+			} else {
+				mListener.onDownloadCompleted(mTarget);
 			}
-			mListener.onDownloadCompleted(mTarget);
 		}
 	}
-	
+
 	public final void setListener(final DownloadListener listener) {
 		this.mListener = listener;
 	}

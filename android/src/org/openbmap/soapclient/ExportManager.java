@@ -83,9 +83,9 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> {
 
 	private String	mGpxPath;
 
-	private Boolean	mSkipUpload;
+	private boolean	mSkipUpload;
 
-	private Boolean	mSkipDelete;
+	private boolean	mSkipDelete;
 
 	public interface ExportManagerListener {
 		void onExportCompleted(final int id);
@@ -238,15 +238,15 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> {
 		return mSkipUpload;
 	}
 
-	public final void setSkipUpload(final Boolean skipUpload) {
+	public final void setSkipUpload(final boolean skipUpload) {
 		this.mSkipUpload = skipUpload;
 	}
 
-	public final Boolean getSkipDelete() {
+	public final boolean getSkipDelete() {
 		return mSkipDelete;
 	}
 
-	public final void setSkipDelete(final Boolean skipDelete) {
+	public final void setSkipDelete(final boolean skipDelete) {
 		this.mSkipDelete = skipDelete;
 	}
 

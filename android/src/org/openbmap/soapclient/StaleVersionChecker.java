@@ -14,7 +14,7 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.soapclient;
 
@@ -30,17 +30,15 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.SlidingDrawer;
 
 /**
  * Checks whether this client version is outdated.
  * Allowed client version is retrieved from openbmap server
  */
-public final class StaleVersionChecker {
+
+public final class StaleVersionChecker extends AsyncTask<String, Object, Object[]> {
 
 	public enum ServerAnswer {
 		OK,
@@ -53,22 +51,20 @@ public final class StaleVersionChecker {
 
 	private String serverVersion = "";
 
+
 	public StaleVersionChecker() {
-	
 	}
 
-	/**
-	 * Checks online, whether the client version is up-to-date
-	 * Fails, if device is not connected to data network 
-	 * @param clientVersion
-	 * 		Local version
-	 * @return ServerAnswer.OK if client is up-to-date, ServerAnswer.OUTDATED if there is server has a newer version,
-	 * 		ServerAnswer.NO_REPLY if server is not reachable (Airplane mode, no data network, etc.) or
-	 * 		ServerAnswer.UNKNOWN_ERROR on other problems
+	/* (non-Javadoc)
+	 * @see android.os.AsyncTask#doInBackground(Params[])
 	 */
-	public ServerAnswer isAllowedVersion(final String clientVersion) {         
-		
+	@Override
+	protected Object[] doInBackground(final String... params) {
 		try {
+			Object[]  result = new Object[2];
+			result[0] = ServerAnswer.UNKNOWN_ERROR;
+			result[1] = "Uninitialized";
+
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			DefaultHandler handler = new DefaultHandler() {
 
@@ -94,29 +90,34 @@ public final class StaleVersionChecker {
 				}
 			};
 
-			SAXParser saxParser = factory.newSAXParser();
-
 			// version file is opened as stream, thus preventing immediate timeout issues
 			URL url = new URL(Preferences.VERSION_CHECK_URL);
 			InputStream stream = url.openStream();
+
+			SAXParser saxParser = factory.newSAXParser();
 			saxParser.parse(stream, handler);
 			stream.close();
 
-			if (serverVersion.equals(clientVersion)) {
-				Log.i(TAG, "Client version is up-to-date: " + clientVersion);
-				return ServerAnswer.OK;
+			if (serverVersion.equals(params[0])) {
+				Log.i(TAG, "Client version is up-to-date: " + params[0]);
+				result[0] = ServerAnswer.OK;
+				result[1] = "Everything fine! You're using the most up-to-date version!";
+				return result;
 			} else {
-				Log.i(TAG, "Client version is outdated: server " + serverVersion + " client " + clientVersion);
-				return ServerAnswer.OUTDATED;
+				Log.i(TAG, "Client version is outdated: server " + serverVersion + " client " + params[0]);
+				result[0] = ServerAnswer.OUTDATED;
+				result[1] = "New version available:" + serverVersion;
+				return result;
 			}
-
 		} catch (IOException e) {
 			Log.e(TAG, "Error occured on version check. Are you online?");
-			return ServerAnswer.NO_REPLY;
+			Object[] noreply = new Object[]{ ServerAnswer.NO_REPLY, "Couldn't contact server"};
+			return noreply;
 		} catch (Exception e) {
 			Log.e(TAG, "Error occured on version check: " + e.getMessage());
 			e.printStackTrace();
-			return ServerAnswer.UNKNOWN_ERROR;
+			Object[] generic = new Object[]{ ServerAnswer.UNKNOWN_ERROR, "Error: " + e.getMessage()};
+			return generic;
 		}
 	}
 }

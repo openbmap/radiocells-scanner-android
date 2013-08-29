@@ -45,6 +45,11 @@ public class WifiExporter implements UploadTaskListener {
 	private static final String TAG = WifiExporter.class.getSimpleName();
 
 	/**
+	 * Minimum time between two upload attempts
+	 */
+	private static final int	SERVER_GRACE_TIME	= 1000;
+
+	/**
 	 * OpenBmap wifi upload address
 	 */
 	private static final String WEBSERVICE_ADDRESS = "http://www.openbmap.org/upload_wifi/upl.php5";
@@ -203,24 +208,17 @@ public class WifiExporter implements UploadTaskListener {
 	 * @param user Openbmap username
 	 * @param password Openbmap password
 	 */
-	public WifiExporter(final Context context, final int id, final String tempPath, final String user, final String password, final Boolean skipUpload, final Boolean skipDelete) {
+	public WifiExporter(final Context context, final int id, final String tempPath, final String user, final String password, final boolean skipUpload, final Boolean skipDelete) {
 		this.mContext = context;
 		this.mSession = id;
 		this.mTempPath = tempPath;
 		this.mUser = user;
 		this.mPassword = password;
-
-		if (skipUpload != null) {
-			this.mSkipUpload = skipUpload;
-		} else {
-			this.mSkipUpload = false;
-		}
 		
-		if (skipDelete != null) {
-			this.mSkipDelete = skipDelete;
-		} else {
-			this.mSkipDelete = false;
-		}
+		this.mSkipUpload = skipUpload;
+		
+		this.mSkipDelete = skipDelete;
+		
 		
 		ensureTempPath(mTempPath);
 		
@@ -303,6 +301,15 @@ public class WifiExporter implements UploadTaskListener {
 			if (!mSkipUpload) {
 				new FileUploader(this, mUser, mPassword, WEBSERVICE_ADDRESS).execute(
 						files.toArray(new String[files.size()]));
+				// give server a chance to process data before next upload
+				synchronized (this) {
+					try {
+						this.wait(SERVER_GRACE_TIME);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
 			}
 		}
 
