@@ -16,10 +16,10 @@
 
     <LinearLayout
         android:id="@+id/linearLayout1"
-        android:layout_width="322dp"
+        android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_gravity="top"
-        android:layout_weight="0.75"
+        android:layout_weight="1"
         android:gravity="top"
         android:orientation="vertical" >
 
@@ -41,6 +41,7 @@
             android:id="@+id/wifilistfragment_statusicon"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:scaleType="fitXY"
             android:src="@drawable/background"
             tools:ignore="ContentDescription" />
 
@@ -53,7 +54,7 @@
         <fragment
             android:id="@+id/sessionListFragment"
             android:name="org.openbmap.activity.SessionListFragment"
-            android:layout_width="match_parent"
+            android:layout_width="fill_parent"
             android:layout_height="0dp"
             android:layout_weight="1" />
 
