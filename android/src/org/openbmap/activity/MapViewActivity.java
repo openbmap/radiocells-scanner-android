@@ -101,14 +101,14 @@ OnGpxLoadedListener {
 	private DataHelper dbHelper;
 
 	/**
-	 * 	Minimum distance in meters between automatic overlay refresh
+	 * 	Minimum time (in millis) between automatic overlay refresh
 	 */
-	protected static final float OVERLAY_REFRESH_DISTANCE = 100;
+	protected static final float OVERLAY_REFRESH_DISTANCE = 2000;
 
 	/**
-	 * 	Minimum distance in meters between gpx refresh
+	 * 	Minimum time (in millis) between gpx position refresh
 	 */
-	protected static final float GPX_REFRESH_DISTANCE = 0.2f;
+	protected static final float GPX_REFRESH_DISTANCE = 1000;
 
 	/**
 	 * Another wifi catalog overlay refresh is taking place
@@ -136,14 +136,14 @@ OnGpxLoadedListener {
 	private ToggleButton mSnapToLocation;
 
 	/**
-	 * Location where last overlay refresh took place
+	 * System time of last overlay refresh (in millis)
 	 */
-	private Location mOverlayDrawnAt;
-
+	private long	lastOverlayRefresh;
+	
 	/**
-	 * Location where last gpx refresh took place
+	 * System time of last gpx refresh (in millis)
 	 */
-	private Location mGpxDrawnAt;
+	private long	lastGpxRefresh;
 
 	/**
 	 * MapView
@@ -171,6 +171,7 @@ OnGpxLoadedListener {
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
 
 		private Location location;
+	
 
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
@@ -191,10 +192,10 @@ OnGpxLoadedListener {
 					 * Update overlays
 					 * Overlay refresh won't be triggered, if in free-move mode, i.e. snap to location deactivated
 					 */
-					if (mSnapToLocation.isChecked() && isOverlayDrawDistance(location, mOverlayDrawnAt)) {
+					if (mSnapToLocation.isChecked() && isOverlayDrawDistance()) {
 						drawOverlays(location);
 					}
-					if (mSnapToLocation.isChecked() && isGpxDrawDistance(location, mGpxDrawnAt)) {	
+					if (mSnapToLocation.isChecked() && isGpxDrawDistance()) {	
 						drawGpxTrace(location);
 					}
 
@@ -209,17 +210,22 @@ OnGpxLoadedListener {
 			} 
 		}
 
-		private boolean isGpxDrawDistance(final Location current, final Location old) {
-			return current.distanceTo(old) > GPX_REFRESH_DISTANCE;
+		private boolean isGpxDrawDistance() {
+			return ((System.currentTimeMillis() - lastGpxRefresh) > GPX_REFRESH_DISTANCE);
 		}
 
 		/**
 		 * @return
 		 */
-		private boolean isOverlayDrawDistance(final Location current, final Location old) {
-			return current.distanceTo(old) > OVERLAY_REFRESH_DISTANCE;
+		private boolean isOverlayDrawDistance() {
+			return ((System.currentTimeMillis() - lastOverlayRefresh) > OVERLAY_REFRESH_DISTANCE);
 		}
 
+		/**
+		 * Checks if location is null or set to default values
+		 * @param location
+		 * @return true if valid location
+		 */
 		private boolean isValidLocation(final Location location) {
 			if (location == null) {
 				return false;
@@ -239,10 +245,6 @@ OnGpxLoadedListener {
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
 		setContentView(R.layout.mapview);
-
-		// force automatic overlay refresh by setting mOverlayDrawnAt to default values (lat 0 long 0)
-		mOverlayDrawnAt = new Location("DUMMY");
-		mGpxDrawnAt = new Location("DUMMY");
 
 		// Register our gps broadcast mReceiver
 		registerReceiver();
@@ -361,19 +363,19 @@ OnGpxLoadedListener {
 	 */
 	protected final void drawOverlays(final Location location) {
 		if (!mRefreshCatalogPending) {
-			Log.d(TAG, "Updating wifi catalog overlay. Distance to last refresh " + location.distanceTo(mOverlayDrawnAt));
+			Log.d(TAG, "Updating wifi catalog overlay");
 			mRefreshCatalogPending = true;
 			loadCatalog();
-			mOverlayDrawnAt = location;
+			lastOverlayRefresh = System.currentTimeMillis();
 		} else {
 			Log.v(TAG, "Reference overlay refresh in progress. Skipping refresh..");
 		}
 
 		if (!mRefreshSessionPending) {
-			Log.d(TAG, "Updating session overlay. Distance to last refresh " + location.distanceTo(mOverlayDrawnAt));
+			Log.d(TAG, "Updating session overlay");
 			mRefreshSessionPending = true;
 			loadSessionObjects(null);
-			mOverlayDrawnAt = location;
+			lastOverlayRefresh = System.currentTimeMillis();
 		} else {
 			Log.v(TAG, "Session overlay refresh in progress. Skipping refresh..");
 		}
@@ -384,10 +386,10 @@ OnGpxLoadedListener {
 	 */
 	private void drawGpxTrace(final Location location) {
 		if (!mRefreshGpxPending) {
-			Log.d(TAG, "Updating gpx overlay. Distance to last refresh " + location.distanceTo(mOverlayDrawnAt));
+			Log.d(TAG, "Updating gpx overlay");
 			mRefreshGpxPending = true;
 			loadGpxObjects();
-			mGpxDrawnAt = location;
+			lastGpxRefresh = System.currentTimeMillis();
 		} else {
 			Log.v(TAG, "Gpx overlay refresh in progress. Skipping refresh..");
 		}
