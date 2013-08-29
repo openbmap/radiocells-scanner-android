@@ -32,6 +32,7 @@ import org.openbmap.db.DatabaseHelper;
 import org.openbmap.db.Schema;
 import org.openbmap.db.model.LogFile;
 import org.openbmap.soapclient.FileUploader.UploadTaskListener;
+import org.openbmap.utils.XmlSanitizer;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -438,7 +439,7 @@ public class WifiExporter implements UploadTaskListener {
 	private String cursorToXml(final Cursor cursor) {
 		return "\n\t\t<wifiap bssid=\"" + cursor.getString(colBssid) + "\""
 				+ " md5essid=\"" + cursor.getString(colMd5Ssid) + "\""
-				+ " ssid=\"" + cursor.getString(colSsid) + "\""
+				+ " ssid=\"" + XmlSanitizer.sanitize(cursor.getString(colSsid)) + "\""
 				+ " capa=\"" + cursor.getString(colCapa) + "\""
 				+ " ss=\"" + cursor.getString(colLevel) + "\""
 				+ " ntiu=\"" + cursor.getString(colFreq) + "\""
