@@ -14,20 +14,25 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.activity;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 import org.openbmap.Preferences;
 import org.openbmap.R;
-import org.openbmap.utils.Downloader;
 
+import android.app.DownloadManager;
+import android.app.DownloadManager.Query;
+import android.app.DownloadManager.Request;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.EditTextPreference;
@@ -44,36 +49,69 @@ import android.widget.Toast;
 /**
  * Preferences activity.
  */
-public class SettingsActivity extends PreferenceActivity implements Downloader.DownloadListener {
+public class SettingsActivity extends PreferenceActivity {
 
 	private static final String TAG = SettingsActivity.class.getSimpleName();
-	
+
 	private EditTextPreference mDataDirPref;
 
+	private DownloadManager dm;
+
+	private BroadcastReceiver receiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(final Context context, final Intent intent) {
+			String action = intent.getAction();
+			if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(action)) {
+				long downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0);
+				Query query = new Query();
+				query.setFilterById(downloadId);
+				Cursor c = dm.query(query);
+				if (c.moveToFirst()) {
+					int columnIndex = c.getColumnIndex(DownloadManager.COLUMN_STATUS);
+					if (DownloadManager.STATUS_SUCCESSFUL == c.getInt(columnIndex)) {
+						// we're not checking download id here, that is done in handleDownloads
+						String uriString = c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
+						handleDownloads(uriString);
+					}
+				}
+			}
+		}
+	};
+	
 	@Override
 	protected final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.preferences);
 
-		// Set summary of some preferences to their actual values
-		// and register a change mListener to set again the summary in case of change
-
 		mDataDirPref = initDataDir();
-
 		
+		registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+		dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+
+	
+
 		initWifiCatalogDownload();
 		initActiveWifiCatalog(mDataDirPref.getText());
 		initMapDownload();
 		initActiveMap(mDataDirPref.getText());
 
 		initGpsSystem();
-		// Currently deactivated. Only GPS is used as provider.
-		/*initGpsProviderPreference();*/
-		 
+
 		initGpsLogInterval();
 	}
 
-	/**
+	@Override
+	protected final void onDestroy() {
+		try {
+			Log.i(TAG, "Unregistering broadcast receivers");
+			unregisterReceiver(receiver);
+		} catch (IllegalArgumentException e) {
+			// do nothing here {@see http://stackoverflow.com/questions/2682043/how-to-check-if-receiver-is-registered-in-android}
+			return;
+		}
+		super.onDestroy();
+	}
+		/**
 	 * Initializes wifi catalog source preference
 	 */
 	private void initWifiCatalogDownload() {
@@ -81,35 +119,27 @@ public class SettingsActivity extends PreferenceActivity implements Downloader.D
 		pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			@Override
 			public boolean onPreferenceClick(final Preference preference) {
-				try {
-					// try to create directory
-					File folder = new File(Environment.getExternalStorageDirectory().getPath()
-							+ PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
-							+ Preferences.WIFI_CATALOG_SUBDIR + File.separator);
+				// try to create directory
+				File folder = new File(Environment.getExternalStorageDirectory().getPath()
+						+ PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
+						+ Preferences.WIFI_CATALOG_SUBDIR + File.separator);
 
-					boolean folderAccessible = false;
-					if (folder.exists() && folder.canWrite()) {
-						folderAccessible = true;
-					}
+				boolean folderAccessible = false;
+				if (folder.exists() && folder.canWrite()) {
+					folderAccessible = true;
+				}
 
-					if (!folder.exists()) {
-						folderAccessible = folder.mkdirs();
-					}
-					if (folderAccessible) {
-						final URL url = new URL(Preferences.WIFI_CATALOG_DOWNLOAD_URL);
-						final String filename = Preferences.WIFI_CATALOG_FILE;
-
-						Downloader task = (Downloader) new Downloader(preference.getContext()).execute(
-								url, folder.getAbsolutePath() + File.separator + filename);
-						
-						// Callback to refresh maps preference on completion
-						task.setListener((SettingsActivity) preference.getContext());
-						
-					} else {
-						Toast.makeText(preference.getContext(), R.string.error_save_file_failed, Toast.LENGTH_SHORT).show();
-					}	
-				} catch (MalformedURLException e) {
-					Log.e(TAG, "Malformed download url: " + Preferences.WIFI_CATALOG_DOWNLOAD_URL);
+				if (!folder.exists()) {
+					folderAccessible = folder.mkdirs();
+				}
+				if (folderAccessible) {
+					Request request = new Request(
+							Uri.parse(Preferences.WIFI_CATALOG_DOWNLOAD_URL));
+					request.setDestinationUri(Uri.fromFile(new File(
+							folder.getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_FILE)));
+					long catalogDownloadId = dm.enqueue(request);
+				} else {
+					Toast.makeText(preference.getContext(), R.string.error_save_file_failed, Toast.LENGTH_SHORT).show();
 				}
 				return true;
 			}
@@ -260,38 +290,31 @@ public class SettingsActivity extends PreferenceActivity implements Downloader.D
 		lf.setEntryValues(values);
 
 		lf.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+
 			public boolean onPreferenceChange(final Preference preference, final Object newValue) {
 
-				try {
-					// try to create directory
-					File folder = new File(Environment.getExternalStorageDirectory().getPath()
-							+ PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
-							+ Preferences.MAPS_SUBDIR + File.separator);
+				// try to create directory
+				File folder = new File(Environment.getExternalStorageDirectory().getPath()
+						+ PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
+						+ Preferences.MAPS_SUBDIR + File.separator);
 
-					boolean folderAccessible = false;
-					if (folder.exists() && folder.canWrite()) {
-						folderAccessible = true;
-					}
+				boolean folderAccessible = false;
+				if (folder.exists() && folder.canWrite()) {
+					folderAccessible = true;
+				}
 
-					if (!folder.exists()) {
-						folderAccessible = folder.mkdirs();
-					}
-					if (folderAccessible) {
-						final URL url = new URL(newValue.toString());
-						final String filename = newValue.toString().substring(newValue.toString().lastIndexOf('/') + 1);
+				if (!folder.exists()) {
+					folderAccessible = folder.mkdirs();
+				}
+				if (folderAccessible) {
+					final String filename = newValue.toString().substring(newValue.toString().lastIndexOf('/') + 1);
 
-						Log.d(TAG, "Saving " + url + " at " + folder.getAbsolutePath() + '/' + filename);
-						Downloader task = (Downloader) new Downloader(preference.getContext()).execute(
-								url, folder.getAbsolutePath() + File.separator + filename);
-						
-						// Callback to refresh maps preference on completion
-						task.setListener((SettingsActivity) preference.getContext());
-						
-					} else {
-						Toast.makeText(preference.getContext(), R.string.error_save_file_failed, Toast.LENGTH_SHORT).show();
-					}	
-				} catch (MalformedURLException e) {
-					Log.e(TAG, "Malformed download url: " + newValue.toString());
+					Request request = new Request(Uri.parse(newValue.toString()));
+					request.setDestinationUri(Uri.fromFile(new File(
+							folder.getAbsolutePath() + File.separator + filename)));
+					long mapDownloadId = dm.enqueue(request);
+				} else {
+					Toast.makeText(preference.getContext(), R.string.error_save_file_failed, Toast.LENGTH_SHORT).show();
 				}
 
 				return false;
@@ -345,25 +368,25 @@ public class SettingsActivity extends PreferenceActivity implements Downloader.D
 		lf.setEntryValues(values);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openbmap.utils.Downloader.DownloadListener#onDownloadCompleted()
+	/**
+	 * Selects downloaded file either as wifi catalog / active map (based on file extension).
+	 * @param file
 	 */
-	@Override
-	public final void onDownloadCompleted(final String file) {
+	public final void handleDownloads(final String file) {
 		initActiveMap(mDataDirPref.getText());
 		initActiveWifiCatalog(mDataDirPref.getText());
-		
+
 		// get current file extension
 		String[] filenameArray = file.split("\\.");
-        String extension = "." + filenameArray[filenameArray.length - 1];
-        
-        if (extension.equals(org.openbmap.Preferences.MAP_FILE_EXTENSION)) {
-        	// handling map files
-        	activateMap(file);
-        } else if (extension.equals(org.openbmap.Preferences.WIFI_CATALOG_FILE_EXTENSION)) {
-        	// handling wifi catalog files
-        	activateCatalog(file);
-        }
+		String extension = "." + filenameArray[filenameArray.length - 1];
+
+		if (extension.equals(org.openbmap.Preferences.MAP_FILE_EXTENSION)) {
+			// handling map files
+			activateMap(file);
+		} else if (extension.equals(org.openbmap.Preferences.WIFI_CATALOG_FILE_EXTENSION)) {
+			// handling wifi catalog files
+			activateCatalog(file);
+		}
 	}
 
 	/**
@@ -373,11 +396,11 @@ public class SettingsActivity extends PreferenceActivity implements Downloader.D
 	 */
 	private void activateCatalog(final String absoluteFile) {
 		ListPreference lf = (ListPreference) findPreference(org.openbmap.Preferences.KEY_WIFI_CATALOG);
-		
+
 		// get filename
 		String[] filenameArray = absoluteFile.split("\\/");
-        String file = filenameArray[filenameArray.length - 1];
-        
+		String file = filenameArray[filenameArray.length - 1];
+
 		CharSequence[] values = lf.getEntryValues();
 		for (int i = 0; i < values.length; i++) {
 			if (file.equals(values[i].toString())) {
@@ -393,11 +416,11 @@ public class SettingsActivity extends PreferenceActivity implements Downloader.D
 	 */
 	private void activateMap(final String absoluteFile) {
 		ListPreference lf = (ListPreference) findPreference(org.openbmap.Preferences.KEY_MAP_FILE);
-		
+
 		// get filename
 		String[] filenameArray = absoluteFile.split("\\/");
-        String file = filenameArray[filenameArray.length - 1];
-        
+		String file = filenameArray[filenameArray.length - 1];
+
 		CharSequence[] values = lf.getEntryValues();
 		for (int i = 0; i < values.length; i++) {
 			if (file.equals(values[i].toString())) {
@@ -406,11 +429,4 @@ public class SettingsActivity extends PreferenceActivity implements Downloader.D
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openbmap.utils.Downloader.DownloadListener#onDownloadFailed()
-	 */
-	@Override
-	public final void onDownloadFailed(final String file) {
-		Toast.makeText(this, R.string.error_dowload_error, Toast.LENGTH_LONG).show();	
-	}
 }
