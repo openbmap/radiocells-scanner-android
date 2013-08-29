@@ -14,7 +14,7 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.soapclient;
 
@@ -44,6 +44,11 @@ import android.util.Log;
 public class CellExporter implements UploadTaskListener {
 
 	private static final String TAG = CellExporter.class.getSimpleName();
+
+	/**
+	 * Minimum time between two upload attempts
+	 */
+	private static final int	SERVER_GRACE_TIME	= 1000;
 
 	/**
 	 * OpenBmap cell upload address
@@ -203,24 +208,16 @@ public class CellExporter implements UploadTaskListener {
 	 * @param user Openbmap username
 	 * @param password Openbmap password
 	 */
-	public CellExporter(final Context context, final int id, final String tempPath, final String user, final String password, final Boolean skipUpload, final Boolean skipDelete) {
+	public CellExporter(final Context context, final int id, final String tempPath, final String user, final String password, final boolean skipUpload, final boolean skipDelete) {
 		this.mContext = context;
 		this.mId = id;
 		this.mTempPath = tempPath;
 		this.mUser = user;
 		this.mPassword = password;
 
-		if (skipUpload != null) {
-			this.mSkipUpload = skipUpload;
-		} else {
-			this.mSkipUpload = false;
-		}
-		
-		if (skipDelete != null) {
-			this.mSkipDelete = skipDelete;
-		} else {
-			this.mSkipDelete = false;
-		}
+		this.mSkipUpload = skipUpload;
+
+		this.mSkipDelete = skipDelete;
 
 		ensureTempPath(mTempPath);
 
@@ -256,62 +253,76 @@ public class CellExporter implements UploadTaskListener {
 		final DatabaseHelper mDbHelper = new DatabaseHelper(mContext);
 
 		Cursor cursorCells = mDbHelper.getReadableDatabase().rawQuery(CELL_SQL_QUERY, new String[]{String.valueOf(mId)});
-		// Otherwise saveAndMoveCursor skips first entry
-		//cursorCells.moveToFirst();
+		
+		// do we have at least one entry? 
+		if (cursorCells.moveToFirst()) {
+			// go back to initial position
+			cursorCells.moveToPrevious();
+			
+			colNetworkType = cursorCells.getColumnIndex(Schema.COL_NETWORKTYPE);
+			colIsCdma = cursorCells.getColumnIndex(Schema.COL_IS_CDMA);
+			colIsServing = cursorCells.getColumnIndex(Schema.COL_IS_SERVING);
+			colIsNeigbor = cursorCells.getColumnIndex(Schema.COL_IS_NEIGHBOR);
+			colCellId = cursorCells.getColumnIndex(Schema.COL_CELLID);
+			colPsc = cursorCells.getColumnIndex(Schema.COL_PSC);
+			colOperatorName = cursorCells.getColumnIndex(Schema.COL_OPERATORNAME);
+			colOperator = cursorCells.getColumnIndex(Schema.COL_OPERATOR);
+			colMcc = cursorCells.getColumnIndex(Schema.COL_MCC);
+			colMnc = cursorCells.getColumnIndex(Schema.COL_MNC);
+			colLac = cursorCells.getColumnIndex(Schema.COL_LAC);
+			colStrengthDbm = cursorCells.getColumnIndex(Schema.COL_STRENGTHDBM);
+			colTimestamp = cursorCells.getColumnIndex(Schema.COL_TIMESTAMP);
+			colBeginPosId = cursorCells.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
+			colEndPosId = cursorCells.getColumnIndex(Schema.COL_END_POSITION_ID);
+			colSessionId = cursorCells.getColumnIndex(Schema.COL_SESSION_ID);
+			colReqLat = cursorCells.getColumnIndex("req_" + Schema.COL_LATITUDE);
+			colReqTimestamp = cursorCells.getColumnIndex("req_" + Schema.COL_TIMESTAMP);
+			colReqLon = cursorCells.getColumnIndex("req_" + Schema.COL_LONGITUDE);
+			colReqAlt = cursorCells.getColumnIndex("req_" + Schema.COL_ALTITUDE);
+			colReqHead = cursorCells.getColumnIndex("req_" + Schema.COL_BEARING);
+			colReqSpeed = cursorCells.getColumnIndex("req_" + Schema.COL_SPEED);
+			colReqAcc = cursorCells.getColumnIndex("req_" + Schema.COL_ACCURACY);
 
-		colNetworkType = cursorCells.getColumnIndex(Schema.COL_NETWORKTYPE);
-		colIsCdma = cursorCells.getColumnIndex(Schema.COL_IS_CDMA);
-		colIsServing = cursorCells.getColumnIndex(Schema.COL_IS_SERVING);
-		colIsNeigbor = cursorCells.getColumnIndex(Schema.COL_IS_NEIGHBOR);
-		colCellId = cursorCells.getColumnIndex(Schema.COL_CELLID);
-		colPsc = cursorCells.getColumnIndex(Schema.COL_PSC);
-		colOperatorName = cursorCells.getColumnIndex(Schema.COL_OPERATORNAME);
-		colOperator = cursorCells.getColumnIndex(Schema.COL_OPERATOR);
-		colMcc = cursorCells.getColumnIndex(Schema.COL_MCC);
-		colMnc = cursorCells.getColumnIndex(Schema.COL_MNC);
-		colLac = cursorCells.getColumnIndex(Schema.COL_LAC);
-		colStrengthDbm = cursorCells.getColumnIndex(Schema.COL_STRENGTHDBM);
-		colTimestamp = cursorCells.getColumnIndex(Schema.COL_TIMESTAMP);
-		colBeginPosId = cursorCells.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
-		colEndPosId = cursorCells.getColumnIndex(Schema.COL_END_POSITION_ID);
-		colSessionId = cursorCells.getColumnIndex(Schema.COL_SESSION_ID);
-		colReqLat = cursorCells.getColumnIndex("req_" + Schema.COL_LATITUDE);
-		colReqTimestamp = cursorCells.getColumnIndex("req_" + Schema.COL_TIMESTAMP);
-		colReqLon = cursorCells.getColumnIndex("req_" + Schema.COL_LONGITUDE);
-		colReqAlt = cursorCells.getColumnIndex("req_" + Schema.COL_ALTITUDE);
-		colReqHead = cursorCells.getColumnIndex("req_" + Schema.COL_BEARING);
-		colReqSpeed = cursorCells.getColumnIndex("req_" + Schema.COL_SPEED);
-		colReqAcc = cursorCells.getColumnIndex("req_" + Schema.COL_ACCURACY);
+			long startTime = System.currentTimeMillis();
 
-		long startTime = System.currentTimeMillis();
+			// MCC for filename is taken from first cell in chunk.
+			// Currently this value is not parsed on server side, so this should be ok
+			cursorCells.moveToFirst();
+			final String mcc = cursorCells.getString(colMcc);
+			cursorCells.moveToPrevious();
 
-		// MCC for filename is taken from first cell in chunk. Currently this value is not parsed on server side, so this should be ok
-		cursorCells.moveToFirst();
-		final String mcc = cursorCells.getString(colMcc);
-		cursorCells.moveToPrevious();
+			int i = 0;
+			while (!cursorCells.isAfterLast()) {
+				// creates files of 100 cells each
+				Log.i(TAG, "Cycle " + i);
 
-		int i = 0;
-		while (!cursorCells.isAfterLast()) {
-			// creates files of 100 cells each
-			Log.i(TAG, "Cycle " + i);
+				final String fileName  = mTempPath + generateFilename(mUser, mcc);
 
-			final String fileName  = mTempPath + generateFilename(mUser, mcc);
+				saveAndMoveCursor(fileName, headerRecord, cursorCells);
 
-			saveAndMoveCursor(fileName, headerRecord, cursorCells);
+				i += CHUNK_SIZE;
 
-			i += CHUNK_SIZE;
-
-			// so far upload one by one, i.e. array size always 1
-			ArrayList<String> files = new ArrayList<String>();
-			files.add(fileName);
-			if (!mSkipUpload) {
-				new FileUploader(this, mUser, mPassword, WEBSERVICE_ADDRESS).execute(
-						files.toArray(new String[files.size()]));
+				// so far upload one by one, i.e. array size always 1
+				ArrayList<String> files = new ArrayList<String>();
+				files.add(fileName);
+				if (!mSkipUpload) {
+					new FileUploader(this, mUser, mPassword, WEBSERVICE_ADDRESS).execute(
+							files.toArray(new String[files.size()]));
+					// give server a chance to process data before next upload
+					synchronized (this) {
+						try {
+							this.wait(SERVER_GRACE_TIME);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
 			}
-		}
 
-		long difference = System.currentTimeMillis() - startTime;
-		Log.i(TAG, "Serialize cells took " + difference + " ms");
+			long difference = System.currentTimeMillis() - startTime;
+			Log.i(TAG, "Serialize cells took " + difference + " ms");
+		}
 
 		cursorCells.close();
 		cursorCells = null;
