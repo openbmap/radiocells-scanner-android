@@ -14,10 +14,11 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.soapclient;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -31,6 +32,7 @@ import org.openbmap.db.Schema;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.util.Log;
 
 /**
  * Writes GPX file for session
@@ -42,9 +44,14 @@ public class GpxExporter {
 	private static final String TAG = GpxExporter.class.getSimpleName();
 
 	/**
+	 * Cursor windows size, to prevent running out of mem on to large cursor
+	 */
+	private static final int CURSOR_SIZE = 1000;
+
+	/**
 	 * XML header.
 	 */
-	private static final String XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>";
+	private static final String XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n";
 
 	/**
 	 * GPX opening tag
@@ -53,27 +60,32 @@ public class GpxExporter {
 			+ " xmlns=\"http://www.topografix.com/GPX/1/1\""
 			+ " version=\"1.1\""
 			+ " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""
-			+ " xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd \">";
+			+ " xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd \">\n";
+
+	private static final String	TAG_GPX_CLOSE	= "</gpx>";
 
 	private static final String POSITION_SQL_QUERY = "SELECT " + Schema.COL_LATITUDE + ", " + Schema.COL_LONGITUDE + ", "
 			+ " " + Schema.COL_ALTITUDE + ", " + Schema.COL_ACCURACY + ", " + Schema.COL_TIMESTAMP + ", " + Schema.COL_BEARING
 			+ ", " + Schema.COL_SPEED + ", " + Schema.COL_SESSION_ID + ", " + Schema.COL_SOURCE + " "
 			+ " FROM " + Schema.TBL_POSITIONS + " WHERE " + Schema.COL_SESSION_ID + " = ?"
-			+ " ORDER BY " + Schema.COL_TIMESTAMP;
+			+ " ORDER BY " + Schema.COL_TIMESTAMP + " LIMIT " + CURSOR_SIZE
+			+ " OFFSET ?";
 
 	private static final String WIFI_POINTS_SQL_QUERY = "SELECT " + Schema.COL_LATITUDE + ", " + Schema.COL_LONGITUDE + ", "
 			+ Schema.COL_ALTITUDE + ", " + Schema.COL_ACCURACY + ", " + Schema.COL_TIMESTAMP + ", \"WIFI \"||" + Schema.COL_SSID + " AS name "
 			+ " FROM " + Schema.TBL_POSITIONS + " AS p LEFT JOIN " 
 			+ " (SELECT " + Schema.COL_ID + ", " + Schema.COL_SSID + ", " + Schema.COL_BEGIN_POSITION_ID + " FROM " + Schema.TBL_WIFIS + " )"
 			+ " AS w ON w." + Schema.COL_BEGIN_POSITION_ID + " = p._id WHERE w._id IS NOT NULL AND p." + Schema.COL_SESSION_ID + " = ?"
-			+ " ORDER BY " + Schema.COL_TIMESTAMP;
-	
+			+ " ORDER BY " + Schema.COL_TIMESTAMP + " LIMIT " + CURSOR_SIZE
+			+ " OFFSET ?";
+
 	private static final String CELL_POINTS_SQL_QUERY = "SELECT " + Schema.COL_LATITUDE + ", " + Schema.COL_LONGITUDE + ", "
 			+ Schema.COL_ALTITUDE + ", " + Schema.COL_ACCURACY + ", " + Schema.COL_TIMESTAMP + ", \"CELL \" ||" + Schema.COL_OPERATORNAME + " ||" + Schema.COL_CELLID + " AS name"
 			+ " FROM " + Schema.TBL_POSITIONS + " AS p LEFT JOIN " 
 			+ " (SELECT " + Schema.COL_ID + ", " + Schema.COL_OPERATORNAME + ", " + Schema.COL_CELLID + ", " + Schema.COL_BEGIN_POSITION_ID + " FROM " + Schema.TBL_CELLS + ") "
 			+ " AS c ON c." + Schema.COL_BEGIN_POSITION_ID + " = p._id WHERE c._id IS NOT NULL AND p." + Schema.COL_SESSION_ID + " = ?"
-			+ " ORDER BY " + Schema.COL_TIMESTAMP;
+			+ " ORDER BY " + Schema.COL_TIMESTAMP + " LIMIT " + CURSOR_SIZE
+			+ " OFFSET ?";
 
 	/**
 	 * Date format for a point timestamp.
@@ -83,6 +95,8 @@ public class GpxExporter {
 	private int	mSession;
 
 	private Context	mContext;
+
+	private DatabaseHelper	mDbHelper;
 
 	public GpxExporter(final Context context, final int session) {
 		mSession = session;
@@ -98,96 +112,186 @@ public class GpxExporter {
 	 * @throws IOException 
 	 */
 	public final void doExport(final String trackName, final File target) throws IOException {
-		final DatabaseHelper mDbHelper = new DatabaseHelper(mContext);
-		Cursor cursorTracksPoints = mDbHelper.getReadableDatabase().rawQuery(POSITION_SQL_QUERY, new String[]{String.valueOf(mSession)});
-
-		FileWriter fw = new FileWriter(target);
-
-		fw.write(XML_HEADER + "\n");
-		fw.write(TAG_GPX + "\n");
-
-		writeTrackPoints(trackName, fw, cursorTracksPoints);
-
-		Cursor wifis = mDbHelper.getReadableDatabase().rawQuery(WIFI_POINTS_SQL_QUERY, new String[]{String.valueOf(mSession)});
-		wifis.moveToFirst();
-		writeWayPoints(fw, wifis);
-		wifis.close();
+		Log.i(TAG, "Finished building gpx file");
+		mDbHelper = new DatabaseHelper(mContext);
 		
-		Cursor cells = mDbHelper.getReadableDatabase().rawQuery(CELL_POINTS_SQL_QUERY, new String[]{String.valueOf(mSession)});
-		cells.moveToFirst();
-		writeWayPoints(fw, cells);
-		cells.close();
+		BufferedWriter bw = new BufferedWriter(new FileWriter(target) , 64 * 1024);
 		
-		fw.write("</gpx>");
-		fw.close();
+		bw.write(XML_HEADER);
+		bw.write(TAG_GPX);
+
+		writeTrackPoints(mSession, trackName, bw);
+
+		writeWifis(bw);
+		writeCells(bw);
 		
+		bw.write(TAG_GPX_CLOSE);
+		bw.close();
+
 		mDbHelper.close();
+		Log.i(TAG, "Finished building gpx file");
 	}
 
 	/**
 	 * Iterates on track points and write them.
 	 * @param trackName Name of the track (metadata).
-	 * @param fw Writer to the target file.
+	 * @param bw Writer to the target file.
 	 * @param c Cursor to track points.
 	 * @throws IOException
 	 */
-	private void writeTrackPoints(final String trackName, final FileWriter fw, final Cursor c) throws IOException {
+	private void writeTrackPoints(final int session, final String trackName, final BufferedWriter bw) throws IOException {
+		Log.i(TAG, "Writing trackpoints");
+		
+		Cursor c = mDbHelper.getReadableDatabase().rawQuery(POSITION_SQL_QUERY, new String[]{String.valueOf(mSession), String.valueOf(0)});
+
 		final int colLatitude = c.getColumnIndex(Schema.COL_LATITUDE);
 		final int colLongitude = c.getColumnIndex(Schema.COL_LONGITUDE);
 		final int colAltitude = c.getColumnIndex(Schema.COL_ALTITUDE);
 		final int colTimestamp = c.getColumnIndex(Schema.COL_TIMESTAMP);
 
-		fw.write("\t" + "<trk>");
-		fw.write("\t\t" + "<name>" + trackName + "</name>" + "\n");
-
-		fw.write("\t\t" + "<trkseg>" + "\n");
-		c.moveToFirst();
+		bw.write("\t<trk>");
+		bw.write("\t\t<name>");
+		bw.write(trackName);
+		bw.write("</name>\n");
+		bw.write("\t\t<trkseg>\n");
+		
+		long outer = 0;
 		while (!c.isAfterLast()) {
-			StringBuffer out = new StringBuffer();
-			out.append("\t\t\t" + "<trkpt lat=\"" 
-					+ c.getDouble(colLatitude) + "\" "
-					+ "lon=\"" + c.getDouble(colLongitude) + "\">");
-			out.append("<ele>" + c.getDouble(colAltitude) + "</ele>");
-			out.append("<time>" + POINT_DATE_FORMATTER.format(new Date(c.getLong(colTimestamp))) + "</time>");
+			c.moveToFirst();
+			//StringBuffer out = new StringBuffer(32 * 1024);
+			while (!c.isAfterLast()) {
+				bw.write("\t\t\t<trkpt lat=\"");
+				bw.write(String.valueOf(c.getDouble(colLatitude)));
+				bw.write("\" ");
+				bw.write("lon=\"");
+				bw.write(String.valueOf(c.getDouble(colLongitude)));
+				bw.write("\">");
+				bw.write("<ele>");
+				bw.write(String.valueOf(c.getDouble(colAltitude)));
+				bw.write("</ele>");
+				bw.write("<time>");
+				bw.write(POINT_DATE_FORMATTER.format(new Date(c.getLong(colTimestamp))));
+				bw.write("</time>");
+				bw.write("</trkpt>\n");
 
-
-			out.append("</trkpt>" + "\n");
-			fw.write(out.toString());
-
-			c.moveToNext();
+				c.moveToNext();
+			}
+			//bw.write(out.toString());
+			//out = null;
+			
+			// fetch next CURSOR_SIZE records
+			outer += CURSOR_SIZE;
+			c.close();
+			c = mDbHelper.getReadableDatabase().rawQuery(POSITION_SQL_QUERY, new String[]{String.valueOf(mSession), String.valueOf(outer)});
 		}
-
-		fw.write("\t\t" + "</trkseg>" + "\n");
-		fw.write("\t" + "</trk>" + "\n");
+		c.close();
+		
+		bw.write("\t\t</trkseg>\n");
+		bw.write("\t</trk>\n");
+		System.gc();
 	}
 
 	/**
 	 * Iterates on way points and write them.
-	 * @param fw Writer to the target file.
+	 * @param bw Writer to the target file.
 	 * @param c Cursor to way points.
 	 * @throws IOException
 	 */
-	private void writeWayPoints(final FileWriter fw, final Cursor c) throws IOException {
+	private void writeWifis(final BufferedWriter bw) throws IOException {
+		Log.i(TAG, "Writing wifi waypoints");
+		
+		Cursor c = mDbHelper.getReadableDatabase().rawQuery(WIFI_POINTS_SQL_QUERY, new String[]{String.valueOf(mSession), String.valueOf(0)});
+
 		final int colLatitude = c.getColumnIndex(Schema.COL_LATITUDE);
 		final int colLongitude = c.getColumnIndex(Schema.COL_LONGITUDE);
 		final int colAltitude = c.getColumnIndex(Schema.COL_ALTITUDE);
 		final int colTimestamp = c.getColumnIndex(Schema.COL_TIMESTAMP);
 		final int colName = c.getColumnIndex("name");
-		c.moveToFirst();
+		
+		long outer = 0;
 		while (!c.isAfterLast()) {
-			StringBuffer out = new StringBuffer();
-			out.append("\t" + "<wpt lat=\""
-					+ c.getDouble(colLatitude) + "\" "
-					+ "lon=\"" + c.getDouble(colLongitude) + "\">" + "\n");
-			out.append("\t\t" + "<ele>" + c.getDouble(colAltitude) + "</ele>" + "\n");
-			out.append("\t\t" + "<time>" + POINT_DATE_FORMATTER.format(new Date(c.getLong(colTimestamp))) + "</time>" + "\n");
-			out.append("\t\t" + "<name>" + StringEscapeUtils.escapeXml(c.getString(colName)) + "</name>" + "\n");
-			out.append("\t" + "</wpt>" + "\n");
-			
-			fw.write(out.toString());
+			c.moveToFirst();
+			//StringBuffer out = new StringBuffer();
+			while (!c.isAfterLast()) {
+				bw.write("\t<wpt lat=\"");
+				bw.write(String.valueOf(c.getDouble(colLatitude)));
+				bw.write("\" ");
+				bw.write("lon=\"");
+				bw.write(String.valueOf(c.getDouble(colLongitude)));
+				bw.write("\">\n");
+				bw.write("\t\t<ele>");
+				bw.write(String.valueOf(c.getDouble(colAltitude)));
+				bw.write("</ele>\n");
+				bw.write("\t\t<time>");
+				bw.write(POINT_DATE_FORMATTER.format(new Date(c.getLong(colTimestamp))));
+				bw.write("</time>\n");
+				bw.write("\t\t<name>");
+				bw.write(StringEscapeUtils.escapeXml(c.getString(colName)));
+				bw.write("</name>\n");
+				bw.write("\t</wpt>\n");
 
-			c.moveToNext();
+				c.moveToNext();
+			}
+			//bw.write(out.toString());
+			//out = null;
+			// fetch next CURSOR_SIZE records
+			outer += CURSOR_SIZE;
+			c.close();
+			c = mDbHelper.getReadableDatabase().rawQuery(WIFI_POINTS_SQL_QUERY, new String[]{String.valueOf(mSession), String.valueOf(outer)});
 		}
+		c.close();
+		System.gc();
 	}
+	
+	/**
+	 * Iterates on way points and write them.
+	 * @param bw Writer to the target file.
+	 * @param c Cursor to way points.
+	 * @throws IOException
+	 */
+	private void writeCells(final BufferedWriter bw) throws IOException {
+		Log.i(TAG, "Writing cell waypoints");
+		Cursor c = mDbHelper.getReadableDatabase().rawQuery(CELL_POINTS_SQL_QUERY, new String[]{String.valueOf(mSession), String.valueOf(0)});
 
+		final int colLatitude = c.getColumnIndex(Schema.COL_LATITUDE);
+		final int colLongitude = c.getColumnIndex(Schema.COL_LONGITUDE);
+		final int colAltitude = c.getColumnIndex(Schema.COL_ALTITUDE);
+		final int colTimestamp = c.getColumnIndex(Schema.COL_TIMESTAMP);
+		final int colName = c.getColumnIndex("name");
+
+		long outer = 0;
+		while (!c.isAfterLast()) {
+			c.moveToFirst();
+			//StringBuffer out = new StringBuffer();
+			while (!c.isAfterLast()) {
+				bw.write("\t<wpt lat=\"");
+				bw.write(String.valueOf(c.getDouble(colLatitude)));
+				bw.write("\" ");
+				bw.write("lon=\"");
+				bw.write(String.valueOf(c.getDouble(colLongitude)));
+				bw.write("\">\n");
+				bw.write("\t\t<ele>");
+				bw.write(String.valueOf(c.getDouble(colAltitude)));
+				bw.write("</ele>\n");
+				bw.write("\t\t<time>");
+				bw.write(POINT_DATE_FORMATTER.format(new Date(c.getLong(colTimestamp))));
+				bw.write("</time>\n");
+				bw.write("\t\t<name>");
+				bw.write(StringEscapeUtils.escapeXml(c.getString(colName)));
+				bw.write("</name>\n");
+				bw.write("\t</wpt>\n");
+
+				c.moveToNext();
+			}
+			
+			//bw.write(out.toString());
+			//out = null;
+			// fetch next CURSOR_SIZE records
+			outer += CURSOR_SIZE;
+			c.close();
+			c = mDbHelper.getReadableDatabase().rawQuery(CELL_POINTS_SQL_QUERY, new String[]{String.valueOf(mSession), String.valueOf(outer)});
+		}
+		c.close();
+		System.gc();
+	}
 }
