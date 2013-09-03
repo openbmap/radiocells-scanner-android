@@ -14,7 +14,7 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.activity;
 
@@ -30,14 +30,19 @@ import org.openbmap.db.DataHelper;
 import org.openbmap.db.model.Session;
 import org.openbmap.soapclient.ExportManager;
 import org.openbmap.soapclient.ExportManager.ExportManagerListener;
+import org.openbmap.soapclient.ServerValidation;
+import org.openbmap.soapclient.ServerValidation.ServerReply;
 import org.openbmap.utils.FileHelper;
 import org.openbmap.utils.TempFileHelper;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
+import android.net.wifi.WifiManager.WifiLock;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -51,12 +56,16 @@ import android.widget.Toast;
 /**
  * Parent screen for hosting main screen
  */
-public class SessionActivity extends FragmentActivity implements SessionListFragment.SessionFragementListener, ExportManagerListener
+public class SessionActivity extends FragmentActivity implements SessionListFragment.SessionFragementListener, ExportManagerListener, ServerReply
 {
 	// TODO: clarify whether we need two different export task listeners, one for cells + one for wifis
 	private static final String TAG = SessionActivity.class.getSimpleName();
 
 	private DataHelper mDataHelper;
+
+	private WifiLock wifiLock;
+
+	private int	mPendingExport;
 
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
@@ -65,23 +74,47 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 		// setup data connections
 		mDataHelper = new DataHelper(this);
 
-		initControls();
-	}
-
-	/**
-	 * 
-	 */
-	private void initControls() {
-		setContentView(R.layout.session);
-		SessionListFragment detailsFragment = (SessionListFragment) getSupportFragmentManager().findFragmentById(R.id.sessionListFragment);	
-		detailsFragment.setOnSessionSelectedListener(this);
+		initUi();
 	}
 
 	@Override
 	public final void onResume() {
 		super.onResume();
+
+		// create wifi lock (will be acquired for version check/upload)
+		WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+		wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL, "UploadLock");
+
 		// force an fragment refresh
 		reloadFragment();
+	}
+
+	@Override
+	public final void onPause() {
+		// TODO: check, whether we release wifi lock (for upload) onPause and onDestroy or only onDestroy
+		if (wifiLock != null && wifiLock.isHeld()) {
+			wifiLock.release();
+		}
+
+		super.onPause();
+	}
+
+	@Override
+	public final void onDestroy() {
+		if (wifiLock != null && wifiLock.isHeld()) {
+			wifiLock.release();
+		}
+
+		super.onDestroy();
+	}
+
+	/**
+	 * Inits Ui controls
+	 */
+	private void initUi() {
+		setContentView(R.layout.session);
+		SessionListFragment detailsFragment = (SessionListFragment) getSupportFragmentManager().findFragmentById(R.id.sessionListFragment);	
+		detailsFragment.setOnSessionSelectedListener(this);
 	}
 
 	/**
@@ -90,12 +123,43 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 	 * @param id
 	 * 		session id
 	 */
-	public final void uploadSession(final int id) {
+	public final void requestExportCommand(final int id) {
 
+		mPendingExport = id;
+
+		// check whether session has been uploaded
+		if (hasBeenUploaded(id)) {
+			Log.i(TAG, this.getString(R.string.warning_already_uploaded));
+
+			new AlertDialog.Builder(this)
+			.setTitle(R.string.session_already_uploaded)
+			.setMessage(R.string.question_delete_session)
+			.setCancelable(true)
+			.setIcon(android.R.drawable.ic_dialog_info)
+			.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(final DialogInterface dialog, final int which) {
+					deleteCommand(id);
+					dialog.dismiss();
+					return;
+				}
+			})
+			.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(final DialogInterface dialog, final int which) {
+					dialog.cancel();
+					return;
+				}
+			}).create().show();
+		} else {
+			Log.i(TAG, "Good: Session hasn't yet been uploaded");
+		}
+
+		// checks credentials available?
 		String user = PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_CREDENTIALS_USER, null);
 		String password = PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
 
-		if (user == null || password == null) {
+		if (!isValidLogin(user, password)) {
 			new AlertDialog.Builder(this)
 			.setTitle(R.string.user_or_password_missing)
 			.setMessage(R.string.question_enter_user)
@@ -106,53 +170,74 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 				public void onClick(final DialogInterface dialog, final int which) {
 					startActivity(new Intent(getBaseContext(), SettingsActivity.class));
 					dialog.dismiss();
+					return;
 				}
 			})
 			.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(final DialogInterface dialog, final int which) {
 					dialog.cancel();
+					return;
 				}
 			}).create().show();
-
-			return;
+		} else {
+			Log.i(TAG, "Good: User and password provided");
 		}
 
+		// checks SD card writeable?
 		if (!FileHelper.isSdCardMountedWritable()) {
 			Log.e(TAG, "SD card not writable");
 			Toast.makeText(this.getBaseContext(), R.string.warning_sd_not_writable, Toast.LENGTH_SHORT).show();
 			return;
+		} else {
+			Log.i(TAG, "Good: SD card writable");
 		}
 
-		String targetPath = Environment.getExternalStorageDirectory().getPath()
-				+ PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR) + File.separator;
-		boolean exportGpx = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_GPS_SAVE_COMPLETE_TRACK, false);
-		
-		boolean skipUpload = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_SKIP_UPLOAD, Preferences.VAL_SKIP_UPLOAD);
-		boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_SKIP_DELETE, Preferences.VAL_SKIP_DELETE);
-		
-		ExportManager e = new ExportManager(this, this, id, targetPath, user, password);
-		e.setExportCells(true);
-		e.setExportWifis(true);
-		e.setExportGpx(exportGpx);
-		
-		// debug settings
-		e.setSkipUpload(skipUpload);
-		e.setSkipDelete(skipDelete);
+		// acquire wifi lock for export process
+		if (wifiLock != null && !wifiLock.isHeld()) {
+			Log.d(TAG, "Acquiring wifi lock");
+			wifiLock.acquire();
+		}
 
-		SimpleDateFormat date = new SimpleDateFormat("yyyyMMddhhmmss", Locale.US);
-		e.setGpxPath(targetPath);
-		e.setGpxFilename(date.format(new Date(System.currentTimeMillis())) + ".gpx");
-		e.execute((Void[]) null);
+		proceedAfterServerValidation();
 
 		updateUI();
+	}
+
+	/**
+	 * Checks whether user name and password has been set
+	 * @param password2 
+	 * @param user2 
+	 * @return
+	 */
+	private boolean isValidLogin(final String user, final String password) {
+		return (user != null && password != null);
+	}
+
+	/**
+	 * Triggers upload.
+	 * If session has already been uploaded, upload is canceled.
+	 * Requires a existing connection to a data network (e.g. call establishDataConnection() first)
+	 */
+	private boolean hasBeenUploaded(final int sessionId) {
+		DataHelper dataHelper = new DataHelper(this);
+		Session session = dataHelper.loadSession(sessionId);
+		return session.hasBeenExported();
+	}
+
+	/**
+	 * Checks whether openbmap.org is accessible and whether client version is up-to-date.
+	 * Based on result methods from interface ServerReply are called
+	 */
+	private void proceedAfterServerValidation() {
+		new ServerValidation(this, this).execute(RadioBeacon.VERSION_COMPATIBILITY);
 	}
 
 	/* 
 	 * Creates a new session record and starts HostActivity ("tracking" mode)
 	 */
 	@Override
-	public final void startSession() {
+	public final void startCommand() {
 
 		// invalidate all active session
 		mDataHelper.invalidateActiveSessions();
@@ -175,7 +260,7 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 	 * @see org.openbmap.activity.SessionListFragment.SessionFragementListener#resumeSession(long)
 	 */
 	@Override
-	public final void resumeSession(final int id) {
+	public final void resumeCommand(final int id) {
 		// TODO: check whether we need a INTENT_START_SERVICE here
 		Session resume = mDataHelper.loadSession(id);
 
@@ -194,7 +279,7 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 	 * @see org.openbmap.activity.SessionListFragment.SessionFragementListener#stopSession(int)
 	 */
 	@Override
-	public final void stopSession(final int id) {
+	public final void stopCommand(final int id) {
 		mDataHelper.invalidateActiveSessions();
 		// Signalling host activity to stop services
 		Intent intent = new Intent(RadioBeacon.INTENT_STOP_SERVICES);
@@ -208,7 +293,7 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 	 * @param id
 	 * 		session id
 	 */		
-	public final void deleteSession(final int id) {
+	public final void deleteCommand(final int id) {
 		// Signalling service stop request
 		Intent intent = new Intent(RadioBeacon.INTENT_STOP_SERVICES);
 		sendBroadcast(intent);
@@ -231,7 +316,26 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 	 * @see org.openbmap.activity.SessionListFragment.SessionFragementListener#deleteAllSessions(long)
 	 */
 	@Override
-	public final void deleteAllSessions() {
+	public final void deleteAllCommand() {
+
+		new AlertDialog.Builder(this)
+		.setTitle(R.string.confirmation)
+		.setMessage(R.string.question_delete_all_sessions)
+		.setCancelable(true)
+		.setIcon(android.R.drawable.ic_dialog_alert)
+		.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(final DialogInterface dialog, final int which) {
+				dialog.dismiss();
+			}
+		})
+		.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(final DialogInterface dialog, final int which) {
+				dialog.cancel();
+				return;
+			}
+		}).create().show();
 
 		// Signalling service stop request
 		Intent intent = new Intent(RadioBeacon.INTENT_STOP_SERVICES);
@@ -271,7 +375,7 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 		Log.d(TAG, "OptionItemSelected, handled by SessionActivity");
 		switch (item.getItemId()) {
 			case R.id.menu_create_new_session:
-				startSession();
+				startCommand();
 				break;
 			case R.id.menu_settings:
 				// Start settings activity
@@ -308,6 +412,12 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 	 */
 	@Override
 	public final void onExportCompleted(final int id) {
+
+		// release wifi lock
+		if (wifiLock != null && wifiLock.isHeld()) {
+			wifiLock.release();
+		}
+
 		// mark as has been exported
 		Session session = mDataHelper.loadSession(id);
 		session.hasBeenExported(true);
@@ -323,7 +433,7 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 		.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(final DialogInterface dialog, final int which) {
-				deleteSession(id);
+				deleteCommand(id);
 				dialog.dismiss();
 			}
 		})
@@ -340,6 +450,11 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 	 */
 	@Override
 	public final void onExportFailed(final String error) {
+		// release wifi lock
+		if (wifiLock != null && wifiLock.isHeld()) {
+			wifiLock.release();
+		}
+
 		new AlertDialog.Builder(this)
 		.setTitle(android.R.string.dialog_alert_title)
 		.setMessage("Export error!" + error)
@@ -353,4 +468,88 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 		.show();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.openbmap.soapclient.ServerValidation.ServerReply#onVersionGood()
+	 */
+	@Override
+	public final void onServerGood() {
+		Log.i(TAG, "Server good, online and valid version");
+		String user = PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_CREDENTIALS_USER, null);
+		String password = PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
+
+		String targetPath = Environment.getExternalStorageDirectory().getPath()
+				+ PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR) + File.separator;
+		boolean exportGpx = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_GPS_SAVE_COMPLETE_TRACK, false);
+
+		boolean skipUpload = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_SKIP_UPLOAD, Preferences.VAL_SKIP_UPLOAD);
+		boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_SKIP_DELETE, Preferences.VAL_SKIP_DELETE);
+
+		// and start export and upload..
+		ExportManager e = new ExportManager(this, this, mPendingExport, targetPath, user, password);
+		e.setExportCells(true);
+		e.setExportWifis(true);
+		e.setExportGpx(exportGpx);
+
+		// debug settings
+		e.setSkipUpload(skipUpload);
+		e.setSkipDelete(skipDelete);
+
+		SimpleDateFormat date = new SimpleDateFormat("yyyyMMddhhmmss", Locale.US);
+		e.setGpxPath(targetPath);
+		e.setGpxFilename(date.format(new Date(System.currentTimeMillis())) + ".gpx");
+		e.execute((Void[]) null);
+
+	}
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.soapclient.ServerValidation.ServerReply#onVersionBad()
+	 */
+	@Override
+	public void onServerBad(final String text) {
+		Log.e(TAG, "Out-dated version");
+		Toast.makeText(this, this.getString(R.string.warning_outdated_client) + "\n" + text, Toast.LENGTH_LONG).show();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.soapclient.ServerValidation.ServerReply#onCheckFailed()
+	 */
+	@Override
+	public final void onServerCheckFailed() {
+		Log.i(TAG, "Server check failed");
+		// if we still have no connection, offer to toggle wifi state
+		new AlertDialog.Builder(this)
+		.setTitle("Error contacting openbmap.org")
+		.setMessage("Check your online connection!\n(e.g. in browser).\nWould you like to try an automatic fix now?\n(Toggles your wifi adapter state to trigger a reconnect)")
+		.setCancelable(false)
+		.setIcon(android.R.drawable.ic_dialog_info)
+		.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(final DialogInterface dialog, final int which) {
+				dialog.dismiss();
+				repairWifiConnection();
+				proceedAfterServerValidation();
+			}
+
+		})
+		.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(final DialogInterface dialog, final int which) {
+				dialog.cancel();
+				Toast.makeText(SessionActivity.this, "Upload aborted..", Toast.LENGTH_LONG).show();
+				return;
+			}
+		}).create().show();
+		
+	}
+
+	/**
+	 * Toggles wifi enabled (to trigger reconnect) and checks whether client is online afterwards
+	 * @return true if client is online
+	 */
+	private void repairWifiConnection() {
+		Log.i(TAG, "Reparing wifi connection");
+		WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+		wifiManager.setWifiEnabled(false);
+		wifiManager.setWifiEnabled(true);
+	}
 }

@@ -193,8 +193,13 @@ public class ServiceManager {
 		}
 
 		if (mConnection != null) {
-			// Detach our existing connection.
-			mActivity.unbindService(mConnection);
+			try {
+				Log.i(TAG, "Unbindung service connection");
+				mActivity.unbindService(mConnection);
+			} catch (IllegalArgumentException e) {
+				Log.w(TAG, "Service wasn't registered, thus unbinding failed");
+			}
+			
 		}
 		mIsBound = false;
 		Log.i(TAG, "Unbinding completed.");

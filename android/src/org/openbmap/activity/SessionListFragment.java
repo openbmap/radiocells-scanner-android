@@ -18,37 +18,20 @@
 
 package org.openbmap.activity;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.openbmap.R;
-import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.RadioBeaconContentProvider;
 import org.openbmap.db.Schema;
 import org.openbmap.db.model.Session;
-import org.openbmap.soapclient.StaleVersionChecker;
-import org.openbmap.soapclient.StaleVersionChecker.ServerAnswer;
-import org.openbmap.utils.Downloader;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.database.ContentObserver;
 import android.database.Cursor;
-import android.database.CursorJoiner.Result;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.NetworkInfo.State;
-import android.os.AsyncTask;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ListFragment;
@@ -157,7 +140,15 @@ public class SessionListFragment extends ListFragment implements LoaderCallbacks
 	@Override
 	public final void onPause() {
 		getActivity().getContentResolver().unregisterContentObserver(mObserver);
+		
 		super.onPause();
+	}
+
+	@Override
+	public final void onDestroy() {
+		setListAdapter(null);
+
+		super.onDestroy();
 	}
 
 	@Override
@@ -185,31 +176,9 @@ public class SessionListFragment extends ListFragment implements LoaderCallbacks
 		switch (item.getItemId()) {
 			case R.id.menu_upload_session:
 				stop(mSelectedId);
-
-				if (!wakeUpDataConnection().equals(State.CONNECTED)) {
-					Log.w(TAG, "Was unable to establish network connection");
-					new AlertDialog.Builder(this.getActivity())
-					.setTitle("Next steps")
-					.setMessage("It seems you're offline.\n"
-							+ "Try to upload your data nevertheless (without warranty..)?\n"
-							)
-							.setCancelable(true)
-							.setIcon(android.R.drawable.ic_dialog_alert)
-							.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(final DialogInterface dialog, final int which) {
-									upload();
-									dialog.dismiss();
-								}
-							})
-							.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(final DialogInterface dialog, final int which) {
-									dialog.cancel();
-								}
-							}).create().show();
-				}
-
+				mListener.requestExportCommand(mSelectedId);
+				return true;
+				/*
 				if (isAllowedVersion()) {
 					upload();
 				} else {
@@ -236,33 +205,14 @@ public class SessionListFragment extends ListFragment implements LoaderCallbacks
 								}
 							}).create().show();
 				}
-				return true;
+				return true;*/
 			case R.id.menu_delete_session:
 				stop(mSelectedId);
-				mListener.deleteSession(mSelectedId);
+				mListener.deleteCommand(mSelectedId);
 				return true;
 			case R.id.menu_delete_all_sessions:
 				stop(mSelectedId);
-
-				new AlertDialog.Builder(this.getActivity())
-				.setTitle(R.string.confirmation)
-				.setMessage(R.string.question_delete_all_sessions)
-				.setCancelable(true)
-				.setIcon(android.R.drawable.ic_dialog_alert)
-				.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(final DialogInterface dialog, final int which) {
-						mListener.deleteAllSessions();
-						dialog.dismiss();
-					}
-				})
-				.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(final DialogInterface dialog, final int which) {
-						dialog.cancel();
-					}
-				}).create().show();
-
+				mListener.deleteAllCommand();
 				return true;
 			case R.id.menu_resume_session:
 				resume(mSelectedId);
@@ -276,295 +226,153 @@ public class SessionListFragment extends ListFragment implements LoaderCallbacks
 		return super.onContextItemSelected(item);
 	}
 
+	/**
+	 * Stops session (and services)
+	 */
+	private void stop(final int id) {
+		mListener.stopCommand(mSelectedId);
+	}
 
 	/**
-	 * Checks online whether client version is up-to-date.
-	 * Requires a existing connection to a data network (e.g. call establishDataConnection() first)
-	 * @return true if version is allowed, false if outdated or unable to check online
+	 * Resumes session, if session hasn't been uploaded yet.
 	 */
-	private boolean isAllowedVersion() {
-		try {
-			AsyncTask<String, Object, Object[]> task = new StaleVersionChecker().execute(RadioBeacon.VERSION_COMPATIBILITY);
+	private void resume(final int id) {
+		DataHelper datahelper = new DataHelper(this.getActivity());
+		Session check = datahelper.loadSession(id);
+		if (check != null && !check.hasBeenExported()) {
+			mListener.resumeCommand(id);
+		} else {
+			Toast.makeText(this.getActivity(), R.string.warning_session_closed, Toast.LENGTH_SHORT).show();
+		}
+	}
 
-			Object[] result;
-			result = task.get(5, TimeUnit.SECONDS);
-			if (result.length == 2) {
-				//ServerAnswer version = s.isAllowedVersion(RadioBeacon.SW_VERSION);
-				ServerAnswer version = (ServerAnswer) result[0];
-				String text = (String) result[1];
+	/*
+	 * OnListClick resumes corresponding session.
+	 */
+	@Override
+	public final void onListItemClick(final ListView lv, final View iv, final int position, final long id) {
+		// ignore clicks on list header (position 0)
+		if (position != 0) {
+			resume((int) id);
+		}
+	}
 
-				if (version == ServerAnswer.OK) {
-					return true;
-				} else if (version == ServerAnswer.OUTDATED) {
-					// cancel, if client version to old
-					Toast.makeText(this.getActivity(), R.string.warning_outdated_client + "\n" + text, Toast.LENGTH_LONG).show();
-					return false;
-				} else if (version == ServerAnswer.NO_REPLY || version == ServerAnswer.UNKNOWN_ERROR) {
-					// cancel, if client version couldn't be verified
-					Toast.makeText(this.getActivity(), R.string.warning_client_version_not_checked, Toast.LENGTH_LONG).show();
-					return false;
+	public final void setOnSessionSelectedListener(final SessionFragementListener listener) {
+		this.mListener = listener;
+	}
+
+	@Override
+	public final Loader<Cursor> onCreateLoader(final int arg0, final Bundle arg1) {
+		String[] projection = {
+				Schema.COL_ID,
+				Schema.COL_CREATED_AT,
+				Schema.COL_IS_ACTIVE, 
+				Schema.COL_HAS_BEEN_EXPORTED, 
+				Schema.COL_NUMBER_OF_CELLS,
+				Schema.COL_NUMBER_OF_WIFIS
+		};
+		CursorLoader cursorLoader = new CursorLoader(getActivity().getBaseContext(),
+				RadioBeaconContentProvider.CONTENT_URI_SESSION, projection, null, null, null);
+		return cursorLoader;
+	}
+
+	@Override
+	public final void onLoadFinished(final Loader<Cursor> arg0, final Cursor cursor) {
+		adapter.swapCursor(cursor);
+		mAdapterUpdatePending = false;
+	}
+
+	@Override
+	public final void onLoaderReset(final Loader<Cursor> arg0) {
+		Log.d(TAG, "onLoadReset called");
+		adapter.swapCursor(null);
+	}
+
+	/**
+	 * Forces an adapter refresh.
+	 */
+	public final void refreshAdapter() {
+		if (!mAdapterUpdatePending) {
+			mAdapterUpdatePending = true;
+			getActivity().getSupportLoaderManager().restartLoader(0, null, this);
+		} else {
+			Log.d(TAG, "refreshAdapter skipped. Another update is in progress");
+		}
+	}
+
+	/**
+	 * Replaces column values with icons and formats date to human-readable format.
+	 */
+	private static class SessionViewBinder implements ViewBinder {
+		public boolean setViewValue(final View view, final Cursor cursor, final int columnIndex) {
+			ImageView imgStatus = (ImageView) view.findViewById(R.id.sessionlistfragment_statusicon);
+			ImageView imgUpload = (ImageView) view.findViewById(R.id.sessionlistfragment_uploadicon);
+			TextView tvCreatedAt = (TextView) view.findViewById(R.id.sessionlistfragment_created_at);
+			if (columnIndex == cursor.getColumnIndex(Schema.COL_IS_ACTIVE)) {
+				//Log.d(TAG, "Modifying col " + cursor.getColumnIndex(Schema.COL_IS_ACTIVE));
+				// symbol for active track
+				int result = cursor.getInt(columnIndex);
+				if (result > 0) {
+					// Yellow clock icon for Active
+					imgStatus.setImageResource(android.R.drawable.presence_away);
+					imgStatus.setVisibility(View.VISIBLE);
+				} else {
+					imgStatus.setVisibility(View.INVISIBLE);				
 				}
+				return true;
+			} else if (columnIndex == cursor.getColumnIndex(Schema.COL_HAS_BEEN_EXPORTED)) {
+				// symbol for uploaded tracks
+				int result = cursor.getInt(columnIndex);
+				if (result > 0) {
+					// Lock icon for uploaded sessions
+					imgUpload.setImageResource(android.R.drawable.ic_lock_lock);
+					imgUpload.setVisibility(View.VISIBLE);
+				} else {
+					imgUpload.setVisibility(View.INVISIBLE);				
+				}
+				return true;
+			} else if (columnIndex == cursor.getColumnIndex(Schema.COL_CREATED_AT)) {
+				Date result = new Date(cursor.getLong(columnIndex));
+				SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd", Locale.US);
+				tvCreatedAt.setText(date.format(result));
+				return true;
 			}
-		} catch (InterruptedException e) {
-			Log.e(TAG, "Interrupter exception on version validation");
 			return false;
-		} catch (ExecutionException e) {
-			Log.e(TAG, "Execution exception on version validation");
-			return false;
-		} catch (TimeoutException e) {
-			Log.e(TAG, "Timeout on version validation");
-			return false;
-		}
-
-		return false;
-}
-
-/**
- * Checks whether network connection is available. If network is not yet connected, a http get request is sent to wake up device.
- * In this case network connection is checked again after 5 seconds.
- * @return Network state
- */
-private State wakeUpDataConnection() {
-
-	ConnectivityManager cm = (ConnectivityManager) getActivity().getBaseContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-	NetworkInfo networkInfo = null;
-	if (cm != null) {
-		networkInfo = cm.getActiveNetworkInfo();
-	} else {
-		Log.e(TAG, "Error accessing CONNECTIVITY_SERVICE");
-		return State.DISCONNECTED;
-	}
-
-	if (networkInfo != null && networkInfo.getState().equals(State.CONNECTED)) {
-		// everything fine: if already connected do nothing
-		return networkInfo.getState();
-	}
-
-	// request an arbitrary website to trigger dial-in, e.g. if device has been in sleep mode
-	try {
-		URL url = new URL("http://www.openbmap.org" );
-		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-		connection.setRequestProperty("Connection", "close");
-		connection.setConnectTimeout(1000);
-		connection.connect();
-		if (connection.getResponseCode() == 200) {
-			return cm.getActiveNetworkInfo().getState();
-		}
-	} catch (IOException e) {
-		Log.e(TAG, "No connection yet. This might not be an error");
-	}
-
-	// if we didn't get the connection, wait another 5 secs. Maybe device is still connecting..
-	if (networkInfo != null && networkInfo.isConnectedOrConnecting() 
-			&& !cm.getActiveNetworkInfo().isConnected()) {
-		// if not yet connected, but connection in progress, wait 5 seconds for things to settle
-		synchronized (this) {
-			try {
-				this.wait(5000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 	}
 
-	// refresh network info now
-	// if we don't have a connection here, we're out of luck
-	networkInfo = cm.getActiveNetworkInfo();
-	if (networkInfo == null) {
-		return State.DISCONNECTED;
-	} else {
-		return networkInfo.getState();
-	}
-}
-
-/**
- * Stops session (and services)
- */
-private void stop(final int id) {
-	mListener.stopSession(mSelectedId);
-}
-
-/**
- * Triggers upload.
- * If session has already been uploaded, upload is canceled.
- * Requires a existing connection to a data network (e.g. call establishDataConnection() first)
- */
-private void upload() {
-	DataHelper dataHelper = new DataHelper(this.getActivity());
-	Session session = dataHelper.loadSession(mSelectedId);
-	if (session != null && !session.hasBeenExported()) {
-		mListener.uploadSession(mSelectedId);
-	} else { 
-		Log.i(TAG, getActivity().getString(R.string.warning_already_uploaded));
-
-		new AlertDialog.Builder(this.getActivity())
-		.setTitle(R.string.session_already_uploaded)
-		.setMessage(R.string.question_delete_session)
-		.setCancelable(true)
-		.setIcon(android.R.drawable.ic_dialog_info)
-		.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(final DialogInterface dialog, final int which) {
-				mListener.deleteSession(mSelectedId);
-				dialog.dismiss();
-			}
-		})
-		.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(final DialogInterface dialog, final int which) {
-				dialog.cancel();
-			}
-		}).create().show();
-	}
-}
-
-/**
- * Resumes session, if session hasn't been uploaded yet.
- */
-private void resume(final int id) {
-	DataHelper datahelper = new DataHelper(this.getActivity());
-	Session check = datahelper.loadSession(id);
-	if (check != null && !check.hasBeenExported()) {
-		mListener.resumeSession(id);
-	} else {
-		Toast.makeText(this.getActivity(), R.string.warning_session_closed, Toast.LENGTH_SHORT).show();
-	}
-}
-
-/*
- * OnListClick resumes corresponding session.
- */
-@Override
-public final void onListItemClick(final ListView lv, final View iv, final int position, final long id) {
-	// ignore clicks on list header (position 0)
-	if (position != 0) {
-		resume((int) id);
-	}
-}
-
-@Override
-public final void onDestroy() {
-	setListAdapter(null);
-	super.onDestroy();
-}
-
-public final void setOnSessionSelectedListener(final SessionFragementListener listener) {
-	this.mListener = listener;
-}
-
-@Override
-public final Loader<Cursor> onCreateLoader(final int arg0, final Bundle arg1) {
-	String[] projection = {
-			Schema.COL_ID,
-			Schema.COL_CREATED_AT,
-			Schema.COL_IS_ACTIVE, 
-			Schema.COL_HAS_BEEN_EXPORTED, 
-			Schema.COL_NUMBER_OF_CELLS,
-			Schema.COL_NUMBER_OF_WIFIS
-	};
-	CursorLoader cursorLoader = new CursorLoader(getActivity().getBaseContext(),
-			RadioBeaconContentProvider.CONTENT_URI_SESSION, projection, null, null, null);
-	return cursorLoader;
-}
-
-@Override
-public final void onLoadFinished(final Loader<Cursor> arg0, final Cursor cursor) {
-	adapter.swapCursor(cursor);
-	mAdapterUpdatePending = false;
-}
-
-@Override
-public final void onLoaderReset(final Loader<Cursor> arg0) {
-	Log.d(TAG, "onLoadReset called");
-	adapter.swapCursor(null);
-}
-
-/**
- * Forces an adapter refresh.
- */
-public final void refreshAdapter() {
-	if (!mAdapterUpdatePending) {
-		mAdapterUpdatePending = true;
-		getActivity().getSupportLoaderManager().restartLoader(0, null, this);
-	} else {
-		Log.d(TAG, "refreshAdapter skipped. Another update is in progress");
-	}
-}
-
-/**
- * Replaces column values with icons and formats date to human-readable format.
- */
-private static class SessionViewBinder implements ViewBinder {
-	public boolean setViewValue(final View view, final Cursor cursor, final int columnIndex) {
-		ImageView imgStatus = (ImageView) view.findViewById(R.id.sessionlistfragment_statusicon);
-		ImageView imgUpload = (ImageView) view.findViewById(R.id.sessionlistfragment_uploadicon);
-		TextView tvCreatedAt = (TextView) view.findViewById(R.id.sessionlistfragment_created_at);
-		if (columnIndex == cursor.getColumnIndex(Schema.COL_IS_ACTIVE)) {
-			//Log.d(TAG, "Modifying col " + cursor.getColumnIndex(Schema.COL_IS_ACTIVE));
-			// symbol for active track
-			int result = cursor.getInt(columnIndex);
-			if (result > 0) {
-				// Yellow clock icon for Active
-				imgStatus.setImageResource(android.R.drawable.presence_away);
-				imgStatus.setVisibility(View.VISIBLE);
-			} else {
-				imgStatus.setVisibility(View.INVISIBLE);				
-			}
-			return true;
-		} else if (columnIndex == cursor.getColumnIndex(Schema.COL_HAS_BEEN_EXPORTED)) {
-			// symbol for uploaded tracks
-			int result = cursor.getInt(columnIndex);
-			if (result > 0) {
-				// Lock icon for uploaded sessions
-				imgUpload.setImageResource(android.R.drawable.ic_lock_lock);
-				imgUpload.setVisibility(View.VISIBLE);
-			} else {
-				imgUpload.setVisibility(View.INVISIBLE);				
-			}
-			return true;
-		} else if (columnIndex == cursor.getColumnIndex(Schema.COL_CREATED_AT)) {
-			Date result = new Date(cursor.getLong(columnIndex));
-			SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd", Locale.US);
-			tvCreatedAt.setText(date.format(result));
-			return true;
-		}
-		return false;
-	}
-}
-
-/**
- * Interface for activity.
- */
-public interface SessionFragementListener {
-	void deleteSession(int id);
 	/**
-	 * Creates a new session.
+	 * Interface for activity.
 	 */
-	void startSession();
-	/**
-	 * Stops session
-	 */
-	void stopSession(int id);
-	/**
-	 * Resumes session.
-	 * @param id
-	 *		Session to resume
-	 */
-	void resumeSession(int id);
-	/**
-	 * Deletes all sessions.
-	 * @param id
-	 *		Session to resume
-	 */
-	void deleteAllSessions();
-	/**
-	 * Uploads session.
-	 * @param id
-	 *		Session to resume
-	 */
-	void uploadSession(int id);
+	public interface SessionFragementListener {
+		void deleteCommand(int id);
+		/**
+		 * Creates a new session.
+		 */
+		void startCommand();
+		/**
+		 * Stops session
+		 */
+		void stopCommand(int id);
+		/**
+		 * Resumes session.
+		 * @param id
+		 *		Session to resume
+		 */
+		void resumeCommand(int id);
+		/**
+		 * Deletes all sessions.
+		 * @param id
+		 *		Session to resume
+		 */
+		void deleteAllCommand();
+		/**
+		 * Exports and uploads session.
+		 * @param id
+		 *		Session to resume
+		 */
+		void requestExportCommand(int id);
 
-	void reloadFragment();
-}
+		void reloadFragment();
+	}
 }
