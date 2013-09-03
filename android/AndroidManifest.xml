@@ -78,7 +78,8 @@
         </service>
         <service android:name=".service.wireless.WirelessLoggerService" >
         </service>
-
+		<service android:name=".soapclient.UploadService" >
+        </service>
         <provider
             android:name=".db.RadioBeaconContentProvider"
             android:authorities="org.openbmap.provider"
