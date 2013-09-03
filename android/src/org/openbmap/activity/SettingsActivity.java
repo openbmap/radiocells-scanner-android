@@ -111,42 +111,8 @@ public class SettingsActivity extends PreferenceActivity {
 		}
 		super.onDestroy();
 	}
+	
 		/**
-	 * Initializes wifi catalog source preference
-	 */
-	private void initWifiCatalogDownload() {
-		Preference pref = findPreference(org.openbmap.Preferences.KEY_DOWNLOAD_WIFI_CATALOG);
-		pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-			@Override
-			public boolean onPreferenceClick(final Preference preference) {
-				// try to create directory
-				File folder = new File(Environment.getExternalStorageDirectory().getPath()
-						+ PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
-						+ Preferences.WIFI_CATALOG_SUBDIR + File.separator);
-
-				boolean folderAccessible = false;
-				if (folder.exists() && folder.canWrite()) {
-					folderAccessible = true;
-				}
-
-				if (!folder.exists()) {
-					folderAccessible = folder.mkdirs();
-				}
-				if (folderAccessible) {
-					Request request = new Request(
-							Uri.parse(Preferences.WIFI_CATALOG_DOWNLOAD_URL));
-					request.setDestinationUri(Uri.fromFile(new File(
-							folder.getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_FILE)));
-					long catalogDownloadId = dm.enqueue(request);
-				} else {
-					Toast.makeText(preference.getContext(), R.string.error_save_file_failed, Toast.LENGTH_SHORT).show();
-				}
-				return true;
-			}
-		});
-	}
-
-	/**
 	 * Initializes gps system preference.
 	 * OnPreferenceClick system gps settings are displayed.
 	 */
@@ -318,6 +284,41 @@ public class SettingsActivity extends PreferenceActivity {
 				}
 
 				return false;
+			}
+		});
+	}
+
+	/**
+	 * Initializes wifi catalog source preference
+	 */
+	private void initWifiCatalogDownload() {
+		Preference pref = findPreference(org.openbmap.Preferences.KEY_DOWNLOAD_WIFI_CATALOG);
+		pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(final Preference preference) {
+				// try to create directory
+				File folder = new File(Environment.getExternalStorageDirectory().getPath()
+						+ PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
+						+ Preferences.WIFI_CATALOG_SUBDIR + File.separator);
+	
+				boolean folderAccessible = false;
+				if (folder.exists() && folder.canWrite()) {
+					folderAccessible = true;
+				}
+	
+				if (!folder.exists()) {
+					folderAccessible = folder.mkdirs();
+				}
+				if (folderAccessible) {
+					Request request = new Request(
+							Uri.parse(Preferences.WIFI_CATALOG_DOWNLOAD_URL));
+					request.setDestinationUri(Uri.fromFile(new File(
+							folder.getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_FILE)));
+					long catalogDownloadId = dm.enqueue(request);
+				} else {
+					Toast.makeText(preference.getContext(), R.string.error_save_file_failed, Toast.LENGTH_SHORT).show();
+				}
+				return true;
 			}
 		});
 	}
