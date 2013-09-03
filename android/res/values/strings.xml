@@ -40,7 +40,7 @@
     <string name="date">Date</string>
     <string name="please_select_map">Please select a map file first!</string>
     <string name="error_dowload_error">Error: Download failed. Maybe connection was interrupted?</string>
-    <string name="warning_outdated_client">Your client version is too old. Please update!</string>
+    <string name="warning_outdated_client">Your client version is too old.\nPlease update!</string>
     <string name="warning_client_version_not_checked">Couldn\'t verify client version. Either you\'re offline, server is down or this client is too old.</string>
     <string name="warning_session_closed">Can\'t resume! Session has already been uploaded.</string>
     <string name="warning_already_uploaded">Won\'t upload session. Has already been uploaded!</string>
@@ -65,9 +65,9 @@
     <string name="hint_notification">Tap here to display main screen</string>
     <string name="notification">RadioBeacon is tracking (#{0})</string>
     <string name="notification_caption">Radiobeacon is scanning</string>
-    <string name="exporting_wifis">Exporting wifis to SD card\r\n(Upload deactivated)</string>
+    <string name="exporting_wifis">Exporting wifis</string>
     <string name="uploading_wifis">Uploading wifis</string>
-    <string name="exporting_cells">Exporting cells to SD card\r\n(Upload deactivated)</string>
+    <string name="exporting_cells">Exporting cells</string>
     <string name="uploading_cells">Uploading cells</string>
     <string name="exporting_gpx">Exporting GPX to SD card</string>
     <string name="resume">Resume</string>
@@ -78,4 +78,6 @@
     <string name="upload_skipped">Upload skipped (If this happened accidently, check your debug settings)</string>
     <string name="preparing_export">Preparing export..</string>
     <string name="app_description">Openbmap.org wifi and cell logger</string>
+    <string name="error">Error</string>
+    <string name="no_data_connection">No data connection!</string>
 </resources>
