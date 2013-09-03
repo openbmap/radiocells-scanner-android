@@ -14,25 +14,30 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.soapclient;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.openbmap.R;
+import org.openbmap.soapclient.FileUploader.UploadTaskListener;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 
 /**
  * Manages export and upload process
  */
-public class ExportManager extends AsyncTask<Void, Object, Boolean> {
+@SuppressLint("NewApi")
+public class ExportManager extends AsyncTask<Void, Object, Boolean> implements UploadTaskListener {
 
 	private static final String TAG = ExportManager.class.getSimpleName();
 
@@ -72,7 +77,6 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> {
 	 */
 	private final String	mPassword;
 
-
 	private boolean	mExportCells = false;
 
 	private boolean	mExportWifis = false;
@@ -86,6 +90,31 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> {
 	private boolean	mSkipUpload;
 
 	private boolean	mSkipDelete;
+
+	/**
+	 * Number of active upload tasks
+	 */
+	private int	mActiveUploads;
+
+	/**
+	 * OpenBmap cell upload address
+	 */
+	private static final String CELL_WEBSERVICE = "http://openBmap.org/upload/upl.php5";
+
+	/**
+	 * OpenBmap wifi upload address
+	 */
+	private static final String WIFI_WEBSERVICE = "http://www.openbmap.org/upload_wifi/upl.php5";
+
+	/**
+	 * List of all successfully uploaded files. For the moment no differentiation between cells and wifis
+	 */
+	private ArrayList<String>	mUploadedFiles;
+
+	/**
+	 * Max. number of parallel uploads
+	 */
+	private int	MAX_THREADS = 7;
 
 	public interface ExportManagerListener {
 		void onExportCompleted(final int id);
@@ -111,6 +140,8 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> {
 		// by default: upload and delete local temp files afterward
 		this.setSkipUpload(false);
 		this.setSkipDelete(false);
+
+		mUploadedFiles = new ArrayList<String>();
 	}
 
 	@Override
@@ -129,29 +160,115 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> {
 	 */
 	@Override
 	protected final Boolean doInBackground(final Void... params) {
+		ArrayList<String> wifiFiles = new ArrayList<String>();
+		ArrayList<String> cellFiles = new ArrayList<String>();
+
 		if (mExportCells) {
-			if (getSkipUpload()) {
-				publishProgress(mContext.getResources().getString(R.string.exporting_cells), 0);
-			} else {
-				publishProgress(mContext.getResources().getString(R.string.uploading_cells), 0);
+			Log.i(TAG, "Exporting cells");
+			// export cells
+			publishProgress(mContext.getResources().getString(R.string.exporting_cells), 0);
+			cellFiles = new CellExporter(mContext, mSession, mTargetPath, mUser).export();
+
+			// upload
+			if (!getSkipUpload()) {
+				for (int i = 0; i < cellFiles.size(); i++) {
+					// thread control for the poor: spawn only MAX_THREADS tasks
+					while (mActiveUploads > MAX_THREADS) {
+						Log.i(TAG, "Maximum number of upload threads reached. Waiting..");
+						try {
+							Thread.sleep(50);
+						} catch (InterruptedException e) {
+						}
+					}
+					publishProgress(mContext.getResources().getString(R.string.uploading_cells) + "(Files: " + String.valueOf(cellFiles.size() -i) +")" , 0);
+
+					if (Build.VERSION.SDK_INT >= 11 /*Build.VERSION_CODES.HONEYCOMB*/) {
+						// enforce parallel execution on HONEYCOMB
+						new FileUploader(this, mUser, mPassword, CELL_WEBSERVICE).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, cellFiles.get(i));
+						mActiveUploads += 1;
+					} else {
+						new FileUploader(this, mUser, mPassword, CELL_WEBSERVICE).execute(cellFiles.get(i));
+						mActiveUploads += 1;
+					}
+				}		
 			}
-			new CellExporter(mContext, mSession, mTargetPath, mUser, mPassword, getSkipUpload(), getSkipDelete()).doInBackground();
 		} else {
 			Log.i(TAG, "Cell export skipped");
 		}
 
 		if (mExportWifis) {
-			if (getSkipUpload()) {
-				publishProgress(mContext.getResources().getString(R.string.exporting_wifis), 50);
-			} else {
-				publishProgress(mContext.getResources().getString(R.string.uploading_wifis), 50);
+			Log.i(TAG, "Exporting wifis");
+			// export wifis
+			publishProgress(mContext.getResources().getString(R.string.exporting_wifis), 50);
+			wifiFiles = new WifiExporter(mContext, mSession, mTargetPath, mUser).export();
+
+			// upload
+			if (!getSkipUpload()) {
+				for (int i = 0; i < wifiFiles.size(); i++) {
+					while (mActiveUploads > MAX_THREADS) {
+						Log.i(TAG, "Maximum number of upload threads reached. Waiting..");
+						try {
+							Thread.sleep(50);
+						} catch (InterruptedException e) {
+						}
+					}
+					publishProgress(mContext.getResources().getString(R.string.uploading_wifis) + "(Files: " + String.valueOf(wifiFiles.size() -i ) + ")", 50);
+					
+					if (Build.VERSION.SDK_INT >= 11 /*Build.VERSION_CODES.HONEYCOMB*/) {
+						// enforce parallel execution on HONEYCOMB
+						new FileUploader(this, mUser, mPassword, WIFI_WEBSERVICE).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, wifiFiles.get(i));
+						mActiveUploads += 1;
+					} else {
+						new FileUploader(this, mUser, mPassword, WIFI_WEBSERVICE).execute(wifiFiles.get(i));
+						mActiveUploads += 1;
+					}	
+				}
 			}
-			new WifiExporter(mContext, mSession, mTargetPath, mUser, mPassword, getSkipUpload(), getSkipDelete()).doInBackground();
 		} else {
 			Log.i(TAG, "Wifi export skipped");
 		}
 
+		if (!getSkipUpload()) {
+			// wait max 30s for all upload tasks to finish
+			long startGrace = System.currentTimeMillis(); 
+			while (mActiveUploads > 0 ) {
+				Log.i(TAG, "Waiting for uploads to complete. (Active " + String.valueOf(mActiveUploads) + ")");
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+				}
+				if (System.currentTimeMillis() - startGrace > 30000) {
+					Log.i(TAG, "Timeout reached");
+					break;
+				}
+			}
+
+			// check, whether all files are uploaded
+			if (mUploadedFiles.size() != (wifiFiles.size() + cellFiles.size())) {
+				Log.w(TAG, "Problem: Not all files have been uploaded!");
+			} else {
+				Log.i(TAG, "All files uploaded");
+			}
+
+			// and cleanup
+			if (!getSkipDelete()) {
+				// delete only successfully uploaded files
+				for (int i = 0; i < mUploadedFiles.size(); i++) {
+					File temp = new File(mUploadedFiles.get(i));
+					if (!temp.delete()) {
+						Log.e(TAG, "Error deleting " + mUploadedFiles.get(i));
+					}	
+				}
+			}
+		}
+		// clean up a bit
+		wifiFiles = null;
+		cellFiles = null;
+		mUploadedFiles = null;
+		System.gc();
+		
 		if (mExportGpx) {
+			Log.i(TAG, "Exporting gpx");
 			publishProgress(mContext.getResources().getString(R.string.exporting_gpx), 75);
 
 			GpxExporter gpx = new GpxExporter(mContext, mSession);
@@ -248,6 +365,25 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> {
 
 	public final void setSkipDelete(final boolean skipDelete) {
 		this.mSkipDelete = skipDelete;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.soapclient.FileUploader.UploadTaskListener#onUploadCompleted(java.util.ArrayList)
+	 */
+	@Override
+	public final void onUploadCompleted(final String file) {
+		mUploadedFiles.add(file);
+		mActiveUploads -= 1;
+		Log.i(TAG, "Finished upload, open uploads" + mActiveUploads);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.soapclient.FileUploader.UploadTaskListener#onUploadFailed(java.lang.String)
+	 */
+	@Override
+	public final void onUploadFailed(final String file, final String error) {
+		Log.e(TAG, "Upload failed:" + file + " " + error);
+		mActiveUploads -= 1;
 	}
 
 }

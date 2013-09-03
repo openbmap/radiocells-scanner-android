@@ -14,7 +14,7 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.soapclient;
 
@@ -24,14 +24,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Calendar;
 import java.util.Locale;
 
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.DatabaseHelper;
 import org.openbmap.db.Schema;
 import org.openbmap.db.model.LogFile;
-import org.openbmap.soapclient.FileUploader.UploadTaskListener;
 import org.openbmap.utils.XmlSanitizer;
 
 import android.content.Context;
@@ -39,35 +38,32 @@ import android.database.Cursor;
 import android.util.Log;
 
 /**
-* Exports wifis to xml format for later upload.
-*/
-public class WifiExporter implements UploadTaskListener {
+ * Exports wifis to xml format for later upload.
+ */
+public class WifiExporter  {
 
 	private static final String TAG = WifiExporter.class.getSimpleName();
 
 	/**
-	 * Minimum time between two upload attempts
+	 * Initial size wifi StringBuffer
 	 */
-	private static final int	SERVER_GRACE_TIME	= 1000;
+	private static final int WIFI_XML_DEFAULT_LENGTH	= 220;
 
 	/**
-	 * OpenBmap wifi upload address
+	 * Initial size position StringBuffer
 	 */
-	private static final String WEBSERVICE_ADDRESS = "http://www.openbmap.org/upload_wifi/upl.php5";
+	private static final int POS_XML_DEFAULT_LENGTH	= 170;
 
+	/**
+	 * Cursor windows size, to prevent running out of mem on to large cursor
+	 */
+	private static final int CURSOR_SIZE	= 2000;
+	
 	/**
 	 * XML header.
 	 */
 	private static final String XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>";
 
-	/**
-	 * XML template for logfile header
-	 */
-	private static final String	OPEN_LOGFILE = "\n<logfile manufacturer=\"%s\""
-			+ " model=\"%s\""
-			+ " revision=\"%s\""
-			+ " swid=\"%s\""
-			+ " swver=\"%s\">";
 
 	/**
 	 * XML template closing logfile
@@ -83,7 +79,7 @@ public class WifiExporter implements UploadTaskListener {
 	/**
 	 * Entries per log file
 	 */
-	private static final int CHUNK_SIZE	= 100;
+	private static final int WIFIS_PER_FILE	= 100;
 
 
 	private Context mContext;
@@ -148,27 +144,22 @@ public class WifiExporter implements UploadTaskListener {
 
 	private int	colCapa;
 
-	private int	colMd5Ssid;
+	private int	colMd5Essid;
 
 	private int	colSsid;
 
 	private int	colBssid;
 
+	/**
+	 * User name, required for file name generation
+	 */
 	private String	mUser;
 
-	private String	mPassword;
-
 	/**
-	 * Skip upload (for debugging purposes)
+	 * Timestamp, required for file name generation
 	 */
-	private boolean	mSkipUpload;
+	private Calendar mTimestamp;
 
-	/**
-	 * Skip delete (for debugging purposes)
-	 */
-	private boolean mSkipDelete;
-
-	
 	private static final String WIFI_SQL_QUERY = " SELECT " + Schema.TBL_WIFIS + "." + Schema.COL_ID + " AS \"_id\","
 			+ Schema.COL_BSSID + ", "
 			+ Schema.COL_SSID + ", "
@@ -199,30 +190,28 @@ public class WifiExporter implements UploadTaskListener {
 			+ " JOIN \"" + Schema.TBL_POSITIONS + "\" AS \"req\" ON (\"request_pos_id\" = \"req\".\"_id\")"
 			+ " JOIN \"" + Schema.TBL_POSITIONS + "\" AS \"last\" ON (\"last_pos_id\" = \"last\".\"_id\")"
 			+ " WHERE " + Schema.TBL_WIFIS + "." + Schema.COL_SESSION_ID + " = ?"
-			+ " ORDER BY " + Schema.COL_BEGIN_POSITION_ID;
+			+ " ORDER BY " + Schema.COL_BEGIN_POSITION_ID
+			+ " LIMIT " + CURSOR_SIZE
+			+ " OFFSET ?";
+
+
 
 	/**
 	 * Default constructor
-	 * @param mContext	Activities' mContext
-	 * @param id Session id to export
+	 * @param context	Activities' context
+	 * @param session Session id to export
 	 * @param tempPath (full) path where temp files are saved. Will be created, if not existing.
-	 * @param user Openbmap username
-	 * @param password Openbmap password
+	 * @param user Openbmap username, required for file name generation
 	 */
-	public WifiExporter(final Context context, final int id, final String tempPath, final String user, final String password, final boolean skipUpload, final Boolean skipDelete) {
+	public WifiExporter(final Context context, final int session, final String tempPath, final String user) {
 		this.mContext = context;
-		this.mSession = id;
+		this.mSession = session;
 		this.mTempPath = tempPath;
 		this.mUser = user;
-		this.mPassword = password;
-		
-		this.mSkipUpload = skipUpload;
-		
-		this.mSkipDelete = skipDelete;
-		
-		
+		mTimestamp = Calendar.getInstance();
+
 		ensureTempPath(mTempPath);
-		
+
 		mDataHelper = new DataHelper(context);
 	}
 
@@ -243,24 +232,27 @@ public class WifiExporter implements UploadTaskListener {
 		}
 		return folderAccessible;
 	}
-	
+
 	/**
 	 * Builds wifi and cell xml files and saves/uploads them
 	 */
-	protected final Boolean doInBackground() {
-		Log.d(TAG, "Start wifi export. Datasource: " + WIFI_SQL_QUERY);
+	protected final ArrayList<String> export() {
+		Log.d(TAG, "Start wifi export. Data source: " + WIFI_SQL_QUERY);
 
 		final LogFile headerRecord = mDataHelper.loadLogFileBySession(mSession);
 
 		final DatabaseHelper mDbHelper = new DatabaseHelper(mContext);
 
-		Cursor cursorWifis = mDbHelper.getReadableDatabase().rawQuery(WIFI_SQL_QUERY, new String[]{String.valueOf(mSession)});
-		// otherwise saveAndMoveCursor skips first entry
-		//cursorWifis.moveToFirst();
+		ArrayList<String> generatedFiles = new ArrayList<String>();
 
+		// get first CHUNK_SIZE records
+		Cursor cursorWifis = mDbHelper.getReadableDatabase().rawQuery(WIFI_SQL_QUERY,
+				new String[] {String.valueOf(mSession), String.valueOf(0)});
+		
+		// [start] init columns
 		colBssid = cursorWifis.getColumnIndex(Schema.COL_BSSID);
 		colSsid = cursorWifis.getColumnIndex(Schema.COL_SSID);
-		colMd5Ssid = cursorWifis.getColumnIndex(Schema.COL_MD5_SSID);
+		colMd5Essid = cursorWifis.getColumnIndex(Schema.COL_MD5_SSID);
 		colCapa = cursorWifis.getColumnIndex(Schema.COL_CAPABILITIES);
 		colFreq = cursorWifis.getColumnIndex(Schema.COL_FREQUENCY);
 		colLevel = cursorWifis.getColumnIndex(Schema.COL_LEVEL);
@@ -275,7 +267,7 @@ public class WifiExporter implements UploadTaskListener {
 		colReqHead = cursorWifis.getColumnIndex("req_" + Schema.COL_BEARING);
 		colReqSpeed = cursorWifis.getColumnIndex("req_" + Schema.COL_SPEED);
 		colReqAcc = cursorWifis.getColumnIndex("req_" + Schema.COL_ACCURACY);
-
+		
 		colLastLat = cursorWifis.getColumnIndex("last_" + Schema.COL_LATITUDE);
 		colLastTimestamp = cursorWifis.getColumnIndex("last_" + Schema.COL_TIMESTAMP);
 		colLastLon = cursorWifis.getColumnIndex("last_" + Schema.COL_LONGITUDE);
@@ -283,35 +275,28 @@ public class WifiExporter implements UploadTaskListener {
 		colLastHead = cursorWifis.getColumnIndex("last_" + Schema.COL_BEARING);
 		colLastSpeed = cursorWifis.getColumnIndex("last_" + Schema.COL_SPEED);
 		colLastAcc = cursorWifis.getColumnIndex("last_" + Schema.COL_ACCURACY);
+		// [end]
 
 		long startTime = System.currentTimeMillis();
 
-		int i = 0;
-		// creates cursor of [CHUNK_SIZE] wifis per file
+		long outer = 0;
 		while (!cursorWifis.isAfterLast()) {
-			Log.i(TAG, "Cycle " + i);
-			String fileName  = mTempPath + generateFilename(mUser);
-			saveAndMoveCursor(fileName, headerRecord, cursorWifis);
+			long i = 0;
+			while (!cursorWifis.isAfterLast()) { 
+				// creates files of 100 wifis each
+				Log.i(TAG, "Cycle " + i);
+				String fileName  = mTempPath + generateFilename(mUser);
+				saveAndMoveCursor(fileName, headerRecord, cursorWifis);
 
-			i += CHUNK_SIZE;
-
-			// so far upload one by one, i.e. array size always 1
-			ArrayList<String> files = new ArrayList<String>();
-			files.add(fileName);
-			
-			if (!mSkipUpload) {
-				new FileUploader(this, mUser, mPassword, WEBSERVICE_ADDRESS).execute(
-						files.toArray(new String[files.size()]));
-				// give server a chance to process data before next upload
-				synchronized (this) {
-					try {
-						this.wait(SERVER_GRACE_TIME);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
+				i += WIFIS_PER_FILE;
+				generatedFiles.add(fileName);
 			}
+			// fetch next CURSOR_SIZE records
+			outer += CURSOR_SIZE;
+			cursorWifis.close();
+			cursorWifis = mDbHelper.getReadableDatabase().rawQuery(WIFI_SQL_QUERY,
+					new String[]{String.valueOf(mSession),
+					String.valueOf(outer)});
 		}
 
 		long difference = System.currentTimeMillis() - startTime;
@@ -321,7 +306,7 @@ public class WifiExporter implements UploadTaskListener {
 		cursorWifis = null;
 		mDbHelper.close();
 
-		return true;
+		return generatedFiles;
 	}
 
 
@@ -338,58 +323,75 @@ public class WifiExporter implements UploadTaskListener {
 	private void saveAndMoveCursor(final String fileName, final LogFile headerRecord, final Cursor cursor) {
 
 		// for performance reasons direct database access is used here (instead of content provider)
-		// all columns are casted to string for the same reason
 		try {
-
+			cursor.moveToPrevious();
+			
 			File file = new File(fileName);
-			//FileWriter fw = new FileWriter(file.getAbsoluteFile());
-			BufferedWriter bw = new BufferedWriter(new FileWriter(file.getAbsoluteFile()), 30 * 1024);
+			BufferedWriter bw = new BufferedWriter(new FileWriter(file.getAbsoluteFile()) , 30 * 1024);
 
 			// Write header
-			bw.append(XML_HEADER);
-			bw.append(String.format(Locale.US, OPEN_LOGFILE,
-					headerRecord.getManufacturer(), headerRecord.getModel(), headerRecord.getRevision(), headerRecord.getSwid(), headerRecord.getSwVersion()));
-
+			bw.write(XML_HEADER);
+			bw.write(logToXml(headerRecord.getManufacturer(), headerRecord.getModel(), headerRecord.getRevision(), headerRecord.getSwid(), headerRecord.getSwVersion()));
+			
 			long previousBeginId = 0;
-			//long previousEndId = 0;
-			String currentBegin = "";
-			String currentEnd = "";
 			String previousEnd = "";
 
 			int i = 0;
-			// Iterate wifis cursor until last row reached or CHUNK_SIZE is reached 			
-			while (i < CHUNK_SIZE && cursor.moveToNext()) {
+			// Iterate wifis cursor until last row reached or WIFIS_PER_FILE is reached 			
+			while (i < WIFIS_PER_FILE && cursor.moveToNext()) {
 
 				final long beginId = Long.valueOf(cursor.getString(colBeginPosId));
 
-				currentBegin = cursorToBeginPositionXml(cursor);
-				currentEnd = cursorToEndPositionXml(cursor);
+				final String currentBegin = positionToXml(
+						cursor.getLong(colReqTimestamp),
+						cursor.getDouble(colReqLon),
+						cursor.getDouble(colReqLat),
+						cursor.getDouble(colReqAlt),
+						cursor.getDouble(colReqHead),
+						cursor.getDouble(colReqSpeed),
+						cursor.getDouble(colReqAcc));
+
+				final String currentEnd = positionToXml(
+						cursor.getLong(colLastTimestamp),
+						cursor.getDouble(colLastLat),
+						cursor.getDouble(colLastLon),
+						cursor.getDouble(colLastAlt) ,
+						cursor.getDouble(colLastHead),
+						cursor.getDouble(colLastSpeed),
+						cursor.getDouble(colLastAcc));
 
 				if (i == 0) {
 					// Write first scan and gps tag at the beginning
-					bw.append("\n<scan time=\"" +  cursor.getLong(colTimestamp) + "\" >");
-					bw.append(currentBegin);
+					bw.write(scanToXml(cursor.getLong(colTimestamp)));
+					bw.write(currentBegin);
 				} else {
 					// Later on, scan and gps tags are only needed, if we have a new scan
 					if (beginId != previousBeginId) {
 
 						// write end gps tag for previous scan
-						bw.append(previousEnd);
-						bw.append(CLOSE_SCAN_TAG);
+						bw.write(previousEnd);
+						bw.write(CLOSE_SCAN_TAG);
 
 						// Write new scan and gps tag 
 						// TODO distance calculation, seems optional
-						bw.append("\n<scan time=\"" + cursor.getLong(colTimestamp) + "\" >");
-						bw.append(currentBegin);
+						bw.write(scanToXml(cursor.getLong(colTimestamp)));
+						bw.write(currentBegin);
 					}
 				}
 
 				/*
 				 *  At this point, we will always have an open scan and gps tag,
 				 *  so write wifi xml now
+				 *  Note that for performance reasons all columns are casted to strings
+				 *  As bssid can contain invalid characters, it sanitized before
 				 */
-				bw.write(cursorToXml(cursor));
-
+				bw.write(wifiToXml(cursor.getString(colBssid),
+						cursor.getString(colMd5Essid), 
+						XmlSanitizer.sanitize(cursor.getString(colSsid)),
+						 cursor.getString(colCapa),
+						 cursor.getString(colLevel),
+						 cursor.getString(colFreq)));
+				
 				previousBeginId = beginId;
 				previousEnd = currentEnd;
 
@@ -400,52 +402,133 @@ public class WifiExporter implements UploadTaskListener {
 			bw.write(previousEnd);
 			bw.write(CLOSE_SCAN_TAG);
 
-			bw.append(CLOSE_LOGFILE);
+			bw.write(CLOSE_LOGFILE);
 			// ensure that everything is really written out and close 
 			bw.close();
 			file = null;
-
+			bw = null;
 		} catch (IOException ioe) {
+			cursor.close();
 			ioe.printStackTrace();
 		}
 	}
 
-	private String cursorToEndPositionXml(final Cursor chunk) {
-		return "\n\t<gps time=\"" + chunk.getString(colLastTimestamp) + "\""
-				+ " lng=\"" + chunk.getString(colLastLat) + "\""
-				+ " lat=\"" + chunk.getString(colLastLon) + "\""
-				+ " alt=\"" + chunk.getString(colLastAlt) + "\""
-				+ " hdg=\"" + chunk.getString(colLastHead)  + "\""
-				+ " spe=\"" + chunk.getString(colLastSpeed) + "\""
-				+ " accuracy=\"" + chunk.getString(colLastAcc) + "\""
-				+ " />";
-	}
-
-	private String cursorToBeginPositionXml(final Cursor chunk) {
-		return "\n\t<gps time=\"" + chunk.getString(colReqTimestamp) + "\""
-				+ " lng=\"" + chunk.getString(colReqLat) + "\""
-				+ " lat=\"" + chunk.getString(colReqLon) + "\""
-				+ " alt=\"" + chunk.getString(colReqAlt) + "\""
-				+ " hdg=\"" + chunk.getString(colReqHead)  + "\""
-				+ " spe=\"" + chunk.getString(colReqSpeed) + "\""
-				+ " accuracy=\"" + chunk.getString(colReqAcc) + "\""
-				+ " />";
+	/**
+	 * Generates scan tag
+	 * @param timestamp
+	 * @return
+	 */
+	private static String scanToXml(final long timestamp) {
+		StringBuilder s = new StringBuilder(32);
+		s.append("\n<scan time=\"");
+		s.append(timestamp);
+		s.append("\" >");
+		return s.toString();
 	}
 
 	/**
-	 * @param cursor
+	 * Generates log file header
+	 * @param manufacturer
+	 * @param model
+	 * @param revision
+	 * @param swid
+	 * @param swVersion
 	 * @return
 	 */
-	private String cursorToXml(final Cursor cursor) {
-		return "\n\t\t<wifiap bssid=\"" + cursor.getString(colBssid) + "\""
-				+ " md5essid=\"" + cursor.getString(colMd5Ssid) + "\""
-				+ " ssid=\"" + XmlSanitizer.sanitize(cursor.getString(colSsid)) + "\""
-				+ " capa=\"" + cursor.getString(colCapa) + "\""
-				+ " ss=\"" + cursor.getString(colLevel) + "\""
-				+ " ntiu=\"" + cursor.getString(colFreq) + "\""
-				+ "/>";
+	private static String logToXml(final String manufacturer, final String model, final String revision, final String swid, final String swVersion) {
+		final StringBuffer s = new StringBuffer(130);
+		s.append("\n<logfile manufacturer=\"");
+		s.append(manufacturer);
+		s.append("\"");
+		s.append(" model=\"");
+		s.append(model);
+		s.append("\"");
+		s.append(" revision=\"");
+		s.append(revision);
+		s.append("\"");
+		s.append(" swid=\"");
+		s.append(swid);
+		s.append("\"");
+		s.append(" swver=\"");
+		s.append(swVersion);
+		s.append("\"");
+		s.append(" >");
+		return s.toString();
+	}
+	
+	/**
+	 * Generates position tag
+	 * @param reqTime
+	 * @param lng
+	 * @param lat
+	 * @param alt
+	 * @param head
+	 * @param speed
+	 * @param acc
+	 * @return position tag
+	 */
+	private static String positionToXml(final long reqTime, final double lng, final double lat,
+			final double alt, final double head, final double speed, final double acc) {
+		final StringBuffer s = new StringBuffer(POS_XML_DEFAULT_LENGTH);
+		s.append("\n\t<gps time=\"");
+		s.append(reqTime);
+		s.append("\"");
+		s.append(" lng=\"");
+		s.append(lng);
+		s.append("\"");
+		s.append(" lat=\"");
+		s.append(lat);
+		s.append("\"");
+		s.append(" alt=\"");
+		s.append(alt);
+		s.append("\"");
+		s.append(" hdg=\"");
+		s.append(head);
+		s.append("\"");
+		s.append(" spe=\"");
+		s.append(speed);
+		s.append("\"");
+		s.append(" accuracy=\"");
+		s.append(acc);
+		s.append("\"");
+		s.append(" />");
+		return s.toString();
 	}
 
+	/**
+	 * Generates wifi tag
+	 * @param bssid
+	 * @param md5essid
+	 * @param ssid
+	 * @param capa
+	 * @param level
+	 * @param freq
+	 * @return
+	 */
+	private static String wifiToXml(final String bssid, final String md5essid, final String ssid, final String capa, final String level, final String freq) {
+		final StringBuffer s = new StringBuffer(WIFI_XML_DEFAULT_LENGTH);
+		s.append("\n\t\t<wifiap bssid=\"");
+		s.append(bssid);
+		s.append("\"");
+		s.append(" md5essid=\"");
+		s.append(md5essid);
+		s.append("\"");
+		s.append(" ssid=\"");
+		s.append(ssid);
+		s.append("\"");
+		s.append(" capa=\"");
+		s.append(capa);
+		s.append("\"");
+		s.append(" ss=\"");
+		s.append(level);
+		s.append("\"");
+		s.append(" ntiu=\"");
+		s.append(freq);
+		s.append("\"");
+		s.append("/>");
+		
+		return s.toString();
+	}
 
 	/**
 	 * Generates filename
@@ -456,38 +539,13 @@ public class WifiExporter implements UploadTaskListener {
 	 * naming pattern, otherwise files are ignored.
 	 * @return filename
 	 */
-	private static String generateFilename(final String user) {	
+	private String generateFilename(final String user) {	
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
-		Date now = new Date();
-		final String filename = /*user + "_V1_"*/ "V1_" + formatter.format(now) + "-wifi.xml";
-		return filename;
-	}
+		formatter.setCalendar(mTimestamp);
 
-	/* (non-Javadoc)
-	 * Fired upon upload completion. Will clean-up temp files
-	 * @see org.openbmap.soapclient.FileUploader.UploadTaskListener#onUploadCompleted()
-	 */
-	@Override
-	public final void onUploadCompleted(final ArrayList<String> uploaded) {
-		if (uploaded != null) {
-			if (!mSkipDelete) {
-				for (int i = 0; i < uploaded.size(); i++) {
-					File temp = new File(uploaded.get(i));
-					if (!temp.delete()) {
-						Log.e(TAG, "Error deleting " + uploaded.get(i));
-					}	
-				}
-			}
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openbmap.soapclient.FileUploader.UploadTaskListener#onUploadFailed(java.lang.String)
-	 */
-	@Override
-	public void onUploadFailed(final String error) {
-		// TODO Auto-generated method stub
-
+		// to avoid file name collisions we add 1 second on each call
+		mTimestamp.add(Calendar.SECOND, 1);
+		return "V1_" + formatter.format(mTimestamp.getTime()) + "-wifi.xml";
 	}
 
 }
