@@ -535,7 +535,7 @@ public class DataHelper {
 		String selection = null;
 		List<String> selectionArgs = new ArrayList<String>();
 		if (id != null) {
-			Log.d(TAG, "Loading single position with id " + id);
+			//Log.d(TAG, "Loading single position with id " + id);
 			selection = Schema.COL_ID + " = ?";
 			selectionArgs.add(id);
 		}

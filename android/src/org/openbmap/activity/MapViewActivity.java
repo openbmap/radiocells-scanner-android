@@ -73,6 +73,11 @@ OnCatalogLoadedListener,
 OnSessionLoadedListener,
 OnGpxLoadedListener {
 
+	/**
+	 * 
+	 */
+	private static final byte	FAILSAFE_ZOOM	= 18;
+
 	private static final String TAG = MapActivity.class.getSimpleName();
 
 	/**
@@ -103,12 +108,22 @@ OnGpxLoadedListener {
 	/**
 	 * 	Minimum time (in millis) between automatic overlay refresh
 	 */
-	protected static final float OVERLAY_REFRESH_DISTANCE = 2000;
+	protected static final float OVERLAY_REFRESH_INTERVAL = 2000;
 
+	/**
+	 * Minimum distance (in meter) between automatic overlay refresh
+	 */
+	protected static final float OVERLAY_REFRESH_DISTANCE = 10;
+	
 	/**
 	 * 	Minimum time (in millis) between gpx position refresh
 	 */
-	protected static final float GPX_REFRESH_DISTANCE = 1000;
+	protected static final float GPX_REFRESH_INTERVAL = 1000;
+
+	/**
+	 * Load more than currently visible objects?
+	 */
+	private static final boolean PREFETCH_MAP_OBJECTS	= true;
 
 	/**
 	 * Another wifi catalog overlay refresh is taking place
@@ -138,12 +153,17 @@ OnGpxLoadedListener {
 	/**
 	 * System time of last overlay refresh (in millis)
 	 */
-	private long	lastOverlayRefresh;
+	private long	overlayRefreshTime;
+	
+	/**
+	 * Location of last overlay refresh
+	 */
+	private Location overlayRefreshedAt = new Location("DUMMY");
 	
 	/**
 	 * System time of last gpx refresh (in millis)
 	 */
-	private long	lastGpxRefresh;
+	private long	gpxRefreshTime;
 
 	/**
 	 * MapView
@@ -172,7 +192,6 @@ OnGpxLoadedListener {
 
 		private Location location;
 	
-
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
 			// handling GPS broadcasts
@@ -189,13 +208,16 @@ OnGpxLoadedListener {
 
 				if (isValidLocation(location)) {
 					/*
-					 * Update overlays
-					 * Overlay refresh won't be triggered, if in free-move mode, i.e. snap to location deactivated
+					 * Update overlays if necessary, but only if
+					 * 1.) current zoom level >= 12 (otherwise single points not visible, huge performance impact)
+					 * 2.) overlay items haven't been refreshed for a while AND user has moved a bit
 					 */
-					if (mSnapToLocation.isChecked() && isOverlayDrawDistance()) {
-						drawOverlays(location);
+					//if (mSnapToLocation.isChecked() && (mMapView.getMapViewPosition().getZoomLevel() >= 12) && (isOverlayDrawDistance(location))) {
+					if ((mMapView.getMapViewPosition().getZoomLevel() >= 12) && (needOverlayRefresh(location))) {	
+					drawOverlays(location);
 					}
-					if (mSnapToLocation.isChecked() && isGpxDrawDistance()) {	
+					//if (mSnapToLocation.isChecked() && isGpxDrawDistance()) {		
+					if (needGpxRefresh()) {	
 						drawGpxTrace(location);
 					}
 
@@ -210,15 +232,28 @@ OnGpxLoadedListener {
 			} 
 		}
 
-		private boolean isGpxDrawDistance() {
-			return ((System.currentTimeMillis() - lastGpxRefresh) > GPX_REFRESH_DISTANCE);
+		/**
+		 * Is last gpx overlay update to old?
+		 * @return true if overlay needs refresh
+		 */
+		private boolean needGpxRefresh() {
+			return ((System.currentTimeMillis() - gpxRefreshTime) > GPX_REFRESH_INTERVAL);
 		}
 
 		/**
-		 * @return
+		 * Is new location far enough from last refresh location and is last refresh to old?
+		 * @return true if overlay needs refresh
 		 */
-		private boolean isOverlayDrawDistance() {
-			return ((System.currentTimeMillis() - lastOverlayRefresh) > OVERLAY_REFRESH_DISTANCE);
+		private boolean needOverlayRefresh(final Location current) {
+			if (current == null) { 
+				// fail safe: draw if something went wrong
+				return true;
+			}
+			
+			return (
+					(overlayRefreshedAt.distanceTo(current) > OVERLAY_REFRESH_DISTANCE)
+					&& ((System.currentTimeMillis() - overlayRefreshTime) > OVERLAY_REFRESH_INTERVAL) 
+					);
 		}
 
 		/**
@@ -231,6 +266,7 @@ OnGpxLoadedListener {
 				return false;
 			}
 			if (location.getLatitude() == 0 && location.getLongitude() == 0) {
+				// default location of uninitialised location
 				return false;
 			}
 			return true;
@@ -249,7 +285,6 @@ OnGpxLoadedListener {
 		// Register our gps broadcast mReceiver
 		registerReceiver();
 		initUi();
-
 	}
 
 	@Override
@@ -261,10 +296,10 @@ OnGpxLoadedListener {
 		registerReceiver();
 
 		if (this.getIntent().hasExtra(Schema.COL_ID)) {
-			int zoomOntoWifi = this.getIntent().getExtras().getInt(Schema.COL_ID);
-			Log.d(TAG, "Zooming onto " + zoomOntoWifi);
-			if (zoomOntoWifi != 0) {
-				loadSingleObject(zoomOntoWifi);
+			int focusWifi = this.getIntent().getExtras().getInt(Schema.COL_ID);
+			Log.d(TAG, "Zooming onto " + focusWifi);
+			if (focusWifi != 0) {
+				loadSingleObject(focusWifi);
 			}
 		}
 	}
@@ -298,6 +333,12 @@ OnGpxLoadedListener {
 	 */
 	private void initMap() {
 		mMapView = (MapView) findViewById(R.id.mvMap);
+		
+		// work-around for http://code.google.com/p/openbmap/issues/detail?id=12
+		// prevents crash when re-opening map view after previous crash
+		mMapView.getMapViewPosition().setZoomLevel(FAILSAFE_ZOOM);
+		Log.i(TAG, "Set to fail safe zoom");
+		
 		File mapFile = new File(
 				Environment.getExternalStorageDirectory().getPath()
 				+ prefs.getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
@@ -365,8 +406,8 @@ OnGpxLoadedListener {
 		if (!mRefreshCatalogPending) {
 			Log.d(TAG, "Updating wifi catalog overlay");
 			mRefreshCatalogPending = true;
-			loadCatalog();
-			lastOverlayRefresh = System.currentTimeMillis();
+			proceedAfterCatalogLoaded();
+			overlayRefreshTime = System.currentTimeMillis();
 		} else {
 			Log.v(TAG, "Reference overlay refresh in progress. Skipping refresh..");
 		}
@@ -374,8 +415,8 @@ OnGpxLoadedListener {
 		if (!mRefreshSessionPending) {
 			Log.d(TAG, "Updating session overlay");
 			mRefreshSessionPending = true;
-			loadSessionObjects(null);
-			lastOverlayRefresh = System.currentTimeMillis();
+			proceedAfterSessionObjectsLoaded(null);
+			overlayRefreshTime = System.currentTimeMillis();
 		} else {
 			Log.v(TAG, "Session overlay refresh in progress. Skipping refresh..");
 		}
@@ -388,8 +429,8 @@ OnGpxLoadedListener {
 		if (!mRefreshGpxPending) {
 			Log.d(TAG, "Updating gpx overlay");
 			mRefreshGpxPending = true;
-			loadGpxObjects();
-			lastGpxRefresh = System.currentTimeMillis();
+			proceedAfterGpxObjectsLoaded();
+			gpxRefreshTime = System.currentTimeMillis();
 		} else {
 			Log.v(TAG, "Gpx overlay refresh in progress. Skipping refresh..");
 		}
@@ -401,12 +442,25 @@ OnGpxLoadedListener {
 	 * @param center
 	 * 			For performance reasons only wifis around specified location are displayed.
 	 */
-	private void loadCatalog() {
+	private void proceedAfterCatalogLoaded() {
 		BoundingBox bbox = mMapView.getMapViewPosition().getBoundingBox();
-
-		// Load known wifis asynchronous
+		
+		double minLatitude = bbox.minLatitude;
+		double maxLatitude = bbox.maxLatitude;
+		double minLongitude = bbox.minLongitude;
+		double maxLongitude = bbox.maxLongitude;
+		
+		// query more than visible objects for smoother data scrolling / less database queries?
+		if (PREFETCH_MAP_OBJECTS) {
+			double latSpan = maxLatitude - minLatitude;
+			double lonSpan = maxLongitude - minLongitude;
+			minLatitude -= latSpan * 0.5;
+			maxLatitude += latSpan * 0.5;
+			minLongitude -= lonSpan * 0.5;
+			maxLongitude += lonSpan * 0.5;
+		}
 		WifiCatalogMapObjectsLoader task = new WifiCatalogMapObjectsLoader(this);
-		task.execute(bbox.minLatitude, bbox.maxLatitude, bbox.minLongitude, bbox.maxLongitude);
+		task.execute(minLatitude, maxLatitude, minLongitude, maxLongitude);
 
 	}
 
@@ -415,6 +469,7 @@ OnGpxLoadedListener {
 	 */
 	@Override
 	public final void onCatalogLoaded(final ArrayList<GeoPoint> points) {
+		Log.d(TAG, "Loaded catalog objects");
 		if (mWifiCatalogOverlay == null) {
 			Log.w(TAG, "Catalog overlay is null. Not yet initialized?");
 			return;
@@ -440,13 +495,29 @@ OnGpxLoadedListener {
 	 * @param highlight
 	 * 			If highlight is specified only this wifi is displayed
 	 */
-	private void loadSessionObjects(final WifiRecord highlight) {
-
+	private void proceedAfterSessionObjectsLoaded(final WifiRecord highlight) {
+		//Log.i(TAG, "Zoom " + mMapView.getMapViewPosition().getZoomLevel());
 		BoundingBox bbox = mMapView.getMapViewPosition().getBoundingBox();
 		if (highlight == null) {
 			// load all session wifis
+			
+			double minLatitude = bbox.minLatitude;
+			double maxLatitude = bbox.maxLatitude;
+			double minLongitude = bbox.minLongitude;
+			double maxLongitude = bbox.maxLongitude;
+			
+			// query more than visible objects for smoother data scrolling / less database queries?
+			if (PREFETCH_MAP_OBJECTS) {
+				double latSpan = maxLatitude - minLatitude;
+				double lonSpan = maxLongitude - minLongitude;
+				minLatitude -= latSpan * 0.5;
+				maxLatitude += latSpan * 0.5;
+				minLongitude -= lonSpan * 0.5;
+				maxLongitude += lonSpan * 0.5;
+			}
+			
 			SessionMapObjectsLoader task = new SessionMapObjectsLoader(this);
-			task.execute(bbox.minLatitude, bbox.maxLatitude, bbox.minLongitude, bbox.maxLatitude, null);
+			task.execute(minLatitude, maxLatitude, minLongitude, maxLatitude, null);
 		} else {
 			// draw specific wifi
 			SessionMapObjectsLoader task = new SessionMapObjectsLoader(this);
@@ -459,6 +530,7 @@ OnGpxLoadedListener {
 	 */
 	@Override
 	public final void onSessionLoaded(final ArrayList<GeoPoint> points) {
+		Log.d(TAG, "Loaded session objects");
 		if (mSessionOverlay == null) {
 			Log.w(TAG, "Session overlay is null. Not yet initialized?");
 			return;
@@ -484,7 +556,7 @@ OnGpxLoadedListener {
 	/*
 	 * Loads gpx points in visible range.
 	 */
-	private void loadGpxObjects() {
+	private void proceedAfterGpxObjectsLoaded() {
 		BoundingBox bbox = mMapView.getMapViewPosition().getBoundingBox();
 		GpxMapObjectsLoader task = new GpxMapObjectsLoader(this);
 		task.execute(bbox.minLatitude, bbox.maxLatitude, bbox.minLongitude, bbox.maxLatitude);
@@ -502,16 +574,7 @@ OnGpxLoadedListener {
 
 		List<OverlayItem> overlayItems = mGpxOverlay.getOverlayItems();
 
-		Paint paintStroke = new Paint(Paint.ANTI_ALIAS_FLAG);
-		paintStroke.setStyle(Paint.Style.STROKE);
-		paintStroke.setColor(Color.BLACK);
-		paintStroke.setAlpha(255);
-		paintStroke.setStrokeWidth(3);
-		paintStroke.setStrokeCap(Cap.ROUND);
-		paintStroke.setStrokeJoin(Paint.Join.ROUND);
-
-		PolygonalChain chain = new PolygonalChain(points);
-		Polyline line = new Polyline(chain, paintStroke);
+		Polyline line = createGpxSymbol(points);
 		overlayItems.add(line);
 
 		mRefreshGpxPending = false;
@@ -527,7 +590,7 @@ OnGpxLoadedListener {
 		WifiRecord wifi = dbHelper.loadWifiById(id);
 
 		if (wifi != null) {
-			loadSessionObjects(wifi);
+			proceedAfterSessionObjectsLoaded(wifi);
 		}
 	}
 
@@ -570,6 +633,25 @@ OnGpxLoadedListener {
 			Log.i(TAG, "Can't draw direction marker: no bearing provided");
 		}
 		mRefreshDirectionPending = false;
+	}
+
+	/**
+	 * Creates gpx overlay line
+	 * @param points
+	 * @return
+	 */
+	private static final Polyline createGpxSymbol(final ArrayList<GeoPoint> points) {
+		Paint paintStroke = new Paint(Paint.ANTI_ALIAS_FLAG);
+		paintStroke.setStyle(Paint.Style.STROKE);
+		paintStroke.setColor(Color.BLACK);
+		paintStroke.setAlpha(255);
+		paintStroke.setStrokeWidth(3);
+		paintStroke.setStrokeCap(Cap.ROUND);
+		paintStroke.setStrokeJoin(Paint.Join.ROUND);
+	
+		PolygonalChain chain = new PolygonalChain(points);
+		Polyline line = new Polyline(chain, paintStroke);
+		return line;
 	}
 
 	/**
