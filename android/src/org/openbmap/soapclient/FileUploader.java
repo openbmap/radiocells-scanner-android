@@ -14,7 +14,7 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.soapclient;
 
@@ -67,8 +67,8 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 	private UploadTaskListener mListener;
 
 	public interface UploadTaskListener {
-		void onUploadCompleted(ArrayList<String> uploaded);
-		void onUploadFailed(final String error);
+		void onUploadCompleted(String file);
+		void onUploadFailed(final String file, String error);
 	}
 
 	/**
@@ -79,55 +79,41 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 	private final String mUser;
 	private final String mPassword;
 	private String	mServer;
-	private ArrayList<String> uploaded;
+	private String mFile;
 
 	public FileUploader(final UploadTaskListener listener, final String user, final String password, final String server) {
 		mListener = listener;
 		mUser = user;
 		mPassword = password;
 		mServer = server;
-		uploaded = new ArrayList<String>();
 	}
 
 	/**
 	 * Background task. Note: When uploading several files
 	 * upload is continued even on errors (i.e. will try to upload other files)
+	 * @param params filenames 
 	 * @return true on success, false if at least one file upload failed
 	 */
 	@Override
 	protected final Boolean doInBackground(final String... params) {
-		Log.v(TAG, "Start background upload task");
-
-		boolean result = true;
-		for (int i = 0; i < params.length; i++) {
-			Log.i(TAG, "Uploading " + params[i]);
-
-			Boolean uploadOk = uploadFile(params[i]);
-			if (uploadOk) {
-				uploaded.add(params[i]);
-			} else {
-				Log.e(TAG, "Error uploading " + params[i]);
-			}
-
-			result |= uploadOk;	
-		}
-
-
-		return result;
+		Log.i(TAG, "Uploading " + params[0]);
+		mFile = params[0];
+		
+		Boolean uploadOk = upload(mFile);
+		return uploadOk;
 	}
 
 	@Override
 	protected final void onPostExecute(final Boolean success) {
-
 		if (success) {
 			if (mListener != null) {
-				mListener.onUploadCompleted(uploaded);
+				mListener.onUploadCompleted(mFile);
 			}
 			return;
 		} else {
 			if (mListener != null) {
 				Log.e(TAG, "Upload failed " + errorMsg);
-				mListener.onUploadFailed(errorMsg);
+				mListener.onUploadFailed(mFile, errorMsg);
 			}
 			return;
 		}
@@ -138,11 +124,11 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 	 * @param file File to upload (full path).
 	 * @return true on success, false on error
 	 */
-	private boolean uploadFile(final String file) {
-		
+	private boolean upload(final String file) {
+
 		// TODO check network state
 		// @see http://developer.android.com/training/basics/network-ops/connecting.html
-		
+
 		// Adjust HttpClient parameters
 		HttpParams httpParameters = new BasicHttpParams();
 		// Set the timeout in milliseconds until a connection is established.
