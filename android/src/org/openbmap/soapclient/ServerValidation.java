@@ -32,8 +32,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.NetworkInfo.State;
@@ -46,6 +44,11 @@ import android.util.Log;
  */
 
 public final class ServerValidation extends AsyncTask<String, Object, Object[]> {
+
+	/**
+	 * 
+	 */
+	private static final int	CONNECTION_TIMEOUT	= 10000;
 
 	private static final String	TAG	= ServerValidation.class.getSimpleName();
 	
@@ -61,6 +64,12 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 	 * How many seconds should we wait for state connected?
 	 */
 	private static final int	WAIT_FOR_CONNECTED	= 5;
+	
+	/**
+	 * URL for determine online status
+	 */
+	private static final String	ONLINE_CHECK_URL	= "http://www.openbmap.org/current_version.xml";
+
 	
 	public enum ServerAnswer {
 		OK,
@@ -249,10 +258,10 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 	private boolean isOnline() {
 		// try to connect openbmap.org
 		try {
-			URL url = new URL("http://www.openbmap.org" );
+			URL url = new URL(ONLINE_CHECK_URL);
 			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 			connection.setRequestProperty("Connection", "close");
-			// disabled: wait infinitely connection.setConnectTimeout(1000);
+			connection.setConnectTimeout(CONNECTION_TIMEOUT);
 			connection.connect();
 			if (connection.getResponseCode() == 200) {
 				Log.i(TAG, "Device is online");
