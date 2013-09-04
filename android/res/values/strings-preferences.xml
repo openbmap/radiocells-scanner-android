@@ -18,7 +18,7 @@
 		life)</string>
 	<string name="prefs_gps_logging_interval_seconds">seconds</string>
 	<string name ="prefs_save_gps_track">Save GPX track</string>
-	<string name ="prefs_save_gps_track_summary">Create GPX file for local analysis (won\'t be uploaded)</string>
+	<string name ="prefs_save_gps_track_summary">Create a GPX file for each uploaded session.\nFind gpx tracks in data directory.\n(Note: GPX tracks themselves will never be uploaded)</string>
 	<string name="prefs_ui">User interface</string>
 	<string name="prefs_map_none">None</string>
 	<string name="prefs_ui_keep_screen_on">Keep screen on</string>
@@ -71,8 +71,8 @@
 		<item>GPS_PROVIDER</item>
 	</string-array>
 	<string name="prefs_debug">Debug settings</string>
-    <string name="prefs_simulate_upload_summary">Save exports locally, but don\'t upload to server</string>
-    <string name="prefs_simulate_upload">Simulate upload</string>
-    <string name="prefs_keep_export_files_summary">Keep a local copy of upload files for later analysis</string>
+    <string name="prefs_simulate_upload_summary">Don\'t upload to server</string>
+    <string name="prefs_simulate_upload">Skip upload</string>
+    <string name="prefs_keep_export_files_summary">Keep a local copy of upload files.\nFind files in data directory.\n(Helpful for debugging)</string>
     <string name="prefs_keep_export_files">Keep upload files</string>
 </resources>

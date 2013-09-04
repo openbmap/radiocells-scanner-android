@@ -253,12 +253,15 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 			// and cleanup
 			if (!getSkipDelete()) {
 				// delete only successfully uploaded files
+				Log.i(TAG, "Deleting uploaded files");
 				for (int i = 0; i < mUploadedFiles.size(); i++) {
 					File temp = new File(mUploadedFiles.get(i));
 					if (!temp.delete()) {
 						Log.e(TAG, "Error deleting " + mUploadedFiles.get(i));
 					}	
 				}
+			} else {
+				Log.i(TAG, "Deleting files skipped");
 			}
 		}
 		// clean up a bit

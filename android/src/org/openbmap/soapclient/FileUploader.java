@@ -59,6 +59,12 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 	 * Field for multipart message: password
 	 */
 	private static final String	PASSWORD_FIELD	= "openBmap_passwd";
+	
+	/**
+	 * Retry upload how many times on failed upload
+	 * 0 means no retry
+	 */
+	private static final int	MAX_RETRIES	= 2;
 
 
 	/**
@@ -125,7 +131,28 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 	 * @return true on success, false on error
 	 */
 	private boolean upload(final String file) {
+		boolean success = performUpload(file);
+		
+		// simple resume upload mechanism on failed upload
+		int i = 0;
+		while (!success && i < MAX_RETRIES) {
+			Log.i(TAG, "Upload failed: Retry " + i + ": " + file);
+			success = performUpload(file);
+			i++;
+		}
+		
+		if (!success) {
+			Log.i(TAG, "Upload failed after " + i + " retries");
+		}
+		
+		return success;
+	}
 
+	/**
+	 * @param file
+	 * @return
+	 */
+	private boolean performUpload(final String file) {
 		// TODO check network state
 		// @see http://developer.android.com/training/basics/network-ops/connecting.html
 
@@ -133,10 +160,10 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 		HttpParams httpParameters = new BasicHttpParams();
 		// Set the timeout in milliseconds until a connection is established.
 		// The default value is zero, that means the timeout is not used. 
-		HttpConnectionParams.setConnectionTimeout(httpParameters, CONNECTION_TIMEOUT);
+		//HttpConnectionParams.setConnectionTimeout(httpParameters, CONNECTION_TIMEOUT);
 		// Set the default socket timeout (SO_TIMEOUT) 
 		// in milliseconds which is the timeout for waiting for data.
-		HttpConnectionParams.setSoTimeout(httpParameters, SOCKET_TIMEOUT);
+		//HttpConnectionParams.setSoTimeout(httpParameters, SOCKET_TIMEOUT);
 		DefaultHttpClient httpclient = new DefaultHttpClient(httpParameters);
 
 		HttpPost httppost = new HttpPost(mServer);
@@ -160,7 +187,7 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 		} catch (ClientProtocolException e) {
 			Log.e(TAG, e.getMessage());
 		} catch (IOException e) {
-			Log.e(TAG, e.getMessage());
+			Log.e(TAG, "I/O exception on file " + file);
 		}
 		return false;
 	}
