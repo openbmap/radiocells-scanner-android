@@ -17,8 +17,8 @@
     <string name="mncCaption">MNC</string>
     <string name="strenghtDbmCaption">Strength (dbm)</string>
     <string name="isServingCellCaption">Is serving cell?</string>
-    <string name="radiobeacon_licence">Licensed under AGPL v3&amp;gt;</string>
-    <string name="openbmap_data_source">Data: OpenBmap</string>
+    <string name="radiobeacon_licence">Licensed under AGPL v3</string>
+    <string name="openbmap_licence_caption">Data: OpenBmap</string>
     <string name="openbmap_license">CC-by-SA 3.0 / Odbl Licence</string>
     <string name="mapsforge_source">Maps library: Mapsforge Library</string>
     <string name="mapsforge_license">GNU LGPL3 licence</string>
@@ -26,7 +26,7 @@
     <string name="map_data_source">Map data: Openstreetmap</string>
     <string name="map_data_license">Odbl Licence</string>
     <string name="other_credits">Some great ideas were taken from OSMTracker, stack overflow discussions and any many, many others</string>
-    <string name="bug_report">Please report bugs or improvements in the forums at http://sourceforge.net/projects/myposition/</string>
+    <string name="bug_report">Always find the latest version (and the bug tracker) at</string>
     <string name="subtitle">OpenBmap Wifi &amp; Cell Logger</string>
     <string name="website">http://www.openbmap.org</string>
     <string name="sessions">Sessions</string>
@@ -80,4 +80,6 @@
     <string name="app_description">Openbmap.org wifi and cell logger</string>
     <string name="error">Error</string>
     <string name="no_data_connection">No data connection!</string>
+    <string name="link_repository">http://code.google.com/p/openbmap/</string>
+    <string name="radiobeacon_licence_caption">Client licence</string>
 </resources>

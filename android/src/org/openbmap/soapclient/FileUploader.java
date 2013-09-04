@@ -136,13 +136,13 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 		// simple resume upload mechanism on failed upload
 		int i = 0;
 		while (!success && i < MAX_RETRIES) {
-			Log.i(TAG, "Upload failed: Retry " + i + ": " + file);
+			Log.w(TAG, "Upload failed: Retry " + i + ": " + file);
 			success = performUpload(file);
 			i++;
 		}
 		
 		if (!success) {
-			Log.i(TAG, "Upload failed after " + i + " retries");
+			Log.e(TAG, "Upload failed after " + i + " retries");
 		}
 		
 		return success;

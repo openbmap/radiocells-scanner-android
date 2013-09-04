@@ -372,7 +372,7 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 
 	@Override
 	public final boolean onOptionsItemSelected(final MenuItem item) {
-		Log.d(TAG, "OptionItemSelected, handled by SessionActivity");
+		//Log.d(TAG, "OptionItemSelected, handled by SessionActivity");
 		switch (item.getItemId()) {
 			case R.id.menu_create_new_session:
 				startCommand();
