@@ -81,7 +81,7 @@ public class DataHelper {
 				.withValue(Schema.COL_LATITUDE, begin.getLatitude())
 				.withValue(Schema.COL_LONGITUDE, begin.getLongitude())
 				.withValue(Schema.COL_ALTITUDE, begin.getAltitude())
-				.withValue(Schema.COL_TIMESTAMP, begin.getTimestamp())
+				.withValue(Schema.COL_TIMESTAMP, begin.getOpenBmapTimestamp())
 				.withValue(Schema.COL_ACCURACY, begin.getAccuracy())
 				.withValue(Schema.COL_BEARING, begin.getBearing())
 				.withValue(Schema.COL_SPEED, begin.getSpeed())
@@ -94,7 +94,7 @@ public class DataHelper {
 				.withValue(Schema.COL_LATITUDE, end.getLatitude())
 				.withValue(Schema.COL_LONGITUDE, end.getLongitude())
 				.withValue(Schema.COL_ALTITUDE, end.getAltitude())
-				.withValue(Schema.COL_TIMESTAMP, end.getTimestamp())
+				.withValue(Schema.COL_TIMESTAMP, end.getOpenBmapTimestamp())
 				.withValue(Schema.COL_ACCURACY, end.getAccuracy())
 				.withValue(Schema.COL_BEARING, end.getBearing())
 				.withValue(Schema.COL_SPEED, end.getSpeed())
@@ -110,7 +110,7 @@ public class DataHelper {
 					.withValue(Schema.COL_CAPABILITIES, wifi.getCapabilities())
 					.withValue(Schema.COL_FREQUENCY, wifi.getFrequency())
 					.withValue(Schema.COL_LEVEL, wifi.getLevel())
-					.withValue(Schema.COL_TIMESTAMP, wifi.getTimestamp())
+					.withValue(Schema.COL_TIMESTAMP, wifi.getOpenBmapTimestamp())
 					.withValueBackReference (Schema.COL_BEGIN_POSITION_ID, 0) /* Index is 0 because Foo A is the first operation in the array*/
 					.withValueBackReference (Schema.COL_END_POSITION_ID, 1)
 					.withValue(Schema.COL_SESSION_ID, wifi.getSessionId())
@@ -158,7 +158,7 @@ public class DataHelper {
 			wifi.setCapabilities(ca.getString(columnIndex3));
 			wifi.setFrequency(ca.getInt(columnIndex4));
 			wifi.setLevel(ca.getInt(columnIndex5));
-			wifi.setTimestamp(ca.getLong(columnIndex6));
+			wifi.setOpenBmapTimestamp(ca.getLong(columnIndex6));
 
 			// TODO: not too safe ..
 			wifi.setBeginPosition(loadPositions(ca.getString(columnIndex7)).get(0));
@@ -239,7 +239,7 @@ public class DataHelper {
 			wifi.setCapabilities(ca.getString(columnIndex3));
 			wifi.setFrequency(ca.getInt(columnIndex4));
 			wifi.setLevel(ca.getInt(columnIndex5));
-			wifi.setTimestamp(ca.getLong(columnIndex6));
+			wifi.setOpenBmapTimestamp(ca.getLong(columnIndex6));
 
 			// TODO: not too safe ..
 			wifi.setBeginPosition(loadPositions(ca.getString(columnIndex7)).get(0));
@@ -281,7 +281,7 @@ public class DataHelper {
 			wifi.setCapabilities(ca.getString(columnIndex3));
 			wifi.setFrequency(ca.getInt(columnIndex4));
 			wifi.setLevel(ca.getInt(columnIndex5));
-			wifi.setTimestamp(ca.getLong(columnIndex6));
+			wifi.setOpenBmapTimestamp(ca.getLong(columnIndex6));
 
 			// TODO: not too safe ..
 			wifi.setBeginPosition(loadPositions(ca.getString(columnIndex7)).get(0));
@@ -336,7 +336,7 @@ public class DataHelper {
 				.withValue(Schema.COL_LATITUDE, begin.getLatitude())
 				.withValue(Schema.COL_LONGITUDE, begin.getLongitude())
 				.withValue(Schema.COL_ALTITUDE, begin.getAltitude())
-				.withValue(Schema.COL_TIMESTAMP, begin.getTimestamp())
+				.withValue(Schema.COL_TIMESTAMP, begin.getOpenBmapTimestamp())
 				.withValue(Schema.COL_ACCURACY, begin.getAccuracy())
 				.withValue(Schema.COL_BEARING, begin.getBearing())
 				.withValue(Schema.COL_SPEED, begin.getSpeed())
@@ -349,7 +349,7 @@ public class DataHelper {
 				.withValue(Schema.COL_LATITUDE, end.getLatitude())
 				.withValue(Schema.COL_LONGITUDE, end.getLongitude())
 				.withValue(Schema.COL_ALTITUDE, end.getAltitude())
-				.withValue(Schema.COL_TIMESTAMP, end.getTimestamp())
+				.withValue(Schema.COL_TIMESTAMP, end.getOpenBmapTimestamp())
 				.withValue(Schema.COL_ACCURACY, end.getAccuracy())
 				.withValue(Schema.COL_BEARING, end.getBearing())
 				.withValue(Schema.COL_SPEED, end.getSpeed())
@@ -372,7 +372,7 @@ public class DataHelper {
 						.withValue(Schema.COL_OPERATORNAME, cell.getOperatorName())
 						.withValue(Schema.COL_OPERATOR, cell.getOperator())
 						.withValue(Schema.COL_STRENGTHDBM, cell.getStrengthdBm())
-						.withValue(Schema.COL_TIMESTAMP, cell.getTimestamp())
+						.withValue(Schema.COL_TIMESTAMP, cell.getOpenBmapTimestamp())
 						.withValueBackReference (Schema.COL_BEGIN_POSITION_ID, 0) // Index is 0 because first operation stores cell position
 						.withValueBackReference (Schema.COL_END_POSITION_ID, 1)
 						.withValue(Schema.COL_SESSION_ID, cell.getSessionId())
@@ -402,7 +402,7 @@ public class DataHelper {
 						.withValue(Schema.COL_OPERATORNAME, cell.getOperatorName())
 						.withValue(Schema.COL_OPERATOR, cell.getOperator())
 						.withValue(Schema.COL_STRENGTHDBM, cell.getStrengthdBm())
-						.withValue(Schema.COL_TIMESTAMP, cell.getTimestamp())
+						.withValue(Schema.COL_TIMESTAMP, cell.getOpenBmapTimestamp())
 						.withValueBackReference (Schema.COL_BEGIN_POSITION_ID, 0) // Index is 0 because first operation stores cell position
 						.withValueBackReference (Schema.COL_END_POSITION_ID, 1)
 						.withValue(Schema.COL_SESSION_ID, cell.getSessionId())
@@ -503,7 +503,7 @@ public class DataHelper {
 		cell.setNetworkId(cursor.getString(colNetworkId));
 		cell.setSystemId(cursor.getString(colSystemId));
 		cell.setStrengthdBm(cursor.getInt(colStrengthDbm)); 
-		cell.setTimestamp(cursor.getLong(colTimestamp)); 
+		cell.setOpenBmapTimestamp(cursor.getLong(colTimestamp)); 
 		// TODO: dirty ...
 		cell.setBeginPosition(loadPositions(cursor.getString(colBeginPositionId)).get(0));
 		cell.setEndPosition(loadPositions(cursor.getString(colEndPositionId)).get(0));
@@ -597,7 +597,7 @@ public class DataHelper {
 		position.setLongitude(cursor.getDouble(columnIndex2));
 		position.setAltitude(cursor.getDouble(columnIndex3));
 		position.setAccuracy(cursor.getDouble(columnIndex4));
-		position.setTimestamp(cursor.getLong(columnIndex5));
+		position.setTimestampByMillis(cursor.getLong(columnIndex5));
 		position.setBearing(cursor.getDouble(columnIndex6));
 		position.setSpeed(cursor.getDouble(columnIndex7));
 		position.setSession(cursor.getInt(columnIndex8));
@@ -778,7 +778,7 @@ public class DataHelper {
 		values.put(Schema.COL_LATITUDE, pos.getLatitude());
 		values.put(Schema.COL_LONGITUDE, pos.getLongitude());
 		values.put(Schema.COL_ALTITUDE, pos.getAltitude());
-		values.put(Schema.COL_TIMESTAMP, pos.getTimestamp());
+		values.put(Schema.COL_TIMESTAMP, pos.getOpenBmapTimestamp());
 		values.put(Schema.COL_ACCURACY, pos.getAccuracy());
 		values.put(Schema.COL_BEARING, pos.getBearing());
 		values.put(Schema.COL_SPEED, pos.getSpeed());

@@ -496,8 +496,8 @@ public class WirelessLoggerService extends AbstractService {
 								wifi.setCapabilities(r.capabilities);
 								wifi.setFrequency(r.frequency);
 								wifi.setLevel(r.level);
-								// TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
-								wifi.setTimestamp(begin.getTimestamp());
+								// TODO: clumsy: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
+								wifi.setOpenBmapTimestamp(begin.getOpenBmapTimestamp());
 								wifi.setBeginPosition(begin);
 								wifi.setEndPosition(end);
 								wifi.setSessionId(mSessionId);
@@ -626,7 +626,7 @@ public class WirelessLoggerService extends AbstractService {
 			// generic cell info (equal for CDMA and GSM)
 			serving.setNetworkType(mTelephonyManager.getNetworkType());
 			// TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
-			serving.setTimestamp(cellPos.getTimestamp());
+			serving.setOpenBmapTimestamp(cellPos.getOpenBmapTimestamp());
 			serving.setBeginPosition(cellPos);
 			// so far we set end position = begin position 
 			serving.setEndPosition(cellPos);
@@ -664,7 +664,7 @@ public class WirelessLoggerService extends AbstractService {
 			// generic cell info (equal for CDMA and GSM)
 			serving.setNetworkType(mTelephonyManager.getNetworkType());
 			// TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
-			serving.setTimestamp(cellPos.getTimestamp());
+			serving.setOpenBmapTimestamp(cellPos.getOpenBmapTimestamp());
 			serving.setBeginPosition(cellPos);
 			// so far we set end position = begin position 
 			serving.setEndPosition(cellPos);
@@ -714,7 +714,7 @@ public class WirelessLoggerService extends AbstractService {
 				// add neigboring cells		
 				CellRecord neighbor = new CellRecord(mSessionId);
 				// TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
-				neighbor.setTimestamp(cellPos.getTimestamp());
+				neighbor.setOpenBmapTimestamp(cellPos.getOpenBmapTimestamp());
 				neighbor.setBeginPosition(cellPos);
 				// so far we set end position = begin position 
 				neighbor.setEndPosition(cellPos);

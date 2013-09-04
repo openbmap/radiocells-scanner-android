@@ -37,7 +37,11 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 	private String mCapabilities;
 	private int mFrequency;
 	private int mLevel;
-	private long mTimestamp;
+	
+	/**
+	 * Timestamp in openbmap format: YYYYMMDDHHMMSS
+	 */
+	private long mOpenBmapTimestamp;
 	private boolean mIsNew;
 
 	private PositionRecord mBeginPosition;
@@ -81,7 +85,7 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 		setCapabilities(capabilities);
 		setFrequency(frequency);
 		setLevel(level);
-		setTimestamp(timestamp);
+		setOpenBmapTimestamp(timestamp);
 		setBeginPosition(request);
 		setEndPosition(last);
 		setSessionId(session);
@@ -154,12 +158,12 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 		this.mLevel = level;
 	}
 
-	public final long getTimestamp() {
-		return mTimestamp;
+	public final long getOpenBmapTimestamp() {
+		return mOpenBmapTimestamp;
 	}
 
-	public final void setTimestamp(final long timestamp) {
-		this.mTimestamp = timestamp;
+	public final void setOpenBmapTimestamp(final long timestamp) {
+		this.mOpenBmapTimestamp = timestamp;
 	}
 
 	public final PositionRecord getBeginPosition() {

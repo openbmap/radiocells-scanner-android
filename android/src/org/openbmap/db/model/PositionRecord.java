@@ -18,7 +18,9 @@
 
 package org.openbmap.db.model;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 
 import org.openbmap.RadioBeacon;
@@ -34,7 +36,16 @@ public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 	private double mLongitude;
 	private double mAltitude;
 	private double mAccuracy;
-	private long mTimestamp;
+	/**
+	 * Timestamp in openbmap format: YYYYMMDDHHMMSS
+	 */
+	private long mOpenBmapTimestamp;
+	
+	/**
+	 * Timestamp in millis
+	 */
+	private long mMillisTimestamp;
+	
 	private double mBearing;
 	private double mSpeed;
 	private int	mSession;
@@ -49,7 +60,7 @@ public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 		setLongitude(loc.getLongitude());
 		setAltitude(loc.getAltitude());
 		setAccuracy(loc.getAccuracy());
-		setTimestamp(loc.getTime());
+		setTimestampByMillis(loc.getTime());
 		setBearing(loc.getBearing());
 		setSpeed(loc.getSpeed());
 		setSession(session);
@@ -105,22 +116,51 @@ public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 	}
 
 
-	public final long getTimestamp() {
-		return mTimestamp;
+	/**
+	 * Gets time stamp in OpenBmap format: YYYYMMDDHHMMSS
+	 * @return time stamp
+	 */
+	public final long getOpenBmapTimestamp() {
+		return mOpenBmapTimestamp;
 	}
-
 
 	/**
-	 * Sets timestamp. The timestamp is converted from UTC to human readable format here,
-	 * i.e. YYYYMMDDHHMMSS
-	 * @param timestamp Timestamp in UTC, i.e. in milliseconds since January 1, 1970. 
+	 * Gets time stamp in Millis
+	 * @return time stamp
 	 */
-	public final void setTimestamp(final long timestamp) {
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
-		this.mTimestamp = Long.valueOf(formatter.format(timestamp));
+	public final long getMillisTimestamp() {
+		return mMillisTimestamp;
+	}
+	
+	/**
+	 * Sets time stamp. The time stamp is converted from UTC to human readable format here, i.e. YYYYMMDDHHMMSS <p>
+	 * The conversion itself is considered bad. It's considered as good practice to store time stamp UTC system mills,
+	 * but this conversion is necessary for historical reasons and the fact that the openbmap server expects
+	 * time stamps in YYYYMMDDHHMMSS format <p>
+	 * If you change something here, don't forget reworking the gpx exporter
+	 * @param millis Time stamp in UTC, i.e. in milliseconds since January 1, 1970. 
+	 */
+	public final void setTimestampByMillis(final long millis) {
+		this.mMillisTimestamp = millis;
+		final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
+		this.mOpenBmapTimestamp = Long.valueOf(formatter.format(millis));
 	}
 
-
+	 /**
+	 * Sets time stamp
+	 *  @param openbmap time stamp in OpenBmap format YYYYMMDDHHMMSS
+	 */
+	public final void setTimestampByOpenbmap(final long openbmap) {
+		this.mOpenBmapTimestamp = openbmap;
+		final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
+		try {
+			final Date converted =  formatter.parse(String.valueOf(openbmap));
+			this.mMillisTimestamp = converted.getTime();
+		} catch (ParseException e) {
+			this.mMillisTimestamp = 0;
+		}		
+	}
+	
 	public final double getBearing() {
 		return mBearing;
 	}
@@ -164,7 +204,7 @@ public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 				&& (getLongitude() == oneCell.getLongitude())
 				&& (getAltitude() == oneCell.getAltitude())
 				&& (getAccuracy() == oneCell.getAccuracy())
-				&& (getTimestamp() == oneCell.getTimestamp())
+				&& (getOpenBmapTimestamp() == oneCell.getOpenBmapTimestamp())
 				&& (getSession() == oneCell.getSession());
 	}
 
@@ -179,7 +219,7 @@ public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 		result += result * PRIME + Double.doubleToLongBits(getLongitude());
 		result += result * PRIME + Double.doubleToLongBits(getAltitude());
 		result += result * PRIME + Double.doubleToLongBits(getAccuracy());
-		result += result * PRIME + (int) (getTimestamp() ^ (getTimestamp() >>> 32));
+		result += result * PRIME + (int) (getOpenBmapTimestamp() ^ (getOpenBmapTimestamp() >>> 32));
 		result += result * PRIME + getSession();
 		return result;
 	}

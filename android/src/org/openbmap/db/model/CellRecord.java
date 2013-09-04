@@ -90,7 +90,10 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	 */
 	private int mStrengthdBm;
 
-	private long mTimestamp;
+	/**
+	 * Timestamp in openbmap format: YYYYMMDDHHMMSS
+	 */
+	private long mOpenBmapTimestamp;
 
 	private boolean mIsCdma;
 
@@ -275,12 +278,12 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 		this.mEndPosition = position;
 	}
 
-	public final long getTimestamp() {
-		return mTimestamp;
+	public final long getOpenBmapTimestamp() {
+		return mOpenBmapTimestamp;
 	}
 
-	public final void setTimestamp(final long timestamp) {
-		this.mTimestamp = timestamp;
+	public final void setOpenBmapTimestamp(final long timestamp) {
+		this.mOpenBmapTimestamp = timestamp;
 	}
 
 	/**

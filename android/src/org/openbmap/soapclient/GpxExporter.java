@@ -22,6 +22,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -88,9 +89,15 @@ public class GpxExporter {
 			+ " OFFSET ?";
 
 	/**
-	 * Date format for a point timestamp.
+	 * Date format as used internally
 	 */
-	private static final SimpleDateFormat POINT_DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+	private static final SimpleDateFormat INTERNAL_DATE_FORMAT = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
+	
+	/**
+	 * Date format for a gpx point timestamp.
+	 * ISO 8601 format
+	 */
+	private static final SimpleDateFormat GPX_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
 
 	private int	mSession;
 
@@ -115,7 +122,7 @@ public class GpxExporter {
 		Log.i(TAG, "Finished building gpx file");
 		mDbHelper = new DatabaseHelper(mContext);
 		
-		BufferedWriter bw = new BufferedWriter(new FileWriter(target) , 64 * 1024);
+		BufferedWriter bw = new BufferedWriter(new FileWriter(target) , 32 * 1024);
 		
 		bw.write(XML_HEADER);
 		bw.write(TAG_GPX);
@@ -170,7 +177,8 @@ public class GpxExporter {
 				bw.write(String.valueOf(c.getDouble(colAltitude)));
 				bw.write("</ele>");
 				bw.write("<time>");
-				bw.write(POINT_DATE_FORMATTER.format(new Date(c.getLong(colTimestamp))));
+				// time stamp conversion to ISO 8601
+				bw.write(getGpxDate(c.getLong(colTimestamp)));
 				bw.write("</time>");
 				bw.write("</trkpt>\n");
 
@@ -201,7 +209,7 @@ public class GpxExporter {
 		Log.i(TAG, "Writing wifi waypoints");
 		
 		Cursor c = mDbHelper.getReadableDatabase().rawQuery(WIFI_POINTS_SQL_QUERY, new String[]{String.valueOf(mSession), String.valueOf(0)});
-
+	
 		final int colLatitude = c.getColumnIndex(Schema.COL_LATITUDE);
 		final int colLongitude = c.getColumnIndex(Schema.COL_LONGITUDE);
 		final int colAltitude = c.getColumnIndex(Schema.COL_ALTITUDE);
@@ -223,13 +231,14 @@ public class GpxExporter {
 				bw.write(String.valueOf(c.getDouble(colAltitude)));
 				bw.write("</ele>\n");
 				bw.write("\t\t<time>");
-				bw.write(POINT_DATE_FORMATTER.format(new Date(c.getLong(colTimestamp))));
+				// time stamp conversion to ISO 8601
+				bw.write(getGpxDate(c.getLong(colTimestamp)));
 				bw.write("</time>\n");
 				bw.write("\t\t<name>");
 				bw.write(StringEscapeUtils.escapeXml(c.getString(colName)));
 				bw.write("</name>\n");
 				bw.write("\t</wpt>\n");
-
+	
 				c.moveToNext();
 			}
 			//bw.write(out.toString());
@@ -242,7 +251,7 @@ public class GpxExporter {
 		c.close();
 		System.gc();
 	}
-	
+
 	/**
 	 * Iterates on way points and write them.
 	 * @param bw Writer to the target file.
@@ -252,13 +261,13 @@ public class GpxExporter {
 	private void writeCells(final BufferedWriter bw) throws IOException {
 		Log.i(TAG, "Writing cell waypoints");
 		Cursor c = mDbHelper.getReadableDatabase().rawQuery(CELL_POINTS_SQL_QUERY, new String[]{String.valueOf(mSession), String.valueOf(0)});
-
+	
 		final int colLatitude = c.getColumnIndex(Schema.COL_LATITUDE);
 		final int colLongitude = c.getColumnIndex(Schema.COL_LONGITUDE);
 		final int colAltitude = c.getColumnIndex(Schema.COL_ALTITUDE);
 		final int colTimestamp = c.getColumnIndex(Schema.COL_TIMESTAMP);
 		final int colName = c.getColumnIndex("name");
-
+	
 		long outer = 0;
 		while (!c.isAfterLast()) {
 			c.moveToFirst();
@@ -274,13 +283,14 @@ public class GpxExporter {
 				bw.write(String.valueOf(c.getDouble(colAltitude)));
 				bw.write("</ele>\n");
 				bw.write("\t\t<time>");
-				bw.write(POINT_DATE_FORMATTER.format(new Date(c.getLong(colTimestamp))));
+				// time stamp conversion to ISO 8601
+				bw.write(getGpxDate(c.getLong(colTimestamp)));
 				bw.write("</time>\n");
 				bw.write("\t\t<name>");
 				bw.write(StringEscapeUtils.escapeXml(c.getString(colName)));
 				bw.write("</name>\n");
 				bw.write("\t</wpt>\n");
-
+	
 				c.moveToNext();
 			}
 			
@@ -293,5 +303,23 @@ public class GpxExporter {
 		}
 		c.close();
 		System.gc();
+	}
+
+	/**
+	 * Converts from openbmap date format (YYYYMMDDHHMMSS) to gpx date format (ISO 8601)
+	 * @param raw Openbmap date
+	 * @return ISO 8601 date
+	 */
+	private static String getGpxDate(final long raw) {
+		try {
+			// for gpx files we need data in ISO 8601 format (e.g. 2011-12-31T23:59:59Z)
+			// as opposed to openbmap database format YYYYMMDDHHMMSS
+			final Date converted = INTERNAL_DATE_FORMAT.parse(String.valueOf(raw));
+			return (GPX_DATE_FORMAT.format(converted));
+		} catch (ParseException e) {
+			// should never happen
+			Log.e(TAG, "Error converting gpx date. Source " + raw);
+			return "0000-00-00T00:00:00Z";
+		}
 	}
 }

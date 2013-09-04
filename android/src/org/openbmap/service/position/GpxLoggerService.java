@@ -168,7 +168,7 @@ public class GpxLoggerService extends AbstractService {
 	private void performGpsUpdate(final Location gpsLocation, final String source) {
 		// Is cell tracking disabled?
 		if (!prefs.getBoolean(Preferences.KEY_GPS_SAVE_COMPLETE_TRACK, Preferences.VAL_GPS_SAVE_COMPLETE_TRACK)) {
-			Log.i(TAG, "Didn't save gps: gps tracking is disabled.");
+			Log.i(TAG, "Didn't save gpx: saving gpx is disabled.");
 			return;
 		}
 
