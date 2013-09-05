@@ -144,7 +144,7 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 					return;
 				}
 			})
-			.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+			.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(final DialogInterface dialog, final int which) {
 					dialog.cancel();
@@ -173,7 +173,7 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 					return;
 				}
 			})
-			.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+			.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(final DialogInterface dialog, final int which) {
 					dialog.cancel();
@@ -426,18 +426,18 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 
 		// as we have the session now as xml files, we can delete it from database
 		new AlertDialog.Builder(this)
-		.setTitle("Session has been uploaded")
-		.setMessage("Do you want to delete current session?")
+		.setTitle(R.string.session_uploaded)
+		.setMessage(R.string.do_you_want_to_delete_this_session)
 		.setCancelable(true)
 		.setIcon(android.R.drawable.ic_dialog_alert)
-		.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+		.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(final DialogInterface dialog, final int which) {
 				deleteCommand(id);
 				dialog.dismiss();
 			}
 		})
-		.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+		.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(final DialogInterface dialog, final int which) {
 				dialog.cancel();

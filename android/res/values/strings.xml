@@ -82,4 +82,6 @@
     <string name="no_data_connection">No data connection!</string>
     <string name="link_repository">http://code.google.com/p/openbmap/</string>
     <string name="radiobeacon_licence_caption">Client licence</string>
+    <string name="session_uploaded">Session uploaded</string>
+    <string name="do_you_want_to_delete_this_session">Do you want to delete this session?</string>
 </resources>

@@ -28,10 +28,10 @@ import org.openbmap.db.RadioBeaconContentProvider;
 import org.openbmap.db.Schema;
 import org.openbmap.db.model.Session;
 
-import android.content.Context;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.database.ContentObserver;
 import android.database.Cursor;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ListFragment;
@@ -178,37 +178,27 @@ public class SessionListFragment extends ListFragment implements LoaderCallbacks
 				stop(mSelectedId);
 				mListener.requestExportCommand(mSelectedId);
 				return true;
-				/*
-				if (isAllowedVersion()) {
-					upload();
-				} else {
-					// Fallback mechanism if version validation fails..
-					Log.w(TAG, "StaleVersion checker reports error.");
-					new AlertDialog.Builder(this.getActivity())
-					.setTitle("Next steps")
-					.setMessage("Couldn't verify client version online.\n"
-							+ "Try to upload your data nevertheless?"
-							)
-							.setCancelable(true)
-							.setIcon(android.R.drawable.ic_dialog_alert)
-							.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(final DialogInterface dialog, final int which) {
-									upload();
-									dialog.dismiss();
-								}
-							})
-							.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(final DialogInterface dialog, final int which) {
-									dialog.cancel();
-								}
-							}).create().show();
-				}
-				return true;*/
 			case R.id.menu_delete_session:
-				stop(mSelectedId);
-				mListener.deleteCommand(mSelectedId);
+				new AlertDialog.Builder(getActivity())
+				.setTitle(R.string.session_uploaded)
+				.setMessage(R.string.do_you_want_to_delete_this_session)
+				.setCancelable(true)
+				.setIcon(android.R.drawable.ic_dialog_alert)
+				.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(final DialogInterface dialog, final int which) {
+						stop(mSelectedId);
+						mListener.deleteCommand(mSelectedId);
+						dialog.dismiss();
+					}
+				})
+				.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(final DialogInterface dialog, final int which) {
+						dialog.cancel();
+					}
+				}).create().show();
+				
 				return true;
 			case R.id.menu_delete_all_sessions:
 				stop(mSelectedId);
