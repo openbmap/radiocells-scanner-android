@@ -1,0 +1,1 @@
+Folder for files where wrong lat/lon position has been corrected
