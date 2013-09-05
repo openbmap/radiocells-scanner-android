@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.openbmap.R;
+import org.openbmap.RadioBeacon;
 import org.openbmap.soapclient.FileUploader.UploadTaskListener;
 
 import android.annotation.SuppressLint;
@@ -167,7 +168,7 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 			Log.i(TAG, "Exporting cells");
 			// export cells
 			publishProgress(mContext.getResources().getString(R.string.exporting_cells), 0);
-			cellFiles = new CellExporter(mContext, mSession, mTargetPath, mUser).export();
+			cellFiles = new CellExporter(mContext, mSession, mTargetPath, mUser, RadioBeacon.SW_VERSION).export();
 
 			// upload
 			if (!getSkipUpload()) {
@@ -200,7 +201,7 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 			Log.i(TAG, "Exporting wifis");
 			// export wifis
 			publishProgress(mContext.getResources().getString(R.string.exporting_wifis), 50);
-			wifiFiles = new WifiExporter(mContext, mSession, mTargetPath, mUser).export();
+			wifiFiles = new WifiExporter(mContext, mSession, mTargetPath, mUser, RadioBeacon.SW_VERSION).export();
 
 			// upload
 			if (!getSkipUpload()) {

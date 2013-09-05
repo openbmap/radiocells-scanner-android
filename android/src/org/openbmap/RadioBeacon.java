@@ -127,7 +127,7 @@ public final class RadioBeacon {
 	 * SW Version string for XML files and credit screens
 	 * Caution: If you change client version, check whether you need to adjust current_version.xml on server and {@link VERSION_COMPATIBILITY} 
 	 */
-	public static final String SW_VERSION = "00.7.00";
+	public static final String SW_VERSION = "00.7.01";
 	
 	/**
 	 * {@link ServerValidation} compares server version against VERSION_COMPATIBILITY to check whether client is outdated.

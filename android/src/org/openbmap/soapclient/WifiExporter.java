@@ -160,6 +160,14 @@ public class WifiExporter  {
 	 */
 	private Calendar mTimestamp;
 
+	/**
+	 * Two version numbers are tracked:
+	 * 	- Radiobeacon version used for tracking (available from session record)
+	 *  - Radiobeacon version used for exporting (available at runtime)
+	 * mExportVersion describes the later
+	 */
+	private String	mExportVersion;
+
 	private static final String WIFI_SQL_QUERY = " SELECT " + Schema.TBL_WIFIS + "." + Schema.COL_ID + " AS \"_id\","
 			+ Schema.COL_BSSID + ", "
 			+ Schema.COL_SSID + ", "
@@ -194,21 +202,21 @@ public class WifiExporter  {
 			+ " LIMIT " + CURSOR_SIZE
 			+ " OFFSET ?";
 
-
-
 	/**
 	 * Default constructor
 	 * @param context	Activities' context
 	 * @param session Session id to export
 	 * @param tempPath (full) path where temp files are saved. Will be created, if not existing.
-	 * @param user Openbmap username, required for file name generation
+	 * @param user OpenBmap user name, required for file name generation
+	 * @param exportVersion current Radiobeacon version (can differ from Radiobeacon version used for tracking) 
 	 */
-	public WifiExporter(final Context context, final int session, final String tempPath, final String user) {
+	public WifiExporter(final Context context, final int session, final String tempPath, final String user, final String exportVersion) {
 		this.mContext = context;
 		this.mSession = session;
 		this.mTempPath = tempPath;
 		this.mUser = user;
-		mTimestamp = Calendar.getInstance();
+		this.mExportVersion = exportVersion;
+		this.mTimestamp = Calendar.getInstance();
 
 		ensureTempPath(mTempPath);
 
@@ -331,7 +339,7 @@ public class WifiExporter  {
 
 			// Write header
 			bw.write(XML_HEADER);
-			bw.write(logToXml(headerRecord.getManufacturer(), headerRecord.getModel(), headerRecord.getRevision(), headerRecord.getSwid(), headerRecord.getSwVersion()));
+			bw.write(logToXml(headerRecord.getManufacturer(), headerRecord.getModel(), headerRecord.getRevision(), headerRecord.getSwid(), headerRecord.getSwVersion(), mExportVersion));
 			
 			long previousBeginId = 0;
 			String previousEnd = "";
@@ -353,8 +361,8 @@ public class WifiExporter  {
 
 				final String currentEnd = positionToXml(
 						cursor.getLong(colLastTimestamp),
-						cursor.getDouble(colLastLat),
 						cursor.getDouble(colLastLon),
+						cursor.getDouble(colLastLat),
 						cursor.getDouble(colLastAlt) ,
 						cursor.getDouble(colLastHead),
 						cursor.getDouble(colLastSpeed),
@@ -435,7 +443,7 @@ public class WifiExporter  {
 	 * @param swVersion
 	 * @return
 	 */
-	private static String logToXml(final String manufacturer, final String model, final String revision, final String swid, final String swVersion) {
+	private static String logToXml(final String manufacturer, final String model, final String revision, final String swid, final String swVersion, final String exportVersion) {
 		final StringBuffer s = new StringBuffer(130);
 		s.append("\n<logfile manufacturer=\"");
 		s.append(manufacturer);
@@ -451,6 +459,9 @@ public class WifiExporter  {
 		s.append("\"");
 		s.append(" swver=\"");
 		s.append(swVersion);
+		s.append("\"");
+		s.append(" exportver=\"");
+		s.append(exportVersion);
 		s.append("\"");
 		s.append(" >");
 		return s.toString();
