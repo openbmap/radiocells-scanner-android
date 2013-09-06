@@ -73,6 +73,36 @@ public class WirelessLoggerService extends AbstractService {
 	private static final String TAG = WirelessLoggerService.class.getSimpleName();
 
 	/**
+	 * Maximum altitude (in meter), used for checking gps integrity
+	 */
+	private static final double	MAX_ALTITUDE	= 10000;
+
+	/**
+	 * Minimum altitude (in meter), used for checking gps integrity
+	 */
+	private static final double	MIN_ALTITUDE	= -500;
+
+	/**
+	 * Minimum speed (in meter/second !!!), used for checking gps integrity
+	 */
+	private static final float	MIN_SPEED	= 0;
+	
+	/**
+	 * Maximum speed (in meter/second !!!), used for checking gps integrity
+	 */
+	private static final double	MAX_SPEED	= 100; // == 360 km/h
+	
+	/**
+	 *  Minimum timestamp (in millis), used for checking gps integrity
+	 */
+	private static final long	MIN_TIMESTAMP	= 1325372400; // == 01.01.2012 00:00:00 o'clock
+
+	/**
+	 * Millis per day
+	 */
+	private static final int	MILLIS_PER_DAY	= 86400000;
+	
+	/**
 	 * Keeps the SharedPreferences
 	 */
 	private SharedPreferences prefs = null;
@@ -947,19 +977,49 @@ public class WirelessLoggerService extends AbstractService {
 	}
 
 	/**
-	 * Tests if location is not null and not default values (lat 0, lon 0)
-	 * @param location
+	 * Tests if location is not null, not default values 
+	 * or has implausible values
+	 * @param test
 	 * @return true, if valid location
 	 */
-	private boolean isValidLocation(final Location location) {
-		if (location == null) {
+	private static boolean isValidLocation(final Location test) {
+		// check the necessary components first
+		if (test == null) {
+			Log.w(TAG, "Invalid location: Location is null");
 			return false;
 		}
-
-		if (location.getLatitude() == 0 && location.getLongitude() == 0) {
+		
+		if (test.getLatitude() == 0 && test.getLongitude() == 0) {
+			Log.w(TAG, "Invalid location: only default values provided");
 			return false;	
 		}
-
+		
+		if (test.getLongitude() > 180 || test.getLongitude() < -180) {
+			Log.w(TAG, "Invalid longitude: " + test.getLongitude());
+			return false;
+		}
+		
+		if (test.getLatitude() > 90 || test.getLatitude() < -90) {
+			Log.w(TAG, "Invalid latitude: " + test.getLatitude());
+			return false;
+		}
+		
+		final long tomorrow = System.currentTimeMillis() + MILLIS_PER_DAY;
+		if (test.getTime() < MIN_TIMESTAMP || test.getTime() > tomorrow) {
+            Log.w(TAG, "Invalid timestamp: either to old or more than one day in the future");
+            return false;
+        }
+		 
+		// now we can also check optional parameters (not available on every device)
+		if ((test.hasAltitude()) && (test.getAltitude() < MIN_ALTITUDE || test.getAltitude() > MAX_ALTITUDE)) {
+			Log.w(TAG, "Altitude out-of-range [" + MIN_ALTITUDE + ".." + MAX_ALTITUDE + "]:" + test.getAltitude());
+			return false;
+		}
+		
+		if ((test.hasSpeed()) && (test.getSpeed() < MIN_SPEED || test.getSpeed() > MAX_SPEED)) {
+			Log.w(TAG, "Speed out-of-range [" + MIN_SPEED + ".." + MAX_SPEED + "]:" + test.getSpeed());
+			return false;
+		}
 		return true;
 	}
 
