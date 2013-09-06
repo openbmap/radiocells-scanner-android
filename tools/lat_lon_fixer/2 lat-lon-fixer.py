@@ -75,5 +75,15 @@ try:
                     # if not version or gps line skip
                     if unchanged == True:
                         result.write(line)      
+                
+                # save a copy without above changes
+                src = ("."+sep+file)
+                dest = ("."+sep+"backup"+sep+file)
+                shutil.move(src, dest)        
+            else:
+                # move unaffected files after run
+                src = ("."+sep+file)
+                dest = ("."+sep+"not_affected"+sep+file)
+                shutil.move(src, dest)
 finally:
     print ".. Done "         
