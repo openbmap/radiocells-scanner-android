@@ -14,10 +14,12 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.service.wireless;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -31,6 +33,9 @@ import org.openbmap.db.model.LogFile;
 import org.openbmap.db.model.PositionRecord;
 import org.openbmap.db.model.WifiRecord;
 import org.openbmap.service.AbstractService;
+import org.openbmap.service.wireless.blacklists.BssidBlackList;
+import org.openbmap.service.wireless.blacklists.SsidBlackList;
+import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -86,12 +91,12 @@ public class WirelessLoggerService extends AbstractService {
 	 * Minimum speed (in meter/second !!!), used for checking gps integrity
 	 */
 	private static final float	MIN_SPEED	= 0;
-	
+
 	/**
 	 * Maximum speed (in meter/second !!!), used for checking gps integrity
 	 */
 	private static final double	MAX_SPEED	= 100; // == 360 km/h
-	
+
 	/**
 	 *  Minimum timestamp (in millis), used for checking gps integrity
 	 */
@@ -101,7 +106,7 @@ public class WirelessLoggerService extends AbstractService {
 	 * Millis per day
 	 */
 	private static final int	MILLIS_PER_DAY	= 86400000;
-	
+
 	/**
 	 * Keeps the SharedPreferences
 	 */
@@ -218,6 +223,17 @@ public class WirelessLoggerService extends AbstractService {
 	private LogFile mLogFile;
 
 	/**
+	 * List of blocked ssids, e.g. moving wlans
+	 * Supports wild card like operations: begins with and ends with
+	 */
+	private SsidBlackList	mSsidBlackList;
+
+	/**
+	 * List of blocked macs, e.g. moving wlans
+	 */
+	private BssidBlackList	mBssidBlackList;
+
+	/**
 	 * Receives location updates as well as wifi scan result updates
 	 */
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -287,6 +303,8 @@ public class WirelessLoggerService extends AbstractService {
 		}
 	};
 
+
+
 	@Override
 	public final void onCreate() {		
 		Log.d(TAG, "WirelessLoggerService created");
@@ -312,6 +330,29 @@ public class WirelessLoggerService extends AbstractService {
 		registerPhoneStateManager();
 
 		registerWifiManager();
+
+		initBlacklists();
+
+	}
+
+	/**
+	 * 
+	 */
+	private void initBlacklists() {
+		
+		String mBlacklistPath = Environment.getExternalStorageDirectory().getPath()
+				+ prefs.getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR) + File.separator 
+				+ Preferences.BLACKLIST_SUBDIR;
+		
+		mSsidBlackList = new SsidBlackList();
+		mSsidBlackList.openFile(
+				mBlacklistPath + File.separator + "default_ssid.xml",
+				mBlacklistPath + File.separator + "custom_ssid.xml");
+		
+		mBssidBlackList = new BssidBlackList();
+		mBssidBlackList.openFile(
+				mBlacklistPath + File.separator + "default_bssid.xml",
+				mBlacklistPath + File.separator + "custom_bssid.xml");
 	}
 
 	/** 
@@ -499,6 +540,7 @@ public class WirelessLoggerService extends AbstractService {
 			pendingWifiScanResults = true;
 
 			this.scanCallback = new WifiScanCallback() {
+
 				public void wifiResultsAvailable() {
 					Log.d(TAG, "Wifi results are available now.");
 
@@ -520,6 +562,16 @@ public class WirelessLoggerService extends AbstractService {
 							PositionRecord end = new PositionRecord(mMostCurrentLocation, mSessionId, mMostCurrentLocationProvider);
 
 							for (ScanResult r : scanlist) {
+								if (mSsidBlackList.contains(r.SSID)) {
+									// skip invalid wifis
+									Log.i(TAG, "Ignored " + r.SSID + " (on ssid blacklist)");
+									break;
+								}
+								if (mBssidBlackList.contains(r.BSSID)) {
+									// skip invalid wifis
+									Log.i(TAG, "Ignored " + r.BSSID + " (on bssid blacklist)");
+									break;
+								}
 								WifiRecord wifi = new WifiRecord();
 								wifi.setBssid(r.BSSID);
 								wifi.setSsid(r.SSID);
@@ -713,7 +765,7 @@ public class WirelessLoggerService extends AbstractService {
 				serving.setMnc("");
 			}	
 			serving.setOperatorName(mTelephonyManager.getNetworkOperatorName());
-		
+
 			// CDMA specific
 			serving.setStrengthdBm(cdmaStrengthDbm);
 			return serving;
@@ -988,34 +1040,34 @@ public class WirelessLoggerService extends AbstractService {
 			Log.w(TAG, "Invalid location: Location is null");
 			return false;
 		}
-		
+
 		if (test.getLatitude() == 0 && test.getLongitude() == 0) {
 			Log.w(TAG, "Invalid location: only default values provided");
 			return false;	
 		}
-		
+
 		if (test.getLongitude() > 180 || test.getLongitude() < -180) {
 			Log.w(TAG, "Invalid longitude: " + test.getLongitude());
 			return false;
 		}
-		
+
 		if (test.getLatitude() > 90 || test.getLatitude() < -90) {
 			Log.w(TAG, "Invalid latitude: " + test.getLatitude());
 			return false;
 		}
-		
+
 		final long tomorrow = System.currentTimeMillis() + MILLIS_PER_DAY;
 		if (test.getTime() < MIN_TIMESTAMP || test.getTime() > tomorrow) {
-            Log.w(TAG, "Invalid timestamp: either to old or more than one day in the future");
-            return false;
-        }
-		 
+			Log.w(TAG, "Invalid timestamp: either to old or more than one day in the future");
+			return false;
+		}
+
 		// now we can also check optional parameters (not available on every device)
 		if ((test.hasAltitude()) && (test.getAltitude() < MIN_ALTITUDE || test.getAltitude() > MAX_ALTITUDE)) {
 			Log.w(TAG, "Altitude out-of-range [" + MIN_ALTITUDE + ".." + MAX_ALTITUDE + "]:" + test.getAltitude());
 			return false;
 		}
-		
+
 		if ((test.hasSpeed()) && (test.getSpeed() < MIN_SPEED || test.getSpeed() > MAX_SPEED)) {
 			Log.w(TAG, "Speed out-of-range [" + MIN_SPEED + ".." + MAX_SPEED + "]:" + test.getSpeed());
 			return false;

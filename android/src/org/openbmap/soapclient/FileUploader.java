@@ -20,7 +20,6 @@ package org.openbmap.soapclient;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -31,7 +30,6 @@ import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 
 import android.os.AsyncTask;
@@ -45,8 +43,8 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 	/**
 	 * Socket and connection parameters for http upload
 	 */
-	private static final int SOCKET_TIMEOUT = 30000;
-	private static final int CONNECTION_TIMEOUT = 30000;
+	//private static final int SOCKET_TIMEOUT = 30000;
+	//private static final int CONNECTION_TIMEOUT = 30000;
 
 	private static final String TAG = FileUploader.class.getSimpleName();
 

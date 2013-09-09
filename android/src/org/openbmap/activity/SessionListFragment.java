@@ -262,7 +262,7 @@ public class SessionListFragment extends ListFragment implements LoaderCallbacks
 				Schema.COL_NUMBER_OF_WIFIS
 		};
 		CursorLoader cursorLoader = new CursorLoader(getActivity().getBaseContext(),
-				RadioBeaconContentProvider.CONTENT_URI_SESSION, projection, null, null, null);
+				RadioBeaconContentProvider.CONTENT_URI_SESSION, projection, null, null, Schema.COL_CREATED_AT + " DESC");
 		return cursorLoader;
 	}
 

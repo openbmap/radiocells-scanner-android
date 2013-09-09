@@ -166,10 +166,14 @@ public final class Preferences {
 	public static final String MAPS_SUBDIR = "/maps";
 	
 	/**
-	 * Directory containing ref database, relative to application root dir.
+	 * Directory containing wifi catalog database, relative to application root dir.
 	 */
 	public static final String WIFI_CATALOG_SUBDIR = "/databases";
 	
+	/**
+	 * Directory containing wifi blacklists, relative to application root dir.
+	 */
+	public static final String BLACKLIST_SUBDIR = "blacklists";
 	/**
 	 * File extension for maps
 	 */

@@ -88,8 +88,6 @@ public class SettingsActivity extends PreferenceActivity {
 		registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 		dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
 
-	
-
 		initWifiCatalogDownload();
 		initActiveWifiCatalog(mDataDirPref.getText());
 		initMapDownload();
