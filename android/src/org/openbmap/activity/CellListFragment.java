@@ -36,6 +36,7 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter.ViewBinder;
+import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -45,6 +46,7 @@ import android.widget.TextView;
  */
 public class CellListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
+	public static final String	TAG	= CellListFragment.class.getSimpleName();
 	private SimpleCursorAdapter	adapter;
 
 	/**
