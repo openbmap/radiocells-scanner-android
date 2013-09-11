@@ -58,16 +58,27 @@ public class WifiDetailsFragment extends ListFragment implements LoaderManager.L
 		super.onActivityCreated(savedInstanceState);	
 		
 		mWifiSelected = ((WifiDetailsActivity) getActivity()).getWifi();
-		String [] from = new String []{Schema.COL_TIMESTAMP, Schema.COL_LEVEL};
-		int [] to = new int [] {
+		
+		initAdapter();
+
+		getActivity().getSupportLoaderManager().initLoader(0, null, this); 
+	}
+
+	/**
+	 * 
+	 */
+	private void initAdapter() {
+		String[] from = new String []{
+				Schema.COL_TIMESTAMP,
+				Schema.COL_LEVEL};
+		
+		int[] to = new int [] {
 				R.id.celldetailsfragment_timestamp,
 				R.id.celldetailsfragment_progress
 		};
 		adapter = new SimpleCursorAdapter(getActivity().getBaseContext(), R.layout.wifidetailsfragment, null, from, to, 0);
 		adapter.setViewBinder(new ProgressBarViewBinder());
 		setListAdapter(adapter);
-
-		getActivity().getSupportLoaderManager().initLoader(0, null, this); 
 	}
 
 	private static class ProgressBarViewBinder implements ViewBinder {
@@ -143,14 +154,12 @@ public class WifiDetailsFragment extends ListFragment implements LoaderManager.L
 	}
 
 	@Override
-	public final void onLoadFinished(final Loader<Cursor> arg0, final Cursor cursor) {
+	public final void onLoadFinished(final Loader<Cursor> loader, final Cursor cursor) {
 		adapter.swapCursor(cursor);
-		Log.d(TAG, "onLoadFinished called. We have " + adapter.getCount() + " records");
 	}
 
 	@Override
 	public final void onLoaderReset(final Loader<Cursor> arg0) {
-		Log.d(TAG, "onLoadReset called");
 		adapter.swapCursor(null);
 	}
 }

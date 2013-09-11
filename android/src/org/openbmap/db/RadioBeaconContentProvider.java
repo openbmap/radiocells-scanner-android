@@ -283,9 +283,8 @@ public class RadioBeaconContentProvider extends ContentProvider {
 				 *  measurement (criteria level) is returned
 				 *  @author http://stackoverflow.com/questions/3800551/sql-select-first-row-in-each-group-by-group
 				 */
-				// pseudo-id has to be used, otherwise grouping fails
 				final String wifiFields = 
-						/*First try: "ABS(RANDOM() % 20000000) as _id,"*/
+						// pseudo-id has to be used, otherwise grouping fails
 						"rowid AS _id, "
 						+ Schema.COL_BSSID + ", " 
 						+ Schema.COL_MD5_SSID + ", " 
@@ -299,7 +298,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 						+ Schema.COL_IS_NEW_WIFI + " "; 
 
 				final String wifiOverviewQuery = "SELECT " + wifiFields + " FROM " + Schema.TBL_WIFIS + " "
-						+ " WHERE " + Schema.COL_SESSION_ID + " = " + uri.getLastPathSegment() + " GROUP BY " + Schema.COL_BSSID + ", " + Schema.COL_MD5_SSID + " ORDER BY " + Schema.COL_SSID;
+						+ " WHERE " + Schema.COL_SESSION_ID + " = " + uri.getLastPathSegment() + " GROUP BY " + Schema.COL_BSSID + ", " + Schema.COL_MD5_SSID + " ORDER BY " + sortOrder;
 				return queryRaw(wifiOverviewQuery, uri);
 			case Schema.URI_CODE_WIFI_ID:
 				// returns given wifi

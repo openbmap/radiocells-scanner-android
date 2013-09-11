@@ -12,6 +12,15 @@
         android:padding="2dp"
         android:text="@string/ssid" />
 
+    <org.openbmap.utils.TriToggleButton
+        android:id="@+id/triToggleButton1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        negative_image="@drawable/descending"
+        neutral_image="@drawable/neutral"
+        positive_image="@drawable/ascending"
+        android:src="@drawable/arrow" />
+
     <TextView
         android:layout_width="0dp"
         android:layout_height="wrap_content"

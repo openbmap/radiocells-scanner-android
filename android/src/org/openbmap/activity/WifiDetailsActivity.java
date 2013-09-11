@@ -46,11 +46,8 @@ public class WifiDetailsActivity  extends FragmentActivity implements WifiDetail
 	public final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);	
 		setContentView(R.layout.wifidetails);
-		tvSsid = (TextView) findViewById(R.id.wifidetails_ssid);
-		tvCapabilities = (TextView) findViewById(R.id.wifidetails_capa);
-		tvFrequency = (TextView) findViewById(R.id.wifidetails_freq);
-		WifiDetailsFragment detailsFragment = (WifiDetailsFragment) getSupportFragmentManager().findFragmentById(R.id.wifiDetailsFragment);	
-		detailsFragment.setOnWifiSelectedListener(this);
+		
+		initUi();
 
 		mDatahelper = new DataHelper(this);
 		
@@ -60,6 +57,18 @@ public class WifiDetailsActivity  extends FragmentActivity implements WifiDetail
 		mWifi = mDatahelper.loadWifisByBssid(bssid).get(0);
 		
 		displayRecord(mWifi);
+	}
+
+	/**
+	 * 
+	 */
+	private void initUi() {
+		tvSsid = (TextView) findViewById(R.id.wifidetails_ssid);
+		tvCapabilities = (TextView) findViewById(R.id.wifidetails_capa);
+		tvFrequency = (TextView) findViewById(R.id.wifidetails_freq);
+		
+		WifiDetailsFragment detailsFragment = (WifiDetailsFragment) getSupportFragmentManager().findFragmentById(R.id.wifiDetailsFragment);	
+		detailsFragment.setOnWifiSelectedListener(this);
 	}
 
 	@Override
@@ -75,7 +84,6 @@ public class WifiDetailsActivity  extends FragmentActivity implements WifiDetail
 		displayRecord(mWifi);
 		
 	}
-
 	
 	/**
 	 * @param wifi 
@@ -84,15 +92,15 @@ public class WifiDetailsActivity  extends FragmentActivity implements WifiDetail
 	private void displayRecord(final WifiRecord wifi) {
 		if (wifi != null) {
 			tvSsid.setText(wifi.getSsid() + " (" + wifi.getBssid() + ")");
-			tvCapabilities.setText("Encryption :" + wifi.getCapabilities());
+			if (wifi.getCapabilities() != null) {
+				tvCapabilities.setText(getResources().getString(R.string.encryption) + ":" + wifi.getCapabilities().replace("[", "\n["));
+			} else {
+				tvCapabilities.setText(getResources().getString(R.string.encryption) + ":" + R.string.n_a);
+			}
+			
 			// TODO: replace by channel
-			tvFrequency.setText("Frequency :" + String.valueOf(wifi.getFrequency()));
+			tvFrequency.setText(getResources().getString(R.string.frequency) + ":" + String.valueOf(wifi.getFrequency()));
 		}
-	}
-
-	@Override
-	public final void onStart() {
-		super.onStart();
 	}
 
 	public final WifiRecord getWifi() {

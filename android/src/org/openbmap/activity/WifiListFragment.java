@@ -14,7 +14,7 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.activity;
 
@@ -24,6 +24,8 @@ import org.openbmap.db.DataHelper;
 import org.openbmap.db.RadioBeaconContentProvider;
 import org.openbmap.db.Schema;
 import org.openbmap.db.model.Session;
+
+import org.openbmap.utils.TriToggleButton;
 
 import android.content.ContentUris;
 import android.content.Intent;
@@ -37,6 +39,7 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter.ViewBinder;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -52,13 +55,16 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 	 * All external linking (e.g. to map) must rely on BSSID.
 	 * (_id is a pseudo-id as original id can't be used for GROUP BY clauses)
 	 */
-	@SuppressWarnings("unused")
 	private static final String TAG = WifiListFragment.class.getSimpleName();
 
 	/*
 	 * Adapter for retrieving wifis.
 	 */
-	private SimpleCursorAdapter adapter;
+	private SimpleCursorAdapter mAdapter;
+	
+	private String mSortOrder;
+
+	private CursorLoader	mCursorLoader;
 
 	@Override
 	public final void onActivityCreated(final Bundle savedInstanceState) {
@@ -68,8 +74,49 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 		View header = (View) getLayoutInflater(savedInstanceState).inflate(R.layout.wifilistheader, null);
 		this.getListView().addHeaderView(header);
 
+		// init sort button
+		final TriToggleButton sortButton = (TriToggleButton) header.findViewById(R.id.triToggleButton1);
+		sortButton.setPositiveImage(getResources().getDrawable(R.drawable.ascending));
+		sortButton.setNeutralImage(getResources().getDrawable(R.drawable.neutral));
+		sortButton.setNegativeImage(getResources().getDrawable(R.drawable.descending));
+		sortButton.setOnClickListener(new View.OnClickListener() {	
+			// Runs when the user touches the button
+			@Override
+			public void onClick(final View v) {
+				int state = sortButton.getState();
+
+				try	{	
+					switch(state) {
+						case 0: 
+							mSortOrder = Schema.COL_SSID + " DESC";
+							getLoaderManager().restartLoader(0, null, WifiListFragment.this);
+							break;
+						case 1: 
+							mSortOrder = null;
+							getLoaderManager().restartLoader(0, null, WifiListFragment.this);
+							break;
+						case 2:
+							mSortOrder = Schema.COL_SSID + " ASC";				
+							getLoaderManager().restartLoader(0, null, WifiListFragment.this);
+							break;
+						default:
+							break; // Should never occur
+					}
+				} catch (Exception e) {
+					Log.e(TAG, "Error onClick");
+				}
+			}
+		});
+
 		// setup data
-		String [] from = new String []{
+		initAdapter();
+
+		getActivity().getSupportLoaderManager().initLoader(0, null, this); 
+
+	}
+
+	private void initAdapter() {
+		String[] from = new String []{
 				Schema.COL_ID,
 				Schema.COL_BSSID,
 				Schema.COL_SSID,
@@ -77,7 +124,7 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 				Schema.COL_IS_NEW_WIFI,
 				Schema.COL_CAPABILITIES};
 
-		int [] to = new int [] {
+		int[] to = new int [] {
 				R.id.wifilistfragment_id,
 				R.id.wifilistfragment_bssid,
 				R.id.wifilistfragment_ssid,
@@ -85,13 +132,10 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 				R.id.wifilistfragment_statusicon,
 				R.id.wifilistfragment_capabilities};
 
-		adapter = new SimpleCursorAdapter(getActivity().getBaseContext(),
+		mAdapter = new SimpleCursorAdapter(getActivity().getBaseContext(),
 				R.layout.wifilistfragment, null, from, to, 0);
-		adapter.setViewBinder(new WifiViewBinder());
-		setListAdapter(adapter);
-
-		getActivity().getSupportLoaderManager().initLoader(0, null, this); 
-
+		mAdapter.setViewBinder(new WifiViewBinder());
+		setListAdapter(mAdapter);
 	}
 
 	@Override
@@ -129,12 +173,12 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 
 		// query data from content provider
 		Session active = dataHelper.loadActiveSession();
-		int id = RadioBeacon.SESSION_NOT_TRACKING;
+		int session = RadioBeacon.SESSION_NOT_TRACKING;
 		if (active != null) {
-			id = active.getId();
+			session = active.getId();
 		}
 
-		String[] projection = {
+		final String[] projection = {
 				Schema.COL_ID,
 				Schema.COL_BSSID,
 				Schema.COL_SSID,
@@ -143,22 +187,22 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 				Schema.COL_CAPABILITIES
 		};
 
-		CursorLoader cursorLoader =  new CursorLoader(
+		mCursorLoader = new CursorLoader(
 				getActivity().getBaseContext(), ContentUris.withAppendedId(Uri.withAppendedPath(
-						RadioBeaconContentProvider.CONTENT_URI_WIFI, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), id),
-						projection, null, null, null);
+						RadioBeaconContentProvider.CONTENT_URI_WIFI, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
+						projection, null, null, mSortOrder);
 
-		return cursorLoader;
+		return mCursorLoader;
 	}
 
 	@Override
-	public final void onLoadFinished(final Loader<Cursor> arg0, final Cursor cursor) {
-		adapter.swapCursor(cursor);
+	public final void onLoadFinished(final Loader<Cursor> loader, final Cursor cursor) {
+		mAdapter.swapCursor(cursor);
 	}
 
 	@Override
-	public final void onLoaderReset(final Loader<Cursor> arg0) {
-		adapter.swapCursor(null);
+	public final void onLoaderReset(final Loader<Cursor> loader) {
+		mAdapter.swapCursor(null);
 	}
 
 	/**

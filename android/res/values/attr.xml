@@ -1,7 +1,19 @@
 <resources>
-     <declare-styleable name="VerticalLabelView">
+
+    <declare-styleable name="VerticalLabelView">
         <attr name="text" format="string" />
         <attr name="textColor" format="color" />
         <attr name="textSize" format="dimension" />
     </declare-styleable>
+    <declare-styleable name="CustomButtonState">
+
+        <!-- Use one for every state you want to have -->
+        <attr name="state_negative" format="boolean" />
+        <attr name="state_neutral" format="boolean" />
+        <attr name="state_positive" format="boolean" />
+        <attr name="negative_image" format="integer" />
+        <attr name="neutral_image" format="integer" />
+        <attr name="positive_image" format="integer" />
+    </declare-styleable>
+
 </resources>
