@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #
 #	Radiobeacon tools - Wifi database builder
 #    Copyright (C) 2013  wish7
@@ -64,6 +65,36 @@ try:
                     file_is_krank = True
                     f.close()
                     
+            # find out which kind of lat/lon bug we have (caused by export version, hence exportver is important)
+            # Radiobeacon 00.6.xx: lat/lon swapped
+            # Radiobeacon 00.7.00: lat/lon OK at beginning of scan, swapped at end of scan
+            # Note that files with swver 00.6.xx may have either version of the lat/lon bug and exportver is empty
+            # Files with exportver or swid of 00.7.01 or higher are OK
+            latlonbugV6 = False
+            latlonbugV7 = False
+            if (tree.getroot().attrib.get('swid') == 'Radiobeacon'):
+                if (tree.getroot().attrib.get('swver') == '00.7.00') and (tree.getroot().attrib.get('exportver', None) is None):
+                    latlonbugV7 = True
+                elif (tree.getroot().attrib.get('swver') in ['00.6.00', '00.6.01', '00.6.02']) and (tree.getroot().attrib.get('exportver', None) is None):
+                    # find out if we have V6 or V7
+                    node = tree.find('scan')
+                    if node is not None:
+                        # if we don't have any scans, the lat/lon bug is a moot point
+                        isFirst = True
+                        for gps in node.iter('gps'):
+                            if isFirst:
+                                lng1 = float(gps.attrib.get('lng'))
+                                lat1 = float(gps.attrib.get('lat'))
+                                isFirst = False
+                            else:
+                                lng2 = float(gps.attrib.get('lng'))
+                                lat2 = float(gps.attrib.get('lat'))
+                                # FIXME: this may be unreliable where lat = lon
+                                if ((lng1 - lng2) ** 2 + (lat1 - lat2) ** 2) > ((lat1 - lng2) ** 2 + (lng1 - lat2) ** 2):
+                                    latlonbugV7 = True;
+                                else:
+                                    latlonbugV6 = True;
+                        
                 
             for node in tree.iter('scan'):
                 time = node.attrib.get('time')
@@ -72,16 +103,22 @@ try:
                 #con.commit()
                 scan_id = cur.lastrowid
                 # add gps info
+                isFirst = True
                 for gps in node.iter('gps'):
                     time= gps.attrib.get('time')
-                    lng= gps.attrib.get('lng')
-                    lat= gps.attrib.get('lat')
+                    if latlonbugV6 or (latlonbugV7 and not isFirst):
+                        lat= gps.attrib.get('lng')
+                        lng= gps.attrib.get('lat')
+                    else:
+                        lng= gps.attrib.get('lng')
+                        lat= gps.attrib.get('lat')
                     alt= gps.attrib.get('alt')
                     hdg= gps.attrib.get('hdg')
                     spe= gps.attrib.get('spe')
                     accuracy= gps.attrib.get('accuracy')
                     cur.execute("INSERT INTO gps VALUES(NULL,?,?,?,?,?,?,?,?,?)", (scan_id,time,lng,lat,alt,hdg,spe,accuracy,file))
                     #con.commit()
+                    isFirst = False
                     
                 # add wifi info
                 for wifi in node.iter('wifiap'):
@@ -131,3 +168,5 @@ finally:
     if con:
         con.close()
 		
+
+
