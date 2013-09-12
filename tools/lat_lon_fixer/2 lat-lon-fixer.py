@@ -26,6 +26,15 @@
 #   00.6.20     for all 00.7.00 (there shouldn't be too much 00.7.00 files floating around anyway, as this bug was fixed very quick)
 # A unmodified copy (of krank) files is saved in backup folder
 
+ # basic steps
+            #   read file info from file's second line
+            #   check if swver is affected version (00.6.00, 00.6.01, 00.6.02 or 00.7.00)
+            #   if exportver tag is present everything is good (indicates version >= 0.7.1)
+            #   if no exportver and swver 0.7.0 fix end position only
+            #   if no exportver and swver 0.6.0, 0.6.1,0.6.2 use heuristics to determine which exportver has been used
+            #   large differences fix end position indicates exportver 0.7.0, thus fix end position only
+            #   small differences otherwise fix both
+            
 import fileinput
 import re
 import sys
@@ -41,34 +50,68 @@ try:
     print ".. Fixing lat/lon bug "            
     for file in os.listdir('.'):
         if fnmatch.fnmatch(file, '*.xml'):
-            
+             
             # check if file is affected
             with open(file, 'r') as f:
+            
+                latlonbugV6 = False
+                latlonbugV7 = False
+                
+                # interpret header
+                # match <logfile manufacturer="samsung" model="GT-I9100" revision="4.2.2" swid="Radiobeacon" swver="00.6.00" exportver="00.7.00">
                 versionLine = f.readline()
                 versionLine = f.readline()
-                # match
-                #<logfile manufacturer="samsung" model="GT-I9100" revision="4.2.2" swid="Radiobeacon" swver="00.6.00">
                 versionPattern = r'(<logfile.*?)swver=\"(\S+)\"'
                 versionTuples = re.search(versionPattern, versionLine, re.DOTALL)
                 if versionTuples:
                     version = versionTuples.group(2)
-                    if (version == "00.6.00" or version == "00.6.01" or version =="00.6.02") :
-                        print file + ";version " + version + ";heal me"
-                        fixBeginAndEnd = True
-                        fixEndOnly = False
-                    elif (version == "00.7.00") :
-                        print file + ";version " + version + ";heal me"
-                        fixBeginAndEnd = False
-                        fixEndOnly = True
+                    # possibly affected versions
+                    if (version == "00.6.00" or version == "00.6.01" or version =="00.6.02" or version == "00.7.00") :
+                        # search again, check if we find exportver, this means exported with good version
+                        exportVersion = None
+                        exportPattern = r'(<logfile.*?)exportver=\"(\S+)\"'
+                        exportTuples = re.search(exportPattern, versionLine, re.DOTALL)
+                        
+                        if exportTuples:
+                            exportVersion = exportTuples.group(2)
+                        
+                        if not exportVersion is None:
+                            # tracked with faulty version, but exported with good version, so nothing to do
+                            print file + ";version " + version + ";skipped (exported with " + exportVersion +")"
+                        else:
+                            # definitely affected..
+                            if version == "00.7.00" :
+                                latlonbugV7 = True
+                                print file + ";version " + version + ";heal me"
+                            else:
+                                isFirstGps = True
+                                for line in fileinput.input(file):
+                                    # iterate first two gps tags
+                                    gpsPattern = r'(<gps.*?)lng=\"(\S+)\" lat=\"(\S+)\"(.*?>)'
+                                    gpsTuples = re.search(gpsPattern, line, re.DOTALL)
+                                    if gpsTuples and isFirstGps:
+                                        lng1 = float(gpsTuples.group(2))
+                                        lat1 = float(gpsTuples.group(3))
+                                        isFirstGps = False
+                                    elif gpsTuples and not isFirstGps:
+                                        lng2 = float(gpsTuples.group(2))
+                                        lat2 = float(gpsTuples.group(3))
+                                        # large difference between first and second gps
+                                        if ((lng1 - lng2) ** 2 + (lat1 - lat2) ** 2) > ((lat1 - lng2) ** 2 + (lng1 - lat2) ** 2):
+                                            latlonbugV7 = True
+                                            print file + ";version " + version + ";(heuristic) latlonbugV7"
+                                        else:
+                                            latlonbugV6 = True
+                                            print file + ";version " + version + ";latlonbugV6"
+                                        break
+                                fileinput.close()
                     else:
-                        print file + ";version" + version + ";skipped"
-                        fixBeginAndEnd = False
-                        fixEndOnly = False
+                        # tracked and exported with good version
+                        print file + ";version " + version + ";skipped (good version)"
                 else:
-                    fixBeginAndEnd = False
-                    fixEndOnly = False
+                    print file + ";version unknown;skipped"
                     
-            if fixBeginAndEnd:     
+            if latlonbugV6:     
                 # fixes all occurrences of gps tag
                 result = open("."+sep+"healed"+sep+file,'w')
                 for line in fileinput.input(file):
@@ -98,7 +141,7 @@ try:
                 src = ("."+sep+file)
                 dest = ("."+sep+"backup"+sep+file)
                 shutil.move(src, dest) 
-            elif fixEndOnly :
+            elif latlonbugV7 :
                 # fix only closing tag
                 result = open("."+sep+"healed"+sep+file,'w')
                 
@@ -133,6 +176,7 @@ try:
                 dest = ("."+sep+"backup"+sep+file)
                 shutil.move(src, dest) 
             else :
+                #print file + " not affected"
                 # move unaffected files after run
                 src = ("."+sep+file)
                 dest = ("."+sep+"not_affected"+sep+file)
