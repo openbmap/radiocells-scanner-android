@@ -240,7 +240,7 @@ public class WirelessLoggerService extends AbstractService {
 
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
-			Log.d(TAG, "Received intent " + intent.getAction());
+			//Log.d(TAG, "Received intent " + intent.getAction());
 			// handling gps broadcasts
 			if (RadioBeacon.INTENT_BROADCAST_POSITION.equals(intent.getAction())) {
 				if (!mIsTracking) {

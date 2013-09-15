@@ -14,29 +14,26 @@
         android:checked="true"
         android:textOff=""
         android:textOn="" />
-     
+
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_below="@+id/mapview_tb_snap_to_location"
-         >
+        android:layout_below="@+id/mapview_tb_snap_to_location" >
 
-          <org.mapsforge.android.maps.MapView
-              android:id="@+id/mvMap"
-              android:layout_width="fill_parent"
-              android:layout_height="fill_parent"
-              android:layout_below="@+id/mapview_tb_snap_to_location" >
+       <org.mapsforge.map.android.view.MapView
+            android:id="@+id/map"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1" />
 
-    </org.mapsforge.android.maps.MapView>
-
-    <ImageView
-        android:id="@+id/position_marker"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:src="@drawable/cross" />
+        <ImageView
+            android:id="@+id/position_marker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/cross" />
     </RelativeLayout>
 
 </RelativeLayout>

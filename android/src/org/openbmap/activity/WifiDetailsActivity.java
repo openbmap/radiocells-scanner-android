@@ -29,7 +29,7 @@ import android.support.v4.app.FragmentActivity;
 import android.widget.TextView;
 
 /**
- * Parent activity for hosting wifi detail fragement
+ * Parent activity for hosting wifi detail fragment
  */
 public class WifiDetailsActivity  extends FragmentActivity implements WifiDetailsFragment.OnWifiSelectedListener {
 	

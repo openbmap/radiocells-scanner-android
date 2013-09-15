@@ -14,7 +14,7 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.db;
 
@@ -31,6 +31,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.util.Log;
+import android.widget.ToggleButton;
 
 /**
  * Content provider
@@ -75,17 +76,17 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	 * Typically this are sort of SELECT DISTINCT queries
 	 */
 	public static final String CONTENT_URI_OVERVIEW_SUFFIX = "overview"; 
-	
+
 	/**
 	 * Can be appended to certain URIs to get only items of specific session
 	 */
 	public static final String CONTENT_URI_SESSION_SUFFIX = "session";
-	
+
 	/**
 	 * Can be appended to certain URIs to get only items of active session
 	 */
 	public static final String CONTENT_URI_ACTIVE_SUFFIX = "active";
-	
+
 
 	/**
 	 * Uri Matcher
@@ -122,7 +123,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 
 	@Override
 	public final boolean onCreate() {
-		Log.d(TAG, "OnCreate@RadioBeaconContentprovider called");
+		//Log.d(TAG, "OnCreate@RadioBeaconContentprovider called");
 		mDbHelper = new DatabaseHelper(getContext());
 		// Enable foreign key constraints (per connection)
 		mDbHelper.getWritableDatabase().execSQL("PRAGMA foreign_keys = ON"); 
@@ -284,21 +285,40 @@ public class RadioBeaconContentProvider extends ContentProvider {
 				 *  @author http://stackoverflow.com/questions/3800551/sql-select-first-row-in-each-group-by-group
 				 */
 				final String wifiFields = 
-						// pseudo-id has to be used, otherwise grouping fails
-						"rowid AS _id, "
-						+ Schema.COL_BSSID + ", " 
-						+ Schema.COL_MD5_SSID + ", " 
-						+ Schema.COL_SSID + ", " 
-						+ "MAX(" + Schema.COL_LEVEL + "), " 
-						+ Schema.COL_CAPABILITIES + ", "  
-						+ Schema.COL_FREQUENCY + ", " 
-						+ Schema.COL_TIMESTAMP + ", " 
-						+ Schema.COL_BEGIN_POSITION_ID + ", " 
-						+ Schema.COL_END_POSITION_ID + ", "
-						+ Schema.COL_IS_NEW_WIFI + " "; 
+				// pseudo-id has to be used, otherwise grouping fails
+				"w.rowid as " + Schema.COL_ID + ", "
+				+ "w." + Schema.COL_BSSID + ", " 
+				+ "w." + Schema.COL_MD5_SSID + ", " 
+				+ "w." + Schema.COL_SSID + ", " 
+				+ "MAX(" + Schema.COL_LEVEL + "), " 
+				+ "w." + Schema.COL_CAPABILITIES + ", "  
+				+ "w." + Schema.COL_FREQUENCY + ", " 
+				+ "w." + Schema.COL_TIMESTAMP + ", " 
+				+ "w." + Schema.COL_BEGIN_POSITION_ID + ", " 
+				+ "w." + Schema.COL_END_POSITION_ID + ", "
+				+ "w." + Schema.COL_IS_NEW_WIFI + " "; 
 
-				final String wifiOverviewQuery = "SELECT " + wifiFields + " FROM " + Schema.TBL_WIFIS + " "
-						+ " WHERE " + Schema.COL_SESSION_ID + " = " + uri.getLastPathSegment() + " GROUP BY " + Schema.COL_BSSID + ", " + Schema.COL_MD5_SSID + " ORDER BY " + sortOrder;
+				String wifiOverviewQuery = "SELECT " + wifiFields + " FROM " + Schema.TBL_WIFIS + " as w "
+						+ " JOIN " + Schema.TBL_POSITIONS +  " as b ON " + Schema.COL_BEGIN_POSITION_ID + " = b." + Schema.COL_ID + " ";
+
+				// default where clause
+				wifiOverviewQuery += " WHERE w." + Schema.COL_SESSION_ID + " = " + uri.getLastPathSegment();
+				
+				if (selectionIn != null) {
+					// add optional where clause
+					String extraWhere = selectionIn;
+					for (int i = 0; i < selectionArgsIn.length; i++) {
+						// TODO find some proper way
+						extraWhere = extraWhere.replaceFirst("\\?", selectionArgsIn[i]);
+					}
+
+					wifiOverviewQuery += " AND " + extraWhere;
+				}
+
+				wifiOverviewQuery +=  " GROUP BY w." + Schema.COL_BSSID + ", w." + Schema.COL_MD5_SSID;
+				if (sortOrder != null) {
+					wifiOverviewQuery += " ORDER BY w." + sortOrder;
+				}
 				return queryRaw(wifiOverviewQuery, uri);
 			case Schema.URI_CODE_WIFI_ID:
 				// returns given wifi
@@ -322,17 +342,17 @@ public class RadioBeaconContentProvider extends ContentProvider {
 				// TODO: this probably won't work for CDMA as they don't have cell_id
 				final String cellFields =
 				// TODO: implement as in wifiFields, i.e. "rowid AS _id, "
-						Schema.COL_ID + ", "
-						+ Schema.COL_CELLID + ", "
-						+ Schema.COL_OPERATORNAME + ", "
-						+ Schema.COL_OPERATOR + ", "
-						+ Schema.COL_MCC + ", "
-						+ Schema.COL_MNC + ", "
-						+ Schema.COL_LAC + ", "
-						+ Schema.COL_PSC + ", "
-						+ Schema.COL_NETWORKTYPE + ", "
-						+ Schema.COL_IS_SERVING + ", "
-						+ " MAX(" + Schema.COL_STRENGTHDBM + ") ";
+				Schema.COL_ID + ", "
+				+ Schema.COL_CELLID + ", "
+				+ Schema.COL_OPERATORNAME + ", "
+				+ Schema.COL_OPERATOR + ", "
+				+ Schema.COL_MCC + ", "
+				+ Schema.COL_MNC + ", "
+				+ Schema.COL_LAC + ", "
+				+ Schema.COL_PSC + ", "
+				+ Schema.COL_NETWORKTYPE + ", "
+				+ Schema.COL_IS_SERVING + ", "
+				+ " MAX(" + Schema.COL_STRENGTHDBM + ") ";
 
 				final String cellOverviewQuery = "SELECT " + cellFields + " FROM cells "
 						+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 1 GROUP BY cid"
@@ -374,12 +394,12 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	 * 		URI being notified on change
 	 */
 	private Cursor queryRaw(final String rawQuery, final Uri notifyUri) {
-
-		Log.d(TAG, "Performing rawQuery " + rawQuery);
+		long start = System.currentTimeMillis();
 		Cursor newCursor = null;
 		newCursor = mDbHelper.getReadableDatabase().rawQuery(rawQuery, null);
-		newCursor.setNotificationUri(getContext().getContentResolver(), notifyUri);
+		Log.d(TAG, "Raw query executed (" + (System.currentTimeMillis() - start) + " ms):" + rawQuery);
 
+		newCursor.setNotificationUri(getContext().getContentResolver(), notifyUri);
 		getContext().getContentResolver().notifyChange(notifyUri, null);
 		return newCursor;
 	}

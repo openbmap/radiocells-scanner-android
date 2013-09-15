@@ -2,8 +2,10 @@ package org.openbmap.utils;
 
 import org.openbmap.R;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.widget.ImageButton;
 
@@ -48,29 +50,44 @@ public class TriToggleButton extends ImageButton {
 	private Drawable mStatePositiveImage;
 
 	// Constructors
+	@SuppressLint("NewApi")
 	public TriToggleButton(final Context context)	{
 		super(context);
 
 		mState = 1;
 		this.setImageDrawable(mStateNeutralImage);
-		this.setBackgroundDrawable(null);
+		if (Build.VERSION.SDK_INT >= 16) {
+			this.setBackground(null);
+		} else {
+			this.setBackgroundDrawable(null);
+		}
 		onCreateDrawableState(0);
 	}
 
+	@SuppressLint("NewApi")
 	public TriToggleButton(final Context context, final AttributeSet attrs) {
 		super(context, attrs);
 
 		mState = 1;
 		this.setImageDrawable(mStateNeutralImage);
-		this.setBackgroundDrawable(null);
+		if (Build.VERSION.SDK_INT >= 16) {
+			this.setBackground(null);
+		} else {
+			this.setBackgroundDrawable(null);
+		}
 	}
 
+	@SuppressLint("NewApi")
 	public TriToggleButton(final Context context, final AttributeSet attrs, final int defStyle) {
 		super(context, attrs, defStyle);
 
 		mState = 1;
 		this.setImageDrawable(mStateNeutralImage);
-		this.setBackgroundDrawable(null);
+		if (Build.VERSION.SDK_INT >= 16) {
+			this.setBackground(null);
+		} else {
+			this.setBackgroundDrawable(null);
+		}
 	}
 
 	@Override

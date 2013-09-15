@@ -20,7 +20,7 @@ package org.openbmap.utils;
 
 import java.util.ArrayList;
 
-import org.mapsforge.core.model.GeoPoint;
+import org.mapsforge.core.model.LatLong;
 import org.openbmap.Preferences;
 import org.openbmap.activity.MapViewActivity;
 
@@ -38,7 +38,7 @@ import android.util.Log;
  * Loads reference wifis asynchronously.
  * Upon completion callback mListener in activity is invoked.
  */
-public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<GeoPoint>> {
+public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatLong>> {
 
 	private static final String	TAG	= WifiCatalogMapObjectsLoader.class.getSimpleName();
 
@@ -46,7 +46,7 @@ public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayLi
 	 * Interface for activity.
 	 */
 	public interface OnCatalogLoadedListener {
-		void onCatalogLoaded(ArrayList<GeoPoint> points);
+		void onCatalogLoaded(ArrayList<LatLong> points);
 	}
 
 	/**
@@ -105,9 +105,9 @@ public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayLi
 	 *			args[3]: max longitude as double
 	 */
 	@Override
-	protected final ArrayList<GeoPoint> doInBackground(final Object... args) {         
+	protected final ArrayList<LatLong> doInBackground(final Object... args) {         
 
-		ArrayList<GeoPoint> points = new ArrayList<GeoPoint>();
+		ArrayList<LatLong> points = new ArrayList<LatLong>();
 
 		try {
 			// skipping if no reference database set 
@@ -136,7 +136,7 @@ public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayLi
 			int latCol = refs.getColumnIndex("latitude");
 			int lonCol = refs.getColumnIndex("longitude");
 			while (refs.moveToNext() && i < MAX_REFS) {
-				points.add(new GeoPoint(refs.getDouble(latCol), refs.getDouble(lonCol)));
+				points.add(new LatLong(refs.getDouble(latCol), refs.getDouble(lonCol)));
 				i++;
 			}
 			/* Log.i(TAG, i + " reference wifis received in bounding box" 
@@ -155,7 +155,7 @@ public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayLi
 	}
 
 	@Override
-	protected final void onPostExecute(final ArrayList<GeoPoint> points) {
+	protected final void onPostExecute(final ArrayList<LatLong> points) {
 
 		if (mListener != null) {
 			mListener.onCatalogLoaded(points);

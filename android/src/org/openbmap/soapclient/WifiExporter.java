@@ -329,8 +329,8 @@ public class WifiExporter  {
 	 * @param cursor Cursor to read from
 	 */
 	private void saveAndMoveCursor(final String fileName, final LogFile headerRecord, final Cursor cursor) {
-
 		// for performance reasons direct database access is used here (instead of content provider)
+		//TODO: behaves strange on non-ascii characters, maybe get ideas from https://android.googlesource.com/platform/frameworks/base.git/+/android-4.2.2_r1/wifi/java/android/net/wifi/WifiSsid.java
 		try {
 			cursor.moveToPrevious();
 			

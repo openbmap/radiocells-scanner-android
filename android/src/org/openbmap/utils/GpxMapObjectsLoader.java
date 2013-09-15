@@ -20,7 +20,7 @@ package org.openbmap.utils;
 
 import java.util.ArrayList;
 
-import org.mapsforge.core.model.GeoPoint;
+import org.mapsforge.core.model.LatLong;
 import org.openbmap.activity.MapViewActivity;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.model.PositionRecord;
@@ -31,7 +31,7 @@ import android.os.AsyncTask;
 /**
  * Loads session wifis asynchronously.
  */
-public class GpxMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<GeoPoint>> {
+public class GpxMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatLong>> {
 
 	@SuppressWarnings("unused")
 	private static final String	TAG	= GpxMapObjectsLoader.class.getSimpleName();
@@ -50,7 +50,7 @@ public class GpxMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<GeoPo
 	 * Interface for activity.
 	 */
 	public interface OnGpxLoadedListener {
-		void onGpxLoaded(ArrayList<GeoPoint> points);
+		void onGpxLoaded(ArrayList<LatLong> points);
 	}
 
 	private Context	mContext;
@@ -80,17 +80,17 @@ public class GpxMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<GeoPo
 	 *			args[3]: max longitude as double
 	 */
 	@Override
-	protected final ArrayList<GeoPoint> doInBackground(final Object... args) {         
+	protected final ArrayList<LatLong> doInBackground(final Object... args) {         
 		//Log.d(TAG, "Loading gpx points");
 	
 		DataHelper dbHelper = new DataHelper(mContext);
 		
-		ArrayList<PositionRecord> positions = dbHelper.loadPositionsWithin(dbHelper.loadActiveSession().getId(),
+		ArrayList<PositionRecord> positions = dbHelper.loadPositions(String.valueOf(dbHelper.loadActiveSession().getId()),
 				(Double) args[MIN_LAT_COL], (Double) args[MAX_LAT_COL], (Double) args[MIN_LON_COL], (Double) args[MAX_LON_COL]);
 		
-		ArrayList<GeoPoint> points = new ArrayList<GeoPoint>();
+		ArrayList<LatLong> points = new ArrayList<LatLong>();
 		for (int i = 0; i < positions.size(); i++) {
-			points.add(new GeoPoint(positions.get(i).getLatitude() , positions.get(i).getLongitude()));
+			points.add(new LatLong(positions.get(i).getLatitude() , positions.get(i).getLongitude()));
 		}
 		
 		return points;
@@ -100,7 +100,7 @@ public class GpxMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<GeoPo
 	 * Informs activity on available results by calling mListener.
 	 */
 	@Override
-	protected final void onPostExecute(final ArrayList<GeoPoint> points) {
+	protected final void onPostExecute(final ArrayList<LatLong> points) {
 		if (mListener != null) {
 			mListener.onGpxLoaded(points);
 		}

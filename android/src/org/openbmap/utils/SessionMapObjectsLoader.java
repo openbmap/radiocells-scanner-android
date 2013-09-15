@@ -14,13 +14,14 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.utils;
 
 import java.util.ArrayList;
 
-import org.mapsforge.core.model.GeoPoint;
+import org.mapsforge.core.model.LatLong;
+import org.openbmap.RadioBeacon;
 import org.openbmap.activity.MapViewActivity;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.model.PositionRecord;
@@ -33,26 +34,27 @@ import android.util.Log;
 /**
  * Loads session wifis asynchronously.
  */
-public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<GeoPoint>> {
+public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatLong>> {
 
 	private static final String	TAG	= SessionMapObjectsLoader.class.getSimpleName();
 
 	/**
 	 * Indices for doInBackground arguments
 	 */
-	public enum Argument { MIN_LAT_COL, MAX_LAT_COL, MIN_LON_COL, MIN_MAX_COL }
-	
-	private static final int	MIN_LAT_COL	= 0;
-	private static final int	MAX_LAT_COL	= 1;
-	private static final int	MIN_LON_COL	= 2;
-	private static final int	MAX_LON_COL	= 3;
-	private static final int	HIGHLIGHT_WIFI_COL	= 4;
+	public enum Argument {SESSION_ID, MIN_LAT_COL, MAX_LAT_COL, MIN_LON_COL, MIN_MAX_COL }
+
+	private static final int 	SESSION_ID = 0;
+	private static final int	MIN_LAT_COL	= 1;
+	private static final int	MAX_LAT_COL	= 2;
+	private static final int	MIN_LON_COL	= 3;
+	private static final int	MAX_LON_COL	= 4;
+	private static final int	HIGHLIGHT_WIFI_COL	= 5;
 
 	/**
 	 * Interface for activity.
 	 */
 	public interface OnSessionLoadedListener {
-		void onSessionLoaded(ArrayList<GeoPoint> points);
+		void onSessionLoaded(ArrayList<LatLong> points);
 	}
 
 	private Context	mContext;
@@ -76,38 +78,44 @@ public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<G
 	 * Queries reference database for all wifis in specified range around map centre.
 	 * @param args
 	 * 			Args is an object array containing
-	 * 			args[0]: min latitude as double
-	 * 			args[1]: max latitude as double
-	 * 			args[2]: min longitude as double
-	 *			args[3]: max longitude as double
-	 *			args[4]: single wifi to highlight. If parameter is null, all session wifis are returned
+	 * 			args[1]: min latitude as double
+	 * 			args[2]: max latitude as double
+	 * 			args[3]: min longitude as double
+	 *			args[4]: max longitude as double
+	 *			args[5]: single wifi to highlight. If parameter is null, all session wifis are returned
 	 */
 	@Override
-	protected final ArrayList<GeoPoint> doInBackground(final Object... args) {         
+	protected final ArrayList<LatLong> doInBackground(final Object... args) {         
 		Log.d(TAG, "Loading session wifis");
-		ArrayList<GeoPoint> points = new ArrayList<GeoPoint>();
+		ArrayList<LatLong> points = new ArrayList<LatLong>(0);
+
+		DataHelper dbHelper = new DataHelper(mContext);
 
 		if (args[HIGHLIGHT_WIFI_COL] == null) {
 			// Draw either all session wifis ...
 			// In this case, get all wifis from active session
-			DataHelper dbHelper = new DataHelper(mContext);
 			//TODO: instead of loading all session wifis and filter then pass filter values directly to database
-			ArrayList<WifiRecord> sessionWifis = dbHelper.loadWifisOverview(dbHelper.loadActiveSession().getId());
+			ArrayList<WifiRecord> sessionWifis = dbHelper.loadWifisOverviewWithin((Integer) args[SESSION_ID],
+					(Double) args[MIN_LON_COL],
+					(Double) args[MAX_LON_COL],
+					(Double) args[MIN_LAT_COL],
+					(Double) args[MAX_LON_COL]);
+
 			if (sessionWifis == null) {
 				return points;
 			}
 
 			for (WifiRecord wifi : sessionWifis) {
-				if (isLocationVisible(wifi.getBeginPosition(), (Double) args[MIN_LAT_COL], (Double) args[MAX_LAT_COL], (Double) args[MIN_LON_COL], (Double) args[MAX_LON_COL])) {
-					//Log.w(TAG, "Add wifi " + wifi.getBssid() + " @ " + wifi.getRequestPosition().toString());
-					points.add(new GeoPoint(wifi.getBeginPosition().getLatitude(), wifi.getBeginPosition().getLongitude()));
-				} 
+				points.add(new LatLong(wifi.getBeginPosition().getLatitude(), wifi.getBeginPosition().getLongitude()));
+
 			}
 		} else {
 			// ... or only selected	
-			// Log.d(TAG, "Single draw mode");
-			points.add(new GeoPoint(((WifiRecord) args[HIGHLIGHT_WIFI_COL]).getBeginPosition().getLatitude(),
-					((WifiRecord) args[HIGHLIGHT_WIFI_COL]).getBeginPosition().getLongitude()));
+			ArrayList<WifiRecord> candidates = dbHelper.loadWifisByBssid((String) args[HIGHLIGHT_WIFI_COL]);
+			if (candidates.size() > 0) {
+				points.add(new LatLong((candidates.get(0)).getBeginPosition().getLatitude(),
+						(candidates.get(0)).getBeginPosition().getLongitude()));
+			}
 		}
 
 		return points;
@@ -117,7 +125,7 @@ public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<G
 	 * Informs activity on available results by calling mListener.
 	 */
 	@Override
-	protected final void onPostExecute(final ArrayList<GeoPoint> points) {
+	protected final void onPostExecute(final ArrayList<LatLong> points) {
 		if (mListener != null) {
 			mListener.onSessionLoaded(points);
 		}

@@ -14,7 +14,7 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.db;
 
@@ -161,9 +161,9 @@ public class DataHelper {
 			wifi.setOpenBmapTimestamp(ca.getLong(columnIndex6));
 
 			// TODO: not too safe ..
-			wifi.setBeginPosition(loadPositions(ca.getString(columnIndex7)).get(0));
+			wifi.setBeginPosition(loadPositionById(ca.getString(columnIndex7)).get(0));
 			// TODO: not too safe ..
-			wifi.setEndPosition(loadPositions(ca.getString(columnIndex8)).get(0));
+			wifi.setEndPosition(loadPositionById(ca.getString(columnIndex8)).get(0));
 
 			wifis.add(wifi);
 		}
@@ -180,7 +180,9 @@ public class DataHelper {
 		Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
 				RadioBeaconContentProvider.CONTENT_URI_WIFI, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
 				new String[]{Schema.COL_ID}, null, null, null);
-		return ca.getCount();
+		int count = ca.getCount();
+		ca.close();
+		return count;
 	}
 
 	/**
@@ -203,9 +205,9 @@ public class DataHelper {
 					ca.getInt(ca.getColumnIndex(Schema.COL_LEVEL)),
 					ca.getLong(ca.getColumnIndex(Schema.COL_TIMESTAMP)),
 					// TODO: definitely not safe ..
-					loadPositions(ca.getString(ca.getColumnIndex(Schema.COL_BEGIN_POSITION_ID))).get(0),
+					loadPositionById(ca.getString(ca.getColumnIndex(Schema.COL_BEGIN_POSITION_ID))).get(0),
 					// TODO: definitely not safe ..
-					loadPositions(ca.getString(ca.getColumnIndex(Schema.COL_END_POSITION_ID))).get(0));
+					loadPositionById(ca.getString(ca.getColumnIndex(Schema.COL_END_POSITION_ID))).get(0));
 		}
 		ca.close();
 		return wifi;
@@ -242,9 +244,9 @@ public class DataHelper {
 			wifi.setOpenBmapTimestamp(ca.getLong(columnIndex6));
 
 			// TODO: not too safe ..
-			wifi.setBeginPosition(loadPositions(ca.getString(columnIndex7)).get(0));
+			wifi.setBeginPosition(loadPositionById(ca.getString(columnIndex7)).get(0));
 			// TODO: not too safe ..
-			wifi.setEndPosition(loadPositions(ca.getString(columnIndex8)).get(0));
+			wifi.setEndPosition(loadPositionById(ca.getString(columnIndex8)).get(0));
 
 			wifis.add(wifi);
 		}
@@ -253,16 +255,37 @@ public class DataHelper {
 	}
 
 
+	
 	/**
-	 * Returns only strongest measurement for each wifi from TBL_WIFIS.
+	 * Returns strongest measurement for each wifi from TBL_WIFIS.
 	 * @return Arraylist<WifiRecord>
 	 */
-	public final ArrayList<WifiRecord> loadWifisOverview(final long session) {
+	public final ArrayList<WifiRecord> loadWifisOverview(final int session) {
+		return loadWifisOverviewWithin(session, null, null, null, null);
+	}
+
+
+	/**
+	 * Returns strongest measurement for each wifi within bounding box from TBL_WIFIS.
+	 * @return Arraylist<WifiRecord>
+	 */
+	public final ArrayList<WifiRecord> loadWifisOverviewWithin(final int session, Double minLon, Double maxLon, Double minLat, Double maxLat) {
 		ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>();
 
+		String selection = null;
+		String[] selectionArgs = null;
+		
+		if (minLon != null && maxLon != null && minLat != null && maxLat != null) {
+			selection = "b." + Schema.COL_LONGITUDE + " >= ?" 
+					+ " AND b." + Schema.COL_LONGITUDE + " <= ?" 
+					+ " AND b." + Schema.COL_LATITUDE + " >= ?"
+					+ " AND b." + Schema.COL_LATITUDE + " <= ?";
+			selectionArgs = new String[]{String.valueOf(minLon), String.valueOf(maxLon), String.valueOf(minLat), String.valueOf(maxLat)};
+		}
+		
 		Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(RadioBeaconContentProvider.CONTENT_URI_WIFI,
 				RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
-				null, null, null, null);
+				null, selection, selectionArgs, null);
 
 		// Performance tweaking: don't call ca.getColumnIndex on each iteration 
 		final int columnIndex = ca.getColumnIndex(Schema.COL_BSSID);
@@ -284,9 +307,9 @@ public class DataHelper {
 			wifi.setOpenBmapTimestamp(ca.getLong(columnIndex6));
 
 			// TODO: not too safe ..
-			wifi.setBeginPosition(loadPositions(ca.getString(columnIndex7)).get(0));
+			wifi.setBeginPosition(loadPositionById(ca.getString(columnIndex7)).get(0));
 			// TODO: not too safe ..
-			wifi.setEndPosition(loadPositions(ca.getString(columnIndex8)).get(0));
+			wifi.setEndPosition(loadPositionById(ca.getString(columnIndex8)).get(0));
 
 			wifis.add(wifi);
 		}
@@ -505,8 +528,8 @@ public class DataHelper {
 		cell.setStrengthdBm(cursor.getInt(colStrengthDbm)); 
 		cell.setOpenBmapTimestamp(cursor.getLong(colTimestamp)); 
 		// TODO: dirty ...
-		cell.setBeginPosition(loadPositions(cursor.getString(colBeginPositionId)).get(0));
-		cell.setEndPosition(loadPositions(cursor.getString(colEndPositionId)).get(0));
+		cell.setBeginPosition(loadPositionById(cursor.getString(colBeginPositionId)).get(0));
+		cell.setEndPosition(loadPositionById(cursor.getString(colEndPositionId)).get(0));
 		cell.setSessionId(cursor.getInt(columnIndex18));
 
 		return cell;
@@ -521,23 +544,25 @@ public class DataHelper {
 		Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
 				RadioBeaconContentProvider.CONTENT_URI_CELL, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), id),
 				new String[]{Schema.COL_ID}, null, null, null);
-		return ca.getCount();
+		int count = ca.getCount();
+		ca.close();
+		return count;
 	}
 
 	/**
 	 * Loads positions from database.
-	 * @param id
+	 * @param position
 	 * 			Position id to return. If no id is provided, all positions are returned.
 	 * @return ArrayList<PositionRecord>
 	 */
-	public final ArrayList<PositionRecord> loadPositions(final String id) {
+	public final ArrayList<PositionRecord> loadPositionById(final String position) {
 		ArrayList<PositionRecord> positions = new ArrayList<PositionRecord>();
 		String selection = null;
 		List<String> selectionArgs = new ArrayList<String>();
-		if (id != null) {
+		if (position != null) {
 			//Log.d(TAG, "Loading single position with id " + id);
 			selection = Schema.COL_ID + " = ?";
-			selectionArgs.add(id);
+			selectionArgs.add(position);
 		}
 
 		Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_POSITION, null, selection, (String[]) selectionArgs.toArray(new String[0]), null);
@@ -550,21 +575,42 @@ public class DataHelper {
 		return positions;
 	}
 
-	public final ArrayList<PositionRecord> loadPositionsWithin(final int session, final double minLat, final double maxLat, final double minLon, final double maxLon) {
+	/**
+	 * Loads positions within certain arrea
+	 * @param session
+	 * @param minLat
+	 * @param maxLat
+	 * @param minLon
+	 * @param maxLon
+	 * @return
+	 */
+	public final ArrayList<PositionRecord> loadPositions(final String session, final Double minLat, final Double maxLat, final Double minLon, final Double maxLon) {
 		ArrayList<PositionRecord> positions = new ArrayList<PositionRecord>();
-		String selection = Schema.COL_SESSION_ID + " = ? AND (" + Schema.COL_LATITUDE + " > ? AND " + Schema.COL_LATITUDE + " < ?) AND ("
-				+ Schema.COL_LONGITUDE + " > ? AND " + Schema.COL_LONGITUDE + " < ?)";
-		List<String> selectionArgs = new ArrayList<String>();
-		selectionArgs.add(String.valueOf(session));
+		String selection = Schema.COL_SESSION_ID + " = ?";
 		
-		selectionArgs.add(String.valueOf(minLat));
-		selectionArgs.add(String.valueOf(maxLat));
+		Cursor ca = null;
+		List<String> selectionArgs = null; 
+		if (minLat != null & maxLat != null && minLon != null && maxLon != null) {
+			// if boundaries provided..
+			selectionArgs = new ArrayList<String>();
+			selectionArgs.add(session);
 
-		selectionArgs.add(String.valueOf(minLon));
-		selectionArgs.add(String.valueOf(maxLon));
+			selectionArgs.add(String.valueOf(minLat));
+			selectionArgs.add(String.valueOf(maxLat));
 
-		Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_POSITION, null, selection, (String[]) selectionArgs.toArray(new String[0]), Schema.COL_TIMESTAMP);
+			selectionArgs.add(String.valueOf(minLon));
+			selectionArgs.add(String.valueOf(maxLon));
+			
+			selection +=  "AND (" + Schema.COL_LATITUDE + " > ? AND " + Schema.COL_LATITUDE + " < ?) AND ("
+					+ Schema.COL_LONGITUDE + " > ? AND " + Schema.COL_LONGITUDE + " < ?)";
+			ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_POSITION, null, selection, (String[]) selectionArgs.toArray(new String[0]), Schema.COL_TIMESTAMP);
 
+		} else {
+			Log.v(TAG, "No boundaries provided, loading all positions");
+			ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_POSITION, null, null, null, Schema.COL_TIMESTAMP);
+		}
+		
+	
 		while (ca.moveToNext()) {
 			positions.add(positionFromCursor(ca));
 		}
@@ -658,7 +704,7 @@ public class DataHelper {
 	public final Session loadActiveSession() {
 		Session session = null;
 		Cursor ca = contentResolver.query(Uri.withAppendedPath(RadioBeaconContentProvider.CONTENT_URI_SESSION, "active"), null, null, null, null);
-		if (ca.moveToNext()) {
+		if (ca.moveToFirst()) {
 			session = new Session(
 					ca.getInt(ca.getColumnIndex(Schema.COL_ID)), 
 					ca.getLong(ca.getColumnIndex(Schema.COL_CREATED_AT)),
@@ -668,8 +714,10 @@ public class DataHelper {
 					ca.getInt(ca.getColumnIndex(Schema.COL_IS_ACTIVE)),
 					ca.getInt(ca.getColumnIndex(Schema.COL_NUMBER_OF_CELLS)),
 					ca.getInt(ca.getColumnIndex(Schema.COL_NUMBER_OF_WIFIS)));
+			ca.close();
 			return session;
 		} else {
+			ca.close();
 			return null;
 		}
 	}
@@ -694,7 +742,7 @@ public class DataHelper {
 					ca.getInt(ca.getColumnIndex(Schema.COL_NUMBER_OF_CELLS)),
 					ca.getInt(ca.getColumnIndex(Schema.COL_NUMBER_OF_WIFIS)));
 		} 
-
+		ca.close();
 		return session;
 	}
 
@@ -721,6 +769,7 @@ public class DataHelper {
 		Cursor ca = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_SESSION, session.getId()), null, null, null, null);
 		if (!ca.moveToNext()) {
 			storeSession(session);
+			ca.close();
 			return 1;
 		} else {
 			Log.d(TAG, "Updating existing session " + session.getId());
@@ -732,7 +781,7 @@ public class DataHelper {
 			values.put(Schema.COL_IS_ACTIVE, session.isActive());
 			values.put(Schema.COL_NUMBER_OF_CELLS, session.getNumberOfCells());
 			values.put(Schema.COL_NUMBER_OF_WIFIS, session.getNumberOfWifis());
-
+			ca.close();
 			return contentResolver.update(RadioBeaconContentProvider.CONTENT_URI_SESSION, values,
 					Schema.COL_ID + " = ?", new String[]{String.valueOf(session.getId())});
 		}

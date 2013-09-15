@@ -57,14 +57,17 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 	 */
 	private static final String TAG = WifiListFragment.class.getSimpleName();
 
-	/*
+	private CursorLoader mCursorLoader;
+	
+	/**
 	 * Adapter for retrieving wifis.
 	 */
 	private SimpleCursorAdapter mAdapter;
 	
-	private String mSortOrder;
-
-	private CursorLoader	mCursorLoader;
+	/** 
+	 * Sort order, by default order by timestamp
+	 */
+	private String mSortOrder = Schema.COL_TIMESTAMP + " ASC";
 
 	@Override
 	public final void onActivityCreated(final Bundle savedInstanceState) {
@@ -92,7 +95,7 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 							getLoaderManager().restartLoader(0, null, WifiListFragment.this);
 							break;
 						case 1: 
-							mSortOrder = null;
+							mSortOrder = Schema.COL_TIMESTAMP + " ASC";
 							getLoaderManager().restartLoader(0, null, WifiListFragment.this);
 							break;
 						case 2:
