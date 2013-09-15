@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.soapclient.FileUploader.UploadTaskListener;
+import org.openbmap.utils.MediaScanner;
 
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
@@ -124,11 +125,12 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 
 	/**
 	 * 
-	 * @param mContext	Activities' mContext
-	 * @param mListener	Listener to call upon completion
-	 * @param session	Session id to export
-	 * @param password 
-	 * @param user 
+	 * @param context
+	 * @param listener
+	 * @param session
+	 * @param targetPath
+	 * @param user
+	 * @param password
 	 */
 	public ExportManager(final Context context, final ExportManagerListener listener, final int session, final String targetPath, final String user, final String password) {
 		this.mContext = context;
@@ -214,7 +216,7 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 						}
 					}
 					publishProgress(mContext.getResources().getString(R.string.uploading_wifis) + "(Files: " + String.valueOf(wifiFiles.size() -i ) + ")", 50);
-					
+
 					if (Build.VERSION.SDK_INT >= 11 /*Build.VERSION_CODES.HONEYCOMB*/) {
 						// enforce parallel execution on HONEYCOMB
 						new FileUploader(this, mUser, mPassword, WIFI_WEBSERVICE).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, wifiFiles.get(i));
@@ -270,7 +272,7 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 		cellFiles = null;
 		mUploadedFiles = null;
 		System.gc();
-		
+
 		if (mExportGpx) {
 			Log.i(TAG, "Exporting gpx");
 			publishProgress(mContext.getResources().getString(R.string.exporting_gpx), 75);
@@ -305,6 +307,13 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 
 	@Override
 	protected final void onPostExecute(final Boolean success) {
+
+		// rescan SD card on honeycomb devices
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+			Log.i(TAG, "Re-indexing SD card temp folder");
+			new MediaScanner(mContext, new File(mTargetPath));
+		}
+		
 		mDialog.dismiss();
 		if (success && !mSkipUpload) {
 			if (mListener != null) {

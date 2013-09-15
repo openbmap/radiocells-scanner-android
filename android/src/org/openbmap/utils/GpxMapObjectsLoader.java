@@ -90,7 +90,7 @@ public class GpxMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatLo
 		
 		ArrayList<LatLong> points = new ArrayList<LatLong>();
 		for (int i = 0; i < positions.size(); i++) {
-			points.add(new LatLong(positions.get(i).getLatitude() , positions.get(i).getLongitude()));
+			points.add(new LatLong(positions.get(i).getLatitude(), positions.get(i).getLongitude()));
 		}
 		
 		return points;

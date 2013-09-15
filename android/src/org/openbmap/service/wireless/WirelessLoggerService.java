@@ -35,6 +35,7 @@ import org.openbmap.db.model.WifiRecord;
 import org.openbmap.service.AbstractService;
 import org.openbmap.service.wireless.blacklists.BssidBlackList;
 import org.openbmap.service.wireless.blacklists.SsidBlackList;
+import org.openbmap.utils.LatLongHelper;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.BroadcastReceiver;
@@ -75,37 +76,7 @@ import android.util.Log;
  */
 public class WirelessLoggerService extends AbstractService {
 
-	private static final String TAG = WirelessLoggerService.class.getSimpleName();
-
-	/**
-	 * Maximum altitude (in meter), used for checking gps integrity
-	 */
-	private static final double	MAX_ALTITUDE	= 10000;
-
-	/**
-	 * Minimum altitude (in meter), used for checking gps integrity
-	 */
-	private static final double	MIN_ALTITUDE	= -500;
-
-	/**
-	 * Minimum speed (in meter/second !!!), used for checking gps integrity
-	 */
-	private static final float	MIN_SPEED	= 0;
-
-	/**
-	 * Maximum speed (in meter/second !!!), used for checking gps integrity
-	 */
-	private static final double	MAX_SPEED	= 100; // == 360 km/h
-
-	/**
-	 *  Minimum timestamp (in millis), used for checking gps integrity
-	 */
-	private static final long	MIN_TIMESTAMP	= 1325372400; // == 01.01.2012 00:00:00 o'clock
-
-	/**
-	 * Millis per day
-	 */
-	private static final int	MILLIS_PER_DAY	= 86400000;
+	public static final String TAG = WirelessLoggerService.class.getSimpleName();
 
 	/**
 	 * Keeps the SharedPreferences
@@ -637,7 +608,7 @@ public class WirelessLoggerService extends AbstractService {
 		}
 
 		// Do we have gps?
-		if 	(!isValidLocation(location)) {
+		if 	(!LatLongHelper.isValidLocation(location)) {
 			Log.e(TAG, "GPS location invalid (null or default value)");
 			return;
 		}
@@ -1026,53 +997,6 @@ public class WirelessLoggerService extends AbstractService {
 			e.printStackTrace();
 			return true;
 		}
-	}
-
-	/**
-	 * Tests if location is not null, not default values 
-	 * or has implausible values
-	 * @param test
-	 * @return true, if valid location
-	 */
-	private static boolean isValidLocation(final Location test) {
-		// check the necessary components first
-		if (test == null) {
-			Log.w(TAG, "Invalid location: Location is null");
-			return false;
-		}
-
-		if (test.getLatitude() == 0 && test.getLongitude() == 0) {
-			Log.w(TAG, "Invalid location: only default values provided");
-			return false;	
-		}
-
-		if (test.getLongitude() > 180 || test.getLongitude() < -180) {
-			Log.w(TAG, "Invalid longitude: " + test.getLongitude());
-			return false;
-		}
-
-		if (test.getLatitude() > 90 || test.getLatitude() < -90) {
-			Log.w(TAG, "Invalid latitude: " + test.getLatitude());
-			return false;
-		}
-
-		final long tomorrow = System.currentTimeMillis() + MILLIS_PER_DAY;
-		if (test.getTime() < MIN_TIMESTAMP || test.getTime() > tomorrow) {
-			Log.w(TAG, "Invalid timestamp: either to old or more than one day in the future");
-			return false;
-		}
-
-		// now we can also check optional parameters (not available on every device)
-		if ((test.hasAltitude()) && (test.getAltitude() < MIN_ALTITUDE || test.getAltitude() > MAX_ALTITUDE)) {
-			Log.w(TAG, "Altitude out-of-range [" + MIN_ALTITUDE + ".." + MAX_ALTITUDE + "]:" + test.getAltitude());
-			return false;
-		}
-
-		if ((test.hasSpeed()) && (test.getSpeed() < MIN_SPEED || test.getSpeed() > MAX_SPEED)) {
-			Log.w(TAG, "Speed out-of-range [" + MIN_SPEED + ".." + MAX_SPEED + "]:" + test.getSpeed());
-			return false;
-		}
-		return true;
 	}
 
 	/**

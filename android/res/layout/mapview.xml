@@ -21,7 +21,7 @@
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/mapview_tb_snap_to_location" >
 
-       <org.mapsforge.map.android.view.MapView
+        <org.mapsforge.map.android.view.MapView
             android:id="@+id/map"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
@@ -35,5 +35,29 @@
             android:layout_centerVertical="true"
             android:src="@drawable/cross" />
     </RelativeLayout>
+
+    <ImageButton
+        android:id="@+id/btnUnzoom"
+        android:layout_width="72dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/mapview_tb_snap_to_location"
+        android:background="@null"
+        android:paddingRight="36dp"
+        android:paddingTop="4dp"
+        android:scaleType="center"
+        android:src="@android:drawable/btn_minus" />
+
+    <ImageButton
+        android:id="@+id/btnZoom"
+        android:layout_width="72dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/btnUnzoom"
+        android:background="@null"
+        android:paddingTop="4dp"
+        android:paddingLeft="36dp"
+        android:scaleType="center"
+        android:src="@android:drawable/btn_plus" />
 
 </RelativeLayout>

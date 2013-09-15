@@ -49,6 +49,7 @@ import org.openbmap.db.model.Session;
 import org.openbmap.db.model.WifiRecord;
 import org.openbmap.utils.GpxMapObjectsLoader;
 import org.openbmap.utils.GpxMapObjectsLoader.OnGpxLoadedListener;
+import org.openbmap.utils.LatLongHelper;
 import org.openbmap.utils.MapUtils;
 import org.openbmap.utils.SessionMapObjectsLoader;
 import org.openbmap.utils.SessionMapObjectsLoader.OnSessionLoadedListener;
@@ -67,6 +68,9 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.ToggleButton;
@@ -81,6 +85,8 @@ OnGpxLoadedListener {
 
 	private static final String TAG = MapViewActivity.class.getSimpleName();
 
+	
+	
 	/**
 	 * If zoom level < MIN_OBJECT_ZOOM session wifis and wifi catalog objects won't be displayed for performance reasons
 	 */
@@ -143,6 +149,56 @@ OnGpxLoadedListener {
 	private static final boolean PREFETCH_MAP_OBJECTS	= true;
 
 	/**
+	 * Session currently displayed
+	 */
+	private int sessionId;
+
+	/**
+	 * System time of last gpx refresh (in millis)
+	 */
+	private long gpxRefreshTime;
+
+	private AndroidPreferences	preferencesFacade;
+
+	private byte	lastZoom;
+
+	// [start] UI controls
+	/**
+	 * MapView
+	 */
+	private MapView mMapView;
+
+	/**
+	 * When checked map view will automatically focus current location
+	 */
+	private ToggleButton btnSnapToLocation;
+
+	private ImageButton	btnZoom;
+
+	private ImageButton	btnUnzoom;
+	//[end]
+
+	// [start] Map styles
+	/**
+	 * Baselayer cache
+	 */
+	private TileCache tileCache;
+
+	private Paint paintCatalogFill;
+
+	private Paint paintCatalogStroke;
+
+	private Paint paintSessionFill;
+
+	private ArrayList<Layer>	catalogObjects;
+
+	private ArrayList<Layer>	sessionObjects;
+
+	private Polyline	gpxObjects;
+	//[end]
+
+	// [start] Dynamic map variables
+	/**
 	 * Another wifi catalog overlay refresh is taking place
 	 */
 	private boolean	mRefreshCatalogPending = false;
@@ -163,11 +219,6 @@ OnGpxLoadedListener {
 	private boolean	mRefreshGpxPending;
 
 	/**
-	 * When isChecked map view will automatically focus current location
-	 */
-	private ToggleButton mSnapToLocation;
-
-	/**
 	 * System time of last session overlay refresh (in millis)
 	 */
 	private long	sessionObjectsRefreshTime;
@@ -186,83 +237,46 @@ OnGpxLoadedListener {
 	 * Location of last session overlay refresh
 	 */
 	private Location catalogObjectsRefreshedAt = new Location("DUMMY");
-
-	/**
-	 * Session currently displayed
-	 */
-	private int sessionId;
-
-
-	/**
-	 * System time of last gpx refresh (in millis)
-	 */
-	private long	gpxRefreshTime;
-
-	/**
-	 * MapView
-	 */
-	private MapView mMapView;
-
-	private TileCache tileCache;
-
-	private AndroidPreferences	preferencesFacade;
-
-	private byte	lastZoom;
-
-	private Paint	paintCatalogFill;
-
-	private Paint	paintCatalogStroke;
-
-	private Paint	paintSessionFill;
-
-	private ArrayList<Layer>	catalogObjects;
-
-	private ArrayList<Layer>	sessionObjects;
-
-	private Polyline	gpxObjects;
+	// [end]
 
 	/**
 	 * Receives GPS location updates.
 	 */
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
 
-		private Location location;
-
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
 			// handling GPS broadcasts
 			if (RadioBeacon.INTENT_BROADCAST_POSITION.equals(intent.getAction())) {
-				location = intent.getExtras().getParcelable("android.location.Location");
+				Location location = intent.getExtras().getParcelable("android.location.Location");
 
-				// create a GeoPoint with the latitude and longitude coordinates
-				LatLong currentPos = new LatLong(location.getLatitude(), location.getLongitude());
-
-				// if SnapToLocation set, set new map center
-				if (mSnapToLocation.isChecked() && mMapView != null) {
+				// if btnSnapToLocation is checked, move map
+				if (btnSnapToLocation.isChecked() && mMapView != null) {
+					LatLong currentPos = new LatLong(location.getLatitude(), location.getLongitude());
 					mMapView.getModel().mapViewPosition.setCenter(currentPos);
 				}
-
-				if (isValidLocation(location)) {
+				
+				// update overlays
+				if (LatLongHelper.isValidLocation(location)) {
 					/*
 					 * Update overlays if necessary, but only if
 					 * 1.) current zoom level >= 12 (otherwise single points not visible, huge performance impact)
 					 * 2.) overlay items haven't been refreshed for a while AND user has moved a bit
 					 */
 					if ((mMapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && (needSessionObjectsRefresh(location))) {	
-						drawSessionOverlays(location);
+						refreshSessionOverlays(location);
 					}
 
 					if ((mMapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && (needCatalogObjectsRefresh(location))) {	
-						drawCatalogOverlay(location);
+						refreshCatalogOverlay(location);
 					}
 
-
 					if (needGpxRefresh()) {	
-						drawGpxTrace(location);
+						refreshGpxTrace(location);
 					}
 
 					// indicate bearing
-					drawDirectionIndicator(location);
+					refreshCompass(location);
 
 				} else {
 					Log.e(TAG, "Invalid positon! Cycle skipped");
@@ -270,24 +284,6 @@ OnGpxLoadedListener {
 
 				location = null;
 			} 
-		}
-
-
-
-		/**
-		 * Checks if location is null or set to default values
-		 * @param location
-		 * @return true if valid location
-		 */
-		private boolean isValidLocation(final Location location) {
-			if (location == null) {
-				return false;
-			}
-			if (location.getLatitude() == 0 && location.getLongitude() == 0) {
-				// default location of uninitialised location
-				return false;
-			}
-			return true;
 		}
 	};
 
@@ -378,13 +374,13 @@ OnGpxLoadedListener {
 					Location mapCenter = new Location("DUMMY");
 					mapCenter.setLatitude(mMapView.getModel().mapViewPosition.getCenter().latitude);
 					mapCenter.setLongitude(mMapView.getModel().mapViewPosition.getCenter().longitude);
-					drawSessionOverlays(mapCenter);
-					drawCatalogOverlay(mapCenter);
+					refreshSessionOverlays(mapCenter);
+					refreshCatalogOverlay(mapCenter);
 
 					lastZoom = zoom;
 				}
 
-				if (!mSnapToLocation.isChecked()) {
+				if (!btnSnapToLocation.isChecked()) {
 					// update overlay in free-move mode
 					LatLong tmp = mMapView.getModel().mapViewPosition.getCenter();
 					Location position = new Location("DUMMY");
@@ -392,11 +388,11 @@ OnGpxLoadedListener {
 					position.setLongitude(tmp.longitude);
 
 					if (needSessionObjectsRefresh(position)) {
-						drawSessionOverlays(position);
+						refreshSessionOverlays(position);
 					}
 
 					if (needCatalogObjectsRefresh(position)) {
-						drawCatalogOverlay(position);
+						refreshCatalogOverlay(position);
 					}
 				}
 
@@ -436,65 +432,32 @@ OnGpxLoadedListener {
 	 * Initializes UI componensts
 	 */
 	private void initUi() {
-		mSnapToLocation = (ToggleButton) findViewById(R.id.mapview_tb_snap_to_location);
-
+		btnSnapToLocation = (ToggleButton) findViewById(R.id.mapview_tb_snap_to_location);
+		btnZoom = (ImageButton) findViewById(R.id.btnZoom);		
+		btnZoom.setOnClickListener(new OnClickListener() {	
+					@Override
+					public void onClick(final View v) {
+						byte zoom  = mMapView.getModel().mapViewPosition.getZoomLevel();
+						if (zoom < mMapView.getModel().mapViewPosition.getZoomLevelMax()) {
+							mMapView.getModel().mapViewPosition.setZoomLevel((byte) (zoom + 1));
+						}
+					}
+				});
+	
+		btnUnzoom = (ImageButton) findViewById(R.id.btnUnzoom);
+		btnUnzoom.setOnClickListener(new OnClickListener() {	
+			@Override
+			public void onClick(final View v) {
+				byte zoom  = mMapView.getModel().mapViewPosition.getZoomLevel();
+				if (zoom > mMapView.getModel().mapViewPosition.getZoomLevelMin()) {
+					mMapView.getModel().mapViewPosition.setZoomLevel((byte) (zoom - 1));
+				}
+			}
+		});
 		paintCatalogFill = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_WIFI_CATALOG_FILL, 120, 150, 120), 2, Style.FILL);
 		paintCatalogStroke = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_WIFI_CATALOG_STROKE, 120, 150, 120), 2, Style.STROKE);
 		paintSessionFill = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_SESSION_FILL, 0, 0, 255), 2, Style.FILL);
 	}
-
-	/**
-	 * Opens selected map file
-	 * @return a map file
-	 */
-	protected final File getMapFile() {
-		File mapFile = new File(
-				Environment.getExternalStorageDirectory().getPath()
-				+ prefs.getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
-				+ Preferences.MAPS_SUBDIR, 
-				prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE));
-
-		/*
-		if (mapFile.exists()) {
-			mMapView.setClickable(true);
-			//mMapView.setBuiltInZoomControls(true);
-			//mMapView.setMapFile(mapFile);
-		} else {
-			Log.i(TAG, "No map file found!");
-			Toast.makeText(this.getBaseContext(), R.string.please_select_map, Toast.LENGTH_LONG).show();
-			mMapView.setClickable(false);
-			//mMapView.setBuiltInZoomControls(false);
-			mMapView.setVisibility(View.GONE);
-		}
-		 */	
-		return mapFile;
-	}
-
-	protected final void addLayers(final LayerManager layerManager, final TileCache tileCache, final MapViewPosition mapViewPosition) {
-		layerManager.getLayers().add(MapUtils.createTileRendererLayer(tileCache, mapViewPosition, getMapFile()));
-	}
-
-	protected final TileCache createTileCache() {
-		return MapUtils.createExternalStorageTileCache(this, getPersistableId());
-	}
-
-	/**
-	 * @return the id that is used to save this mapview
-	 */
-	protected final String getPersistableId() {
-		return this.getClass().getSimpleName();
-	}
-
-	/**
-	 * Sets map-related object to null to enable garbage collection.
-	 */
-	private void releaseMap() {
-		Log.d(TAG, "Releasing map components");
-		if (mMapView != null) {
-			mMapView.destroy();
-		}
-	}
-
 
 	private void registerReceiver() {
 		IntentFilter filter = new IntentFilter();
@@ -514,24 +477,7 @@ OnGpxLoadedListener {
 		}
 	}
 
-	/**
-	 * Refreshes reference and session overlays.
-	 * If another refresh is in progress, update is skipped.
-	 * @param location
-	 */
-	protected final void drawSessionOverlays(final Location location) {
-		if (!mRefreshSessionPending) {
-			Log.d(TAG, "Updating session overlay");
-			mRefreshSessionPending = true;
-			proceedAfterSessionObjectsLoaded(null);
-			sessionObjectsRefreshTime = System.currentTimeMillis();
-			sessionObjectsRefreshedAt = location;
-		} else {
-			Log.v(TAG, "Session overlay refresh in progress. Skipping refresh..");
-		}
-	}
-
-	protected final void drawCatalogOverlay(final Location location) {
+	protected final void refreshCatalogOverlay(final Location location) {
 		if (!mRefreshCatalogPending) {
 			Log.d(TAG, "Updating wifi catalog overlay");
 			mRefreshCatalogPending = true;
@@ -544,17 +490,19 @@ OnGpxLoadedListener {
 	}
 
 	/**
-	 * @param location
+	 * Is new location far enough from last refresh location?
+	 * @return true if catalog overlay needs refresh
 	 */
-	private void drawGpxTrace(final Location location) {
-		if (!mRefreshGpxPending) {
-			Log.d(TAG, "Updating gpx overlay");
-			mRefreshGpxPending = true;
-			proceedAfterGpxObjectsLoaded();
-			gpxRefreshTime = System.currentTimeMillis();
-		} else {
-			Log.v(TAG, "Gpx overlay refresh in progress. Skipping refresh..");
+	private boolean needCatalogObjectsRefresh(final Location current) {
+		if (current == null) { 
+			// fail safe: draw if something went wrong
+			return true;
 		}
+
+		return (
+				(catalogObjectsRefreshedAt.distanceTo(current) > CATALOG_REFRESH_DISTANCE)
+				&& ((System.currentTimeMillis() - catalogObjectsRefreshTime) > CATALOG_REFRESH_INTERVAL)
+				);
 	}
 
 	/**
@@ -627,6 +575,39 @@ OnGpxLoadedListener {
 		mRefreshCatalogPending = false;
 		Log.d(TAG, "Drawed catalog objects");
 
+	}
+
+	/**
+	 * Refreshes reference and session overlays.
+	 * If another refresh is in progress, update is skipped.
+	 * @param location
+	 */
+	protected final void refreshSessionOverlays(final Location location) {
+		if (!mRefreshSessionPending) {
+			Log.d(TAG, "Updating session overlay");
+			mRefreshSessionPending = true;
+			proceedAfterSessionObjectsLoaded(null);
+			sessionObjectsRefreshTime = System.currentTimeMillis();
+			sessionObjectsRefreshedAt = location;
+		} else {
+			Log.v(TAG, "Session overlay refresh in progress. Skipping refresh..");
+		}
+	}
+
+	/**
+	 * Is new location far enough from last refresh location and is last refresh to old?
+	 * @return true if session overlay needs refresh
+	 */
+	private boolean needSessionObjectsRefresh(final Location current) {
+		if (current == null) { 
+			// fail safe: draw if something went wrong
+			return true;
+		}
+
+		return (
+				(sessionObjectsRefreshedAt.distanceTo(current) > SESSION_REFRESH_DISTANCE)
+				&& ((System.currentTimeMillis() - sessionObjectsRefreshTime) > SESSION_REFRESH_INTERVAL) 
+				);
 	}
 
 	/**
@@ -713,6 +694,28 @@ OnGpxLoadedListener {
 		Log.d(TAG, "Drawed catalog objects");
 	}
 
+	/**
+	 * @param location
+	 */
+	private void refreshGpxTrace(final Location location) {
+		if (!mRefreshGpxPending) {
+			Log.d(TAG, "Updating gpx overlay");
+			mRefreshGpxPending = true;
+			proceedAfterGpxObjectsLoaded();
+			gpxRefreshTime = System.currentTimeMillis();
+		} else {
+			Log.v(TAG, "Gpx overlay refresh in progress. Skipping refresh..");
+		}
+	}
+
+	/**
+	 * Is last gpx overlay update to old?
+	 * @return true if overlay needs refresh
+	 */
+	private boolean needGpxRefresh() {
+		return ((System.currentTimeMillis() - gpxRefreshTime) > GPX_REFRESH_INTERVAL);
+	}
+
 	/*
 	 * Loads gpx points in visible range.
 	 */
@@ -763,33 +766,21 @@ OnGpxLoadedListener {
 	 * Draws arrow in direction of travel. If bearing is unavailable a generic position symbol is used.
 	 * If another refresh is taking place, update is skipped
 	 */
-	private void drawDirectionIndicator(final Location location) {
+	private void refreshCompass(final Location location) {
 		// ensure that previous refresh has been finished
 		if (mRefreshDirectionPending) {
 			return;
 		}
 		mRefreshDirectionPending = true;
 
+		// determine which drawable we currently 
 		ImageView iv = (ImageView) findViewById(R.id.position_marker);
+		Integer id = (Integer) iv.getTag() == null ? 0 : (Integer) iv.getTag();
 
 		if (location.hasBearing()) {
 			// determine which drawable we currently use
-			Integer id = (Integer) iv.getTag();
-			id = id == null ? 0 : id;
-			// refresh only if needed
-			if (id != R.drawable.arrow) {
-				iv.setImageResource(R.drawable.arrow);
-			}
-
-			// rotate arrow
-			Matrix matrix = new Matrix();
-			iv.setScaleType(ScaleType.MATRIX);   //required
-			matrix.postRotate((float) location.getBearing(), iv.getWidth() / 2f, iv.getHeight() / 2f);
-			iv.setImageMatrix(matrix);
+			drawCompass(iv, id, location.getBearing());
 		} else {
-			// determine which drawable we currently use
-			Integer id = (Integer) iv.getTag();
-			id = id == null ? 0 : id;
 			// refresh only if needed
 			if (id != R.drawable.cross) {
 				iv.setImageResource(R.drawable.cross);
@@ -801,43 +792,74 @@ OnGpxLoadedListener {
 	}
 
 	/**
-	 * Is last gpx overlay update to old?
-	 * @return true if overlay needs refresh
+	 * Draws compass
+	 * @param iv image view used for compass
+	 * @param ressourceId resource id compass needle
+	 * @param bearing	bearing (azimuth)
 	 */
-	private boolean needGpxRefresh() {
-		return ((System.currentTimeMillis() - gpxRefreshTime) > GPX_REFRESH_INTERVAL);
+	private void drawCompass(final ImageView iv, final Integer ressourceId, final float bearing) {
+		// refresh only if needed
+		if (ressourceId != R.drawable.arrow) {
+			iv.setImageResource(R.drawable.arrow);
+		}
+
+		// rotate arrow
+		Matrix matrix = new Matrix();
+		iv.setScaleType(ScaleType.MATRIX);   //required
+		matrix.postRotate(bearing, iv.getWidth() / 2f, iv.getHeight() / 2f);
+		iv.setImageMatrix(matrix);
 	}
 
 	/**
-	 * Is new location far enough from last refresh location and is last refresh to old?
-	 * @return true if session overlay needs refresh
+	 * Opens selected map file
+	 * @return a map file
 	 */
-	private boolean needSessionObjectsRefresh(final Location current) {
-		if (current == null) { 
-			// fail safe: draw if something went wrong
-			return true;
-		}
+	protected final File getMapFile() {
+		File mapFile = new File(
+				Environment.getExternalStorageDirectory().getPath()
+				+ prefs.getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
+				+ Preferences.MAPS_SUBDIR, 
+				prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE));
 
-		return (
-				(sessionObjectsRefreshedAt.distanceTo(current) > SESSION_REFRESH_DISTANCE)
-				&& ((System.currentTimeMillis() - sessionObjectsRefreshTime) > SESSION_REFRESH_INTERVAL) 
-				);
+		/*
+		if (mapFile.exists()) {
+			mMapView.setClickable(true);
+			//mMapView.setBuiltInZoomControls(true);
+			//mMapView.setMapFile(mapFile);
+		} else {
+			Log.i(TAG, "No map file found!");
+			Toast.makeText(this.getBaseContext(), R.string.please_select_map, Toast.LENGTH_LONG).show();
+			mMapView.setClickable(false);
+			//mMapView.setBuiltInZoomControls(false);
+			mMapView.setVisibility(View.GONE);
+		}
+		 */	
+		return mapFile;
+	}
+
+	protected final void addLayers(final LayerManager layerManager, final TileCache tileCache, final MapViewPosition mapViewPosition) {
+		layerManager.getLayers().add(MapUtils.createTileRendererLayer(tileCache, mapViewPosition, getMapFile()));
+	}
+
+	protected final TileCache createTileCache() {
+		return MapUtils.createExternalStorageTileCache(this, getPersistableId());
 	}
 
 	/**
-	 * Is new location far enough from last refresh location?
-	 * @return true if catalog overlay needs refresh
+	 * @return the id that is used to save this mapview
 	 */
-	private boolean needCatalogObjectsRefresh(final Location current) {
-		if (current == null) { 
-			// fail safe: draw if something went wrong
-			return true;
-		}
+	protected final String getPersistableId() {
+		return this.getClass().getSimpleName();
+	}
 
-		return (
-				(catalogObjectsRefreshedAt.distanceTo(current) > CATALOG_REFRESH_DISTANCE)
-				&& ((System.currentTimeMillis() - catalogObjectsRefreshTime) > CATALOG_REFRESH_INTERVAL)
-				);
+	/**
+	 * Sets map-related object to null to enable garbage collection.
+	 */
+	private void releaseMap() {
+		Log.d(TAG, "Releasing map components");
+		if (mMapView != null) {
+			mMapView.destroy();
+		}
 	}
 
 	/**
