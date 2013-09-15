@@ -215,9 +215,7 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 	}
 
 	/**
-	 * Triggers upload.
-	 * If session has already been uploaded, upload is canceled.
-	 * Requires a existing connection to a data network (e.g. call establishDataConnection() first)
+	 * Checks if session has been exported
 	 */
 	private boolean hasBeenUploaded(final int sessionId) {
 		DataHelper dataHelper = new DataHelper(this);

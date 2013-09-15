@@ -192,7 +192,7 @@ public final class Preferences {
 	/**
 	 * URL, where wifi catalog with openbmap's preprocessed wifi positions can be downloaded
 	 */
-	public static final String	WIFI_CATALOG_DOWNLOAD_URL = "https://dl.dropbox.com/s/8xp83mklfd6gt0k/openbmap.sqlite";
+	public static final String	WIFI_CATALOG_DOWNLOAD_URL = "https://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/openbmap.sqlite";
 	
 	/**
 	 * URL, which is called to check whether this client version is out-of-date
