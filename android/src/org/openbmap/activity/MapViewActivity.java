@@ -21,7 +21,6 @@ package org.openbmap.activity;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import org.mapsforge.core.graphics.Color;
 import org.mapsforge.core.graphics.Paint;
@@ -358,7 +357,7 @@ OnGpxLoadedListener {
 
 		MapViewPosition mapViewPosition = this.mMapView.getModel().mapViewPosition;
 
-		mapViewPosition.setZoomLevel((byte) 16);
+		//mapViewPosition.setZoomLevel((byte) 16);
 		//mapViewPosition.setCenter(this.dummyItem.location);
 
 		layers.add(MapUtils.createTileRendererLayer(this.tileCache, mapViewPosition, getMapFile()));
@@ -415,9 +414,6 @@ OnGpxLoadedListener {
 	protected final void onPause() {
 		releaseMap();
 		unregisterReceiver();
-
-		mMapView.getModel().save(this.preferencesFacade);
-		this.preferencesFacade.save();
 
 		super.onPause();
 	}
@@ -856,7 +852,11 @@ OnGpxLoadedListener {
 	 * Sets map-related object to null to enable garbage collection.
 	 */
 	private void releaseMap() {
-		Log.d(TAG, "Releasing map components");
+		Log.i(TAG, "Releasing map components");
+		// save map settings
+		mMapView.getModel().save(this.preferencesFacade);
+		this.preferencesFacade.save();
+
 		if (mMapView != null) {
 			mMapView.destroy();
 		}
