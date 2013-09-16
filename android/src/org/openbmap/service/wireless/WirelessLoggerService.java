@@ -125,15 +125,19 @@ public class WirelessLoggerService extends AbstractService {
 	private Location mCellSavedAt = new Location("DUMMY");
 
 	/*
-	 * location of last saved wifi
+	 * Location of last saved wifi
 	 */
 	private Location mWifiSavedAt = new Location("DUMMY");
 
 	/*
 	 * Position where wifi scan has been initiated.
 	 */
-	private Location mScanRequestedLocation;
-	private String mScanRequestedLocationProvider;
+	private Location mBeginLocation;
+	
+	/**
+	 * Location provider's name (e.g. GPS) 
+	 */
+	private String mBeginLocationProvider;
 
 	/*
 	 * Wifi Manager
@@ -248,8 +252,8 @@ public class WirelessLoggerService extends AbstractService {
 				 */
 				if (acceptableWifiDistance(location, mWifiSavedAt)) {
 					Log.d(TAG, "Wifi update. Distance " + location.distanceTo(mWifiSavedAt));
-					mScanRequestedLocation = location;
-					mScanRequestedLocationProvider = source;
+					mBeginLocation = location;
+					mBeginLocationProvider = source;
 					initiatePendingWifiUpdate();
 
 					mWifiSavedAt = location;
@@ -266,7 +270,7 @@ public class WirelessLoggerService extends AbstractService {
 				Log.d(TAG, "Wifi manager signals wifi scan results.");
 				// scan callback can be null after service has been stopped or another app has requested an update
 				if (scanCallback != null) {
-					scanCallback.wifiResultsAvailable();
+					scanCallback.onWifiResultsAvailable();
 				} else {
 					Log.i(TAG, "Scan Callback is null, skipping message");
 				}
@@ -492,7 +496,7 @@ public class WirelessLoggerService extends AbstractService {
 	}
 
 	/**
-	 * Scans available wifis and stores result in database
+	 * Scans available wifis and calls 
 	 * Scan is an asynchronous function, so first startScan() is triggered here,
 	 * then upon completion WifiScanCallback is called
 	 */
@@ -512,7 +516,7 @@ public class WirelessLoggerService extends AbstractService {
 
 			this.scanCallback = new WifiScanCallback() {
 
-				public void wifiResultsAvailable() {
+				public void onWifiResultsAvailable() {
 					Log.d(TAG, "Wifi results are available now.");
 
 					// Is wifi tracking disabled?
@@ -522,16 +526,23 @@ public class WirelessLoggerService extends AbstractService {
 					}
 
 					if (pendingWifiScanResults) {
-						Log.d(TAG, "Completed Wifi scan. Results arrived..");
+						Log.i(TAG, "Wifi scan results arrived..");
 						List<ScanResult> scanlist = mWifiManager.getScanResults();
 						if (scanlist != null) {
-							/* generate a list of wifis from scan results
-							 * share wifis from one scan share same position
-							 */
+							
 							ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>(); 
-							PositionRecord begin = new PositionRecord(mScanRequestedLocation, mSessionId, mScanRequestedLocationProvider);		
+							
+							// Common position for all scan result wifis
+							if (!LatLongHelper.isValidLocation(mBeginLocation) || !LatLongHelper.isValidLocation(mMostCurrentLocation)) {
+								Log.e(TAG, "Couldn't save wifi result: invalid location");
+								return;
+							}
+							
+							PositionRecord begin = new PositionRecord(mBeginLocation, mSessionId, mBeginLocationProvider);		
 							PositionRecord end = new PositionRecord(mMostCurrentLocation, mSessionId, mMostCurrentLocationProvider);
-
+							
+							
+							// Generates a list of wifis from scan results
 							for (ScanResult r : scanlist) {
 								if (mSsidBlackList.contains(r.SSID)) {
 									// skip invalid wifis
