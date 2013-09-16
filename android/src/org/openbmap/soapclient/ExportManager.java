@@ -309,6 +309,7 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 	protected final void onPostExecute(final Boolean success) {
 
 		// rescan SD card on honeycomb devices
+		// Otherwise files may not be visible when connected to desktop pc (MTP cache problem)
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			Log.i(TAG, "Re-indexing SD card temp folder");
 			new MediaScanner(mContext, new File(mTargetPath));

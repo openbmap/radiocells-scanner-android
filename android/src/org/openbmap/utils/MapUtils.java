@@ -84,7 +84,7 @@ public final class MapUtils {
 	 *            name for the directory
 	 * @return a new cache created on the external storage
 	 */
-	public static TileCache createExternalStorageTileCache(Context c, String id) {
+	public static TileCache createExternalStorageTileCache(final Context c, final String id) {
 		TileCache firstLevelTileCache = new InMemoryTileCache(32);
 		String cacheDirectoryName = c.getExternalCacheDir().getAbsolutePath() + File.separator + id;
 		File cacheDirectory = new File(cacheDirectoryName);

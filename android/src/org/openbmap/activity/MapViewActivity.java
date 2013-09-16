@@ -84,8 +84,8 @@ OnGpxLoadedListener {
 
 	private static final String TAG = MapViewActivity.class.getSimpleName();
 
-	
-	
+
+
 	/**
 	 * If zoom level < MIN_OBJECT_ZOOM session wifis and wifi catalog objects won't be displayed for performance reasons
 	 */
@@ -157,15 +157,13 @@ OnGpxLoadedListener {
 	 */
 	private long gpxRefreshTime;
 
-	private AndroidPreferences	preferencesFacade;
-
 	private byte	lastZoom;
 
 	// [start] UI controls
 	/**
 	 * MapView
 	 */
-	private MapView mMapView;
+	private MapView mapView;
 
 	/**
 	 * When checked map view will automatically focus current location
@@ -197,6 +195,16 @@ OnGpxLoadedListener {
 	//[end]
 
 	// [start] Dynamic map variables
+	/**
+	 * Used for persisting zoom and position settings onPause / onDestroy
+	 */
+	private AndroidPreferences	preferencesFacade;
+
+	/**
+	 * Observes zoom and map movements (for triggering overlay updates)
+	 */
+	private Observer	mapObserver;
+
 	/**
 	 * Another wifi catalog overlay refresh is taking place
 	 */
@@ -250,11 +258,11 @@ OnGpxLoadedListener {
 				Location location = intent.getExtras().getParcelable("android.location.Location");
 
 				// if btnSnapToLocation is checked, move map
-				if (btnSnapToLocation.isChecked() && mMapView != null) {
+				if (btnSnapToLocation.isChecked() && mapView != null) {
 					LatLong currentPos = new LatLong(location.getLatitude(), location.getLongitude());
-					mMapView.getModel().mapViewPosition.setCenter(currentPos);
+					mapView.getModel().mapViewPosition.setCenter(currentPos);
 				}
-				
+
 				// update overlays
 				if (LatLongHelper.isValidLocation(location)) {
 					/*
@@ -262,11 +270,11 @@ OnGpxLoadedListener {
 					 * 1.) current zoom level >= 12 (otherwise single points not visible, huge performance impact)
 					 * 2.) overlay items haven't been refreshed for a while AND user has moved a bit
 					 */
-					if ((mMapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && (needSessionObjectsRefresh(location))) {	
+					if ((mapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && (needSessionObjectsRefresh(location))) {	
 						refreshSessionOverlays(location);
 					}
 
-					if ((mMapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && (needCatalogObjectsRefresh(location))) {	
+					if ((mapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && (needCatalogObjectsRefresh(location))) {	
 						refreshCatalogOverlay(location);
 					}
 
@@ -294,13 +302,11 @@ OnGpxLoadedListener {
 		// get shared preferences
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-		SharedPreferences sharedPreferences = this.getSharedPreferences(getPersistableId(), MODE_PRIVATE);
-		preferencesFacade = new AndroidPreferences(sharedPreferences);
-
 		// Register our gps broadcast mReceiver
 		registerReceiver();
 
 		initUi();
+		initMap();
 
 		catalogObjects = new ArrayList<Layer>();
 		sessionObjects = new ArrayList<Layer>();
@@ -312,10 +318,8 @@ OnGpxLoadedListener {
 	protected final void onResume() {
 		super.onResume();
 
-
 		initDb();
 
-		initMap();
 		registerReceiver();
 
 		if (this.getIntent().hasExtra(Schema.COL_ID)) {
@@ -325,6 +329,20 @@ OnGpxLoadedListener {
 				loadSingleObject(focusWifi);
 			}
 		}
+	}
+
+	@Override
+	protected final void onPause() {
+		//releaseMap();
+		unregisterReceiver();
+	
+		super.onPause();
+	}
+
+	@Override
+	protected final void onDestroy() {
+		releaseMap();
+		super.onDestroy();
 	}
 
 	private void initDb() {
@@ -345,34 +363,38 @@ OnGpxLoadedListener {
 	 * Initializes map components
 	 */
 	private void initMap() {
-		mMapView = (MapView) findViewById(R.id.map);
-		mMapView.getModel().init(preferencesFacade);
-		mMapView.setClickable(true);
-		mMapView.getMapScaleBar().setVisible(true);
-
+		
+		SharedPreferences sharedPreferences = this.getSharedPreferences(getPersistableId(), MODE_PRIVATE);
+		preferencesFacade = new AndroidPreferences(sharedPreferences);
+		
+		this.mapView = (MapView) findViewById(R.id.map);
+		this.mapView.getModel().init(preferencesFacade);
+		this.mapView.setClickable(true);
+		this.mapView.getMapScaleBar().setVisible(true);
 		this.tileCache = createTileCache();
 
-		LayerManager layerManager = this.mMapView.getLayerManager();
+		LayerManager layerManager = this.mapView.getLayerManager();
 		Layers layers = layerManager.getLayers();
 
-		MapViewPosition mapViewPosition = this.mMapView.getModel().mapViewPosition;
+		// remove all layers including base layer
+		layers.clear();
 
-		//mapViewPosition.setZoomLevel((byte) 16);
-		//mapViewPosition.setCenter(this.dummyItem.location);
+		layers.add(MapUtils.createTileRendererLayer(
+				this.tileCache,
+				this.mapView.getModel().mapViewPosition,
+				getMapFile()));
 
-		layers.add(MapUtils.createTileRendererLayer(this.tileCache, mapViewPosition, getMapFile()));
-
-		Observer observer = new Observer() {
+		this.mapObserver = new Observer() {
 			@Override
 			public void onChange() {
 
-				byte zoom = mMapView.getModel().mapViewPosition.getZoomLevel();
+				byte zoom = mapView.getModel().mapViewPosition.getZoomLevel();
 				if (zoom != lastZoom && zoom >= MIN_OBJECT_ZOOM) {
 					// update overlays on zoom level changed
 					Log.i(TAG, "New zoom level " + zoom + ", reloading map objects");
 					Location mapCenter = new Location("DUMMY");
-					mapCenter.setLatitude(mMapView.getModel().mapViewPosition.getCenter().latitude);
-					mapCenter.setLongitude(mMapView.getModel().mapViewPosition.getCenter().longitude);
+					mapCenter.setLatitude(mapView.getModel().mapViewPosition.getCenter().latitude);
+					mapCenter.setLongitude(mapView.getModel().mapViewPosition.getCenter().longitude);
 					refreshSessionOverlays(mapCenter);
 					refreshCatalogOverlay(mapCenter);
 
@@ -381,7 +403,7 @@ OnGpxLoadedListener {
 
 				if (!btnSnapToLocation.isChecked()) {
 					// update overlay in free-move mode
-					LatLong tmp = mMapView.getModel().mapViewPosition.getCenter();
+					LatLong tmp = mapView.getModel().mapViewPosition.getCenter();
 					Location position = new Location("DUMMY");
 					position.setLatitude(tmp.latitude);
 					position.setLongitude(tmp.longitude);
@@ -397,31 +419,7 @@ OnGpxLoadedListener {
 
 			}
 		};
-		mMapView.getModel().mapViewPosition.addObserver(observer);
-
-		/*
-				mWifiCatalogOverlay = new ListOverlay();
-				mSessionOverlay = new ListOverlay();
-				mGpxOverlay = new ListOverlay();
-
-				mMapView.getOverlays().add(mWifiCatalogOverlay);
-				mMapView.getOverlays().add(mSessionOverlay);
-				mMapView.getOverlays().add(mGpxOverlay);
-		 */
-	}
-
-	@Override
-	protected final void onPause() {
-		releaseMap();
-		unregisterReceiver();
-
-		super.onPause();
-	}
-
-	@Override
-	protected final void onDestroy() {
-		releaseMap();
-		super.onDestroy();
+		mapView.getModel().mapViewPosition.addObserver(mapObserver);
 	}
 
 	/**
@@ -431,22 +429,22 @@ OnGpxLoadedListener {
 		btnSnapToLocation = (ToggleButton) findViewById(R.id.mapview_tb_snap_to_location);
 		btnZoom = (ImageButton) findViewById(R.id.btnZoom);		
 		btnZoom.setOnClickListener(new OnClickListener() {	
-					@Override
-					public void onClick(final View v) {
-						byte zoom  = mMapView.getModel().mapViewPosition.getZoomLevel();
-						if (zoom < mMapView.getModel().mapViewPosition.getZoomLevelMax()) {
-							mMapView.getModel().mapViewPosition.setZoomLevel((byte) (zoom + 1));
-						}
-					}
-				});
-	
+			@Override
+			public void onClick(final View v) {
+				byte zoom  = mapView.getModel().mapViewPosition.getZoomLevel();
+				if (zoom < mapView.getModel().mapViewPosition.getZoomLevelMax()) {
+					mapView.getModel().mapViewPosition.setZoomLevel((byte) (zoom + 1));
+				}
+			}
+		});
+
 		btnUnzoom = (ImageButton) findViewById(R.id.btnUnzoom);
 		btnUnzoom.setOnClickListener(new OnClickListener() {	
 			@Override
 			public void onClick(final View v) {
-				byte zoom  = mMapView.getModel().mapViewPosition.getZoomLevel();
-				if (zoom > mMapView.getModel().mapViewPosition.getZoomLevelMin()) {
-					mMapView.getModel().mapViewPosition.setZoomLevel((byte) (zoom - 1));
+				byte zoom  = mapView.getModel().mapViewPosition.getZoomLevel();
+				if (zoom > mapView.getModel().mapViewPosition.getZoomLevelMin()) {
+					mapView.getModel().mapViewPosition.setZoomLevel((byte) (zoom - 1));
 				}
 			}
 		});
@@ -510,8 +508,8 @@ OnGpxLoadedListener {
 	private void proceedAfterCatalogLoaded() {
 
 		BoundingBox bbox = MapPositionUtil.getBoundingBox(
-				mMapView.getModel().mapViewPosition.getMapPosition(),
-				mMapView.getDimension());
+				mapView.getModel().mapViewPosition.getMapPosition(),
+				mapView.getDimension());
 
 		double minLatitude = bbox.minLatitude;
 		double maxLatitude = bbox.maxLatitude;
@@ -538,13 +536,13 @@ OnGpxLoadedListener {
 	@Override
 	public final void onCatalogLoaded(final ArrayList<LatLong> points) {
 		Log.d(TAG, "Loaded catalog objects");
-		Layers layers = this.mMapView.getLayerManager().getLayers();
+		Layers layers = this.mapView.getLayerManager().getLayers();
 
 
 		// clear overlay
 		for (Iterator<Layer> iterator = catalogObjects.iterator(); iterator.hasNext();) {
 			Layer layer = (Layer) iterator.next();
-			this.mMapView.getLayerManager().getLayers().remove(layer);
+			this.mapView.getLayerManager().getLayers().remove(layer);
 		}
 		catalogObjects.clear();
 
@@ -614,8 +612,8 @@ OnGpxLoadedListener {
 	 */
 	private void proceedAfterSessionObjectsLoaded(final WifiRecord highlight) {
 		BoundingBox bbox = MapPositionUtil.getBoundingBox(
-				mMapView.getModel().mapViewPosition.getMapPosition(),
-				mMapView.getDimension());
+				mapView.getModel().mapViewPosition.getMapPosition(),
+				mapView.getDimension());
 
 		if (highlight == null) {
 			// load all session wifis
@@ -650,7 +648,7 @@ OnGpxLoadedListener {
 	@Override
 	public final void onSessionLoaded(final ArrayList<LatLong> points) {
 		Log.d(TAG, "Loaded session objects");
-		Layers layers = this.mMapView.getLayerManager().getLayers();
+		Layers layers = this.mapView.getLayerManager().getLayers();
 
 		// clear overlay
 		for (Iterator<Layer> iterator = sessionObjects.iterator(); iterator.hasNext();) {
@@ -682,7 +680,7 @@ OnGpxLoadedListener {
 
 		// if we have just loaded on point, set map center
 		if (points.size() == 1) {
-			mMapView.getModel().mapViewPosition.setCenter((LatLong) points.get(0));
+			mapView.getModel().mapViewPosition.setCenter((LatLong) points.get(0));
 		}
 
 		// enable next refresh
@@ -717,8 +715,8 @@ OnGpxLoadedListener {
 	 */
 	private void proceedAfterGpxObjectsLoaded() {
 		BoundingBox bbox = MapPositionUtil.getBoundingBox(
-				mMapView.getModel().mapViewPosition.getMapPosition(),
-				mMapView.getDimension());
+				mapView.getModel().mapViewPosition.getMapPosition(),
+				mapView.getDimension());
 		GpxMapObjectsLoader task = new GpxMapObjectsLoader(this);
 		// query with some extra space
 		task.execute(bbox.minLatitude - 0.01, bbox.maxLatitude + 0.01, bbox.minLongitude - 0.15, bbox.maxLatitude + 0.15);
@@ -733,13 +731,13 @@ OnGpxLoadedListener {
 		Log.d(TAG, "Loaded gpx objects");
 		// clear overlay
 		gpxObjects.getLatLongs().clear();
-		this.mMapView.getLayerManager().getLayers().remove(gpxObjects);
+		this.mapView.getLayerManager().getLayers().remove(gpxObjects);
 
 		for (int i = 0; i < points.size(); i++) {
 			gpxObjects.getLatLongs().add(points.get(i));
 		}	
 
-		this.mMapView.getLayerManager().getLayers().add(gpxObjects);
+		this.mapView.getLayerManager().getLayers().add(gpxObjects);
 
 		mRefreshGpxPending = false;
 	}
@@ -854,11 +852,14 @@ OnGpxLoadedListener {
 	private void releaseMap() {
 		Log.i(TAG, "Releasing map components");
 		// save map settings
-		mMapView.getModel().save(this.preferencesFacade);
+		this.mapView.getModel().save(this.preferencesFacade);
 		this.preferencesFacade.save();
 
-		if (mMapView != null) {
-			mMapView.destroy();
+		// release zoom / move observer for gc
+		this.mapObserver = null;
+
+		if (mapView != null) {
+			mapView.destroy();
 		}
 	}
 
