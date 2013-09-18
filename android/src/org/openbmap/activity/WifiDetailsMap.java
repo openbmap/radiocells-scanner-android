@@ -19,8 +19,6 @@
 package org.openbmap.activity;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.mapsforge.core.graphics.Paint;
 import org.mapsforge.core.graphics.Style;

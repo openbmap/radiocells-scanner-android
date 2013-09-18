@@ -14,13 +14,14 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.activity;
 
 import org.openbmap.R;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.Schema;
+import org.openbmap.db.model.WifiChannel;
 import org.openbmap.db.model.WifiRecord;
 
 import android.content.Intent;
@@ -32,9 +33,9 @@ import android.widget.TextView;
  * Parent activity for hosting wifi detail fragment
  */
 public class WifiDetailsActivity  extends FragmentActivity {
-	
+
 	private DataHelper mDatahelper;
-	
+
 	private TextView tvSsid;
 	private TextView tvCapabilities;
 	private TextView tvFrequency;
@@ -46,16 +47,16 @@ public class WifiDetailsActivity  extends FragmentActivity {
 	public final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);	
 		setContentView(R.layout.wifidetails);
-		
+
 		initUi();
 
 		mDatahelper = new DataHelper(this);
-		
+
 		Bundle extras = getIntent().getExtras();
 		String bssid = extras.getString(Schema.COL_BSSID);
 		// query content provider for wifi details
 		mWifi = mDatahelper.loadWifisByBssid(bssid).get(0);
-		
+
 		displayRecord(mWifi);
 	}
 
@@ -66,7 +67,7 @@ public class WifiDetailsActivity  extends FragmentActivity {
 		tvSsid = (TextView) findViewById(R.id.wifidetails_ssid);
 		tvCapabilities = (TextView) findViewById(R.id.wifidetails_capa);
 		tvFrequency = (TextView) findViewById(R.id.wifidetails_freq);
-		
+
 		//WifiDetailsMap detailsFragment = (WifiDetailsMap) getSupportFragmentManager().findFragmentById(R.id.wifiDetailsMap);	
 	}
 
@@ -79,11 +80,11 @@ public class WifiDetailsActivity  extends FragmentActivity {
 		int id = extras.getInt(Schema.COL_ID);
 		// query content provider for wifi details
 		mWifi = mDatahelper.loadWifiById(id);
-		
+
 		displayRecord(mWifi);
-		
+
 	}
-	
+
 	/**
 	 * @param wifi 
 	 * 
@@ -96,9 +97,15 @@ public class WifiDetailsActivity  extends FragmentActivity {
 			} else {
 				tvCapabilities.setText(getResources().getString(R.string.encryption) + ":" + R.string.n_a);
 			}
-			
+
 			// TODO: replace by channel
-			tvFrequency.setText(getResources().getString(R.string.frequency) + ":" + String.valueOf(wifi.getFrequency()));
+			Integer freq = wifi.getFrequency();
+			if (freq != null) {
+				tvFrequency.setText(
+						getResources().getString(R.string.channel) + ":"
+						+ ((WifiChannel.getChannel(freq) == null) ? getResources().getString(R.string.unknown) : WifiChannel.getChannel(freq))
+						+ "  (" + freq + " MHz)");
+			}
 		}
 	}
 
