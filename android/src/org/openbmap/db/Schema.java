@@ -22,7 +22,7 @@ package org.openbmap.db;
  * Data schemes: Table names, column names, URI
  */
 public final class Schema {
-
+	// [start] Tables
 	/**
 	 * Table names.
 	 */
@@ -34,11 +34,15 @@ public final class Schema {
 	public static final String TBL_WIFI_POSITIONS = "wifi_zone";
 	public static final String TBL_LOGS = "logs";
 	public static final String TBL_SESSIONS = "sessions";
+	// [end]
+	
+	// [start] Views
+	public static final String	VIEW_WIFIS_EXTENDED	= "wifis_positions";
+	// [end]
 	
 	/**
 	 * General columns used in several tables.
 	 */
-	
 	public static final String COL_ID = "_id";
 	public static final String COL_TIMESTAMP = "timestamp";
 	public static final String COL_BEGIN_POSITION_ID = "request_pos_id";
@@ -118,8 +122,18 @@ public final class Schema {
 	
 	public static final int URI_CODE_WIFIS = 20;
 	public static final int URI_CODE_WIFI_ID = 21;
+	/**
+	 * Get only strongest measurement for each bssid
+	 */
 	public static final int URI_CODE_WIFI_OVERVIEW = 22;
+	/**
+	 * Get all session wifis
+	 */
 	public static final int	URI_CODE_WIFIS_BY_SESSION = 23;
+	/**
+	 * Get all wifis including position data
+	 */
+	public static final int	URI_CODE_WIFIS_EXTENDED	= 29;
 	
 	public static final int URI_CODE_POSITIONS = 30;
 	public static final int URI_CODE_POSITION_ID = 31;

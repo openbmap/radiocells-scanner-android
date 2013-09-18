@@ -3,7 +3,7 @@
     android:id="@+id/tab1"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical" >
+    android:orientation="vertical" xmlns:tools="http://schemas.android.com/tools">
 
     <TableLayout
         android:layout_width="fill_parent"
@@ -37,19 +37,14 @@
                 android:text="@string/frequency" />
         </TableRow>
     </TableLayout>
+    
     <fragment
-        android:id="@+id/wifiDetailsFragment"
-        android:name="org.openbmap.activity.WifiDetailsFragment"
+        android:id="@+id/wifiDetailsMap"
+        android:name="org.openbmap.activity.WifiDetailsMap"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content" >
-    </fragment>
-
-    <TextView
-        android:id="@+id/credits_client_version_caption"
-        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:text="@string/tap_measurement_to_see_on_map"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        tools:layout="@layout/wifidetailsmap" >
+
+    </fragment>
 
 </LinearLayout>

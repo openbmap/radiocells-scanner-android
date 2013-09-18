@@ -31,7 +31,7 @@ import android.widget.TextView;
 /**
  * Parent activity for hosting wifi detail fragment
  */
-public class WifiDetailsActivity  extends FragmentActivity implements WifiDetailsFragment.OnWifiSelectedListener {
+public class WifiDetailsActivity  extends FragmentActivity {
 	
 	private DataHelper mDatahelper;
 	
@@ -67,8 +67,7 @@ public class WifiDetailsActivity  extends FragmentActivity implements WifiDetail
 		tvCapabilities = (TextView) findViewById(R.id.wifidetails_capa);
 		tvFrequency = (TextView) findViewById(R.id.wifidetails_freq);
 		
-		WifiDetailsFragment detailsFragment = (WifiDetailsFragment) getSupportFragmentManager().findFragmentById(R.id.wifiDetailsFragment);	
-		detailsFragment.setOnWifiSelectedListener(this);
+		//WifiDetailsMap detailsFragment = (WifiDetailsMap) getSupportFragmentManager().findFragmentById(R.id.wifiDetailsMap);	
 	}
 
 	@Override

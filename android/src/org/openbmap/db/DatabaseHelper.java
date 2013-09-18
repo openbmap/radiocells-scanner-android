@@ -14,9 +14,11 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.db;
+
+import org.openbmap.RadioBeacon;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -89,6 +91,41 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+  " FOREIGN KEY (" + Schema.COL_END_POSITION_ID + ") REFERENCES " + Schema.TBL_POSITIONS + "( " + Schema.COL_ID + ")" 
 			+  ")";
 
+	// stupid thing: have to provide name for each field,
+	// see http://stackoverflow.com/questions/3269199/sqlite-for-android-custom-table-view-sql-view-not-android-view-discrepancy
+	private static final String SQL_CREATE_VIEW_WIFI_POSITIONS = "CREATE VIEW IF NOT EXISTS " + Schema.VIEW_WIFIS_EXTENDED + " AS " 
+			+ " SELECT w." + Schema.COL_ID + ","
+			+ " w." + Schema.COL_BSSID + " AS " + Schema.COL_BSSID + ","
+			+ " w." + Schema.COL_SSID +  " AS " + Schema.COL_SSID + ","
+			+ " w." + Schema.COL_MD5_SSID + " AS " + Schema.COL_MD5_SSID + ","
+			+ " w." + Schema.COL_CAPABILITIES +  " AS " + Schema.COL_CAPABILITIES + ","
+			+ " w." + Schema.COL_FREQUENCY +  " AS " + Schema.COL_FREQUENCY + ","
+			+ " w." + Schema.COL_LEVEL +  " AS " + Schema.COL_LEVEL+ ","
+			+ " w." + Schema.COL_TIMESTAMP +  " AS " + Schema.COL_TIMESTAMP + ","
+			+ " w." + Schema.COL_BEGIN_POSITION_ID +  " AS " + Schema.COL_BEGIN_POSITION_ID + ","
+			+ " w." + Schema.COL_END_POSITION_ID +  " AS " + Schema.COL_END_POSITION_ID + ","
+			+ " w." + Schema.COL_SESSION_ID +  " AS " + Schema.COL_SESSION_ID + ","
+			+ " w." + Schema.COL_IS_NEW_WIFI +  " AS " + Schema.COL_IS_NEW_WIFI + ","
+			+ " b." + Schema.COL_LATITUDE + " as begin_latitude,"
+			+ " b." + Schema.COL_LONGITUDE + " as begin_longitude,"
+			+ " b." + Schema.COL_ALTITUDE + " as begin_altitude,"
+			+ " b." + Schema.COL_ACCURACY + " as begin_accuracy,"
+			+ " b." + Schema.COL_TIMESTAMP + " as begin_timestamp,"
+			+ " b." + Schema.COL_BEARING + " as begin_bearing,"
+			+ " b." + Schema.COL_SPEED + " as begin_speed,"
+			+ " b." + Schema.COL_SOURCE + " as begin_source,"
+			+ " e." + Schema.COL_LATITUDE + " as end_latitude," 
+			+ " e." + Schema.COL_LONGITUDE + " as end_longitude,"
+			+ " e." + Schema.COL_ALTITUDE + " as end_altitude,"
+			+ " e." + Schema.COL_ACCURACY + " as end_accuracy,"
+			+ " e." + Schema.COL_TIMESTAMP + " as end_timestamp," 
+			+ " e." + Schema.COL_BEARING + " as end_bearing,"
+			+ " e." + Schema.COL_SPEED + " as end_speed,"
+			+ " e." + Schema.COL_SOURCE + " as end_source"
+			+ " FROM " + Schema.TBL_WIFIS + " AS w"
+			+ " LEFT JOIN " + Schema.TBL_POSITIONS + " AS b ON (w." + Schema.COL_BEGIN_POSITION_ID + " = b." + Schema.COL_ID + ")"
+			+ " LEFT JOIN " + Schema.TBL_POSITIONS + " AS e ON (w." + Schema.COL_END_POSITION_ID + " = e." + Schema.COL_ID + ")";
+
 	/**
 	 * SQL for creating table POSITIONS
 	 * COL_TIMESTAMP format: YYYYMMDDhhmmss not UTC!
@@ -152,7 +189,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+  Schema.TBL_WIFIS + "("
 			+  Schema.COL_SESSION_ID
 			+  ")";
-	
+
 	private static final String SQL_CREATE_IDX_WIFIS_BEGIN_POSITION_ID = ""
 			+  "CREATE INDEX idx_wifis_begin_position_id ON "
 			+  Schema.TBL_WIFIS + "("
@@ -164,19 +201,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+  Schema.TBL_WIFIS + "("
 			+  Schema.COL_END_POSITION_ID
 			+  ")";		
-	
+
 	private static final String SQL_CREATE_IDX_CELLS_SESSION_ID = ""
 			+  "CREATE INDEX idx_cells_sessios_id ON "
 			+  Schema.TBL_CELLS + "("
 			+  Schema.COL_SESSION_ID
 			+  ")";
-	
+
 	private static final String SQL_CREATE_IDX_CELLS_BEGIN_POSITION_ID = ""
 			+  "CREATE INDEX idx_cells_begin_position_id ON "
 			+  Schema.TBL_CELLS + "("
 			+  Schema.COL_BEGIN_POSITION_ID
 			+  ")";	
-	
+
 	private static final String SQL_CREATE_IDX_CELLS_END_POSITION_ID = ""
 			+  "CREATE INDEX idx_cells_end_position_id ON "
 			+  Schema.TBL_CELLS + "("
@@ -192,7 +229,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+  Schema.COL_CELLID + ", "		
 			+  Schema.COL_STRENGTHDBM + ""
 			+  ")";
-	
+
 	/**
 	 * SQL for creating index on Positions
 	 */
@@ -202,13 +239,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+  Schema.COL_LATITUDE + ", "		
 			+  Schema.COL_LONGITUDE + ""
 			+  ")";
-	
-	
-	private SQLiteDatabase mDataBase; 
-	private static final int VERSION = 1;
 
+
+	private SQLiteDatabase mDataBase; 
 	public DatabaseHelper(final Context context) {
-		super(context, DB_NAME, null, VERSION);
+		super(context, DB_NAME, null, RadioBeacon.DATABASE_VERSION);
 	}
 
 	@Override
@@ -232,7 +267,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			db.execSQL(SQL_CREATE_TABLE_CELLS);
 			db.execSQL("DROP TABLE IF EXISTS " + Schema.TBL_WIFIS);
 			db.execSQL(SQL_CREATE_TABLE_WIFIS);
-			
+
+			// create views
+			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_WIFIS_EXTENDED);
+			db.execSQL(SQL_CREATE_VIEW_WIFI_POSITIONS);
+
 			// Create indices
 			db.execSQL(SQL_CREATE_IDX_WIFIS);
 			db.execSQL(SQL_CREATE_IDX_CELLS);
@@ -247,8 +286,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	@Override
 	public final void onUpgrade(final SQLiteDatabase db, final int oldVersion, final int newVersion) {
-		// recreate from scratch
-		onCreate(db);
+		Log.i(TAG, "Updating database scheme from " + oldVersion + " to " + newVersion);
+
+		if (oldVersion == 1) {
+			// add wifi position view 
+			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_WIFIS_EXTENDED);
+			db.execSQL(SQL_CREATE_VIEW_WIFI_POSITIONS);
+		} 
 	}
 
 	@Override

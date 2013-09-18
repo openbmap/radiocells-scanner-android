@@ -27,6 +27,7 @@ import org.openbmap.db.model.PositionRecord;
 import org.openbmap.db.model.Session;
 import org.openbmap.db.model.WifiRecord;
 
+import android.R.integer;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.ContentResolver;
@@ -584,7 +585,7 @@ public class DataHelper {
 	 * @param maxLon
 	 * @return
 	 */
-	public final ArrayList<PositionRecord> loadPositions(final String session, final Double minLat, final Double maxLat, final Double minLon, final Double maxLon) {
+	public final ArrayList<PositionRecord> loadPositions(final int session, final Double minLat, final Double maxLat, final Double minLon, final Double maxLon) {
 		ArrayList<PositionRecord> positions = new ArrayList<PositionRecord>();
 		String selection = Schema.COL_SESSION_ID + " = ?";
 		
@@ -593,7 +594,7 @@ public class DataHelper {
 		if (minLat != null & maxLat != null && minLon != null && maxLon != null) {
 			// if boundaries provided..
 			selectionArgs = new ArrayList<String>();
-			selectionArgs.add(session);
+			selectionArgs.add(String.valueOf(session));
 
 			selectionArgs.add(String.valueOf(minLat));
 			selectionArgs.add(String.valueOf(maxLat));

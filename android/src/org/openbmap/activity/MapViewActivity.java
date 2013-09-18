@@ -84,8 +84,6 @@ OnGpxLoadedListener {
 
 	private static final String TAG = MapViewActivity.class.getSimpleName();
 
-
-
 	/**
 	 * If zoom level < MIN_OBJECT_ZOOM session wifis and wifi catalog objects won't be displayed for performance reasons
 	 */
@@ -719,7 +717,7 @@ OnGpxLoadedListener {
 				mapView.getDimension());
 		GpxMapObjectsLoader task = new GpxMapObjectsLoader(this);
 		// query with some extra space
-		task.execute(bbox.minLatitude - 0.01, bbox.maxLatitude + 0.01, bbox.minLongitude - 0.15, bbox.maxLatitude + 0.15);
+		task.execute(sessionId, bbox.minLatitude - 0.01, bbox.maxLatitude + 0.01, bbox.minLongitude - 0.15, bbox.maxLatitude + 0.15);
 		//task.execute(null, null, null, null);
 	}
 
@@ -835,6 +833,10 @@ OnGpxLoadedListener {
 		layerManager.getLayers().add(MapUtils.createTileRendererLayer(tileCache, mapViewPosition, getMapFile()));
 	}
 
+	/**
+	 * Creates a tile cache for the baselayer
+	 * @return
+	 */
 	protected final TileCache createTileCache() {
 		return MapUtils.createExternalStorageTileCache(this, getPersistableId());
 	}

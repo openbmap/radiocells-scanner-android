@@ -31,7 +31,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.util.Log;
-import android.widget.ToggleButton;
 
 /**
  * Content provider
@@ -51,6 +50,8 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	 */
 	public static final Uri CONTENT_URI_WIFI = Uri.parse("content://" + AUTHORITY + "/" + Schema.TBL_WIFIS);
 
+	public static final Uri	CONTENT_URI_WIFI_EXTENDED	= Uri.parse("content://" + AUTHORITY + "/" + Schema.VIEW_WIFIS_EXTENDED);
+	
 	/**
 	 * Uri for cell
 	 */
@@ -93,6 +94,11 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	 */
 	private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
+
+
+	/**
+	 * URI matcher - defines how URIs are translated to URI_CODE which is used internally 
+	 */
 	static {
 		uriMatcher.addURI(AUTHORITY, Schema.TBL_SESSIONS, Schema.URI_CODE_SESSIONS);
 		uriMatcher.addURI(AUTHORITY, Schema.TBL_SESSIONS + "/#", Schema.URI_CODE_SESSION_ID);
@@ -111,7 +117,9 @@ public class RadioBeaconContentProvider extends ContentProvider {
 		uriMatcher.addURI(AUTHORITY, Schema.TBL_WIFIS + "/#", Schema.URI_CODE_WIFI_ID);
 		uriMatcher.addURI(AUTHORITY, Schema.TBL_WIFIS + "/" + CONTENT_URI_OVERVIEW_SUFFIX + "/#", Schema.URI_CODE_WIFI_OVERVIEW);
 		uriMatcher.addURI(AUTHORITY, Schema.TBL_WIFIS + "/" + CONTENT_URI_SESSION_SUFFIX + "/#", Schema.URI_CODE_WIFIS_BY_SESSION);
-
+		uriMatcher.addURI(AUTHORITY, Schema.VIEW_WIFIS_EXTENDED, Schema.URI_CODE_WIFIS_EXTENDED);
+		
+		
 		uriMatcher.addURI(AUTHORITY, Schema.TBL_POSITIONS, Schema.URI_CODE_POSITIONS);
 		uriMatcher.addURI(AUTHORITY, Schema.TBL_POSITIONS + "/#", Schema.URI_CODE_POSITION_ID);		
 	}
@@ -149,7 +157,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	public final Uri insert(final Uri uri, final ContentValues values) {
 		Log.d(TAG, "Uri " + uri.toString());
 		// Select which data type to insert
-		switch (uriMatcher.match(uri)) {
+ 		switch (uriMatcher.match(uri)) {
 			case Schema.URI_CODE_CELLS:
 				return insertCell(uri, values);
 			case Schema.URI_CODE_WIFIS:
@@ -278,6 +286,9 @@ public class RadioBeaconContentProvider extends ContentProvider {
 			case Schema.URI_CODE_WIFIS:
 				// Returns all recorded wifis.
 				return queryTable(RadioBeaconContentProvider.CONTENT_URI_WIFI, Schema.TBL_WIFIS, projection, selectionIn, selectionArgsIn, sortOrder, null, null);
+			case Schema.URI_CODE_WIFIS_EXTENDED:
+				// Returns all wifis including position data
+				return queryTable(RadioBeaconContentProvider.CONTENT_URI_WIFI_EXTENDED, Schema.VIEW_WIFIS_EXTENDED, projection, selectionIn, selectionArgsIn, sortOrder, null, null);
 			case Schema.URI_CODE_WIFI_OVERVIEW:
 				/**
 				 *  if several measurements for specific wifi bssid are available only strongest
