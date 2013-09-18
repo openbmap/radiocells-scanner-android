@@ -21,7 +21,6 @@ package org.openbmap.utils;
 import java.util.ArrayList;
 
 import org.mapsforge.core.model.LatLong;
-import org.openbmap.RadioBeacon;
 import org.openbmap.activity.MapViewActivity;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.model.PositionRecord;
@@ -41,7 +40,7 @@ public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<L
 	/**
 	 * Indices for doInBackground arguments
 	 */
-	public enum Argument {SESSION_ID, MIN_LAT_COL, MAX_LAT_COL, MIN_LON_COL, MIN_MAX_COL }
+	public enum Arguments { SESSION_ID, MIN_LAT_COL, MAX_LAT_COL, MIN_LON_COL, MIN_MAX_COL }
 
 	private static final int 	SESSION_ID = 0;
 	private static final int	MIN_LAT_COL	= 1;
@@ -99,7 +98,7 @@ public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<L
 					(Double) args[MIN_LON_COL],
 					(Double) args[MAX_LON_COL],
 					(Double) args[MIN_LAT_COL],
-					(Double) args[MAX_LON_COL]);
+					(Double) args[MAX_LAT_COL]);
 
 			if (sessionWifis == null) {
 				return points;

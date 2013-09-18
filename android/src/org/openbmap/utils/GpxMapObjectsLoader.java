@@ -39,12 +39,13 @@ public class GpxMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatLo
 	/**
 	 * Indices for doInBackground arguments
 	 */
-	public enum Argument { MIN_LAT_COL, MAX_LAT_COL, MIN_LON_COL, MIN_MAX_COL }
+	public enum Arguments { SESSION_ID, MIN_LAT_COL, MAX_LAT_COL, MIN_LON_COL, MIN_MAX_COL }
 
-	private static final int	MIN_LAT_COL	= 0;
-	private static final int	MAX_LAT_COL	= 1;
-	private static final int	MIN_LON_COL	= 2;
-	private static final int	MAX_LON_COL	= 3;
+	private static final int    SESSION_ID = 0;
+	private static final int	MIN_LAT_COL	= 1;
+	private static final int	MAX_LAT_COL	= 2;
+	private static final int	MIN_LON_COL	= 3;
+	private static final int	MAX_LON_COL	= 4;
 
 	/**
 	 * Interface for activity.
@@ -74,21 +75,22 @@ public class GpxMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatLo
 	 * Queries reference database for all wifis in specified range around map centre.
 	 * @param args
 	 * 			Args is an object array containing
-	 * 			args[0]: min latitude as double
-	 * 			args[1]: max latitude as double
-	 * 			args[2]: min longitude as double
-	 *			args[3]: max longitude as double
+	 * 			args[0]: session id
+	 * 			args[1]: min latitude as double
+	 * 			args[2]: max latitude as double
+	 * 			args[3]: min longitude as double
+	 *			args[4]: max longitude as double
 	 */
 	@Override
 	protected final ArrayList<LatLong> doInBackground(final Object... args) {         
 		//Log.d(TAG, "Loading gpx points");
-	
+		ArrayList<LatLong> points = new ArrayList<LatLong>();
+		
 		DataHelper dbHelper = new DataHelper(mContext);
 		
-		ArrayList<PositionRecord> positions = dbHelper.loadPositions(String.valueOf(dbHelper.loadActiveSession().getId()),
+		ArrayList<PositionRecord> positions = dbHelper.loadPositions((Integer) args[SESSION_ID],
 				(Double) args[MIN_LAT_COL], (Double) args[MAX_LAT_COL], (Double) args[MIN_LON_COL], (Double) args[MAX_LON_COL]);
 		
-		ArrayList<LatLong> points = new ArrayList<LatLong>();
 		for (int i = 0; i < positions.size(); i++) {
 			points.add(new LatLong(positions.get(i).getLatitude(), positions.get(i).getLongitude()));
 		}
