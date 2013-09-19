@@ -115,7 +115,7 @@ public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayLi
 				return points;
 			}
 			
-			// Open ref database
+			// Open catalog database
 			String path = Environment.getExternalStorageDirectory().getPath()
 					+ prefs.getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
 					+ Preferences.WIFI_CATALOG_SUBDIR + "/" + prefs.getString(Preferences.KEY_WIFI_CATALOG, Preferences.VAL_REF_DATABASE);

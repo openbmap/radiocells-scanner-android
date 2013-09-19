@@ -87,4 +87,6 @@
     <string name="encryption">Encryption</string>
     <string name="channel">Channel</string>
     <string name="unknown">unknown</string>
+    <string name="error_version_check_title">Error on version check</string>
+    <string name="error_version_check_body">Check your online connection!\n(e.g. in browser).\nWould you like to try an automatic fix now?\n(Toggles your wifi adapter state to trigger a reconnect)</string>
 </resources>

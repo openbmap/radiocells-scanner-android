@@ -123,7 +123,7 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 	 * @param id
 	 * 		session id
 	 */
-	public final void requestExportCommand(final int id) {
+	public final void exportCommand(final int id) {
 
 		mPendingExport = id;
 
@@ -516,8 +516,8 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 		Log.i(TAG, "Server check failed");
 		// if we still have no connection, offer to toggle wifi state
 		new AlertDialog.Builder(this)
-		.setTitle("Error contacting openbmap.org")
-		.setMessage("Check your online connection!\n(e.g. in browser).\nWould you like to try an automatic fix now?\n(Toggles your wifi adapter state to trigger a reconnect)")
+		.setTitle(getResources().getString(R.string.error_version_check_title))
+		.setMessage(getResources().getString(R.string.error_version_check_body))
 		.setCancelable(false)
 		.setIcon(android.R.drawable.ic_dialog_info)
 		.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {

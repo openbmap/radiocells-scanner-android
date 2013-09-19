@@ -100,7 +100,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+ " w." + Schema.COL_MD5_SSID + " AS " + Schema.COL_MD5_SSID + ","
 			+ " w." + Schema.COL_CAPABILITIES +  " AS " + Schema.COL_CAPABILITIES + ","
 			+ " w." + Schema.COL_FREQUENCY +  " AS " + Schema.COL_FREQUENCY + ","
-			+ " w." + Schema.COL_LEVEL +  " AS " + Schema.COL_LEVEL+ ","
+			+ " w." + Schema.COL_LEVEL +  " AS " + Schema.COL_LEVEL + ","
 			+ " w." + Schema.COL_TIMESTAMP +  " AS " + Schema.COL_TIMESTAMP + ","
 			+ " w." + Schema.COL_BEGIN_POSITION_ID +  " AS " + Schema.COL_BEGIN_POSITION_ID + ","
 			+ " w." + Schema.COL_END_POSITION_ID +  " AS " + Schema.COL_END_POSITION_ID + ","
@@ -132,7 +132,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 */
 	private static final String SQL_CREATE_TABLE_POSITIONS = ""
 			+  "CREATE TABLE " + Schema.TBL_POSITIONS + " ("
-			+  Schema.COL_ID	 +  " INTEGER PRIMARY KEY AUTOINCREMENT,"
+			+  Schema.COL_ID +  " INTEGER PRIMARY KEY AUTOINCREMENT,"
 			+  Schema.COL_LATITUDE + " DOUBLE NOT NULL,"
 			+  Schema.COL_LONGITUDE + " DOUBLE NOT NULL,"
 			+  Schema.COL_ALTITUDE + " DOUBLE,"
@@ -185,7 +185,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+  ")";
 
 	private static final String SQL_CREATE_IDX_WIFIS_SESSION_ID = ""
-			+  "CREATE INDEX idx_wifis_sessios_id ON "
+			+  "CREATE INDEX idx_wifis_sessions_id ON "
 			+  Schema.TBL_WIFIS + "("
 			+  Schema.COL_SESSION_ID
 			+  ")";
@@ -203,7 +203,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+  ")";		
 
 	private static final String SQL_CREATE_IDX_CELLS_SESSION_ID = ""
-			+  "CREATE INDEX idx_cells_sessios_id ON "
+			+  "CREATE INDEX idx_cells_sessions_id ON "
 			+  Schema.TBL_CELLS + "("
 			+  Schema.COL_SESSION_ID
 			+  ")";

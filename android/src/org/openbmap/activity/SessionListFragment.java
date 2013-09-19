@@ -176,7 +176,7 @@ public class SessionListFragment extends ListFragment implements LoaderCallbacks
 		switch (item.getItemId()) {
 			case R.id.menu_upload_session:
 				stop(mSelectedId);
-				mListener.requestExportCommand(mSelectedId);
+				mListener.exportCommand(mSelectedId);
 				return true;
 			case R.id.menu_delete_session:
 				new AlertDialog.Builder(getActivity())
@@ -361,7 +361,7 @@ public class SessionListFragment extends ListFragment implements LoaderCallbacks
 		 * @param id
 		 *		Session to resume
 		 */
-		void requestExportCommand(int id);
+		void exportCommand(int id);
 
 		void reloadFragment();
 	}

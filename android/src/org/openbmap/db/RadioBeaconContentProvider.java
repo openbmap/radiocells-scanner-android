@@ -297,14 +297,14 @@ public class RadioBeaconContentProvider extends ContentProvider {
 				 */
 				final String wifiFields = 
 				// pseudo-id has to be used, otherwise grouping fails
-				"w.rowid as " + Schema.COL_ID + ", "
+				"w.rowid as " + Schema.COL_ID + ","
 				+ "w." + Schema.COL_BSSID + ", " 
 				+ "w." + Schema.COL_MD5_SSID + ", " 
 				+ "w." + Schema.COL_SSID + ", " 
 				+ "MAX(" + Schema.COL_LEVEL + "), " 
 				+ "w." + Schema.COL_CAPABILITIES + ", "  
 				+ "w." + Schema.COL_FREQUENCY + ", " 
-				+ "w." + Schema.COL_TIMESTAMP + ", " 
+				+ "w." + Schema.COL_TIMESTAMP + "," 
 				+ "w." + Schema.COL_BEGIN_POSITION_ID + ", " 
 				+ "w." + Schema.COL_END_POSITION_ID + ", "
 				+ "w." + Schema.COL_IS_NEW_WIFI + " "; 

@@ -23,10 +23,13 @@ import java.util.ArrayList;
 import org.mapsforge.core.model.LatLong;
 import org.openbmap.activity.MapViewActivity;
 import org.openbmap.db.DataHelper;
+import org.openbmap.db.DatabaseHelper;
+import org.openbmap.db.Schema;
 import org.openbmap.db.model.PositionRecord;
 import org.openbmap.db.model.WifiRecord;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -77,11 +80,7 @@ public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<L
 	 * Queries reference database for all wifis in specified range around map centre.
 	 * @param args
 	 * 			Args is an object array containing
-	 * 			args[1]: min latitude as double
-	 * 			args[2]: max latitude as double
-	 * 			args[3]: min longitude as double
-	 *			args[4]: max longitude as double
-	 *			args[5]: single wifi to highlight. If parameter is null, all session wifis are returned
+	 * 			SESSION_ID, MIN_LAT_COL, MAX_LAT_COL, MIN_LON_COL, MIN_MAX_COL
 	 */
 	@Override
 	protected final ArrayList<LatLong> doInBackground(final Object... args) {         
@@ -92,22 +91,30 @@ public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<L
 
 		if (args[HIGHLIGHT_WIFI_COL] == null) {
 			// Draw either all session wifis ...
-			// In this case, get all wifis from active session
-			//TODO: instead of loading all session wifis and filter then pass filter values directly to database
-			ArrayList<WifiRecord> sessionWifis = dbHelper.loadWifisOverviewWithin((Integer) args[SESSION_ID],
-					(Double) args[MIN_LON_COL],
-					(Double) args[MAX_LON_COL],
-					(Double) args[MIN_LAT_COL],
-					(Double) args[MAX_LAT_COL]);
+			
+			//long start = System.currentTimeMillis();
+			DatabaseHelper mDbHelper = new DatabaseHelper(mContext);
+			
+			// use raw query for performance reasons
+			String query = "SELECT w.rowid as " + Schema.COL_ID + ", MAX(" + Schema.COL_LEVEL + "), b." + Schema.COL_LATITUDE
+					+ ", b." + Schema.COL_LONGITUDE + " FROM " + Schema.TBL_WIFIS + " as w "
+					+ "JOIN " + Schema.TBL_POSITIONS + " as b ON " + Schema.COL_BEGIN_POSITION_ID + " = b." + Schema.COL_ID 
+					+ "  WHERE w." + Schema.COL_SESSION_ID + " = " + (Integer) args[SESSION_ID] + " AND " 
+					+ " b.longitude >= " + (Double) args[MIN_LON_COL] + " AND "
+					+ " b.longitude <= " + (Double) args[MAX_LON_COL] + " AND " 
+					+ " b.latitude >= " + (Double) args[MIN_LAT_COL] + " AND "
+					+ " b.latitude <= " + (Double) args[MAX_LAT_COL] + " GROUP BY w." + Schema.COL_BSSID + ", w." + Schema.COL_MD5_SSID;
+			
+			Cursor ca = mDbHelper.getReadableDatabase().rawQuery(query, null);
+			final int columnIndex7 = ca.getColumnIndex(Schema.COL_LATITUDE);
+			final int columnIndex8 = ca.getColumnIndex(Schema.COL_LONGITUDE);
 
-			if (sessionWifis == null) {
-				return points;
+			while (ca.moveToNext()) {
+				points.add(new LatLong(ca.getDouble(columnIndex7), ca.getDouble(columnIndex8)));
 			}
-
-			for (WifiRecord wifi : sessionWifis) {
-				points.add(new LatLong(wifi.getBeginPosition().getLatitude(), wifi.getBeginPosition().getLongitude()));
-
-			}
+			ca.close();
+			
+			//Log.d(TAG, "loaded wifi overlay in (" + (System.currentTimeMillis() - start) + " ms)");
 		} else {
 			// ... or only selected	
 			ArrayList<WifiRecord> candidates = dbHelper.loadWifisByBssid((String) args[HIGHLIGHT_WIFI_COL]);

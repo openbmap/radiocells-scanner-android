@@ -27,7 +27,6 @@ import org.openbmap.db.model.PositionRecord;
 import org.openbmap.db.model.Session;
 import org.openbmap.db.model.WifiRecord;
 
-import android.R.integer;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.ContentResolver;
@@ -161,10 +160,8 @@ public class DataHelper {
 			wifi.setLevel(ca.getInt(columnIndex5));
 			wifi.setOpenBmapTimestamp(ca.getLong(columnIndex6));
 
-			// TODO: not too safe ..
-			wifi.setBeginPosition(loadPositionById(ca.getString(columnIndex7)).get(0));
-			// TODO: not too safe ..
-			wifi.setEndPosition(loadPositionById(ca.getString(columnIndex8)).get(0));
+			wifi.setBeginPosition(loadPositionById(ca.getString(columnIndex7)));
+			wifi.setEndPosition(loadPositionById(ca.getString(columnIndex8)));
 
 			wifis.add(wifi);
 		}
@@ -205,10 +202,9 @@ public class DataHelper {
 					ca.getInt(ca.getColumnIndex(Schema.COL_FREQUENCY)),
 					ca.getInt(ca.getColumnIndex(Schema.COL_LEVEL)),
 					ca.getLong(ca.getColumnIndex(Schema.COL_TIMESTAMP)),
-					// TODO: definitely not safe ..
-					loadPositionById(ca.getString(ca.getColumnIndex(Schema.COL_BEGIN_POSITION_ID))).get(0),
-					// TODO: definitely not safe ..
-					loadPositionById(ca.getString(ca.getColumnIndex(Schema.COL_END_POSITION_ID))).get(0));
+
+					loadPositionById(ca.getString(ca.getColumnIndex(Schema.COL_BEGIN_POSITION_ID))),
+					loadPositionById(ca.getString(ca.getColumnIndex(Schema.COL_END_POSITION_ID))));
 		}
 		ca.close();
 		return wifi;
@@ -245,9 +241,9 @@ public class DataHelper {
 			wifi.setOpenBmapTimestamp(ca.getLong(columnIndex6));
 
 			// TODO: not too safe ..
-			wifi.setBeginPosition(loadPositionById(ca.getString(columnIndex7)).get(0));
+			wifi.setBeginPosition(loadPositionById(ca.getString(columnIndex7)));
 			// TODO: not too safe ..
-			wifi.setEndPosition(loadPositionById(ca.getString(columnIndex8)).get(0));
+			wifi.setEndPosition(loadPositionById(ca.getString(columnIndex8)));
 
 			wifis.add(wifi);
 		}
@@ -256,7 +252,7 @@ public class DataHelper {
 	}
 
 
-	
+
 	/**
 	 * Returns strongest measurement for each wifi from TBL_WIFIS.
 	 * @return Arraylist<WifiRecord>
@@ -270,12 +266,13 @@ public class DataHelper {
 	 * Returns strongest measurement for each wifi within bounding box from TBL_WIFIS.
 	 * @return Arraylist<WifiRecord>
 	 */
-	public final ArrayList<WifiRecord> loadWifisOverviewWithin(final int session, Double minLon, Double maxLon, Double minLat, Double maxLat) {
+	public final ArrayList<WifiRecord> loadWifisOverviewWithin(final int session, final Double minLon, final Double maxLon, final Double minLat, final Double maxLat) {
+		//long start = System.currentTimeMillis();
 		ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>();
 
 		String selection = null;
 		String[] selectionArgs = null;
-		
+
 		if (minLon != null && maxLon != null && minLat != null && maxLat != null) {
 			selection = "b." + Schema.COL_LONGITUDE + " >= ?" 
 					+ " AND b." + Schema.COL_LONGITUDE + " <= ?" 
@@ -283,7 +280,7 @@ public class DataHelper {
 					+ " AND b." + Schema.COL_LATITUDE + " <= ?";
 			selectionArgs = new String[]{String.valueOf(minLon), String.valueOf(maxLon), String.valueOf(minLat), String.valueOf(maxLat)};
 		}
-		
+
 		Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(RadioBeaconContentProvider.CONTENT_URI_WIFI,
 				RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
 				null, selection, selectionArgs, null);
@@ -307,15 +304,14 @@ public class DataHelper {
 			wifi.setLevel(ca.getInt(columnIndex5));
 			wifi.setOpenBmapTimestamp(ca.getLong(columnIndex6));
 
-			// TODO: not too safe ..
-			wifi.setBeginPosition(loadPositionById(ca.getString(columnIndex7)).get(0));
-			// TODO: not too safe ..
-			wifi.setEndPosition(loadPositionById(ca.getString(columnIndex8)).get(0));
+			wifi.setBeginPosition(loadPositionById(ca.getString(columnIndex7)));
+			wifi.setEndPosition(loadPositionById(ca.getString(columnIndex8)));
 
 			wifis.add(wifi);
 		}
 
 		ca.close();
+		//Log.d(TAG, "loadWifisOverviewWithiny executed (" + (System.currentTimeMillis() - start) + " ms)");
 		return wifis;
 	}
 
@@ -529,8 +525,8 @@ public class DataHelper {
 		cell.setStrengthdBm(cursor.getInt(colStrengthDbm)); 
 		cell.setOpenBmapTimestamp(cursor.getLong(colTimestamp)); 
 		// TODO: dirty ...
-		cell.setBeginPosition(loadPositionById(cursor.getString(colBeginPositionId)).get(0));
-		cell.setEndPosition(loadPositionById(cursor.getString(colEndPositionId)).get(0));
+		cell.setBeginPosition(loadPositionById(cursor.getString(colBeginPositionId)));
+		cell.setEndPosition(loadPositionById(cursor.getString(colEndPositionId)));
 		cell.setSessionId(cursor.getInt(columnIndex18));
 
 		return cell;
@@ -552,28 +548,34 @@ public class DataHelper {
 
 	/**
 	 * Loads positions from database.
-	 * @param position
+	 * @param id
 	 * 			Position id to return. If no id is provided, all positions are returned.
 	 * @return ArrayList<PositionRecord>
 	 */
-	public final ArrayList<PositionRecord> loadPositionById(final String position) {
-		ArrayList<PositionRecord> positions = new ArrayList<PositionRecord>();
-		String selection = null;
-		List<String> selectionArgs = new ArrayList<String>();
-		if (position != null) {
-			//Log.d(TAG, "Loading single position with id " + id);
-			selection = Schema.COL_ID + " = ?";
-			selectionArgs.add(position);
+	public final PositionRecord loadPositionById(final String id) {
+
+		if (id == null) {
+			throw new IllegalArgumentException("Position id is null");
 		}
+		//long start = System.currentTimeMillis();
+		
+		String selection = null;
+		String[] selectionArgs = null;
 
-		Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_POSITION, null, selection, (String[]) selectionArgs.toArray(new String[0]), null);
+		//Log.d(TAG, "Loading single position with id " + id);
+		selection = Schema.COL_ID + " = ?";
+		selectionArgs = new String[]{id};
 
-		while (ca.moveToNext()) {
-			positions.add(positionFromCursor(ca));
+		Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_POSITION, null, selection, selectionArgs, null);
+
+		PositionRecord position = new PositionRecord();
+		if (ca.moveToNext()) {
+			position = positionFromCursor(ca);
 		}
 
 		ca.close();
-		return positions;
+		//Log.d(TAG, "loadPositionById executed (" + (System.currentTimeMillis() - start) + " ms)");
+		return position;
 	}
 
 	/**
@@ -588,7 +590,7 @@ public class DataHelper {
 	public final ArrayList<PositionRecord> loadPositions(final int session, final Double minLat, final Double maxLat, final Double minLon, final Double maxLon) {
 		ArrayList<PositionRecord> positions = new ArrayList<PositionRecord>();
 		String selection = Schema.COL_SESSION_ID + " = ?";
-		
+
 		Cursor ca = null;
 		List<String> selectionArgs = null; 
 		if (minLat != null & maxLat != null && minLon != null && maxLon != null) {
@@ -601,7 +603,7 @@ public class DataHelper {
 
 			selectionArgs.add(String.valueOf(minLon));
 			selectionArgs.add(String.valueOf(maxLon));
-			
+
 			selection +=  "AND (" + Schema.COL_LATITUDE + " > ? AND " + Schema.COL_LATITUDE + " < ?) AND ("
 					+ Schema.COL_LONGITUDE + " > ? AND " + Schema.COL_LONGITUDE + " < ?)";
 			ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_POSITION, null, selection, (String[]) selectionArgs.toArray(new String[0]), Schema.COL_TIMESTAMP);
@@ -610,8 +612,8 @@ public class DataHelper {
 			Log.v(TAG, "No boundaries provided, loading all positions");
 			ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_POSITION, null, null, null, Schema.COL_TIMESTAMP);
 		}
-		
-	
+
+
 		while (ca.moveToNext()) {
 			positions.add(positionFromCursor(ca));
 		}
@@ -648,7 +650,8 @@ public class DataHelper {
 		position.setBearing(cursor.getDouble(columnIndex6));
 		position.setSpeed(cursor.getDouble(columnIndex7));
 		position.setSession(cursor.getInt(columnIndex8));
-		position.setSession(cursor.getInt(columnIndex9));
+		position.setSource(cursor.getString(columnIndex9));
+
 		return position;
 	}
 
