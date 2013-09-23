@@ -45,10 +45,10 @@ public class MediaScanner implements MediaScannerConnectionClient {
 	 * Re-indexes all xml files
 	 */
 	@Override
-	public void onMediaScannerConnected() {
+	public final void onMediaScannerConnected() {
 		File[] files = mFolder.listFiles();
 		for (File file : files) {
-			if (file.getName().endsWith(".xml")) {
+			if (file.getName().endsWith(".xml") || file.getName().endsWith(".gpx")) {
 				mScanner.scanFile(file.getAbsolutePath(), null);
 			}
 		}
@@ -56,7 +56,7 @@ public class MediaScanner implements MediaScannerConnectionClient {
 	}
 
 	@Override
-	public void onScanCompleted(final String path, final Uri uri) {
+	public final void onScanCompleted(final String path, final Uri uri) {
 		mScanner.disconnect();
 	}
 
