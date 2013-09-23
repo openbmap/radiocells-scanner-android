@@ -136,15 +136,11 @@ public class CellListFragment extends ListFragment implements LoaderManager.Load
 				Schema.COL_OPERATORNAME, Schema.COL_NETWORKTYPE,
 				"MAX(" + Schema.COL_STRENGTHDBM + ")"};
 		
-		Session active = dataHelper.loadActiveSession();
-		int id = RadioBeacon.SESSION_NOT_TRACKING;
-		if (active != null) {
-			id = active.getId();
-		}
+		int session = dataHelper.getActiveSessionId();
 		
 		CursorLoader cursorLoader = new CursorLoader(getActivity()
 				.getBaseContext(), ContentUris.withAppendedId(Uri.withAppendedPath(
-						RadioBeaconContentProvider.CONTENT_URI_CELL, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), id),
+						RadioBeaconContentProvider.CONTENT_URI_CELL, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
 				projection, null, null, null);
 		return cursorLoader;
 	}

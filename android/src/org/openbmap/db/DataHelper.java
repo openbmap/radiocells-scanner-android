@@ -21,6 +21,7 @@ package org.openbmap.db;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.openbmap.RadioBeacon;
 import org.openbmap.db.model.CellRecord;
 import org.openbmap.db.model.LogFile;
 import org.openbmap.db.model.PositionRecord;
@@ -703,6 +704,7 @@ public class DataHelper {
 
 	/**
 	 * Loads current session.
+	 * If you just need current session's id, you might consider {@link getActiveSessionId()}
 	 * @return active session if any, null otherwise
 	 */
 	public final Session loadActiveSession() {
@@ -724,6 +726,18 @@ public class DataHelper {
 			ca.close();
 			return null;
 		}
+	}
+	
+	/**
+	 * Returns Id of active session. (Faster than {@link loadActiveSession()} as no de-serialization to session object takes place
+	 * @return
+	 */
+	public final int getActiveSessionId() {
+		Cursor ca = contentResolver.query(Uri.withAppendedPath(RadioBeaconContentProvider.CONTENT_URI_SESSION, "active"), null, null, null, null);
+		if (ca.moveToFirst()) {
+			return ca.getInt(ca.getColumnIndex(Schema.COL_ID));
+		}
+		return RadioBeacon.SESSION_NOT_TRACKING;
 	}
 
 	/**
