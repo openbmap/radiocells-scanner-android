@@ -65,9 +65,9 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 	private SimpleCursorAdapter mAdapter;
 	
 	/** 
-	 * Sort order, by default order by timestamp
+	 * Sort order, by default show newest wifi first
 	 */
-	private String mSortOrder = Schema.COL_TIMESTAMP + " ASC";
+	private String mSortOrder = Schema.COL_TIMESTAMP + " DESC";
 
 	@Override
 	public final void onActivityCreated(final Bundle savedInstanceState) {
@@ -175,11 +175,7 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 		DataHelper dataHelper = new DataHelper(getActivity());
 
 		// query data from content provider
-		Session active = dataHelper.loadActiveSession();
-		int session = RadioBeacon.SESSION_NOT_TRACKING;
-		if (active != null) {
-			session = active.getId();
-		}
+		int session = dataHelper.getActiveSessionId();
 
 		final String[] projection = {
 				Schema.COL_ID,
