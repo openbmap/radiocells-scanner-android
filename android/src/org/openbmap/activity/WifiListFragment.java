@@ -51,6 +51,11 @@ import android.widget.TextView;
  */
 public class WifiListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor>  {
 	/**
+	 * By default, show newest wifi first
+	 */
+	private static final String	DEFAULT_SORT_ORDER	= Schema.COL_TIMESTAMP + " DESC";
+
+	/**
 	 * Be careful:
 	 * All external linking (e.g. to map) must rely on BSSID.
 	 * (_id is a pseudo-id as original id can't be used for GROUP BY clauses)
@@ -65,9 +70,14 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 	private SimpleCursorAdapter mAdapter;
 	
 	/** 
-	 * Sort order, by default show newest wifi first
+	 * Sort order
 	 */
-	private String mSortOrder = Schema.COL_TIMESTAMP + " DESC";
+	private String mSortOrder = DEFAULT_SORT_ORDER;
+
+	/**
+	 * Session id
+	 */
+	private int	mSession;
 
 	@Override
 	public final void onActivityCreated(final Bundle savedInstanceState) {
@@ -77,6 +87,9 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 		View header = (View) getLayoutInflater(savedInstanceState).inflate(R.layout.wifilistheader, null);
 		this.getListView().addHeaderView(header);
 
+		DataHelper dataHelper = new DataHelper(getActivity());
+		mSession = dataHelper.getActiveSessionId();
+		
 		// init sort button
 		final TriToggleButton sortButton = (TriToggleButton) header.findViewById(R.id.triToggleButton1);
 		sortButton.setPositiveImage(getResources().getDrawable(R.drawable.ascending));
@@ -95,7 +108,7 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 							getLoaderManager().restartLoader(0, null, WifiListFragment.this);
 							break;
 						case 1: 
-							mSortOrder = Schema.COL_TIMESTAMP + " ASC";
+							mSortOrder = DEFAULT_SORT_ORDER;
 							getLoaderManager().restartLoader(0, null, WifiListFragment.this);
 							break;
 						case 2:
@@ -161,22 +174,18 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 			// documentation says call getListView().getItemAtPosition(position) not lv directly
 			// see http://developer.android.com/reference/android/app/ListFragment.html
 			Cursor row = (Cursor) getListView().getItemAtPosition(position);
-			String uid = row.getString(row.getColumnIndex(Schema.COL_BSSID));
+			String bssid = row.getString(row.getColumnIndex(Schema.COL_BSSID));
 
 			Intent intent = new Intent();
 			intent.setClass(getActivity(), WifiDetailsActivity.class);
-			intent.putExtra(Schema.COL_BSSID, uid);
+			intent.putExtra(Schema.COL_BSSID, bssid);
+			intent.putExtra(Schema.COL_SESSION_ID, mSession);
 			startActivity(intent);
 		}
 	}
 
 	@Override
 	public final Loader<Cursor> onCreateLoader(final int arg0, final Bundle arg1) {
-		DataHelper dataHelper = new DataHelper(getActivity());
-
-		// query data from content provider
-		int session = dataHelper.getActiveSessionId();
-
 		final String[] projection = {
 				Schema.COL_ID,
 				Schema.COL_BSSID,
@@ -188,7 +197,7 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 
 		mCursorLoader = new CursorLoader(
 				getActivity().getBaseContext(), ContentUris.withAppendedId(Uri.withAppendedPath(
-						RadioBeaconContentProvider.CONTENT_URI_WIFI, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
+						RadioBeaconContentProvider.CONTENT_URI_WIFI, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), mSession),
 						projection, null, null, mSortOrder);
 
 		return mCursorLoader;

@@ -130,16 +130,16 @@ public class DataHelper {
 
 	/**
 	 * Loads session's wifis.
-	 * @param id
+	 * @param session
 	 * 			Session to return
 	 * @param sort	Sort criteria
 	 * @return ArrayList<WifiRecord> with all wifis for given session
 	 */
-	public final ArrayList<WifiRecord> loadWifisBySession(final long id, final String sort) {
+	public final ArrayList<WifiRecord> loadWifisBySession(final int session, final String sort) {
 		ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>();
 
 		Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
-				RadioBeaconContentProvider.CONTENT_URI_WIFI, RadioBeaconContentProvider.CONTENT_URI_SESSION_SUFFIX), id),
+				RadioBeaconContentProvider.CONTENT_URI_WIFI, RadioBeaconContentProvider.CONTENT_URI_SESSION_SUFFIX), session),
 				null, null, null, sort);
 
 		// Performance tweaking: don't call ca.getColumnIndex on each iteration 
@@ -217,10 +217,17 @@ public class DataHelper {
 	 * @param bssid
 	 * @return Array (of measurements) for that BSSID
 	 */
-	public final ArrayList<WifiRecord> loadWifisByBssid(final String bssid) {
+	public final ArrayList<WifiRecord> loadWifisByBssid(final String bssid, final Integer session) {
 		ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>();
 
-		Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_WIFI, null, Schema.COL_BSSID + " = \"" + bssid + "\"", null, null);
+		String selectSql;
+		if (session != null) {
+			selectSql = Schema.COL_BSSID + " = \"" + bssid + "\" AND " + Schema.COL_SESSION_ID + " =\"" + session + "\"";
+		} else {
+			selectSql = Schema.COL_BSSID + " = \"" + bssid + "\"";
+		}
+			
+		Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_WIFI, null, selectSql, null, null);
 
 		// Performance tweaking: don't call ca.getColumnIndex on each iteration 
 		final int columnIndex = ca.getColumnIndex(Schema.COL_BSSID);

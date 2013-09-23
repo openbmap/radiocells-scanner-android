@@ -52,7 +52,6 @@ public class MediaScanner implements MediaScannerConnectionClient {
 				mScanner.scanFile(file.getAbsolutePath(), null);
 			}
 		}
-
 	}
 
 	@Override

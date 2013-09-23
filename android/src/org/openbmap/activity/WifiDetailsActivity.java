@@ -18,11 +18,14 @@
 
 package org.openbmap.activity;
 
+import java.util.ArrayList;
+
 import org.openbmap.R;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.Schema;
 import org.openbmap.db.model.WifiChannel;
 import org.openbmap.db.model.WifiRecord;
+import org.openbmap.service.wireless.WifiScanCallback;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -39,8 +42,11 @@ public class WifiDetailsActivity  extends FragmentActivity {
 	private TextView tvSsid;
 	private TextView tvCapabilities;
 	private TextView tvFrequency;
-
+	private TextView tvNoMeasurements;
+	
 	private WifiRecord	mWifi;
+
+	
 
 	/** Called when the activity is first created. */
 	@Override
@@ -50,13 +56,21 @@ public class WifiDetailsActivity  extends FragmentActivity {
 
 		initUi();
 
-		mDatahelper = new DataHelper(this);
+
 
 		Bundle extras = getIntent().getExtras();
 		String bssid = extras.getString(Schema.COL_BSSID);
+		Integer session = null;
+		if (extras.getInt(Schema.COL_SESSION_ID) != 0) {
+			session = extras.getInt(Schema.COL_SESSION_ID);
+		}
+		
 		// query content provider for wifi details
-		mWifi = mDatahelper.loadWifisByBssid(bssid).get(0);
-
+		mDatahelper = new DataHelper(this);
+		ArrayList<WifiRecord> wifis = mDatahelper.loadWifisByBssid(bssid, session);
+		tvNoMeasurements.setText(String.valueOf(wifis.size()));
+		
+		mWifi = wifis.get(0);
 		displayRecord(mWifi);
 	}
 
@@ -67,22 +81,20 @@ public class WifiDetailsActivity  extends FragmentActivity {
 		tvSsid = (TextView) findViewById(R.id.wifidetails_ssid);
 		tvCapabilities = (TextView) findViewById(R.id.wifidetails_capa);
 		tvFrequency = (TextView) findViewById(R.id.wifidetails_freq);
-
-		//WifiDetailsMap detailsFragment = (WifiDetailsMap) getSupportFragmentManager().findFragmentById(R.id.wifiDetailsMap);	
+		tvNoMeasurements = (TextView) findViewById(R.id.wifidetails_no_measurements);
 	}
 
 	@Override
 	protected final void onResume() {
 		super.onResume();
-		// get the cell _id
+
 		// get the wifi _id
 		Bundle extras = getIntent().getExtras();
 		int id = extras.getInt(Schema.COL_ID);
 		// query content provider for wifi details
 		mWifi = mDatahelper.loadWifiById(id);
-
+		
 		displayRecord(mWifi);
-
 	}
 
 	/**
@@ -93,17 +105,15 @@ public class WifiDetailsActivity  extends FragmentActivity {
 		if (wifi != null) {
 			tvSsid.setText(wifi.getSsid() + " (" + wifi.getBssid() + ")");
 			if (wifi.getCapabilities() != null) {
-				tvCapabilities.setText(getResources().getString(R.string.encryption) + ":" + wifi.getCapabilities().replace("[", "\n["));
+				tvCapabilities.setText(wifi.getCapabilities().replace("[", "\n["));
 			} else {
-				tvCapabilities.setText(getResources().getString(R.string.encryption) + ":" + R.string.n_a);
+				tvCapabilities.setText(getResources().getString(R.string.n_a));
 			}
 
-			// TODO: replace by channel
 			Integer freq = wifi.getFrequency();
 			if (freq != null) {
 				tvFrequency.setText(
-						getResources().getString(R.string.channel) + ":"
-						+ ((WifiChannel.getChannel(freq) == null) ? getResources().getString(R.string.unknown) : WifiChannel.getChannel(freq))
+						((WifiChannel.getChannel(freq) == null) ? getResources().getString(R.string.unknown) : WifiChannel.getChannel(freq))
 						+ "  (" + freq + " MHz)");
 			}
 		}

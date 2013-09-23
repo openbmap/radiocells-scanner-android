@@ -23,18 +23,56 @@
         </TableRow>
         <TableRow>
             <TextView
-                android:id="@+id/wifidetails_capa"
-                android:layout_width="wrap_content"
+                android:id="@+id/textView3"
+                android:layout_width="0dip"
+                android:layout_weight="0.35"
                 android:layout_height="wrap_content"
                 android:text="@string/capabilities" />
+
+            <TextView
+                android:id="@+id/wifidetails_capa"
+                android:layout_width="0dip"
+                android:layout_weight="0.65"
+                android:layout_height="wrap_content"
+                android:text="[...]"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
         </TableRow>
         <TableRow>
 
             <TextView
-                android:id="@+id/wifidetails_freq"
-                android:layout_width="wrap_content"
+                android:id="@+id/textView2"
+                android:layout_width="0dip"
+                android:layout_weight="0.35"
                 android:layout_height="wrap_content"
                 android:text="@string/frequency" />
+
+            <TextView
+                android:id="@+id/wifidetails_freq"
+                android:layout_width="0dip"
+                android:layout_weight="0.65"
+                android:layout_height="wrap_content"
+                android:text="[...]"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        </TableRow>
+         <TableRow>
+
+            <TextView
+                android:id="@+id/textView1"
+                android:layout_width="0dip"
+                android:layout_weight="0.35"
+                android:layout_height="wrap_content"
+                android:text="@string/no_measurements" />
+
+            <TextView
+                android:id="@+id/wifidetails_no_measurements"
+                android:layout_width="0dip"
+                android:layout_weight="0.65"
+                android:layout_height="wrap_content"
+                android:text="123"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+            
         </TableRow>
     </TableLayout>
     

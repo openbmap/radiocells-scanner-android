@@ -117,7 +117,7 @@ public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<L
 			//Log.d(TAG, "loaded wifi overlay in (" + (System.currentTimeMillis() - start) + " ms)");
 		} else {
 			// ... or only selected	
-			ArrayList<WifiRecord> candidates = dbHelper.loadWifisByBssid((String) args[HIGHLIGHT_WIFI_COL]);
+			ArrayList<WifiRecord> candidates = dbHelper.loadWifisByBssid((String) args[HIGHLIGHT_WIFI_COL], (Integer) args[SESSION_ID]);
 			if (candidates.size() > 0) {
 				points.add(new LatLong((candidates.get(0)).getBeginPosition().getLatitude(),
 						(candidates.get(0)).getBeginPosition().getLongitude()));
