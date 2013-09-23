@@ -492,7 +492,7 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 		e.setSkipUpload(skipUpload);
 		e.setSkipDelete(skipDelete);
 
-		SimpleDateFormat date = new SimpleDateFormat("yyyyMMddhhmmss", Locale.US);
+		SimpleDateFormat date = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
 		e.setGpxPath(targetPath);
 		e.setGpxFilename(date.format(new Date(System.currentTimeMillis())) + ".gpx");
 		e.execute((Void[]) null);
