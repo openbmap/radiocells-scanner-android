@@ -148,7 +148,7 @@ OnGpxLoadedListener {
 	/**
 	 * Session currently displayed
 	 */
-	private int sessionId;
+	private int mSessionId;
 
 	/**
 	 * System time of last gpx refresh (in millis)
@@ -345,15 +345,12 @@ OnGpxLoadedListener {
 
 	private void initDb() {
 		dbHelper = new DataHelper(this);
-
-		Session tmp = dbHelper.loadActiveSession();
-		if (tmp != null) {
-			sessionId = tmp.getId();
-			Log.i(TAG, "Displaying session " + sessionId);
-			tmp = null;
+		mSessionId = dbHelper.getActiveSessionId();
+		
+		if (mSessionId != RadioBeacon.SESSION_NOT_TRACKING) {
+			Log.i(TAG, "Displaying session " + mSessionId);
 		} else {
 			Log.w(TAG, "No active session?");
-			sessionId = RadioBeacon.SESSION_NOT_TRACKING;
 		}
 	}
 
@@ -632,11 +629,11 @@ OnGpxLoadedListener {
 			}
 
 			SessionMapObjectsLoader task = new SessionMapObjectsLoader(this);
-			task.execute(sessionId, minLatitude, maxLatitude, minLongitude, maxLatitude, null);
+			task.execute(mSessionId, minLatitude, maxLatitude, minLongitude, maxLatitude, null);
 		} else {
 			// draw specific wifi
 			SessionMapObjectsLoader task = new SessionMapObjectsLoader(this);
-			task.execute(sessionId, bbox.minLatitude, bbox.maxLatitude, bbox.minLongitude, bbox.maxLatitude, highlight.getBssid());
+			task.execute(mSessionId, bbox.minLatitude, bbox.maxLatitude, bbox.minLongitude, bbox.maxLatitude, highlight.getBssid());
 		}
 	}
 
@@ -717,7 +714,7 @@ OnGpxLoadedListener {
 				mapView.getDimension());
 		GpxMapObjectsLoader task = new GpxMapObjectsLoader(this);
 		// query with some extra space
-		task.execute(sessionId, bbox.minLatitude - 0.01, bbox.maxLatitude + 0.01, bbox.minLongitude - 0.15, bbox.maxLatitude + 0.15);
+		task.execute(mSessionId, bbox.minLatitude - 0.01, bbox.maxLatitude + 0.01, bbox.minLongitude - 0.15, bbox.maxLatitude + 0.15);
 		//task.execute(null, null, null, null);
 	}
 

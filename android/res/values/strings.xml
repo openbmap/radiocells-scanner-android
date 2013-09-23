@@ -89,4 +89,6 @@
     <string name="unknown">unknown</string>
     <string name="error_version_check_title">Error on version check</string>
     <string name="error_version_check_body">Check your online connection!\n(e.g. in browser).\nWould you like to try an automatic fix now?\n(Toggles your wifi adapter state to trigger a reconnect)</string>
+    <string name="accuracy">Accuracy</string>
+    <string name="no_sat_signal">No sat signal</string>
 </resources>

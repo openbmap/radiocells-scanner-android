@@ -49,6 +49,12 @@ public class GpsStatusRecord extends LinearLayout implements Listener, LocationL
 	private static final String TAG = GpsStatusRecord.class.getSimpleName();
 
 	/**
+	 * Refresh interval for gps status (in millis)
+	 */
+	private static final int	STATUS_REFRESH_INTERVAL	= 2000;
+
+	
+	/**
 	 * Formatter for accuracy display.
 	 */
 	private static final DecimalFormat ACCURACY_FORMAT = new DecimalFormat("0");
@@ -91,10 +97,13 @@ public class GpsStatusRecord extends LinearLayout implements Listener, LocationL
 
 	private String mProvider;
 
+	private TextView	tvAccuracy;
+
 	public GpsStatusRecord(final Context context, final AttributeSet attrs) {
 		super(context, attrs);
 		LayoutInflater.from(context).inflate(R.layout.gpsstatusrecord, this, true);
-
+		tvAccuracy = (TextView) findViewById(R.id.gpsstatus_record_tvAccuracy);
+		
 		//read the logging interval from preferences
 		gpsLoggingInterval = Long.parseLong(PreferenceManager.getDefaultSharedPreferences(this.getContext()).getString(
 				Preferences.KEY_GPS_LOGGING_INTERVAL, Preferences.VAL_GPS_LOGGING_INTERVAL)) * RadioBeacon.MILLIS_IN_SECOND;
@@ -111,10 +120,9 @@ public class GpsStatusRecord extends LinearLayout implements Listener, LocationL
 	 */
 	public final void requestLocationUpdates(final boolean enable) {
 		if (enable) {
-
 			mProvider = LocationManager.GPS_PROVIDER;
 
-			lmgr.requestLocationUpdates(mProvider, 0, 0, this);
+			lmgr.requestLocationUpdates(mProvider, STATUS_REFRESH_INTERVAL, 0, this);
 			lmgr.addGpsStatusListener(this);
 		} else {
 			lmgr.removeUpdates(this);
@@ -137,6 +145,8 @@ public class GpsStatusRecord extends LinearLayout implements Listener, LocationL
 				break;
 			case GpsStatus.GPS_EVENT_STOPPED:
 				imgSatIndicator.setImageResource(R.drawable.sat_indicator_off);
+				tvAccuracy.setText(getResources().getString(R.string.no_sat_signal));
+				
 				activity.onGpsDisabled();
 				break;
 			case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
@@ -182,9 +192,8 @@ public class GpsStatusRecord extends LinearLayout implements Listener, LocationL
 				activity.onGpsEnabled();
 			}
 
-			TextView tvAccuracy = (TextView) findViewById(R.id.gpsstatus_record_tvAccuracy);
 			if (location.hasAccuracy()) {
-				tvAccuracy.setText("Accuracy : " + ACCURACY_FORMAT.format(location.getAccuracy()) + " m");
+				tvAccuracy.setText(getResources().getString(R.string.accuracy) +  ": " + ACCURACY_FORMAT.format(location.getAccuracy()) + " m");
 			} else {
 				tvAccuracy.setText("");
 			}
@@ -196,7 +205,7 @@ public class GpsStatusRecord extends LinearLayout implements Listener, LocationL
 		Log.d(TAG, "Location provider " + provider + " disabled");
 		gpsActive = false;
 		((ImageView) findViewById(R.id.gpsstatus_record_imgSatIndicator)).setImageResource(R.drawable.sat_indicator_off);
-		((TextView) findViewById(R.id.gpsstatus_record_tvAccuracy)).setText("");
+		tvAccuracy.setText(getResources().getString(R.string.no_sat_signal));
 		activity.onGpsDisabled();
 	}
 
@@ -211,20 +220,19 @@ public class GpsStatusRecord extends LinearLayout implements Listener, LocationL
 		// Update provider status image according to status
 		Log.d(TAG, "Location provider " + provider + " status changed to: " + status);
 		ImageView imgSatIndicator = (ImageView) findViewById(R.id.gpsstatus_record_imgSatIndicator);
-		TextView tvAccuracy = (TextView) findViewById(R.id.gpsstatus_record_tvAccuracy);
-
+		
 		switch (status) {
 			// Don't do anything for status AVAILABLE, as this event occurs frequently,
 			// changing the graphics cause flickering .
 			case LocationProvider.OUT_OF_SERVICE:
 				imgSatIndicator.setImageResource(R.drawable.sat_indicator_off);
-				tvAccuracy.setText("");
+				tvAccuracy.setText(getResources().getString(R.string.no_sat_signal));
 				gpsActive = false;
 				activity.onGpsDisabled();
 				break;
 			case LocationProvider.TEMPORARILY_UNAVAILABLE:
 				imgSatIndicator.setImageResource(R.drawable.sat_indicator_unknown);
-				tvAccuracy.setText("");
+				tvAccuracy.setText(getResources().getString(R.string.no_sat_signal));
 				gpsActive = false;
 				break;
 			default:
@@ -232,18 +240,4 @@ public class GpsStatusRecord extends LinearLayout implements Listener, LocationL
 		}
 	}
 
-	/**
-	 * Manages the state of the recording indicator, depending if we're tracking or not.
-	 * @param isTracking true if the indicator must show that we're tracking, otherwise false
-	 */
-/*	public final void manageRecordingIndicator(final boolean isTracking) {
-		Log.d(TAG, "manageRecordingIndicator called, set to " + isTracking);
-		ImageView recordStatus = (ImageView) findViewById(R.id.gpsstatus_record_animRec);
-		if (isTracking) {
-			recordStatus.setImageResource(R.drawable.record_red);
-		} else {
-			recordStatus.setImageResource(R.drawable.record_grey);
-		}
-	}
-*/
 }

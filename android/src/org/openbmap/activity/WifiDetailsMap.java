@@ -19,27 +19,39 @@
 package org.openbmap.activity;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
 
-import org.mapsforge.core.graphics.Paint;
-import org.mapsforge.core.graphics.Style;
+import org.mapsforge.core.model.BoundingBox;
 import org.mapsforge.core.model.LatLong;
-import org.mapsforge.map.android.AndroidPreferences;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
 import org.mapsforge.map.android.view.MapView;
 import org.mapsforge.map.layer.LayerManager;
 import org.mapsforge.map.layer.Layers;
 import org.mapsforge.map.layer.cache.TileCache;
-import org.mapsforge.map.layer.overlay.Circle;
+import org.mapsforge.map.layer.overlay.Marker;
+import org.mapsforge.map.model.common.Observer;
+import org.mapsforge.map.util.MapPositionUtil;
 import org.openbmap.Preferences;
 import org.openbmap.R;
+import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.RadioBeaconContentProvider;
 import org.openbmap.db.Schema;
 import org.openbmap.db.model.WifiRecord;
+import org.openbmap.heatmap.HeatPoint;
+import org.openbmap.heatmap.HeatmapBuilder;
+import org.openbmap.heatmap.HeatmapBuilder.HeatmapBuilderListener;
 import org.openbmap.utils.MapUtils;
+import org.openbmap.utils.MediaScanner;
 
+import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -51,35 +63,23 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.ToggleButton;
+import android.view.ViewTreeObserver;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 
 /**
  * Fragment for displaying cell detail information
  */
-public class WifiDetailsMap extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>  {
-	private static final String TAG = WifiDetailsMap.class.getSimpleName();
+public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, LoaderManager.LoaderCallbacks<Cursor>  {
 
+	private static final String TAG = WifiDetailsMap.class.getSimpleName();
+	
+	/**
+	 * 
+	 */
+	private static final float	RADIUS	= 20f;
+	
 	private WifiRecord mWifiSelected;
 
-	private static final int ALPHA_SESSION_FILL	= 20;
-
-	/**
-	 * Keeps the SharedPreferences.
-	 */
-	private SharedPreferences prefs = null;
-
-	/**
-	 * Database helper for retrieving session wifi scan results.
-	 */
-	private DataHelper dbHelper;
-
-	/**
-	 * 	Minimum time (in millis) between automatic overlay refresh
-	 */
-	protected static final float SESSION_REFRESH_INTERVAL = 2000;
-
-	private static final int CIRCLE_SESSION_WIDTH = 30;	
 
 	// [start] UI controls
 	/**
@@ -87,14 +87,6 @@ public class WifiDetailsMap extends Fragment implements LoaderManager.LoaderCall
 	 */
 	private MapView mapView;
 
-	/**
-	 * When checked map view will automatically focus current location
-	 */
-	private ToggleButton btnSnapToLocation;
-
-	private ImageButton	btnZoom;
-
-	private ImageButton	btnUnzoom;
 	//[end]
 
 	// [start] Map styles
@@ -103,38 +95,67 @@ public class WifiDetailsMap extends Fragment implements LoaderManager.LoaderCall
 	 */
 	private TileCache tileCache;
 
-
-	private Paint paintSessionFill;
 	//[end]
 
 	// [start] Dynamic map variables
-	/**
-	 * Used for persisting zoom and position settings onPause / onDestroy
-	 */
-	private AndroidPreferences	preferencesFacade;
+
+	private ArrayList<HeatPoint> points = new ArrayList<HeatPoint>();
+
+	private boolean	pointsLoaded  = false;
+
+	private boolean	layoutInflated = false;
+
+	private Observer mapObserver;
+
+	private byte	lastZoom;
+
+	private LatLong	target;
+
+	private boolean	updatePending;
+
+	private Marker	heatmapLayer;
+
+	private byte	initialZoom;
+
+	private AsyncTask<Object, Integer, Boolean>	builder;
 
 	// [end]
 
 
 	@Override
+	public final void onCreate(final Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		this.tileCache = createTileCache();
+
+	}
+	@Override
+	public final View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
+		View view = inflater.inflate(R.layout.wifidetailsmap, container, false);	
+		this.mapView = (MapView) view.findViewById(R.id.map);
+		initMap();
+
+		return view;
+	}
+
+	@Override
 	public final void onActivityCreated(final Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);	
 
-		// get shared preferences
-		prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+		mapView.getLayerManager().getLayers().add(MapUtils.createTileRendererLayer(
+				this.tileCache,
+				this.mapView.getModel().mapViewPosition,
+				getMapFile()));
+
 
 		mWifiSelected = ((WifiDetailsActivity) getActivity()).getWifi();
-
-		initMap();
 
 		getActivity().getSupportLoaderManager().initLoader(0, null, this); 
 	}
 
-
-	@Override
-	public final View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.wifidetailsmap, container, false);
-		return view;
+	@Override 
+	public final void onPause() {
+		releaseMap();
+		super.onPause();
 	}
 
 	@Override
@@ -143,138 +164,138 @@ public class WifiDetailsMap extends Fragment implements LoaderManager.LoaderCall
 		super.onDestroy();
 	}
 
-
-	/**
-	 * Sets map-related object to null to enable garbage collection.
-	 */
-	private void releaseMap() {
-		Log.i(TAG, "Releasing map components");
-		// save map settings
-		this.mapView.getModel().save(this.preferencesFacade);
-		this.preferencesFacade.save();
-
-		if (mapView != null) {
-			mapView.destroy();
-		}
-	}
-
 	@Override
 	public final Loader<Cursor> onCreateLoader(final int arg0, final Bundle arg1) {
-		String[] bssid = {"-1"};
+		// set query params: bssid and session id
+		String[] args = {"-1", String.valueOf(RadioBeacon.SESSION_NOT_TRACKING)};
 		if (mWifiSelected != null) {
-			bssid[0] = mWifiSelected.getBssid();
+			args[0] = mWifiSelected.getBssid();	
 		}
-
+		DataHelper dbHelper = new DataHelper(this.getActivity());
+		args[1] = String.valueOf(dbHelper.getActiveSessionId());
+		
 		String[] projection = { Schema.COL_ID, Schema.COL_SSID, Schema.COL_LEVEL,  "begin_" + Schema.COL_LATITUDE, "begin_" + Schema.COL_LONGITUDE};
 		CursorLoader cursorLoader =
 				new CursorLoader(getActivity().getBaseContext(),  RadioBeaconContentProvider.CONTENT_URI_WIFI_EXTENDED,
-						projection, Schema.COL_BSSID + " = ?", bssid, Schema.COL_LEVEL + " ASC");
+						projection, Schema.COL_BSSID + " = ? AND " + Schema.COL_SESSION_ID + " = ?", args, Schema.COL_LEVEL + " ASC");
 		return cursorLoader;
 	}
 
 	@Override
 	public final void onLoadFinished(final Loader<Cursor> loader, final Cursor cursor) {
 		if (cursor != null && cursor.getCount() > 0) {
+
 			int colLat = cursor.getColumnIndex("begin_" + Schema.COL_LATITUDE);
 			int colLon = cursor.getColumnIndex("begin_" + Schema.COL_LONGITUDE);
 			int colLevel = cursor.getColumnIndex(Schema.COL_LEVEL);
 
-			LatLong measurement = null;
 			while (cursor.moveToNext()) {
-				measurement = new LatLong(
-						cursor.getDouble(colLat),
-						cursor.getDouble(colLon));
-
-				int level = cursor.getInt(colLevel);
-				int customAlpha = ALPHA_SESSION_FILL;
-				int customWidth = CIRCLE_SESSION_WIDTH;
-
-				/**
-				 * Heat map color set
-				 *   0, -50:   0   0 255 --> blue
-				 * -50, -80:   0 255   0 --> green
-				 * -80, -99: 255   0   0 --> red
-				 */
-
-				int red = 0;
-				int blue = 0;
-				int green = 0;
-
-				if (level < 0 && level >= -50) {
-					Log.i(TAG, "[0..-50]");
-					float factor = (float) (level / (-50.0));
-					blue = (int) ((1 - factor) * 0 + factor * 255);
-					green = (int) (factor * 0 + (1 - factor) * 255);
-					red = 0;
-
-					customAlpha = (int) (ALPHA_SESSION_FILL * 1.0 * cursor.getInt(colLevel) / (-50.0));
-				} else if (level <= -50 && level > -80) {
-					Log.i(TAG, "[-50..-80]");
-					float factor = (float) (level / (-80.0));
-					green = (int) ((1 - factor) * 0 + factor * 255);
-					red = (int) (factor * 0 + (1 - factor) * 255);
-					blue = 0;
-
-					customAlpha = (int) (ALPHA_SESSION_FILL * 1.5 * cursor.getInt(colLevel) / (-80.0));
-				} else if (level > -100){
-					Log.i(TAG, "[-80..-100]");
-					float factor = (float) (level / (-100.0));
-					red = (int)((1 - factor) * 0 + factor * 255);
-					green = 0;
-					blue = 0;
-
-					customAlpha = (int) (ALPHA_SESSION_FILL * 2.0 * cursor.getInt(colLevel) / (-100.0));
-				}
-
-				Log.i(TAG, "Level " + level + ":  R" + red + ", G" + green + ", B" + blue + ", ALPHA" + customAlpha);
-
-				Paint paintWifi = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(customAlpha, red, green, blue), 2, Style.FILL);
-
-				Paint paintStroke = null;
-				if (cursor.isLast()) {
-					// strongest signal with stroke
-					paintStroke = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(255, red, green, blue), 6, Style.STROKE);
-				}
-
-				Circle circle = new Circle(measurement, customWidth, paintWifi, paintStroke);
-
-				this.mapView.getLayerManager().getLayers().add(circle);
+				int intensity = (int) (cursor.getInt(colLevel) / -10);
+				points.add(new HeatPoint(cursor.getDouble(colLat), cursor.getDouble(colLon), intensity));
 			}
 
-			// focus last
-			if (measurement != null) {
-				this.mapView.getModel().mapViewPosition.setCenter(measurement);
-			}
-
+			mapView.getModel().mapViewPosition.setCenter(points.get(points.size()-1));
+			pointsLoaded  = true;
+			proceedAfterHeatmapCompleted();
 		}
 	}
 
 	/**
-	 * Initializes map components
+	 * 
 	 */
-	private void initMap() {
+	private void proceedAfterHeatmapCompleted() {
+		if (pointsLoaded  && layoutInflated && !updatePending) {
+			updatePending = true;
 
-		SharedPreferences sharedPreferences = getActivity().getSharedPreferences(getPersistableId(), android.content.Context.MODE_PRIVATE);
-		preferencesFacade = new AndroidPreferences(sharedPreferences);
+			clearLayer();
 
-		this.mapView = (MapView) getView().findViewById(R.id.map);
-		this.mapView.getModel().init(preferencesFacade);
-		this.mapView.setClickable(true);
-		this.mapView.getMapScaleBar().setVisible(true);
-		this.tileCache = createTileCache();
+			BoundingBox bbox = MapPositionUtil.getBoundingBox(
+					mapView.getModel().mapViewPosition.getMapPosition(),
+					mapView.getDimension());
 
-		LayerManager layerManager = this.mapView.getLayerManager();
-		Layers layers = layerManager.getLayers();
+			target = mapView.getModel().mapViewPosition.getCenter();
+			initialZoom = mapView.getModel().mapViewPosition.getZoomLevel();
 
-		// remove all layers including base layer
-		layers.clear();
+			heatmapLayer = new Marker(target, null, 0, 0);
+			mapView.getLayerManager().getLayers().add(heatmapLayer);
 
-		this.mapView.getModel().mapViewPosition.setZoomLevel((byte) 16);
+			builder = new HeatmapBuilder(
+					WifiDetailsMap.this, mapView.getWidth(), mapView.getHeight(), bbox,
+					mapView.getModel().mapViewPosition.getZoomLevel(), RADIUS).execute(points);
+		} else {
+			Log.i(TAG, "Another heat-map is currently generated. Skipped");
+		}
 
-		layers.add(MapUtils.createTileRendererLayer(
-				this.tileCache,
-				this.mapView.getModel().mapViewPosition,
-				getMapFile()));
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.soapclient.HeatmapBuilder.HeatmapBuilderListener#onHeatmapCompleted(android.graphics.Bitmap)
+	 */
+	@Override
+	public final void onHeatmapCompleted(final Bitmap backbuffer) {
+		updatePending = false;
+
+		// zoom level has changed in the mean time - regenerate
+		if (mapView.getModel().mapViewPosition.getZoomLevel() != initialZoom) {
+			Log.i(TAG, "Zoom level has changed - have to re-generate heat-map");
+			clearLayer();
+			proceedAfterHeatmapCompleted();
+			return;
+		}
+
+		BitmapDrawable drawable = new BitmapDrawable(backbuffer);
+		org.mapsforge.core.graphics.Bitmap mfBitmap = AndroidGraphicFactory.convertToBitmap(drawable);
+		heatmapLayer.setBitmap(mfBitmap);
+
+
+		//mapView.getModel().mapViewPosition.setCenter(target);
+
+		//saveHeatmapToFile(backbuffer);
+	}
+	/** 
+	 * Error or aborted
+	 */
+	@Override
+	public final void onHeatmapFailed() {
+		updatePending = false;
+	}
+	
+	/**
+	 * Sets map-related object to null to enable garbage collection.
+	 */
+	private void releaseMap() {
+		Log.i(TAG, "Releasing map components");
+
+		if (mapObserver != null) {
+			mapObserver = null;
+		}
+
+		if (mapView != null) {
+			mapView.destroy();
+		}
+	}
+	/* (non-Javadoc)
+	 * @see android.support.v4.app.LoaderManager.LoaderCallbacks#onLoaderReset(android.support.v4.content.Loader)
+	 */
+	@Override
+	public void onLoaderReset(final Loader<Cursor> arg0) {
+		// TODO Auto-generated method stub
+	}
+
+
+	/**
+	 * Removes heatmap layer (if any)
+	 */
+	private void clearLayer() {
+		if (heatmapLayer == null) {
+			return;
+		}
+
+		if (mapView.getLayerManager().getLayers().indexOf(heatmapLayer) != -1) {
+			mapView.getLayerManager().getLayers().remove(heatmapLayer);
+			heatmapLayer = null;
+		}
 	}
 
 	/**
@@ -282,6 +303,7 @@ public class WifiDetailsMap extends Fragment implements LoaderManager.LoaderCall
 	 * @return a map file
 	 */
 	protected final File getMapFile() {
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 		File mapFile = new File(
 				Environment.getExternalStorageDirectory().getPath()
 				+ prefs.getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
@@ -291,25 +313,91 @@ public class WifiDetailsMap extends Fragment implements LoaderManager.LoaderCall
 		return mapFile;
 	}
 
+	/**
+	 * Initializes map components
+	 */
+	private void initMap() {
+		// register for layout finalization - we need this to get width and height
+		ViewTreeObserver vto = mapView.getViewTreeObserver();
+		vto.addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+
+			@SuppressLint("NewApi")
+			@Override
+			public void onGlobalLayout() {
+
+				layoutInflated = true;
+				proceedAfterHeatmapCompleted();
+
+				ViewTreeObserver obs = mapView.getViewTreeObserver();
+
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+					obs.removeOnGlobalLayoutListener(this);
+				} else {
+					obs.removeGlobalOnLayoutListener(this);
+				}
+			}
+		});
+
+		// register for zoom changes
+		this.mapObserver = new Observer() {
+			@Override
+			public void onChange() {
+
+				byte zoom = mapView.getModel().mapViewPosition.getZoomLevel();
+				if (zoom != lastZoom) {
+					// update overlays on zoom level changed
+					Log.i(TAG, "New zoom level " + zoom + ", reloading map objects");
+					// cancel pending heat-maps
+					if (builder != null) {
+						builder.cancel(true);
+					}
+					
+					clearLayer();
+					proceedAfterHeatmapCompleted();
+					lastZoom = zoom;
+				}
+			}
+		};
+		this.mapView.getModel().mapViewPosition.addObserver(mapObserver);
+
+		this.mapView.setClickable(true);
+		this.mapView.getMapScaleBar().setVisible(true);
+
+		LayerManager layerManager = this.mapView.getLayerManager();
+		Layers layers = layerManager.getLayers();
+
+		// remove all layers including base layer
+		//layers.clear();
+
+		this.mapView.getModel().mapViewPosition.setZoomLevel((byte) 16);
+
+	}
+	/** 
+	 * Creates a separate tile cache
+	 * @return
+	 */
+	protected final TileCache createTileCache() {
+		return MapUtils.createExternalStorageTileCache(getActivity(), getClass().getSimpleName());
+	}
 
 	/**
-	 * @return the id that is used to save this mapview
+	 * Saves heatmap to SD card
+	 * @param bitmap
 	 */
-	protected final String getPersistableId() {
-		return this.getClass().getSimpleName();
-	}
+	private void saveHeatmapToFile(final Bitmap backbuffer) {
+		try {
+			FileOutputStream out = new FileOutputStream("/sdcard/result.png");
+			backbuffer.compress(Bitmap.CompressFormat.PNG, 90, out);
+			out.close();
 
-	protected final TileCache createTileCache() {
-		return MapUtils.createExternalStorageTileCache(getActivity(), getPersistableId());
-	}
-
-
-	/* (non-Javadoc)
-	 * @see android.support.v4.app.LoaderManager.LoaderCallbacks#onLoaderReset(android.support.v4.content.Loader)
-	 */
-	@Override
-	public void onLoaderReset(Loader<Cursor> arg0) {
-		// TODO Auto-generated method stub
-
+			// rescan SD card on honeycomb devices
+			// Otherwise files may not be visible when connected to desktop pc (MTP cache problem)
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+				Log.i(TAG, "Re-indexing SD card temp folder");
+				new MediaScanner(getActivity(), new File("/sdcard/"));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
