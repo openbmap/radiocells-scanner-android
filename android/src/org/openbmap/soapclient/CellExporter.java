@@ -30,6 +30,7 @@ import java.util.Locale;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.DatabaseHelper;
 import org.openbmap.db.Schema;
+import org.openbmap.db.model.CellRecord;
 import org.openbmap.db.model.LogFile;
 
 import android.content.Context;
@@ -434,11 +435,9 @@ public class CellExporter {
 						cursor.getString(colLac),
 						cursor.getString(colCellId),
 						cursor.getString(colStrengthDbm),
-						cursor.getString(colNetworkType),
+						cursor.getInt(colNetworkType),
 						cursor.getString(colPsc)));
 
-		
-				
 				previousBeginId = beginId;
 				previousEnd = currentEnd;
 
@@ -466,7 +465,7 @@ public class CellExporter {
 	 * @return
 	 */
 	private static String cellToXML(final int isServing, final int isNeighbour,
-			final String mcc, final String mnc, final String lac, final String cellId, final String strength, final String type, final String psc) {
+			final String mcc, final String mnc, final String lac, final String cellId, final String strength, final int type, final String psc) {
 		final StringBuffer s = new StringBuffer(CELL_XML_DEFAULT_LENGTH);
 		if (isServing != 0) {
 			s.append("\n\t\t<gsmserving mcc=\"");
@@ -488,7 +487,7 @@ public class CellExporter {
 			s.append(strength);
 			s.append("\"");
 			s.append(" act=\"");
-			s.append(type);
+			s.append(CellRecord.NETWORKTYPE_MAP().get(type));
 			s.append("\"");
 			s.append("/>");
 		}
@@ -513,7 +512,7 @@ public class CellExporter {
 			s.append(strength);
 			s.append("\"");
 			s.append(" act=\"");
-			s.append(type);
+			s.append(CellRecord.NETWORKTYPE_MAP().get(type));
 			s.append("\"");
 			s.append("/>");
 		}

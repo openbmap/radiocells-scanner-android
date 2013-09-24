@@ -1,5 +1,5 @@
 /*
-	Radiobeacon - Openbmap wifi and cell logger
+ Radiobeacon - Openbmap wifi and cell logger
     Copyright (C) 2013  wish7
 
     This program is free software: you can redistribute it and/or modify
@@ -53,8 +53,13 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	/**
 	 * URI for wifis with position data
 	 */
-	public static final Uri	CONTENT_URI_WIFI_EXTENDED	= Uri.parse("content://" + AUTHORITY + "/" + Schema.VIEW_WIFIS_EXTENDED);
-	
+	public static final Uri CONTENT_URI_WIFI_EXTENDED = Uri.parse("content://" + AUTHORITY + "/" + Schema.VIEW_WIFIS_EXTENDED);
+
+	/**
+	 * URI for cells with position data
+	 */
+	public static final Uri CONTENT_URI_CELL_EXTENDED = Uri.parse("content://" + AUTHORITY + "/" + Schema.VIEW_CELLS_EXTENDED);
+
 	/**
 	 * Uri for cell
 	 */
@@ -98,7 +103,6 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
 
-
 	/**
 	 * URI matcher - defines how URIs are translated to URI_CODE which is used internally 
 	 */
@@ -115,16 +119,17 @@ public class RadioBeaconContentProvider extends ContentProvider {
 		uriMatcher.addURI(AUTHORITY, Schema.TBL_CELLS + "/#", Schema.URI_CODE_CELL_ID);
 		uriMatcher.addURI(AUTHORITY, Schema.TBL_CELLS + "/" + CONTENT_URI_OVERVIEW_SUFFIX + "/#", Schema.URI_CODE_CELL_OVERVIEW);
 		uriMatcher.addURI(AUTHORITY, Schema.TBL_CELLS + "/" + CONTENT_URI_SESSION_SUFFIX + "/#", Schema.URI_CODE_CELLS_BY_SESSION);
-
+		uriMatcher.addURI(AUTHORITY, Schema.VIEW_CELLS_EXTENDED, Schema.URI_CODE_CELLS_EXTENDED);
+		
 		uriMatcher.addURI(AUTHORITY, Schema.TBL_WIFIS, Schema.URI_CODE_WIFIS);
 		uriMatcher.addURI(AUTHORITY, Schema.TBL_WIFIS + "/#", Schema.URI_CODE_WIFI_ID);
 		uriMatcher.addURI(AUTHORITY, Schema.TBL_WIFIS + "/" + CONTENT_URI_OVERVIEW_SUFFIX + "/#", Schema.URI_CODE_WIFI_OVERVIEW);
 		uriMatcher.addURI(AUTHORITY, Schema.TBL_WIFIS + "/" + CONTENT_URI_SESSION_SUFFIX + "/#", Schema.URI_CODE_WIFIS_BY_SESSION);
 		uriMatcher.addURI(AUTHORITY, Schema.VIEW_WIFIS_EXTENDED, Schema.URI_CODE_WIFIS_EXTENDED);
-		
-		
+
+
 		uriMatcher.addURI(AUTHORITY, Schema.TBL_POSITIONS, Schema.URI_CODE_POSITIONS);
-		uriMatcher.addURI(AUTHORITY, Schema.TBL_POSITIONS + "/#", Schema.URI_CODE_POSITION_ID);		
+		uriMatcher.addURI(AUTHORITY, Schema.TBL_POSITIONS + "/#", Schema.URI_CODE_POSITION_ID);  
 	}
 
 	/**
@@ -160,7 +165,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	public final Uri insert(final Uri uri, final ContentValues values) {
 		Log.d(TAG, "Uri " + uri.toString());
 		// Select which data type to insert
- 		switch (uriMatcher.match(uri)) {
+		switch (uriMatcher.match(uri)) {
 			case Schema.URI_CODE_CELLS:
 				return insertCell(uri, values);
 			case Schema.URI_CODE_WIFIS:
@@ -270,7 +275,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 			return sessionUri;
 		}
 		//} else {
-		//	throw new IllegalArgumentasdasdException("mandatory column missing");
+		// throw new IllegalArgumentasdasdException("mandatory column missing");
 		//}
 		return null;
 	}
@@ -292,6 +297,10 @@ public class RadioBeaconContentProvider extends ContentProvider {
 			case Schema.URI_CODE_WIFIS_EXTENDED:
 				// Returns all wifis including position data
 				return queryTable(RadioBeaconContentProvider.CONTENT_URI_WIFI_EXTENDED, Schema.VIEW_WIFIS_EXTENDED, projection, selectionIn, selectionArgsIn, sortOrder, null, null);
+			case Schema.URI_CODE_CELLS_EXTENDED:
+				// Returns all wifis including position data
+				return queryTable(RadioBeaconContentProvider.CONTENT_URI_CELL_EXTENDED, Schema.VIEW_CELLS_EXTENDED, projection, selectionIn, selectionArgsIn, sortOrder, null, null);
+			
 			case Schema.URI_CODE_WIFI_OVERVIEW:
 				/**
 				 *  if several measurements for specific wifi bssid are available only strongest
@@ -317,7 +326,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 
 				// default where clause
 				wifiOverviewQuery += " WHERE w." + Schema.COL_SESSION_ID + " = " + uri.getLastPathSegment();
-				
+
 				if (selectionIn != null) {
 					// add optional where clause
 					String extraWhere = selectionIn;
@@ -385,7 +394,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 				return queryTable(RadioBeaconContentProvider.CONTENT_URI_POSITION, Schema.TBL_POSITIONS, projection, selectionIn, selectionArgsIn, sortOrder, null, null);
 			case Schema.URI_CODE_POSITION_ID:
 				// returns given position
-				return queryTable(RadioBeaconContentProvider.CONTENT_URI_POSITION, Schema.TBL_POSITIONS, projection, addColumntoSelection(Schema.COL_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);			
+				return queryTable(RadioBeaconContentProvider.CONTENT_URI_POSITION, Schema.TBL_POSITIONS, projection, addColumntoSelection(Schema.COL_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);   
 			case Schema.URI_CODE_LOGS_BY_SESSION:
 				// Returns all log files for given session.
 				return queryTable(RadioBeaconContentProvider.CONTENT_URI_LOGFILE, Schema.TBL_LOGS, projection, addColumntoSelection(Schema.COL_SESSION_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);
@@ -403,9 +412,9 @@ public class RadioBeaconContentProvider extends ContentProvider {
 
 	/**
 	 * @param rawQuery
-	 * 		SQL statement
+	 *   SQL statement
 	 * @param notifyUri
-	 * 		URI being notified on change
+	 *   URI being notified on change
 	 */
 	private Cursor queryRaw(final String rawQuery, final Uri notifyUri) {
 		long start = System.currentTimeMillis();
@@ -422,9 +431,9 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	 * Adds column as first statement to selection string.
 	 * Always remember to include column in SelectionArgs also
 	 * @param colName
-	 * 				column name
+	 *     column name
 	 * @param selectionIn
-	 * 				selection string, to which column query will be added
+	 *     selection string, to which column query will be added
 	 * @return SQL select statement
 	 */
 	private String addColumntoSelection(final String colName, final String selectionIn) {
@@ -480,7 +489,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 			final String sortOrder, final String groupBy, final String limit) {
 
 		SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
-		qb.setTables(tableName);	
+		qb.setTables(tableName); 
 		final Cursor cursor = qb.query(mDbHelper.getReadableDatabase(), projection, selectionIn, selectionArgsIn, groupBy, null, sortOrder, limit);
 		qb = null;
 
@@ -509,7 +518,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 				return updateTable(uri, Schema.TBL_SESSIONS, values, addColumntoSelection(Schema.COL_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn));
 			default:
 				throw new IllegalArgumentException("Unknown URI: " + uri);
-		}	
+		} 
 	}
 
 	/**

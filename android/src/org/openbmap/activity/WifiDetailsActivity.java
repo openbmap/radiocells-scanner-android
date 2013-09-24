@@ -26,7 +26,6 @@ import org.openbmap.db.Schema;
 import org.openbmap.db.model.WifiChannel;
 import org.openbmap.db.model.WifiRecord;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.widget.TextView;
@@ -118,13 +117,4 @@ public class WifiDetailsActivity extends FragmentActivity {
 		return mWifi;
 	}
 
-	/**
-	 * highlights selected wifi on MapView
-	 * @param id
-	 */
-	public final void onWifiSelected(final long id) {
-		Intent intent = new Intent(this, MapViewActivity.class);
-		intent.putExtra(Schema.COL_ID, (int) id);
-		startActivity(intent);
-	}
 }

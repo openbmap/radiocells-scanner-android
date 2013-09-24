@@ -38,6 +38,7 @@ public final class Schema {
 	
 	// [start] Views
 	public static final String	VIEW_WIFIS_EXTENDED	= "wifis_positions";
+	public static final String	VIEW_CELLS_EXTENDED	= "cells_positions";
 	// [end]
 	
 	/**
@@ -119,6 +120,7 @@ public final class Schema {
 	public static final int URI_CODE_CELL_ID = 1;
 	public static final int URI_CODE_CELL_OVERVIEW = 2;
 	public static final int	URI_CODE_CELLS_BY_SESSION = 3;
+	public static final int	URI_CODE_CELLS_EXTENDED	= 19;
 	
 	public static final int URI_CODE_WIFIS = 20;
 	public static final int URI_CODE_WIFI_ID = 21;
@@ -144,6 +146,7 @@ public final class Schema {
 	public static final int	URI_CODE_SESSIONS	= 70;
 	public static final int	URI_CODE_SESSION_ID	= 71;
 	public static final int	URI_CODE_SESSION_ACTIVE	= 79;
+
 
 	/**
 	 * Private dummy constructor

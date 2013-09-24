@@ -33,8 +33,7 @@ import android.widget.TextView;
 /**
  * Parent activity for hosting cell detail fragement
  */
-public class CellDetailsActivity  extends FragmentActivity implements CellDetailsFragment.OnCellDetailsListener {
-
+public class CellDetailsActivity  extends FragmentActivity {
 
 	private TextView	tvNetworkType;
 	private TextView	tvCellId;
@@ -56,8 +55,6 @@ public class CellDetailsActivity  extends FragmentActivity implements CellDetail
 	private ImageView	ivIsIserving;
 	private CellRecord	mDisplayed;
 
-
-
 	/** Called when the activity is first created. */
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
@@ -75,9 +72,6 @@ public class CellDetailsActivity  extends FragmentActivity implements CellDetail
 		tvPsc = (TextView) findViewById(R.id.celldetails_psc);
 		tvNoMeasurements = (TextView) findViewById(R.id.celldetails_no_measurements);
 		ivIsIserving = (ImageView) findViewById(R.id.celldetails_serving);
-
-		CellDetailsFragment detailsFragment = (CellDetailsFragment) getSupportFragmentManager().findFragmentById(R.id.cellDetailsFragment);	
-		detailsFragment.setOnCellSelectedListener(this);
 
 		mDatahelper = new DataHelper(this);
 		// get the cell _id
@@ -145,12 +139,12 @@ public class CellDetailsActivity  extends FragmentActivity implements CellDetail
 		startActivity(intent);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openbmap.activity.CellDetailsFragment.OnCellDetailsListener#onMeasurementsLoaded(int)
+	/**
+	 * 
 	 */
-	@Override
-	public void onMeasurementsLoaded(final int count) {
+	public void setNoMeasurements(final int count) {
 		tvNoMeasurements.setText(String.valueOf(count));
 	}
+
 
 }

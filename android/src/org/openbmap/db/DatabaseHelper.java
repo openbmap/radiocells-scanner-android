@@ -91,7 +91,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+  " FOREIGN KEY (" + Schema.COL_END_POSITION_ID + ") REFERENCES " + Schema.TBL_POSITIONS + "( " + Schema.COL_ID + ")" 
 			+  ")";
 
-	// stupid thing: have to provide name for each field,
+	// Caution, stupid sqlite restriction! Have to provide name for each field, otherwise query fails
 	// see http://stackoverflow.com/questions/3269199/sqlite-for-android-custom-table-view-sql-view-not-android-view-discrepancy
 	private static final String SQL_CREATE_VIEW_WIFI_POSITIONS = "CREATE VIEW IF NOT EXISTS " + Schema.VIEW_WIFIS_EXTENDED + " AS " 
 			+ " SELECT w." + Schema.COL_ID + ","
@@ -123,6 +123,47 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+ " e." + Schema.COL_SPEED + " as end_speed,"
 			+ " e." + Schema.COL_SOURCE + " as end_source"
 			+ " FROM " + Schema.TBL_WIFIS + " AS w"
+			+ " LEFT JOIN " + Schema.TBL_POSITIONS + " AS b ON (w." + Schema.COL_BEGIN_POSITION_ID + " = b." + Schema.COL_ID + ")"
+			+ " LEFT JOIN " + Schema.TBL_POSITIONS + " AS e ON (w." + Schema.COL_END_POSITION_ID + " = e." + Schema.COL_ID + ")";
+
+	private static final String SQL_CREATE_VIEW_CELL_POSITIONS = "CREATE VIEW IF NOT EXISTS " + Schema.VIEW_CELLS_EXTENDED + " AS " 
+			+ " SELECT w."  + Schema.COL_ID + " AS " + Schema.COL_ID + ","
+			+ " w." +  Schema.COL_NETWORKTYPE + " AS " + Schema.COL_NETWORKTYPE + ","
+			+ " w." +  Schema.COL_IS_CDMA  + " AS " + Schema.COL_IS_CDMA + ","
+			+ " w." +  Schema.COL_IS_SERVING  + " AS " + Schema.COL_IS_SERVING  + ","
+			+ " w." +  Schema.COL_IS_NEIGHBOR  + " AS " + Schema.COL_IS_NEIGHBOR  + ","
+			+ " w." +  Schema.COL_CELLID  + " AS " + Schema.COL_CELLID + ","
+			+ " w." +  Schema.COL_LAC  + " AS " + Schema.COL_LAC + ","
+			+ " w." +  Schema.COL_MCC  + " AS " + Schema.COL_MCC + ","
+			+ " w." +  Schema.COL_MNC  + " AS " + Schema.COL_MNC + ","
+			+ " w." +  Schema.COL_PSC  + " AS " + Schema.COL_PSC + ","
+			+ " w." +  Schema.COL_BASEID  + " AS " + Schema.COL_BASEID + ","
+			+ " w." +  Schema.COL_NETWORKID   + " AS " + Schema.COL_NETWORKID + ","
+			+ " w." +  Schema.COL_SYSTEMID  + " AS " + Schema.COL_SYSTEMID + ","
+			+ " w." +  Schema.COL_OPERATORNAME  + " AS " + Schema.COL_OPERATORNAME + ","
+			+ " w." +  Schema.COL_OPERATOR  + " AS " + Schema.COL_OPERATOR + ","
+			+ " w." +  Schema.COL_STRENGTHDBM  + " AS " + Schema.COL_STRENGTHDBM + ","
+			+ " w." +  Schema.COL_TIMESTAMP  + " AS " + Schema.COL_TIMESTAMP + ","
+			+ " w." +  Schema.COL_BEGIN_POSITION_ID + " AS " + Schema.COL_BEGIN_POSITION_ID + ","
+			+ " w." +  Schema.COL_END_POSITION_ID + " AS " + Schema.COL_END_POSITION_ID + ","
+			+ " w." +  Schema.COL_SESSION_ID + " AS " + Schema.COL_SESSION_ID + ","
+			+ " b." + Schema.COL_LATITUDE + " as begin_latitude,"
+			+ " b." + Schema.COL_LONGITUDE + " as begin_longitude,"
+			+ " b." + Schema.COL_ALTITUDE + " as begin_altitude,"
+			+ " b." + Schema.COL_ACCURACY + " as begin_accuracy,"
+			+ " b." + Schema.COL_TIMESTAMP + " as begin_timestamp,"
+			+ " b." + Schema.COL_BEARING + " as begin_bearing,"
+			+ " b." + Schema.COL_SPEED + " as begin_speed,"
+			+ " b." + Schema.COL_SOURCE + " as begin_source,"
+			+ " e." + Schema.COL_LATITUDE + " as end_latitude," 
+			+ " e." + Schema.COL_LONGITUDE + " as end_longitude,"
+			+ " e." + Schema.COL_ALTITUDE + " as end_altitude,"
+			+ " e." + Schema.COL_ACCURACY + " as end_accuracy,"
+			+ " e." + Schema.COL_TIMESTAMP + " as end_timestamp," 
+			+ " e." + Schema.COL_BEARING + " as end_bearing,"
+			+ " e." + Schema.COL_SPEED + " as end_speed,"
+			+ " e." + Schema.COL_SOURCE + " as end_source"
+			+ " FROM " + Schema.TBL_CELLS + " AS w"
 			+ " LEFT JOIN " + Schema.TBL_POSITIONS + " AS b ON (w." + Schema.COL_BEGIN_POSITION_ID + " = b." + Schema.COL_ID + ")"
 			+ " LEFT JOIN " + Schema.TBL_POSITIONS + " AS e ON (w." + Schema.COL_END_POSITION_ID + " = e." + Schema.COL_ID + ")";
 
@@ -272,6 +313,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_WIFIS_EXTENDED);
 			db.execSQL(SQL_CREATE_VIEW_WIFI_POSITIONS);
 
+			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_CELLS_EXTENDED);
+			db.execSQL(SQL_CREATE_VIEW_CELL_POSITIONS);
+
 			// Create indices
 			db.execSQL(SQL_CREATE_IDX_WIFIS);
 			db.execSQL(SQL_CREATE_IDX_CELLS);
@@ -293,6 +337,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_WIFIS_EXTENDED);
 			db.execSQL(SQL_CREATE_VIEW_WIFI_POSITIONS);
 		} 
+		if (oldVersion == 2) {
+			// add cell position view
+			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_CELLS_EXTENDED);
+			db.execSQL(SQL_CREATE_VIEW_CELL_POSITIONS);
+		}
 	}
 
 	@Override
