@@ -25,7 +25,6 @@ import org.openbmap.db.DataHelper;
 import org.openbmap.db.Schema;
 import org.openbmap.db.model.WifiChannel;
 import org.openbmap.db.model.WifiRecord;
-import org.openbmap.service.wireless.WifiScanCallback;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -35,7 +34,7 @@ import android.widget.TextView;
 /**
  * Parent activity for hosting wifi detail fragment
  */
-public class WifiDetailsActivity  extends FragmentActivity {
+public class WifiDetailsActivity extends FragmentActivity {
 
 	private DataHelper mDatahelper;
 
@@ -46,8 +45,6 @@ public class WifiDetailsActivity  extends FragmentActivity {
 	
 	private WifiRecord	mWifi;
 
-	
-
 	/** Called when the activity is first created. */
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
@@ -55,8 +52,6 @@ public class WifiDetailsActivity  extends FragmentActivity {
 		setContentView(R.layout.wifidetails);
 
 		initUi();
-
-
 
 		Bundle extras = getIntent().getExtras();
 		String bssid = extras.getString(Schema.COL_BSSID);

@@ -84,7 +84,7 @@
             <TextView
                 android:id="@+id/celldetails_cellid"
                 android:layout_width="0dp"
-                android:layout_weight="0.4"
+                android:layout_weight="0.3"
                 android:layout_height="wrap_content"
                 android:text="123456"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
@@ -100,10 +100,27 @@
             <TextView
                 android:id="@+id/celldetails_baseid"
                android:layout_width="0dp"
-                android:layout_weight="0.4"
+                android:layout_weight="0.3"
                 android:layout_height="wrap_content"
-                android:text=""
+                android:text="1234567"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <TextView
+                android:id="@+id/textView1"
+                android:layout_width="0dp"
+                android:layout_weight="0.1"
+                android:layout_height="wrap_content"
+                android:text="@string/psc"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <TextView
+                android:id="@+id/celldetails_psc"
+                android:layout_width="0dp"
+                android:layout_weight="0.1"
+                android:layout_height="wrap_content"
+                android:text="123"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
         </TableRow>
 
         
@@ -111,7 +128,7 @@
         <TableRow>
 
             <TextView
-                android:id="@+id/session_subtitle"
+                android:id="@+id/textView9"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -126,13 +143,37 @@
         </TableRow>
 
         <TableRow>
-
-            <CheckedTextView
-                android:id="@+id/celldetails_chkIsServing"
-                android:layout_width="wrap_content"
+		<TextView
+                android:id="@+id/textView8"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:checkMark="?android:attr/textCheckMark"
+                android:layout_weight="1"
                 android:text="@string/isServingCellCaption" />
+
+		<ImageView
+		    android:id="@+id/celldetails_serving"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:src="@android:drawable/checkbox_on_background" />
+
+        </TableRow>
+         <TableRow>
+
+            <TextView
+                android:id="@+id/textView10"
+                android:layout_width="0dip"
+                android:layout_weight="0.35"
+                android:layout_height="wrap_content"
+                android:text="@string/no_measurements" />
+
+            <TextView
+                android:id="@+id/celldetails_no_measurements"
+                android:layout_width="0dip"
+                android:layout_weight="0.65"
+                android:layout_height="wrap_content"
+                android:text="123"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+            
         </TableRow>
     </TableLayout>
 
@@ -140,6 +181,6 @@
         android:id="@+id/cellDetailsFragment"
         android:name="org.openbmap.activity.CellDetailsFragment"
         android:layout_width="fill_parent"
-        android:layout_height="78dp" />
+        android:layout_height="wrap_content"/>
 
 </LinearLayout>

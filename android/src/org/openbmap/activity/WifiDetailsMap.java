@@ -225,9 +225,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 		} else {
 			Log.i(TAG, "Another heat-map is currently generated. Skipped");
 		}
-
 	}
-
 
 	/* (non-Javadoc)
 	 * @see org.openbmap.soapclient.HeatmapBuilder.HeatmapBuilderListener#onHeatmapCompleted(android.graphics.Bitmap)
@@ -247,9 +245,6 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 		BitmapDrawable drawable = new BitmapDrawable(backbuffer);
 		org.mapsforge.core.graphics.Bitmap mfBitmap = AndroidGraphicFactory.convertToBitmap(drawable);
 		heatmapLayer.setBitmap(mfBitmap);
-
-
-		//mapView.getModel().mapViewPosition.setCenter(target);
 
 		//saveHeatmapToFile(backbuffer);
 	}
@@ -280,7 +275,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	 */
 	@Override
 	public void onLoaderReset(final Loader<Cursor> arg0) {
-		// TODO Auto-generated method stub
+
 	}
 
 

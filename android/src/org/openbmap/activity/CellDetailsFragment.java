@@ -14,13 +14,19 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.activity;
 
+import java.util.ArrayList;
+
 import org.openbmap.R;
+import org.openbmap.RadioBeacon;
+import org.openbmap.db.DataHelper;
 import org.openbmap.db.RadioBeaconContentProvider;
 import org.openbmap.db.Schema;
+import org.openbmap.db.model.CellRecord;
+
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
@@ -47,15 +53,17 @@ public class CellDetailsFragment extends ListFragment implements LoaderManager.L
 	/**
 	 * Listener to handle onClick events
 	 */
-	private OnCellSelectedListener mListener;
+	private OnCellDetailsListener mListener;
+
+	private int	mCellId;
+
+	private CellRecord	mCell;
 
 	@Override
 	public final void onActivityCreated(final Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);	
-		
-		//TODO this is not yet working.. intended to give cell measurement overview...
-		
-		((CellDetailsActivity) getActivity()).getCell();
+
+		mCell = ((CellDetailsActivity) getActivity()).getCell();
 		String [] from = new String []{Schema.COL_TIMESTAMP, Schema.COL_STRENGTHDBM};
 		int [] to = new int [] {
 				R.id.celldetailsfragment_timestamp,
@@ -71,6 +79,10 @@ public class CellDetailsFragment extends ListFragment implements LoaderManager.L
 	private static class ProgressBarViewBinder implements ViewBinder {
 
 		/**
+		 * 
+		 */
+		private static final int	COL_IDX_STRENGTH_DBM	= 1;
+		/**
 		 * max value for progress bar indicator, assuming -50 dBm is highest possible level
 		 */
 		private static final int MAX_VALUE = 100;
@@ -80,7 +92,7 @@ public class CellDetailsFragment extends ListFragment implements LoaderManager.L
 		 */
 		public boolean setViewValue(final View view, final Cursor cursor, final int columnIndex) {
 			if (view instanceof ProgressBar) {
-				String result = cursor.getString(2);
+				String result = cursor.getString(COL_IDX_STRENGTH_DBM);
 				int resInt = MAX_VALUE - (-Integer.parseInt(result));
 				if (resInt == 0) {
 					((ProgressBar) view).setIndeterminate(true);
@@ -105,11 +117,12 @@ public class CellDetailsFragment extends ListFragment implements LoaderManager.L
 		super.onDestroy();
 	}
 
-	public interface OnCellSelectedListener {
+	public interface OnCellDetailsListener {
 		void onCellSelected(long id);
+		void onMeasurementsLoaded(int count);
 	}
 
-	public final void setOnCellSelectedListener(final OnCellSelectedListener listener) {
+	public final void setOnCellSelectedListener(final OnCellDetailsListener listener) {
 		this.mListener = listener;
 	}
 
@@ -127,20 +140,40 @@ public class CellDetailsFragment extends ListFragment implements LoaderManager.L
 
 	@Override
 	public final Loader<Cursor> onCreateLoader(final int arg0, final Bundle arg1) {
-		String[] id = {"-1"};
+		// set query params: id and session id
+		ArrayList<String> args = new ArrayList<String>();
+		String selectSql = "";
+		
+		if (mCell != null && mCell.getCid() != -1) {
+			args.add(String.valueOf(mCell.getCid()));
+			selectSql = Schema.COL_CELLID + " = ?";
+		} else if (mCell != null && mCell.isCdma()
+				&& !mCell.getBaseId().equals("-1") && !mCell.getNetworkId().equals("-1") && !mCell.getSystemId().equals("-1")) {
+			args.add(mCell.getBaseId());
+			args.add(mCell.getNetworkId());
+			args.add(mCell.getSystemId());
+			selectSql = Schema.COL_BASEID + " = ? AND " + Schema.COL_NETWORKID + " = ? AND " + Schema.COL_SYSTEMID + " = ?";
+		}
 
-		String[] projection = { Schema.COL_ID, Schema.COL_STRENGTHDBM, Schema.COL_TIMESTAMP};
+		DataHelper dbHelper = new DataHelper(this.getActivity());
+		args.add(String.valueOf(dbHelper.getActiveSessionId()));
+		if (selectSql.length() > 0) {
+			selectSql += " AND ";
+		}
+		selectSql += Schema.COL_SESSION_ID + " = ?";
+
+		String[] projection = {Schema.COL_ID, Schema.COL_STRENGTHDBM, Schema.COL_TIMESTAMP};
 		// query data from content provider
 		CursorLoader cursorLoader =
 				new CursorLoader(getActivity().getBaseContext(),
-						RadioBeaconContentProvider.CONTENT_URI_CELL, projection, Schema.COL_ID + " = ?", id, Schema.COL_STRENGTHDBM + " DESC");
+						RadioBeaconContentProvider.CONTENT_URI_CELL, projection, selectSql, args.toArray(new String[args.size()]), Schema.COL_STRENGTHDBM + " DESC");
 		return cursorLoader;
 	}
 
 	@Override
 	public final void onLoadFinished(final Loader<Cursor> arg0, final Cursor cursor) {
 		adapter.swapCursor(cursor);
-		Log.d(TAG, "onLoadFinished called. We have " + adapter.getCount() + " records");
+		mListener.onMeasurementsLoaded(cursor.getCount());
 	}
 
 	@Override

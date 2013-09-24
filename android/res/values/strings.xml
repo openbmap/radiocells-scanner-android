@@ -92,4 +92,5 @@
     <string name="accuracy">Accuracy</string>
     <string name="no_sat_signal">No sat signal</string>
     <string name="no_measurements"># Measurements</string>
+    <string name="psc">PSC</string>
 </resources>

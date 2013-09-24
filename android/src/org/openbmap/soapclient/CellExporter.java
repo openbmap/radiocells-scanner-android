@@ -46,7 +46,7 @@ public class CellExporter {
 	/**
 	 * Initial size wifi StringBuffer
 	 */
-	private static final int WIFI_XML_DEFAULT_LENGTH	= 220;
+	private static final int CELL_XML_DEFAULT_LENGTH	= 220;
 
 	/**
 	 * Initial size position StringBuffer
@@ -467,7 +467,7 @@ public class CellExporter {
 	 */
 	private static String cellToXML(final int isServing, final int isNeighbour,
 			final String mcc, final String mnc, final String lac, final String cellId, final String strength, final String type, final String psc) {
-		final StringBuffer s = new StringBuffer(WIFI_XML_DEFAULT_LENGTH);
+		final StringBuffer s = new StringBuffer(CELL_XML_DEFAULT_LENGTH);
 		if (isServing != 0) {
 			s.append("\n\t\t<gsmserving mcc=\"");
 			s.append(mcc);
@@ -480,6 +480,9 @@ public class CellExporter {
 			s.append("\"");
 			s.append(" id=\"");
 			s.append(cellId);
+			s.append("\"");
+			s.append(" psc=\"");
+			s.append(psc);
 			s.append("\"");
 			s.append(" ss=\"");
 			s.append(strength);

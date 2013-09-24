@@ -14,7 +14,7 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.activity;
 
@@ -27,12 +27,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.widget.CheckedTextView;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 /**
  * Parent activity for hosting cell detail fragement
  */
-public class CellDetailsActivity  extends FragmentActivity implements CellDetailsFragment.OnCellSelectedListener {
+public class CellDetailsActivity  extends FragmentActivity implements CellDetailsFragment.OnCellDetailsListener {
 
 
 	private TextView	tvNetworkType;
@@ -42,17 +43,26 @@ public class CellDetailsActivity  extends FragmentActivity implements CellDetail
 	private TextView	tvMcc;
 	private TextView	tvMnc;
 	private TextView	tvStrength;
-	private CheckedTextView	chkIsServing;
+	private TextView	tvPsc;
+	private TextView 	tvNoMeasurements;
 	
 	private DataHelper mDatahelper;
-	
-	private CellRecord mDisplayed;
+
+	/**
+	 * Displayed Cell's COL_ID 
+	 */
+	private int	mId;
+
+	private ImageView	ivIsIserving;
+	private CellRecord	mDisplayed;
+
 
 
 	/** Called when the activity is first created. */
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);	
+	
 		setContentView(R.layout.celldetails);
 
 		tvNetworkType = (TextView) findViewById(R.id.celldetails_networktype);
@@ -62,12 +72,20 @@ public class CellDetailsActivity  extends FragmentActivity implements CellDetail
 		tvMcc = (TextView) findViewById(R.id.celldetails_mcc);
 		tvMnc = (TextView) findViewById(R.id.celldetails_mnc);
 		tvStrength = (TextView) findViewById(R.id.celldetails_strength);
-		chkIsServing = (CheckedTextView) findViewById(R.id.celldetails_chkIsServing);
-		
+		tvPsc = (TextView) findViewById(R.id.celldetails_psc);
+		tvNoMeasurements = (TextView) findViewById(R.id.celldetails_no_measurements);
+		ivIsIserving = (ImageView) findViewById(R.id.celldetails_serving);
+
 		CellDetailsFragment detailsFragment = (CellDetailsFragment) getSupportFragmentManager().findFragmentById(R.id.cellDetailsFragment);	
 		detailsFragment.setOnCellSelectedListener(this);
 
 		mDatahelper = new DataHelper(this);
+		// get the cell _id
+		Bundle extras = getIntent().getExtras();
+		int id = extras.getInt(Schema.COL_ID);
+		// query content provider for cell details
+		mDisplayed = mDatahelper.loadCellById(id);
+		mId = id;
 	}
 
 	@Override
@@ -77,8 +95,10 @@ public class CellDetailsActivity  extends FragmentActivity implements CellDetail
 		// get the cell _id
 		Bundle extras = getIntent().getExtras();
 		int id = extras.getInt(Schema.COL_ID);
+
 		// query content provider for cell details
 		mDisplayed = mDatahelper.loadCellById(id);
+		mId = id;
 
 		displayRecord(mDisplayed);
 	}
@@ -96,7 +116,13 @@ public class CellDetailsActivity  extends FragmentActivity implements CellDetail
 			tvNetworkType.setText(CellRecord.NETWORKTYPE_MAP().get(cell.getNetworkType()));
 			tvOperator.setText(cell.getOperatorName());
 			tvStrength.setText(String.valueOf(cell.getStrengthdBm()));
-			chkIsServing.setChecked(!cell.isNeighbor());
+			tvPsc.setText(String.valueOf(cell.getPsc()));
+			if (cell.isServing()) {
+				ivIsIserving.setImageResource(android.R.drawable.checkbox_on_background);
+			} else {
+				ivIsIserving.setImageResource(android.R.drawable.checkbox_off_background);
+			}
+			//chkIsServing.setChecked(!cell.isNeighbor());
 		}
 	}
 
@@ -117,6 +143,14 @@ public class CellDetailsActivity  extends FragmentActivity implements CellDetail
 		Intent intent = new Intent(this, MapViewActivity.class);
 		intent.putExtra(Schema.COL_ID, (int) id);
 		startActivity(intent);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.activity.CellDetailsFragment.OnCellDetailsListener#onMeasurementsLoaded(int)
+	 */
+	@Override
+	public void onMeasurementsLoaded(final int count) {
+		tvNoMeasurements.setText(String.valueOf(count));
 	}
 
 }

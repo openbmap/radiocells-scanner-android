@@ -50,6 +50,9 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	 */
 	public static final Uri CONTENT_URI_WIFI = Uri.parse("content://" + AUTHORITY + "/" + Schema.TBL_WIFIS);
 
+	/**
+	 * URI for wifis with position data
+	 */
 	public static final Uri	CONTENT_URI_WIFI_EXTENDED	= Uri.parse("content://" + AUTHORITY + "/" + Schema.VIEW_WIFIS_EXTENDED);
 	
 	/**
