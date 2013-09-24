@@ -125,7 +125,9 @@ public final class RadioBeacon {
 	
 	/**
 	 * SW Version string for XML files and credit screens
-	 * Caution: If you change client version, check whether you need to adjust current_version.xml on server and {@link VERSION_COMPATIBILITY} 
+	 * Caution:
+     * 			- If you change client version, check whether you need to adjust current_version.xml on server and {@link VERSION_COMPATIBILITY} 
+     * 			- Also consider updating android:versionCode="x+1" android:versionName="XYZ" in AndroidManifest.xml (e.g. for automatic F-Droid updates)
 	 */
 	public static final String SW_VERSION = "00.7.04";
 	
