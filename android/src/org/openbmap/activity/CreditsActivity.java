@@ -18,6 +18,10 @@
 
 package org.openbmap.activity;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 
@@ -38,9 +42,33 @@ public class CreditsActivity extends Activity {
 	public final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.credits);
-		final TextView clientVersion = (TextView) findViewById(R.id.credits_client_version);
-		clientVersion.setText(RadioBeacon.SW_VERSION);
+		final TextView tvClientVersion = (TextView) findViewById(R.id.credits_client_version);
+		tvClientVersion.setText(RadioBeacon.SW_VERSION);
+		final TextView tvBuild = (TextView) findViewById(R.id.credits_build);
+		tvBuild.setText("(" + readBuildInfo() + ")");
 	}
 
+	public final String readBuildInfo() {
+		InputStream buildInStream = getResources().openRawResource(R.raw.build);
+	    ByteArrayOutputStream buildOutStream = new ByteArrayOutputStream();
+	
+	    int i;
+	 
+	    try { 
+	        i = buildInStream.read();
+	        while (i != -1) {
+	            buildOutStream.write(i);
+	            i = buildInStream.read();
+	        }
+	 
+	        buildInStream.close();
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
+	 
+	    return buildOutStream.toString();
+	    // use buildOutStream.toString() to get the data 
+
+	}
 
 }
