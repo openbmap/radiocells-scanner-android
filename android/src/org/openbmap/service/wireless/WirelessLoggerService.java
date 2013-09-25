@@ -237,7 +237,7 @@ public class WirelessLoggerService extends AbstractService {
 				if (acceptableCellDistance(location, mCellSavedAt)) {
 					Log.d(TAG, "Cell update. Distance " + location.distanceTo(mCellSavedAt));
 					boolean resultOk = performCellsUpdate(location, source);
-					
+
 					if (resultOk) {
 						//Log.i(TAG, "Successfully saved cell");
 						mCellSavedAt = location;	
@@ -542,39 +542,44 @@ public class WirelessLoggerService extends AbstractService {
 
 							// Generates a list of wifis from scan results
 							for (ScanResult r : scanlist) {
-								if (mSsidBlackList.contains(r.SSID)) {
-									// skip invalid wifis
-									Log.i(TAG, "Ignored " + r.SSID + " (on ssid blacklist)");
-									break;
-								}
+								boolean skip = false;
 								if (mBssidBlackList.contains(r.BSSID)) {
 									// skip invalid wifis
 									Log.i(TAG, "Ignored " + r.BSSID + " (on bssid blacklist)");
-									break;
+									broadcastWifiBlacklisted(r.SSID, r.BSSID, 1);
+									skip = true;
 								}
-								WifiRecord wifi = new WifiRecord();
-								wifi.setBssid(r.BSSID);
-								wifi.setSsid(r.SSID);
-								wifi.setCapabilities(r.capabilities);
-								wifi.setFrequency(r.frequency);
-								wifi.setLevel(r.level);
-								// TODO: clumsy: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
-								wifi.setOpenBmapTimestamp(begin.getOpenBmapTimestamp());
-								wifi.setBeginPosition(begin);
-								wifi.setEndPosition(end);
-								wifi.setSessionId(mSessionId);
-								wifi.setNew(checkIsNew(r.BSSID));
-								wifis.add(wifi);
+								if (mSsidBlackList.contains(r.SSID)) {
+									// skip invalid wifis
+									Log.i(TAG, "Ignored " + r.SSID + " (on ssid blacklist)");
+									broadcastWifiBlacklisted(r.SSID, r.BSSID, 2);
+									skip = true;
+								}
+
+								if (!skip) {
+									WifiRecord wifi = new WifiRecord();
+									wifi.setBssid(r.BSSID);
+									wifi.setSsid(r.SSID);
+									wifi.setCapabilities(r.capabilities);
+									wifi.setFrequency(r.frequency);
+									wifi.setLevel(r.level);
+									// TODO: clumsy: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
+									wifi.setOpenBmapTimestamp(begin.getOpenBmapTimestamp());
+									wifi.setBeginPosition(begin);
+									wifi.setEndPosition(end);
+									wifi.setSessionId(mSessionId);
+									wifi.setNew(checkIsNew(r.BSSID));
+									wifis.add(wifi);
+								}
 							}
 							mDataHelper.storeWifiScanResults(begin, end, wifis);
 
 							// take last seen wifi and broadcast infos in ui
-							if (scanlist.size() > 0) {
-								ScanResult recent = scanlist.get(scanlist.size() - 1);
-								broadcastWifiInfos(recent);
+							if (wifis.size() > 0) {
+								broadcastWifiInfos(wifis.get(wifis.size() - 1));
 								broadcastWifiUpdate();
 							}
-							
+
 							mWifiSavedAt = mBeginLocation;
 						} else {
 							// @see http://code.google.com/p/android/issues/detail?id=19078
@@ -599,10 +604,33 @@ public class WirelessLoggerService extends AbstractService {
 	 *  Broadcasts human-readable description of last wifi.
 	 * @param recent
 	 */
-	private void broadcastWifiInfos(final ScanResult recent) {
-		Intent intent1 = new Intent(RadioBeacon.INTENT_NEW_WIFI);
-		intent1.putExtra(RadioBeacon.MSG_KEY, recent.SSID + " " + recent.level + "dBm");
-		sendBroadcast(intent1);
+	private void broadcastWifiInfos(final WifiRecord recent) {
+		Intent intent = new Intent(RadioBeacon.INTENT_NEW_WIFI);
+		intent.putExtra(RadioBeacon.MSG_KEY, recent.getLevel() + " dBm");
+		intent.putExtra(RadioBeacon.MSG_SSID, recent.getSsid());
+		sendBroadcast(intent);
+	}
+
+	/**
+	 *  Broadcasts ignore message
+	 * @param recent
+	 */
+	private void broadcastWifiBlacklisted(final String ssid, final String bssid, final int reason) {
+		Intent intent = new Intent(RadioBeacon.INTENT_WIFI_BLACKLISTED);
+		// MSG_KEY contains the block reason:
+		// 		RadioBeacon.MSG_BSSID for bssid blacklist,
+		// 		RadioBeacon.MSG_SSID for ssid blacklist
+		if (reason == 1) {
+			intent.putExtra(RadioBeacon.MSG_KEY, RadioBeacon.MSG_BSSID);
+		} else if (reason == 2) {
+			intent.putExtra(RadioBeacon.MSG_KEY, RadioBeacon.MSG_SSID);
+		} else {
+			intent.putExtra(RadioBeacon.MSG_KEY, "Unknown reason");
+		}
+
+		intent.putExtra(RadioBeacon.MSG_BSSID, bssid);
+		intent.putExtra(RadioBeacon.MSG_SSID, ssid);
+		sendBroadcast(intent);
 	}
 
 	/**

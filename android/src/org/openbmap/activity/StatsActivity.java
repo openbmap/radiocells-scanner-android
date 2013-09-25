@@ -30,6 +30,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 /**
@@ -46,13 +48,16 @@ public class StatsActivity extends Activity {
 	private TextView tvSession;
 	private TextView tvCountCells;
 	private TextView tvCountWifis;
-
+	private TextView tvIgnored;
+	private ImageView ivAlert;
+	
 	private DataHelper	dbHelper;
 
 	/**
 	 * Receives cell / wifi news
 	 */
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+
 
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
@@ -67,8 +72,9 @@ public class StatsActivity extends Activity {
 				refreshSessionStats(active);
 
 			} else if (RadioBeacon.INTENT_NEW_WIFI.equals(intent.getAction())) {
-				String lastWifi = intent.getStringExtra(RadioBeacon.MSG_KEY);
-				tvLastWifi.setText(lastWifi);
+				String lastWifi = intent.getStringExtra(RadioBeacon.MSG_SSID);
+				String extraInfo = intent.getStringExtra(RadioBeacon.MSG_KEY);
+				tvLastWifi.setText(lastWifi + " " + extraInfo);
 
 				Session active = dbHelper.loadActiveSession();
 				refreshSessionStats(active);
@@ -77,6 +83,17 @@ public class StatsActivity extends Activity {
 				String id = intent.getStringExtra(RadioBeacon.MSG_KEY);
 				Session session = dbHelper.loadSession(Integer.valueOf(id));
 				refreshSessionStats(session);
+				
+			} else if (RadioBeacon.INTENT_WIFI_BLACKLISTED.equals(intent.getAction())) {
+				String reason = intent.getStringExtra(RadioBeacon.MSG_KEY);
+				String ssid = intent.getStringExtra(RadioBeacon.MSG_SSID);
+				String bssid = intent.getStringExtra(RadioBeacon.MSG_BSSID);
+				if (reason.equals(RadioBeacon.MSG_BSSID)) {
+					tvIgnored.setText(ssid + " (" + bssid + ")\n" + getResources().getString(R.string.blacklisted_bssid));
+				} else if (reason.equals(RadioBeacon.MSG_SSID)) {
+					tvIgnored.setText(ssid + " (" + bssid + ")\n" + getResources().getString(R.string.blacklisted_ssid));
+				}
+				ivAlert.setVisibility(View.VISIBLE);
 			}
 		}
 	};
@@ -103,6 +120,8 @@ public class StatsActivity extends Activity {
 		tvSession = (TextView) findViewById(R.id.stats_session_description);
 		tvCountCells = (TextView) findViewById(R.id.stats_cell_total);
 		tvCountWifis = (TextView) findViewById(R.id.stats_wifi_total);
+		tvIgnored = (TextView) findViewById(R.id.stats_blacklisted);
+		ivAlert = (ImageView) findViewById(R.id.stats_icon_alert);
 	}
 
 	@Override
@@ -118,6 +137,7 @@ public class StatsActivity extends Activity {
 		filter.addAction(RadioBeacon.INTENT_NEW_WIFI);
 		filter.addAction(RadioBeacon.INTENT_NEW_CELL);
 		filter.addAction(RadioBeacon.INTENT_SESSION_UPDATE);
+		filter.addAction(RadioBeacon.INTENT_WIFI_BLACKLISTED);
 		registerReceiver(mReceiver, filter);
 	}
 	

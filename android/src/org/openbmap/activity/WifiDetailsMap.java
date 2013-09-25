@@ -190,7 +190,8 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 			int colLevel = cursor.getColumnIndex(Schema.COL_LEVEL);
 
 			while (cursor.moveToNext()) {
-				int intensity = (int) (cursor.getInt(colLevel) / -10);
+				//int intensity = (int) (cursor.getInt(colLevel) / -10);
+				int intensity = cursor.getInt(colLevel) / -50;
 				points.add(new HeatPoint(cursor.getDouble(colLat), cursor.getDouble(colLon), intensity));
 			}
 

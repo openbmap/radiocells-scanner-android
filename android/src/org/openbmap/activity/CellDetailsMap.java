@@ -71,11 +71,11 @@ import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, LoaderManager.LoaderCallbacks<Cursor>  {
 
 	private static final String TAG = CellDetailsMap.class.getSimpleName();
-
+	
 	/**
-	 * 
+	 * Radius heat-map circles
 	 */
-	private static final float	RADIUS	= 30f;
+	private static final float RADIUS	= 50f;
 
 	private CellRecord mCell;
 
@@ -204,7 +204,8 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 			int colLevel = cursor.getColumnIndex(Schema.COL_STRENGTHDBM);
 
 			while (cursor.moveToNext()) {
-				int intensity = (int) (cursor.getInt(colLevel) / -10);
+				//int intensity = (int) (HEAT_AMPLIFIER * (Math.min(cursor.getInt(colLevel) + MIN_HEAT, 0)) / -10f);
+				int intensity = cursor.getInt(colLevel) / -1;
 				points.add(new HeatPoint(cursor.getDouble(colLat), cursor.getDouble(colLon), intensity));
 			}
 

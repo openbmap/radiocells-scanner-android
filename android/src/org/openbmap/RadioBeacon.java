@@ -61,6 +61,11 @@ public final class RadioBeacon {
 	 * Intent signalling new wifi has been saved
 	 */
 	public static final String INTENT_NEW_WIFI = RadioBeacon.PACKAGE_NAME + ".intent.WIFI_SAVED";
+	
+	/**
+	 * Intent signalling wifi has been skipped due to blacklist
+	 */
+	public static final String INTENT_WIFI_BLACKLISTED = RadioBeacon.PACKAGE_NAME + ".intent.WIFI_BLACKLISTED";
 
 	/**
 	 * Intent signalling cells have been changed (e.g. deletes)
@@ -105,7 +110,20 @@ public final class RadioBeacon {
 	
 	public static final int MSG_SERVICE_READY = 5;
 	
+	/**
+	 * Extra data key: Generic key
+	 */
 	public static final String MSG_KEY = "msg";
+	
+	/**
+	 * Extra data key: ssid
+	 */
+	public static final String MSG_SSID = "ssid";
+	
+	/**
+	 * Extra data key: bssid
+	 */
+	public static final String MSG_BSSID = "bssid";
 	
 	/**
 	 * Session Id, when not currently tracking

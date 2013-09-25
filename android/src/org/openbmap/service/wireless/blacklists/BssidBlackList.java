@@ -14,7 +14,7 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.service.wireless.blacklists;
 
@@ -29,6 +29,7 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
 
 /**
@@ -37,11 +38,29 @@ import android.util.Log;
 public class BssidBlackList {
 
 	private static final String	TAG	= BssidBlackList.class.getSimpleName();
+
+	/**
+	 * Debug setting: re-create XML file on each run (ergo: refreshing the list)
+	 * This is helpful while adding new mac addresses to BssidBlackListBootstraper
+	 * When no mac addresses are added to BssidBlackListBootstraper anymore,
+	 * ALWAYS_RECREATE_BSSID_BLACKLIST can be set to false
+	 */
+	private static final boolean ALWAYS_RECREATE_BSSID_BLACKLIST	= true;
 	
 	/**
-	 * Address tag
+	 * XML tag prefix mac address
 	 */
-	private static final String	ADDRESS_TAG	= "address";
+	private static final String	PREFIX_TAG	= "prefix";
+
+	/**
+	 * XML tag full mac address
+	 */
+	private static final String	ADDRESS_TAG	= "bssid";
+
+	/**
+	 * List of ignored bssid manufactorer codes
+	 */
+	private ArrayList<String>	mPrefixes;
 
 	/**
 	 * List of blocked addresses (bssids)
@@ -49,6 +68,7 @@ public class BssidBlackList {
 	private ArrayList<String>	mAddresses;
 
 	public BssidBlackList() {
+		mPrefixes = new ArrayList<String>();
 		mAddresses = new ArrayList<String>();
 	}
 
@@ -59,7 +79,11 @@ public class BssidBlackList {
 	 * @throws XmlPullParserException
 	 */
 	public final void openFile(final String defaultList, final String extraUserList) {
-
+		
+		if (ALWAYS_RECREATE_BSSID_BLACKLIST) {
+			BssidBlackListBootstraper.run(defaultList);
+		}
+		
 		if (defaultList != null) {
 			try {				
 				File file = new File(defaultList);
@@ -77,7 +101,7 @@ public class BssidBlackList {
 				FileInputStream userStream = new FileInputStream(file);
 				add(userStream);
 			} catch (FileNotFoundException e) {
-				Log.w(TAG, "User-defined blacklist " + extraUserList + " not found. Skippingb");
+				Log.w(TAG, "User-defined blacklist " + extraUserList + " not found. Skipping");
 			} 
 		} else {
 			Log.i(TAG, "No user-defined blacklist provided");
@@ -104,10 +128,13 @@ public class BssidBlackList {
 					if (eventType == XmlPullParser.START_TAG) {
 						currentTag = xpp.getName();
 					} else if (eventType == XmlPullParser.TEXT) {
-						if (ADDRESS_TAG.equals(currentTag)) {
+						if (PREFIX_TAG.equals(currentTag) || ADDRESS_TAG.equals(currentTag)) {
 							value = xpp.getText();
 						}
 					} else if (eventType == XmlPullParser.END_TAG) {
+						if (PREFIX_TAG.equals(xpp.getName())) {
+							mPrefixes.add(value);
+						}
 						if (ADDRESS_TAG.equals(xpp.getName())) {
 							mAddresses.add(value);
 						}
@@ -120,7 +147,7 @@ public class BssidBlackList {
 		} catch (XmlPullParserException e) {
 			Log.e(TAG, "Error parsing blacklist");
 		}
-
+		Log.i(TAG, "Loaded " + (mPrefixes.size() + mAddresses.size()) + " BSSID blacklist entries");
 	}
 
 	/**
@@ -128,14 +155,28 @@ public class BssidBlackList {
 	 * @param bssid SSID to check
 	 * @return true, if in ignore list
 	 */
+	@SuppressLint("DefaultLocale")
 	public final boolean contains(final String bssid) {
+		boolean match = false;
+		for (String prefix : mPrefixes) {
+			if (bssid.toLowerCase().startsWith(prefix.toLowerCase())) {
+				match = true; 
+				break;
+			}
+		}
+		
+		// don't look anyfurther
+		if (match) {
+			return match;
+		}
 
 		for (String address : mAddresses) {
 			if (bssid.equalsIgnoreCase(address)) {
-				return true; 
+				match = true;
+				break;
 			}
 		}
 
-		return false; 
+		return match; 
 	}
 }

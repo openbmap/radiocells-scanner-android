@@ -52,7 +52,6 @@ public class GpsStatusRecord extends LinearLayout implements Listener, LocationL
 	 * Refresh interval for gps status (in millis)
 	 */
 	private static final int	STATUS_REFRESH_INTERVAL	= 2000;
-
 	
 	/**
 	 * Formatter for accuracy display.

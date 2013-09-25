@@ -31,23 +31,26 @@
         android:layout_height="wrap_content" >
 
         <ImageView
-            android:layout_width="30dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="0.1"
             android:baselineAlignBottom="true"
             android:src="@drawable/ic_menu_wifi"
             tools:ignore="ContentDescription" />
 
         <TextView
             android:id="@+id/stats_wifi_total"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="0.2"
             android:text="@string/total_empty"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
             android:id="@+id/stats_wifi_description"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="0.7"
             android:text="@string/n_a"
             android:textAppearance="?android:attr/textAppearanceLarge" />
     </TableRow>
@@ -58,25 +61,50 @@
         android:layout_height="wrap_content" >
 
         <ImageView
-            android:layout_width="30dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="0.1"
             android:baselineAlignBottom="true"
             android:src="@drawable/ic_menu_cell"
             tools:ignore="ContentDescription" />
 
         <TextView
             android:id="@+id/stats_cell_total"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="0.2"
             android:text="@string/total_empty"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
             android:id="@+id/stats_cell_description"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="0.7"
             android:text="@string/n_a"
             android:textAppearance="?android:attr/textAppearanceLarge" />
+    </TableRow>
+
+    <TableRow>
+
+        <ImageView
+            android:id="@+id/stats_icon_alert"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.1"
+            android:src="@android:drawable/stat_sys_warning"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/stats_blacklisted"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.9"
+            android:ellipsize="marquee"
+            android:maxLines="2"
+            android:text=""
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
     </TableRow>
 
 </TableLayout>

@@ -1,5 +1,5 @@
 /*
-	Radiobeacon - Openbmap wifi and cell logger
+Radiobeacon - Openbmap wifi and cell logger
     Copyright (C) 2013  wish7
 
     This program is free software: you can redistribute it and/or modify
@@ -31,92 +31,102 @@ import android.util.Log;
  */
 public final class SsidBlackListBootstraper {
 
-	private static final String	TAG	= SsidBlackListBootstraper.class.getSimpleName();
-   
-	/**
-	 * 
-	 */
-	private static final String	OPEN_PREFIX	= "<prefix comment=\"default\">";
-
+	private static final String TAG= SsidBlackListBootstraper.class.getSimpleName();
 
 	/**
-	 * 
+	 * XML opening tag prefix
 	 */
-	private static final String	CLOSE_PREFIX	= "</prefix>";
+	private static final String PREFIX_OPEN= "<prefix comment=\"";
+
+	/**
+	 * XML middle tag prefix
+	 */
+	private static final String PREFIX_MIDDLE = "\">";
+
+	/**
+	 * XML closing tag prefix
+	 */
+	private static final String PREFIX_CLOSE = "</prefix>";
+
+	/**
+	 * XML opening tag prefix
+	 */
+	private static final String SUFFIX_OPEN= "<suffix comment=\"";
+
+	/**
+	 * XML middle tag prefix
+	 */
+	private static final String SUFFIX_MIDDLE = "\">";
+
+	/**
+	 * XML closing tag prefix
+	 */
+	private static final String SUFFIX_CLOSE = "</suffix>";
 
 	/**
 	 * 
 	 */
-	private static final String	OPEN_SUFFIX	= "<suffix comment=\"default\">";
-	/**
-	 * 
-	 */
-	private static final String	CLOSE_SUFFIX	= "</suffix>";
+	private static final String START_TAG= "<ignorelist>";
 
 	/**
 	 * 
 	 */
-	private static final String	START_TAG	= "<ignorelist>";
+	private static final String END_TAG= "</ignorelist>";
 
-	/**
-	 * 
-	 */
-	private static final String	END_TAG	= "</ignorelist>";
-	
-	private static final String[] PREFIXES = {
-		"ASUS",
-		"Android Barnacle Wifi Tether",
-		"AndroidAP",
-		"AndroidTether",
-		"Clear Spot",
-		"ClearSpot",
-		"docomo",
-		"Galaxy Note",
-		"Galaxy S",
-		"Galaxy Tab",
-		"HelloMoto",
-		"HTC ",
-		"iDockUSA",
-		"iHub_",
-		"iPad",
-		"ipad",
-		"iPhone",
-		"LG VS910 4G",
-		"MIFI",
-		"MiFi",
-		"mifi",
-		"MOBILE",
-		"Mobile",
-		"mobile",
-		"myLGNet",
-		"myTouch 4G Hotspot",
-		"PhoneAP",
-		"SAMSUNG",
-		"Samsung",
-		"Sprint",
-		"Telekom_ICE",
-		"Trimble ",
-		"Verizon",
-		"VirginMobile",
-		"VTA Free Wi-Fi",
-		"webOS Network"
+	private static final String[][] PREFIXES = {
+		{"default", "ASUS"},
+		{"default", "Android Barnacle Wifi Tether"},
+		{"default", "AndroidAP"},
+		{"default", "AndroidTether"},
+		{"default", "Clear Spot"},
+		{"default", "ClearSpot"},
+		{"default", "docomo"},
+		{"default", "Galaxy Note"},
+		{"default", "Galaxy S"},
+		{"default", "Galaxy Tab"},
+		{"default", "HelloMoto"},
+		{"default", "HTC "},
+		{"default", "iDockUSA"},
+		{"default", "iHub_"},
+		{"default", "iPad"},
+		{"default", "ipad"},
+		{"default", "iPhone"},
+		{"default", "LG VS910 4G"},
+		{"default", "MIFI"},
+		{"default", "MiFi"},
+		{"default", "mifi"},
+		{"default", "MOBILE"},
+		{"default", "Mobile"},
+		{"default", "mobile"},
+		{"default", "myLGNet"},
+		{"default", "myTouch 4G Hotspot"},
+		{"default", "PhoneAP"},
+		{"default", "SAMSUNG"},
+		{"default", "Samsung"},
+		{"default", "Sprint"},
+		{"German fast trains", "Telekom_ICE"},
+		{"default", "Trimble "},
+		{"default", "Verizon"},
+		{"default", "VirginMobile"},
+		{"default", "VTA Free Wi-Fi"},
+		{"default", "webOS Network"}
 	};
 
-	private static final String[] SUFFIXES = {
-		" ASUS",
-		"-ASUS",
-		"_ASUS",
-		"MacBook",
-		"MacBook Pro",
-		"MiFi",
-		"MyWi",
-		"Tether",
-		"iPad",
-		"iPhone",
-		"ipad",
-		"iphone",
-		"tether",
-		"_nomap" // Google's SSID opt-out
+	private static final String[][] SUFFIXES = {
+		{"default", " ASUS"},
+		{"default", "-ASUS"},
+		{"default", "_ASUS"},
+		{"default", "MacBook"},
+		{"default", "MacBook Pro"},
+		{"default", "MiFi"},
+		{"default", "MyWi"},
+		{"default", "Tether"},
+		{"default", "iPad"},
+		{"default", "iPhone"},
+		{"default", "ipad"},
+		{"default", "iphone"},
+		{"default", "tether"},
+		{"Google's SSID opt-out", "_nomap"}
 	};
 
 
@@ -136,12 +146,12 @@ public final class SsidBlackListBootstraper {
 		if (folderAccessible) {
 			StringBuilder sb = new StringBuilder();
 			sb.append(START_TAG);
-			for (String prefix : PREFIXES) {
-				sb.append(OPEN_PREFIX + prefix + CLOSE_PREFIX);
+			for (String[] prefix : PREFIXES) {
+				sb.append(PREFIX_OPEN + prefix[0] + PREFIX_MIDDLE + prefix[1] + PREFIX_CLOSE);
 			}
 
-			for (String suffix : SUFFIXES) {
-				sb.append(OPEN_SUFFIX + suffix + CLOSE_SUFFIX);
+			for (String[] suffix : SUFFIXES) {
+				sb.append(SUFFIX_OPEN + suffix[0] + SUFFIX_MIDDLE + suffix[1] + SUFFIX_CLOSE);
 			}
 			sb.append(END_TAG);
 
@@ -159,7 +169,7 @@ public final class SsidBlackListBootstraper {
 		}
 
 	}
-	
+
 	private SsidBlackListBootstraper() {
-	}	
+	}
 }

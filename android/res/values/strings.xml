@@ -93,4 +93,6 @@
     <string name="no_sat_signal">No sat signal</string>
     <string name="no_measurements"># Measurements</string>
     <string name="psc">PSC</string>
+    <string name="blacklisted_bssid">is blacklisted (BSSID)</string>
+    <string name="blacklisted_ssid">is blacklisted (SSID)</string>
 </resources>

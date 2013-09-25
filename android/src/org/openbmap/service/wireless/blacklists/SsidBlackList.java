@@ -37,17 +37,25 @@ import android.util.Log;
  */
 public class SsidBlackList {
 
+	private static final String	TAG	= SsidBlackList.class.getSimpleName();
+	
 	/**
-	 * 
+	 * Debug setting: re-create XML file on each run (ergo: refreshing the list)
+	 * This is helpful while adding new mac addresses to BssidBlackListBootstraper
+	 * When no mac addresses are added to BssidBlackListBootstraper anymore,
+	 * ALWAYS_RECREATE_BSSID_BLACKLIST can be set to false
 	 */
-	private static final String	SUFFIX_TAG	= "suffix";
-
+	private static final boolean ALWAYS_RECREATE_SSID_BLACKLIST	= true;
+	
 	/**
-	 * 
+	 * XML tag prefixes
 	 */
 	private static final String	PREFIX_TAG	= "prefix";
 
-	private static final String	TAG	= SsidBlackList.class.getSimpleName();
+	/**
+	 * XML tag suffixes
+	 */
+	private static final String	SUFFIX_TAG	= "suffix";
 	
 	/**
 	 * List of ignored ssid prefixes
@@ -72,6 +80,10 @@ public class SsidBlackList {
 	 */
 	public final void openFile(final String defaultList, final String extraUserList) {
 
+		if (ALWAYS_RECREATE_SSID_BLACKLIST) {
+			SsidBlackListBootstraper.run(defaultList);
+		}
+		
 		if (defaultList != null) {
 			try {				
 				File file = new File(defaultList);
@@ -89,7 +101,7 @@ public class SsidBlackList {
 				FileInputStream userStream = new FileInputStream(file);
 				add(userStream);
 			} catch (FileNotFoundException e) {
-				Log.w(TAG, "User-defined blacklist " + extraUserList + " not found. Skippingb");
+				Log.w(TAG, "User-defined blacklist " + extraUserList + " not found. Skipping");
 			} 
 		} else {
 			Log.i(TAG, "No user-defined blacklist provided");
@@ -135,7 +147,7 @@ public class SsidBlackList {
 		} catch (XmlPullParserException e) {
 			Log.e(TAG, "Error parsing blacklist");
 		}
-
+		Log.i(TAG, "Loaded " + (mPrefixes.size() + mSuffixes.size()) + " SSID blacklist entries");
 	}
 
 	/**
@@ -145,19 +157,26 @@ public class SsidBlackList {
 	 */
 	@SuppressLint("DefaultLocale")
 	public final boolean contains(final String ssid) {
-
+		boolean match = false;
 		for (String prefix : mPrefixes) {
 			if (ssid.toLowerCase().startsWith(prefix.toLowerCase())) {
-				return true; // blocked!
+				match = true; 
+				break;
 			}
 		}
 
+		// don't look anyfurther
+		if (match) {
+			return match;
+		}
+		
 		for (String suffix : mSuffixes) {
 			if (ssid.toLowerCase().endsWith(suffix.toLowerCase())) {
-				return true; // blocked!
+				match = true;
+				break;
 			}
 		}
 
-		return false; // OK
+		return match; // OK
 	}
 }

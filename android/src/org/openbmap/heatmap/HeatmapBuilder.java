@@ -40,19 +40,20 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 	private static final String TAG = HeatmapBuilder.class.getSimpleName();
 
 	private Canvas mCanvas;
-	private Bitmap backbuffer;
+	private Bitmap mBackbuffer;
 	private int mWidth;
 	private int mHeight;
 	private float radius;
 
-	private byte zoom;
+	private BoundingBox	mBbox;
+	private byte mZoom;
 
 	/**
 	 * Used for callbacks.
 	 */
 	private HeatmapBuilderListener mListener;
 
-	private BoundingBox	bbox;
+
 
 	public interface HeatmapBuilderListener {
 		void onHeatmapCompleted(Bitmap backbuffer);
@@ -61,10 +62,10 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 
 	public HeatmapBuilder(final HeatmapBuilderListener listener, final int width, final int height, final BoundingBox bbox, final byte zoom, final float radius) {
 		this.mListener = listener;
-		this.bbox = bbox;
-		this.backbuffer = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-		this.zoom = zoom;
-		this.mCanvas = new Canvas(backbuffer);
+		this.mBbox = bbox;
+		this.mBackbuffer = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+		this.mZoom = zoom;
+		this.mCanvas = new Canvas(mBackbuffer);
 		Paint p = new Paint();
 		p.setStyle(Paint.Style.FILL);
 
@@ -93,13 +94,13 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 		for (int i = 0; i < arrayList.size(); i++) {
 			HeatPoint p = arrayList.get(i);
 
-			if (p.longitude >= bbox.minLongitude && p.longitude <= bbox.maxLongitude
-					&& p.latitude >= bbox.minLatitude && p.latitude <= bbox.maxLatitude) {
-				float leftBorder = (float) MercatorProjection.longitudeToPixelX(bbox.minLongitude, zoom);
-				float topBorder = (float) MercatorProjection.latitudeToPixelY(bbox.maxLatitude, zoom);
+			if (p.longitude >= mBbox.minLongitude && p.longitude <= mBbox.maxLongitude
+					&& p.latitude >= mBbox.minLatitude && p.latitude <= mBbox.maxLatitude) {
+				float leftBorder = (float) MercatorProjection.longitudeToPixelX(mBbox.minLongitude, mZoom);
+				float topBorder = (float) MercatorProjection.latitudeToPixelY(mBbox.maxLatitude, mZoom);
 				
-				float x = (float) (MercatorProjection.longitudeToPixelX(p.longitude, zoom) - leftBorder);
-				float y = (float) (MercatorProjection.latitudeToPixelY(p.latitude, zoom) - topBorder);
+				float x = (float) (MercatorProjection.longitudeToPixelX(p.longitude, mZoom) - leftBorder);
+				float y = (float) (MercatorProjection.latitudeToPixelY(p.latitude, mZoom) - topBorder);
 				
 				// Log.i(TAG, "X:" + x + " Y:" + y);
 				addPoint(x, y, p.getIntensity());
@@ -120,7 +121,7 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 	protected final void onPostExecute(final Boolean success) {
 		if (success) {
 			if (mListener != null) {
-				mListener.onHeatmapCompleted(backbuffer);
+				mListener.onHeatmapCompleted(mBackbuffer);
 			}
 			return;
 		} else {
@@ -145,7 +146,7 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 	private void colorize(final float x, final float y) {
 		int[] pixels = new int[(int) (this.mWidth * this.mHeight)];
 
-		backbuffer.getPixels(pixels, 0, this.mWidth, 0, 0, this.mWidth, this.mHeight);
+		mBackbuffer.getPixels(pixels, 0, this.mWidth, 0, 0, this.mWidth, this.mHeight);
 
 		for (int i = 0; i < pixels.length; i++) {
 			int r = 0, g = 0, b = 0, tmp = 0;
@@ -160,27 +161,24 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 						r = 255 - tmp;
 						g = tmp * 12;
 					} else if (alpha <= 234 && alpha >= 200) {
-
 						tmp = 234 - alpha;
-						r = 255 - (tmp * 8);
+						r = (int)(255f - (tmp * 7.5f));
 						g = 255;
-
 					} else if (alpha <= 199 && alpha >= 150) {
 						tmp = 199 - alpha;
 						g = 255;
 						b = tmp * 5;
-
 					} else if (alpha <= 149 && alpha >= 100) {
 						tmp = 149 - alpha;
 						g = 255 - (tmp * 5);
-						b = 255;
+						b = 255;	
 					} else {
 						b = 255;
 					}
 					pixels[i] = Color.argb((int) alpha / 2, r, g, b);
 		}
 
-		backbuffer.setPixels(pixels, 0, this.mWidth, 0, 0, this.mWidth, this.mHeight);
+		mBackbuffer.setPixels(pixels, 0, this.mWidth, 0, 0, this.mWidth, this.mHeight);
 	}
 
 
