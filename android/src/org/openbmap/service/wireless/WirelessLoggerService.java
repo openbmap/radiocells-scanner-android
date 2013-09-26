@@ -36,6 +36,7 @@ import org.openbmap.service.wireless.blacklists.BssidBlackList;
 import org.openbmap.service.wireless.blacklists.SsidBlackList;
 import org.openbmap.utils.LatLongHelper;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -1014,6 +1015,7 @@ public class WirelessLoggerService extends AbstractService {
 	 * @param bssid
 	 * @return Returns
 	 */
+	@SuppressLint("DefaultLocale")
 	private boolean checkIsNew(final String bssid) {
 
 		// default: return true, if ref database n/a
@@ -1024,8 +1026,14 @@ public class WirelessLoggerService extends AbstractService {
 
 		try {
 			SQLiteDatabase mRefdb = SQLiteDatabase.openDatabase(mWifiCatalogPath, null, SQLiteDatabase.OPEN_READONLY);
-			Cursor exists = mRefdb.rawQuery("SELECT bssid FROM wifi_zone WHERE bssid = ?", new String[]{bssid});
-
+			/*
+			 * Caution:
+			 * 		Requires wifi catalog's bssid in UPPER CASE. Otherwise no records are returned
+			 * 
+			 *		If wifi catalog's bssid aren't in UPPER case, consider SELECT bssid FROM wifi_zone WHERE UPPER(bssid) = ?
+			 *		Drawback: can't use indices then
+			 */
+			Cursor exists = mRefdb.rawQuery("SELECT bssid FROM wifi_zone WHERE bssid = ?", new String[]{bssid.replace(":", "").toUpperCase()});
 			if (exists.moveToFirst()) {
 				Log.i(TAG, bssid + " is in reference database");
 				exists.close();
