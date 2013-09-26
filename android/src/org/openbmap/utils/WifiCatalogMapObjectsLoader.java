@@ -14,7 +14,7 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.utils;
 
@@ -56,12 +56,19 @@ public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayLi
 	private static final int	MAX_LAT_COL	= 1;
 	private static final int	MIN_LON_COL	= 2;
 	private static final int	MAX_LON_COL	= 3;
+
+	/**
+	 * Maximum overlay items diplayed
+	 * Prevents out of memory/performance issues
+	 */
+	private static final int MAX_REFS = 5000;
 	
 	/**
-	 * Maximum reference items drawn at a time
-	 * Prevents out of memory issues
+	 * Creating a overlay item for each wifi can cause performance issues
+	 * in densely mapped areas. If GROUP_WIFIS = true near wifis are merged
+	 * into a single overlay item
 	 */
-	private static final int MAX_REFS = 2500;
+	private static final boolean GROUP_WIFIS	= true;
 
 	/**
 	 * Keeps the SharedPreferences.
@@ -114,33 +121,48 @@ public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayLi
 			if (prefs.getString(Preferences.KEY_WIFI_CATALOG, Preferences.VAL_WIFI_CATALOG_NONE).equals(Preferences.VAL_WIFI_CATALOG_NONE)) {
 				return points;
 			}
-			
+
 			// Open catalog database
 			String path = Environment.getExternalStorageDirectory().getPath()
 					+ prefs.getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
 					+ Preferences.WIFI_CATALOG_SUBDIR + "/" + prefs.getString(Preferences.KEY_WIFI_CATALOG, Preferences.VAL_REF_DATABASE);
 			mRefdb = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.OPEN_READONLY);
 
-			Cursor refs = mRefdb.rawQuery("SELECT _id, latitude, longitude FROM wifi_zone WHERE "
-					+ "(latitude > ? AND latitude < ? AND longitude > ? AND longitude < ?)", 
-					// TODO this probably fails around 0 meridian
-					new String[] {
-							String.valueOf((Double) args[MIN_LAT_COL]),
-							String.valueOf((Double) args[MAX_LAT_COL]),
-							String.valueOf((Double) args[MIN_LON_COL]),
-							String.valueOf((Double) args[MAX_LON_COL])
-					}
-					);
+			Cursor refs = null;
+			if (!GROUP_WIFIS) {
+				// Option 1: Full precision 
+				refs = mRefdb.rawQuery("SELECT _id, latitude as grouped_lat, longitude as grouped_lon FROM wifi_zone WHERE "
+						+ "(latitude > ? AND latitude < ? AND longitude > ? AND longitude < ?)", 
+						// TODO this probably fails around 0 meridian
+						new String[] {
+								String.valueOf((Double) args[MIN_LAT_COL]),
+								String.valueOf((Double) args[MAX_LAT_COL]),
+								String.valueOf((Double) args[MIN_LON_COL]),
+								String.valueOf((Double) args[MAX_LON_COL])}
+						);
+			} else {
+				// Option 2 (default): Group in 10m intervals for performance reasons
+				refs = mRefdb.rawQuery("SELECT round(latitude,4) as grouped_lat, round(longitude,4) as grouped_lon FROM wifi_zone WHERE "
+						+ "(latitude > ? AND latitude < ? AND longitude > ? AND longitude < ?) GROUP BY grouped_lat, grouped_lon", 
+						// TODO this probably fails around 0 meridian
+						new String[] {
+								String.valueOf((Double) args[MIN_LAT_COL]),
+								String.valueOf((Double) args[MAX_LAT_COL]),
+								String.valueOf((Double) args[MIN_LON_COL]),
+								String.valueOf((Double) args[MAX_LON_COL])
+						}
+						);
+			}
 
 			int i = 0;
-			int latCol = refs.getColumnIndex("latitude");
-			int lonCol = refs.getColumnIndex("longitude");
+			int latCol = refs.getColumnIndex("grouped_lat");
+			int lonCol = refs.getColumnIndex("grouped_lon");
 			while (refs.moveToNext() && i < MAX_REFS) {
 				points.add(new LatLong(refs.getDouble(latCol), refs.getDouble(lonCol)));
 				i++;
 			}
-			/* Log.i(TAG, i + " reference wifis received in bounding box" 
-					+ "[lat min " + (Double) args[MIN_LAT_COL] + " lat max " + (Double) args[MAX_LAT_COL] + " , lon min " + (Double) args[MIN_LON_COL] + " lon max " + (Double) args[MAX_LON_COL] +"]");*/
+			Log.i(TAG, i + " reference wifis received in bounding box" 
+					+ "[lat min " + (Double) args[MIN_LAT_COL] + " lat max " + (Double) args[MAX_LAT_COL] + " , lon min " + (Double) args[MIN_LON_COL] + " lon max " + (Double) args[MAX_LON_COL] +"]");
 		} catch (SQLiteException e) {
 			Log.e(TAG, "Sql exception occured: " + e.toString());
 		} catch (Exception e) {
