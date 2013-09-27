@@ -262,7 +262,7 @@ public class WirelessLoggerService extends AbstractService {
 					Log.d(TAG, "Wifi update. Distance " + location.distanceTo(mWifiSavedAt));
 					mBeginLocation = location;
 					mBeginLocationProvider = source;
-					initiateWifiUpdate();
+					performWifiUpdate();
 				} else {
 					Log.i(TAG, "Wifi update skipped: either to close to last location or interval < " + MIN_CELL_TIME_INTERVAL / 2000 + " seconds");
 				}
@@ -509,7 +509,7 @@ public class WirelessLoggerService extends AbstractService {
 	 * Scan is an asynchronous function, so first startScan() is triggered here,
 	 * then upon completion WifiScanCallback is called
 	 */
-	private void initiateWifiUpdate() {
+	private void performWifiUpdate() {
 
 		// cancel if wifi is disabled
 		if (!mWifiManager.isWifiEnabled()) {

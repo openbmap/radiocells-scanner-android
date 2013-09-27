@@ -35,8 +35,12 @@ import android.location.Location;
 import android.util.Log;
 
 /**
- * Validates ssid against xml file of black listed wifis (e.g. mobile wlans on buses, trains, etc)
+ * Validates ssid against xml file of black listed locations
+ * Create a file name custom_location.xml in your org.openbmap/blacklists folder
+ * Example content (lat, lon, radius in meters):
+ * <ignorelist><location comment="test area"><latitude></latitude>49.55306<longitude>9.0057</longitude><radius>550</radius></location></ignorelist>
  */
+
 public class LocationBlackList {
 
 	private static final String	TAG	= LocationBlackList.class.getSimpleName();
@@ -93,9 +97,8 @@ public class LocationBlackList {
 	}
 
 	/**
-	 * Loads blacklist from xml files
-	 * @param defaultList - generic list (well-known bad wifis, e.g. trains, buses, mobile hotspots)
-	 * @param extraUserList - user-provided list (e.g. own wifi)
+	 * Loads blacklist from xml file
+	 * @param extraUserList - user-provided list (e.g. own homezone)
 	 * @throws XmlPullParserException
 	 */
 	public final void openFile(final String extraUserList) {
@@ -113,6 +116,7 @@ public class LocationBlackList {
 	}
 
 	/**
+	 * Parses xml file
 	 * @param file
 	 */
 	private void add(final FileInputStream file) {

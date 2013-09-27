@@ -109,7 +109,8 @@ public final class SsidBlackListBootstraper {
 		{"default", "Verizon"},
 		{"default", "VirginMobile"},
 		{"default", "VTA Free Wi-Fi"},
-		{"default", "webOS Network"}
+		{"default", "webOS Network"},
+		{"empty ssid (not really hidden, just not broadcasting..)", ""}
 	};
 
 	private static final String[][] SUFFIXES = {
