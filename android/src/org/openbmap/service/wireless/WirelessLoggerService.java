@@ -33,6 +33,7 @@ import org.openbmap.db.model.PositionRecord;
 import org.openbmap.db.model.WifiRecord;
 import org.openbmap.service.AbstractService;
 import org.openbmap.service.wireless.blacklists.BssidBlackList;
+import org.openbmap.service.wireless.blacklists.LocationBlackList;
 import org.openbmap.service.wireless.blacklists.SsidBlackList;
 import org.openbmap.utils.LatLongHelper;
 
@@ -162,7 +163,7 @@ public class WirelessLoggerService extends AbstractService {
 	 * Wifi scan is asynchronous. pendingWifiScanResults ensures that only one scan is mIsRunning
 	 */
 	private boolean pendingWifiScanResults = false;
-	private WifiScanCallback scanCallback;
+	private WifiScanCallback wifiScanResults;
 
 	/**
 	 * WakeLock to prevent cpu from going into sleep mode
@@ -206,6 +207,11 @@ public class WirelessLoggerService extends AbstractService {
 	 * List of blocked macs, e.g. moving wlans
 	 */
 	private BssidBlackList	mBssidBlackList;
+
+	/**
+	 * List of blocked areas, e.g. home zone
+	 */
+	private LocationBlackList	mLocationBlacklist;
 
 	/**
 	 * Receives location updates as well as wifi scan result updates
@@ -256,7 +262,7 @@ public class WirelessLoggerService extends AbstractService {
 					Log.d(TAG, "Wifi update. Distance " + location.distanceTo(mWifiSavedAt));
 					mBeginLocation = location;
 					mBeginLocationProvider = source;
-					initiatePendingWifiUpdate();
+					initiateWifiUpdate();
 				} else {
 					Log.i(TAG, "Wifi update skipped: either to close to last location or interval < " + MIN_CELL_TIME_INTERVAL / 2000 + " seconds");
 				}
@@ -269,16 +275,14 @@ public class WirelessLoggerService extends AbstractService {
 			if (WifiManager.SCAN_RESULTS_AVAILABLE_ACTION.equals(intent.getAction())) {
 				Log.d(TAG, "Wifi manager signals wifi scan results.");
 				// scan callback can be null after service has been stopped or another app has requested an update
-				if (scanCallback != null) {
-					scanCallback.onWifiResultsAvailable();
+				if (wifiScanResults != null) {
+					wifiScanResults.onWifiResultsAvailable();
 				} else {
 					Log.i(TAG, "Scan Callback is null, skipping message");
 				}
 			} 
 		}
 	};
-
-
 
 	@Override
 	public final void onCreate() {		
@@ -318,6 +322,11 @@ public class WirelessLoggerService extends AbstractService {
 		String mBlacklistPath = Environment.getExternalStorageDirectory().getPath()
 				+ prefs.getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR) + File.separator 
 				+ Preferences.BLACKLIST_SUBDIR;
+
+		mLocationBlacklist = new LocationBlackList();
+		mLocationBlacklist.openFile(
+				mBlacklistPath + File.separator + "custom_location.xml"
+				);
 
 		mSsidBlackList = new SsidBlackList();
 		mSsidBlackList.openFile(
@@ -500,7 +509,7 @@ public class WirelessLoggerService extends AbstractService {
 	 * Scan is an asynchronous function, so first startScan() is triggered here,
 	 * then upon completion WifiScanCallback is called
 	 */
-	private void initiatePendingWifiUpdate() {
+	private void initiateWifiUpdate() {
 
 		// cancel if wifi is disabled
 		if (!mWifiManager.isWifiEnabled()) {
@@ -514,8 +523,7 @@ public class WirelessLoggerService extends AbstractService {
 			mWifiManager.startScan();
 			pendingWifiScanResults = true;
 
-			this.scanCallback = new WifiScanCallback() {
-
+			this.wifiScanResults = new WifiScanCallback() {
 				public void onWifiResultsAvailable() {
 					Log.d(TAG, "Wifi results are available now.");
 
@@ -530,34 +538,42 @@ public class WirelessLoggerService extends AbstractService {
 						List<ScanResult> scanlist = mWifiManager.getScanResults();
 						if (scanlist != null) {
 
-							ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>(); 
-
 							// Common position for all scan result wifis
 							if (!LatLongHelper.isValidLocation(mBeginLocation) || !LatLongHelper.isValidLocation(mMostCurrentLocation)) {
 								Log.e(TAG, "Couldn't save wifi result: invalid location");
 								return;
 							}
 
+							// if we're in blocked area, skip everything
+							// set mWifiSavedAt nevertheless, so next scan can be scheduled properly
+							if (mLocationBlacklist.contains(mBeginLocation)) {
+								mWifiSavedAt = mBeginLocation;
+								broadcastBlacklisted(null, null, 3);
+								return;
+							}
+
+							ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>(); 
+
 							PositionRecord begin = new PositionRecord(mBeginLocation, mSessionId, mBeginLocationProvider);		
 							PositionRecord end = new PositionRecord(mMostCurrentLocation, mSessionId, mMostCurrentLocationProvider);
 
 							// Generates a list of wifis from scan results
 							for (ScanResult r : scanlist) {
-								boolean skip = false;
+								boolean skipSpecific = false;
 								if (mBssidBlackList.contains(r.BSSID)) {
 									// skip invalid wifis
 									Log.i(TAG, "Ignored " + r.BSSID + " (on bssid blacklist)");
-									broadcastWifiBlacklisted(r.SSID, r.BSSID, 1);
-									skip = true;
+									broadcastBlacklisted(r.SSID, r.BSSID, 1);
+									skipSpecific = true;
 								}
 								if (mSsidBlackList.contains(r.SSID)) {
 									// skip invalid wifis
 									Log.i(TAG, "Ignored " + r.SSID + " (on ssid blacklist)");
-									broadcastWifiBlacklisted(r.SSID, r.BSSID, 2);
-									skip = true;
+									broadcastBlacklisted(r.SSID, r.BSSID, 2);
+									skipSpecific = true;
 								}
 
-								if (!skip) {
+								if (!skipSpecific) {
 									WifiRecord wifi = new WifiRecord();
 									wifi.setBssid(r.BSSID);
 									wifi.setSsid(r.SSID);
@@ -616,21 +632,33 @@ public class WirelessLoggerService extends AbstractService {
 	 *  Broadcasts ignore message
 	 * @param recent
 	 */
-	private void broadcastWifiBlacklisted(final String ssid, final String bssid, final int reason) {
+	private void broadcastBlacklisted(final String ssid, final String bssid, final int reason) {
 		Intent intent = new Intent(RadioBeacon.INTENT_WIFI_BLACKLISTED);
+		
 		// MSG_KEY contains the block reason:
 		// 		RadioBeacon.MSG_BSSID for bssid blacklist,
 		// 		RadioBeacon.MSG_SSID for ssid blacklist
+		// 		RadioBeacon.MSG_LOCATION for location blacklist
+		
 		if (reason == 1) {
+			// invalid bssid
 			intent.putExtra(RadioBeacon.MSG_KEY, RadioBeacon.MSG_BSSID);
 		} else if (reason == 2) {
+			// invalid ssid
 			intent.putExtra(RadioBeacon.MSG_KEY, RadioBeacon.MSG_SSID);
+		} else if (reason == 3) {
+			// invalid location
+			intent.putExtra(RadioBeacon.MSG_KEY, RadioBeacon.MSG_LOCATION);
 		} else {
 			intent.putExtra(RadioBeacon.MSG_KEY, "Unknown reason");
 		}
 
-		intent.putExtra(RadioBeacon.MSG_BSSID, bssid);
-		intent.putExtra(RadioBeacon.MSG_SSID, ssid);
+		if (bssid != null) {
+			intent.putExtra(RadioBeacon.MSG_BSSID, bssid);
+		}
+		if (ssid != null) {
+			intent.putExtra(RadioBeacon.MSG_SSID, ssid);
+		}
 		sendBroadcast(intent);
 	}
 
@@ -653,7 +681,15 @@ public class WirelessLoggerService extends AbstractService {
 			Log.e(TAG, "GPS location invalid (null or default value)");
 			return false;
 		}
+		
+		// if we're in blocked area, skip everything
+		// set mCellSavedAt nevertheless, so next scan can be scheduled properly
+		if (mLocationBlacklist.contains(location)) {
+			mCellSavedAt = location;
+			return false;
+		}
 
+		
 		// TODO with API > 17 there's also TelephonyManager.getAllCellInfos()
 		// This might be an option for the future
 		// TODO check, if signal strength update too old?
@@ -967,7 +1003,7 @@ public class WirelessLoggerService extends AbstractService {
 		Log.d(TAG, "Stop tracking on session " + mSessionId);
 		mIsTracking = false;
 		mSessionId = RadioBeacon.SESSION_NOT_TRACKING;
-		scanCallback = null;
+		wifiScanResults = null;
 		mLogFile = null;
 	}
 

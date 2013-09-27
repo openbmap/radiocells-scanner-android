@@ -28,6 +28,7 @@ import org.openbmap.db.model.WifiRecord;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 /**
@@ -41,6 +42,7 @@ public class WifiDetailsActivity extends FragmentActivity {
 	private TextView tvCapabilities;
 	private TextView tvFrequency;
 	private TextView tvNoMeasurements;
+	private ImageView ivIsNew;
 	
 	private WifiRecord	mWifi;
 
@@ -76,6 +78,7 @@ public class WifiDetailsActivity extends FragmentActivity {
 		tvCapabilities = (TextView) findViewById(R.id.wifidetails_capa);
 		tvFrequency = (TextView) findViewById(R.id.wifidetails_freq);
 		tvNoMeasurements = (TextView) findViewById(R.id.wifidetails_no_measurements);
+		ivIsNew = (ImageView) findViewById(R.id.wifidetails_is_new);
 	}
 
 	@Override
@@ -109,6 +112,12 @@ public class WifiDetailsActivity extends FragmentActivity {
 				tvFrequency.setText(
 						((WifiChannel.getChannel(freq) == null) ? getResources().getString(R.string.unknown) : WifiChannel.getChannel(freq))
 						+ "  (" + freq + " MHz)");
+			}
+			
+			if (wifi.isNew()) {
+				ivIsNew.setImageResource(android.R.drawable.checkbox_on_background);
+			} else {
+				ivIsNew.setImageResource(android.R.drawable.checkbox_off_background);
 			}
 		}
 	}

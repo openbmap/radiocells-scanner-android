@@ -14,11 +14,10 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package org.openbmap.utils;
 
 import org.mapsforge.core.model.LatLong;
-import org.openbmap.service.wireless.WirelessLoggerService;
 
 import android.location.Location;
 import android.util.Log;
@@ -29,6 +28,8 @@ import android.util.Log;
  */
 public final class LatLongHelper {
 
+	private static final String	TAG	= LatLongHelper.class.getSimpleName();
+	
 	/**
 	 * Maximum altitude (in meter), used for checking gps integrity
 	 */
@@ -74,7 +75,7 @@ public final class LatLongHelper {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Converts Location to LatLong
 	 * @throws IllegalArgumentException on invalid location
@@ -87,55 +88,67 @@ public final class LatLongHelper {
 		}
 		return new LatLong(location.getLatitude(), location.getLongitude());
 	}
-	
+
 	/**
-	 * Tests if location is not null, not default values 
+	 * Tests if location is not null, no default values and plausible speed, time and height values
 	 * or has implausible values
-	 * @param test
+	 * @param test location to test
 	 * @return true, if valid location
 	 */
 	public static boolean isValidLocation(final Location test) {
+		return isValidLocation(test, true);
+	}
+
+	/**
+	 * Tests if location is valid.
+	 * @param test location to test
+	 * @param strictMode if strictMode = false only null and default values are checked, but no speed, time and height
+	 * @return true, if valid location
+	 */
+	public static boolean isValidLocation(final Location test, final boolean strictMode) {
 		// check the necessary components first
 		if (test == null) {
-			Log.w(WirelessLoggerService.TAG, "Invalid location: Location is null");
+			Log.w(TAG, "Invalid location: Location is null");
 			return false;
 		}
-	
+
 		if (test.getLatitude() == 0 && test.getLongitude() == 0) {
-			Log.w(WirelessLoggerService.TAG, "Invalid location: only default values provided");
+			Log.w(TAG, "Invalid location: only default values provided");
 			return false;	
 		}
-	
+
 		if (test.getLongitude() > 180 || test.getLongitude() < -180) {
-			Log.w(WirelessLoggerService.TAG, "Invalid longitude: " + test.getLongitude());
+			Log.w(TAG, "Invalid longitude: " + test.getLongitude());
 			return false;
 		}
-	
+
 		if (test.getLatitude() > 90 || test.getLatitude() < -90) {
-			Log.w(WirelessLoggerService.TAG, "Invalid latitude: " + test.getLatitude());
+			Log.w(TAG, "Invalid latitude: " + test.getLatitude());
 			return false;
 		}
-	
-		final long tomorrow = System.currentTimeMillis() + MILLIS_PER_DAY;
-		if (test.getTime() < MIN_TIMESTAMP || test.getTime() > tomorrow) {
-			Log.w(WirelessLoggerService.TAG, "Invalid timestamp: either to old or more than one day in the future");
-			return false;
-		}
-	
+
 		// now we can also check optional parameters (not available on every device)
-		if ((test.hasAltitude()) && (test.getAltitude() < MIN_ALTITUDE || test.getAltitude() > MAX_ALTITUDE)) {
-			Log.w(WirelessLoggerService.TAG, "Altitude out-of-range [" + MIN_ALTITUDE + ".." + MAX_ALTITUDE + "]:" + test.getAltitude());
-			return false;
-		}
-	
-		if ((test.hasSpeed()) && (test.getSpeed() < MIN_SPEED || test.getSpeed() > MAX_SPEED)) {
-			Log.w(WirelessLoggerService.TAG, "Speed out-of-range [" + MIN_SPEED + ".." + MAX_SPEED + "]:" + test.getSpeed());
-			return false;
+		if (strictMode) {
+			final long tomorrow = System.currentTimeMillis() + MILLIS_PER_DAY;
+			if (test.getTime() < MIN_TIMESTAMP || test.getTime() > tomorrow) {
+				Log.w(TAG, "Invalid timestamp: either to old or more than one day in the future");
+				return false;
+			}
+			
+			if ((test.hasAltitude()) && (test.getAltitude() < MIN_ALTITUDE || test.getAltitude() > MAX_ALTITUDE)) {
+				Log.w(TAG, "Altitude out-of-range [" + MIN_ALTITUDE + ".." + MAX_ALTITUDE + "]:" + test.getAltitude());
+				return false;
+			}
+
+			if ((test.hasSpeed()) && (test.getSpeed() < MIN_SPEED || test.getSpeed() > MAX_SPEED)) {
+				Log.w(TAG, "Speed out-of-range [" + MIN_SPEED + ".." + MAX_SPEED + "]:" + test.getSpeed());
+				return false;
+			}
 		}
 		return true;
 	}
-	
+
 	private LatLongHelper() {
-		
+
 	}
 }

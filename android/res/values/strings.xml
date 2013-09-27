@@ -95,4 +95,6 @@
     <string name="psc">PSC</string>
     <string name="blacklisted_bssid">is blacklisted (BSSID)</string>
     <string name="blacklisted_ssid">is blacklisted (SSID)</string>
+    <string name="is_new">New?</string>
+    <string name="blacklisted_area">Results not saved: blacklisted area</string>
 </resources>

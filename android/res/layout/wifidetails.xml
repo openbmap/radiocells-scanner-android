@@ -68,10 +68,24 @@
             <TextView
                 android:id="@+id/wifidetails_no_measurements"
                 android:layout_width="0dip"
-                android:layout_weight="0.65"
+                android:layout_weight="0.4"
                 android:layout_height="wrap_content"
                 android:text="123"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <TextView
+                android:id="@+id/textView4"
+                 android:layout_width="0dip"
+                android:layout_weight="0.2"
+                android:layout_height="wrap_content"
+                android:text="@string/is_new"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <ImageView
+                android:id="@+id/wifidetails_is_new"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@android:drawable/checkbox_off_background" />
             
         </TableRow>
     </TableLayout>

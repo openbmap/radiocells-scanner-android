@@ -29,6 +29,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -53,11 +54,13 @@ public class StatsActivity extends Activity {
 	
 	private DataHelper	dbHelper;
 
+	Runnable mHidder;
+	Handler mHandler = new Handler();
+	
 	/**
 	 * Receives cell / wifi news
 	 */
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
-
 
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
@@ -85,15 +88,31 @@ public class StatsActivity extends Activity {
 				refreshSessionStats(session);
 				
 			} else if (RadioBeacon.INTENT_WIFI_BLACKLISTED.equals(intent.getAction())) {
+				// let's display warning for 10 seconds
+				mHandler.removeCallbacks(mHidder);
+				
 				String reason = intent.getStringExtra(RadioBeacon.MSG_KEY);
 				String ssid = intent.getStringExtra(RadioBeacon.MSG_SSID);
 				String bssid = intent.getStringExtra(RadioBeacon.MSG_BSSID);
+				
+				// can be null, so set default values
+				if (ssid == null) {
+					ssid = "";
+				}
+				if (bssid == null) {
+					bssid = "";
+				}
+				
 				if (reason.equals(RadioBeacon.MSG_BSSID)) {
 					tvIgnored.setText(ssid + " (" + bssid + ")\n" + getResources().getString(R.string.blacklisted_bssid));
 				} else if (reason.equals(RadioBeacon.MSG_SSID)) {
 					tvIgnored.setText(ssid + " (" + bssid + ")\n" + getResources().getString(R.string.blacklisted_ssid));
+				} else if (reason.equals(RadioBeacon.MSG_LOCATION)) {
+					tvIgnored.setText(R.string.blacklisted_area);
 				}
+				tvIgnored.setVisibility(View.VISIBLE);
 				ivAlert.setVisibility(View.VISIBLE);
+				mHandler.postDelayed(mHidder, 10 * 1000);
 			}
 		}
 	};
@@ -102,6 +121,14 @@ public class StatsActivity extends Activity {
 	public final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		mHidder = new Runnable() {
+            @Override
+            public void run() {
+            	tvIgnored.setVisibility(View.INVISIBLE); 
+            	ivAlert.setVisibility(View.INVISIBLE);
+            }
+        };
+		
 		// setup UI controls
 		initUi();
 

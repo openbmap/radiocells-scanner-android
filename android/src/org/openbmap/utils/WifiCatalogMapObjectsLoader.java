@@ -161,8 +161,8 @@ public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayLi
 				points.add(new LatLong(refs.getDouble(latCol), refs.getDouble(lonCol)));
 				i++;
 			}
-			Log.i(TAG, i + " reference wifis received in bounding box" 
-					+ "[lat min " + (Double) args[MIN_LAT_COL] + " lat max " + (Double) args[MAX_LAT_COL] + " , lon min " + (Double) args[MIN_LON_COL] + " lon max " + (Double) args[MAX_LON_COL] +"]");
+			/*Log.i(TAG, i + " reference wifis received in bounding box" 
+					+ "[lat min " + (Double) args[MIN_LAT_COL] + " lat max " + (Double) args[MAX_LAT_COL] + " , lon min " + (Double) args[MIN_LON_COL] + " lon max " + (Double) args[MAX_LON_COL] +"]");*/
 		} catch (SQLiteException e) {
 			Log.e(TAG, "Sql exception occured: " + e.toString());
 		} catch (Exception e) {

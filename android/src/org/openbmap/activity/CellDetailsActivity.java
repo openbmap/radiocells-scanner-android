@@ -26,7 +26,6 @@ import org.openbmap.db.model.CellRecord;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.widget.CheckedTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
 

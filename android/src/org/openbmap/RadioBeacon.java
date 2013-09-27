@@ -126,6 +126,11 @@ public final class RadioBeacon {
 	public static final String MSG_BSSID = "bssid";
 	
 	/**
+	 * Extra data key: location
+	 */
+	public static final String MSG_LOCATION = "location";
+	
+	/**
 	 * Session Id, when not currently tracking
 	 */
 	public static final int SESSION_NOT_TRACKING = 0;
