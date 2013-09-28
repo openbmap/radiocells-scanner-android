@@ -20,8 +20,11 @@ package org.openbmap.soapclient;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -335,8 +338,8 @@ public class WifiExporter  {
 			cursor.moveToPrevious();
 			
 			File file = new File(fileName);
-			BufferedWriter bw = new BufferedWriter(new FileWriter(file.getAbsoluteFile()) , 30 * 1024);
-
+			Writer bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file.getAbsoluteFile()), "UTF-8"), 30 * 1024);
+			
 			// Write header
 			bw.write(XML_HEADER);
 			bw.write(logToXml(headerRecord.getManufacturer(), headerRecord.getModel(), headerRecord.getRevision(), headerRecord.getSwid(), headerRecord.getSwVersion(), mExportVersion));

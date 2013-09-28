@@ -119,6 +119,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 			}
 		} catch (IllegalArgumentException e) {
 			// do nothing here {@see http://stackoverflow.com/questions/2682043/how-to-check-if-receiver-is-registered-in-android}
+			super.onDestroy();
 			return;
 		}
 		super.onDestroy();
