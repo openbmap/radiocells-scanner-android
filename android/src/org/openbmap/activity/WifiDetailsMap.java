@@ -380,6 +380,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	 * Saves heatmap to SD card
 	 * @param bitmap
 	 */
+	@SuppressLint("NewApi")	
 	private void saveHeatmapToFile(final Bitmap backbuffer) {
 		try {
 			FileOutputStream out = new FileOutputStream("/sdcard/result.png");

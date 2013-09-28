@@ -52,7 +52,7 @@ public final class MapUtils {
 	 * @param a
 	 *            the current activity
 	 */
-	@TargetApi(11)
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	public static void enableHome(Activity a) {
 		if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			// Show the Up button in the action bar.

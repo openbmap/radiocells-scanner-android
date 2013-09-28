@@ -18,7 +18,6 @@
 
 package org.openbmap.db.model;
 
-import java.text.Bidi;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -312,11 +311,13 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 		
 		result.put(TelephonyManager.NETWORK_TYPE_EVDO_0, "EDV0_0");
 		result.put(TelephonyManager.NETWORK_TYPE_EVDO_A, "EDV0_A");
-		result.put(TelephonyManager.NETWORK_TYPE_EVDO_B, "EDV0_B");
 		result.put(TelephonyManager.NETWORK_TYPE_HSPA, "HSPA");
 		result.put(TelephonyManager.NETWORK_TYPE_IDEN, "IDEN"); 
 
 		// add new network types not available in all revisions
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+			result.put(TelephonyManager.NETWORK_TYPE_EVDO_B, "EDV0_B");
+		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			result.put(TelephonyManager.NETWORK_TYPE_EHRPD, "eHRPD");
 			result.put(TelephonyManager.NETWORK_TYPE_LTE, "LTE");

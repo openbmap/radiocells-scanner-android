@@ -38,7 +38,6 @@ import android.widget.Toast;
 /**
  * Manages export and upload process
  */
-@SuppressLint("NewApi")
 public class ExportManager extends AsyncTask<Void, Object, Boolean> implements UploadTaskListener {
 
 	private static final String TAG = ExportManager.class.getSimpleName();
@@ -161,6 +160,7 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 	/**
 	 * Builds cell xml files and saves/uploads them
 	 */
+	@SuppressLint("NewApi")
 	@Override
 	protected final Boolean doInBackground(final Void... params) {
 		ArrayList<String> wifiFiles = new ArrayList<String>();
@@ -185,7 +185,7 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 					}
 					publishProgress(mContext.getResources().getString(R.string.uploading_cells) + "(Files: " + String.valueOf(cellFiles.size() -i) +")" , 0);
 
-					if (Build.VERSION.SDK_INT >= 11 /*Build.VERSION_CODES.HONEYCOMB*/) {
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 						// enforce parallel execution on HONEYCOMB
 						new FileUploader(this, mUser, mPassword, CELL_WEBSERVICE).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, cellFiles.get(i));
 						mActiveUploads += 1;
@@ -217,7 +217,7 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 					}
 					publishProgress(mContext.getResources().getString(R.string.uploading_wifis) + "(Files: " + String.valueOf(wifiFiles.size() -i ) + ")", 50);
 
-					if (Build.VERSION.SDK_INT >= 11 /*Build.VERSION_CODES.HONEYCOMB*/) {
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 						// enforce parallel execution on HONEYCOMB
 						new FileUploader(this, mUser, mPassword, WIFI_WEBSERVICE).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, wifiFiles.get(i));
 						mActiveUploads += 1;
@@ -305,6 +305,7 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 		//mDialog.setProgress((Integer) values[1]);
 	}
 
+	@SuppressLint("NewApi")
 	@Override
 	protected final void onPostExecute(final Boolean success) {
 

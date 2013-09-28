@@ -522,90 +522,94 @@ public class WirelessLoggerService extends AbstractService {
 			Log.d(TAG, "Initiated Wifi scan. Waiting for results..");
 			mWifiManager.startScan();
 			pendingWifiScanResults = true;
+			
+			// initialize wifi scan callback if needed
+			if (this.wifiScanResults == null) {
+				this.wifiScanResults = new WifiScanCallback() {
+					public void onWifiResultsAvailable() {
+						Log.d(TAG, "Wifi results are available now.");
 
-			this.wifiScanResults = new WifiScanCallback() {
-				public void onWifiResultsAvailable() {
-					Log.d(TAG, "Wifi results are available now.");
-
-					// Is wifi tracking disabled?
-					if (!prefs.getBoolean(Preferences.KEY_SAVE_WIFIS, Preferences.VAL_SAVE_WIFIS)) {
-						Log.i(TAG, "Didn't save wifi: wifi tracking is disabled.");
-						return;
-					}
-
-					if (pendingWifiScanResults) {
-						Log.i(TAG, "Wifi scan results arrived..");
-						List<ScanResult> scanlist = mWifiManager.getScanResults();
-						if (scanlist != null) {
-
-							// Common position for all scan result wifis
-							if (!LatLongHelper.isValidLocation(mBeginLocation) || !LatLongHelper.isValidLocation(mMostCurrentLocation)) {
-								Log.e(TAG, "Couldn't save wifi result: invalid location");
-								return;
-							}
-
-							// if we're in blocked area, skip everything
-							// set mWifiSavedAt nevertheless, so next scan can be scheduled properly
-							if (mLocationBlacklist.contains(mBeginLocation)) {
-								mWifiSavedAt = mBeginLocation;
-								broadcastBlacklisted(null, null, 3);
-								return;
-							}
-
-							ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>(); 
-
-							PositionRecord begin = new PositionRecord(mBeginLocation, mSessionId, mBeginLocationProvider);		
-							PositionRecord end = new PositionRecord(mMostCurrentLocation, mSessionId, mMostCurrentLocationProvider);
-
-							// Generates a list of wifis from scan results
-							for (ScanResult r : scanlist) {
-								boolean skipSpecific = false;
-								if (mBssidBlackList.contains(r.BSSID)) {
-									// skip invalid wifis
-									Log.i(TAG, "Ignored " + r.BSSID + " (on bssid blacklist)");
-									broadcastBlacklisted(r.SSID, r.BSSID, 1);
-									skipSpecific = true;
-								}
-								if (mSsidBlackList.contains(r.SSID)) {
-									// skip invalid wifis
-									Log.i(TAG, "Ignored " + r.SSID + " (on ssid blacklist)");
-									broadcastBlacklisted(r.SSID, r.BSSID, 2);
-									skipSpecific = true;
-								}
-
-								if (!skipSpecific) {
-									WifiRecord wifi = new WifiRecord();
-									wifi.setBssid(r.BSSID);
-									wifi.setSsid(r.SSID);
-									wifi.setCapabilities(r.capabilities);
-									wifi.setFrequency(r.frequency);
-									wifi.setLevel(r.level);
-									// TODO: clumsy: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
-									wifi.setOpenBmapTimestamp(begin.getOpenBmapTimestamp());
-									wifi.setBeginPosition(begin);
-									wifi.setEndPosition(end);
-									wifi.setSessionId(mSessionId);
-									wifi.setNew(checkIsNew(r.BSSID));
-									wifis.add(wifi);
-								}
-							}
-							mDataHelper.storeWifiScanResults(begin, end, wifis);
-
-							// take last seen wifi and broadcast infos in ui
-							if (wifis.size() > 0) {
-								broadcastWifiInfos(wifis.get(wifis.size() - 1));
-								broadcastWifiUpdate();
-							}
-
-							mWifiSavedAt = mBeginLocation;
-						} else {
-							// @see http://code.google.com/p/android/issues/detail?id=19078
-							Log.e(TAG, "WifiManager.getScanResults returned null");
+						// Is wifi tracking disabled?
+						if (!prefs.getBoolean(Preferences.KEY_SAVE_WIFIS, Preferences.VAL_SAVE_WIFIS)) {
+							Log.i(TAG, "Didn't save wifi: wifi tracking is disabled.");
+							return;
 						}
-						pendingWifiScanResults = false;
+
+						if (pendingWifiScanResults) {
+							Log.i(TAG, "Wifi scan results arrived..");
+							List<ScanResult> scanlist = mWifiManager.getScanResults();
+							if (scanlist != null) {
+
+								// Common position for all scan result wifis
+								if (!LatLongHelper.isValidLocation(mBeginLocation) || !LatLongHelper.isValidLocation(mMostCurrentLocation)) {
+									Log.e(TAG, "Couldn't save wifi result: invalid location");
+									return;
+								}
+
+								// if we're in blocked area, skip everything
+								// set mWifiSavedAt nevertheless, so next scan can be scheduled properly
+								if (mLocationBlacklist.contains(mBeginLocation)) {
+									mWifiSavedAt = mBeginLocation;
+									broadcastBlacklisted(null, null, 3);
+									return;
+								}
+
+								ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>(); 
+
+								PositionRecord begin = new PositionRecord(mBeginLocation, mSessionId, mBeginLocationProvider);		
+								PositionRecord end = new PositionRecord(mMostCurrentLocation, mSessionId, mMostCurrentLocationProvider);
+
+								// Generates a list of wifis from scan results
+								for (ScanResult r : scanlist) {
+									boolean skipSpecific = false;
+									if (mBssidBlackList.contains(r.BSSID)) {
+										// skip invalid wifis
+										Log.i(TAG, "Ignored " + r.BSSID + " (on bssid blacklist)");
+										broadcastBlacklisted(r.SSID, r.BSSID, 1);
+										skipSpecific = true;
+									}
+									if (mSsidBlackList.contains(r.SSID)) {
+										// skip invalid wifis
+										Log.i(TAG, "Ignored " + r.SSID + " (on ssid blacklist)");
+										broadcastBlacklisted(r.SSID, r.BSSID, 2);
+										skipSpecific = true;
+									}
+
+	//								skipSpecific = false;
+									if (!skipSpecific) {
+										WifiRecord wifi = new WifiRecord();
+										wifi.setBssid(r.BSSID);
+										wifi.setSsid(r.SSID);
+										wifi.setCapabilities(r.capabilities);
+										wifi.setFrequency(r.frequency);
+										wifi.setLevel(r.level);
+										// TODO: clumsy: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
+										wifi.setOpenBmapTimestamp(begin.getOpenBmapTimestamp());
+										wifi.setBeginPosition(begin);
+										wifi.setEndPosition(end);
+										wifi.setSessionId(mSessionId);
+										wifi.setNew(checkIsNew(r.BSSID));
+										wifis.add(wifi);
+									}
+								}
+								mDataHelper.storeWifiScanResults(begin, end, wifis);
+
+								// take last seen wifi and broadcast infos in ui
+								if (wifis.size() > 0) {
+									broadcastWifiInfos(wifis.get(wifis.size() - 1));
+									broadcastWifiUpdate();
+								}
+
+								mWifiSavedAt = mBeginLocation;
+							} else {
+								// @see http://code.google.com/p/android/issues/detail?id=19078
+								Log.e(TAG, "WifiManager.getScanResults returned null");
+							}
+							pendingWifiScanResults = false;
+						}
 					}
-				}
-			};
+				};
+			}
 		}
 	}
 
@@ -634,12 +638,12 @@ public class WirelessLoggerService extends AbstractService {
 	 */
 	private void broadcastBlacklisted(final String ssid, final String bssid, final int reason) {
 		Intent intent = new Intent(RadioBeacon.INTENT_WIFI_BLACKLISTED);
-		
+
 		// MSG_KEY contains the block reason:
 		// 		RadioBeacon.MSG_BSSID for bssid blacklist,
 		// 		RadioBeacon.MSG_SSID for ssid blacklist
 		// 		RadioBeacon.MSG_LOCATION for location blacklist
-		
+
 		if (reason == 1) {
 			// invalid bssid
 			intent.putExtra(RadioBeacon.MSG_KEY, RadioBeacon.MSG_BSSID);
@@ -681,7 +685,7 @@ public class WirelessLoggerService extends AbstractService {
 			Log.e(TAG, "GPS location invalid (null or default value)");
 			return false;
 		}
-		
+
 		// if we're in blocked area, skip everything
 		// set mCellSavedAt nevertheless, so next scan can be scheduled properly
 		if (mLocationBlacklist.contains(location)) {
@@ -689,7 +693,7 @@ public class WirelessLoggerService extends AbstractService {
 			return false;
 		}
 
-		
+
 		// TODO with API > 17 there's also TelephonyManager.getAllCellInfos()
 		// This might be an option for the future
 		// TODO check, if signal strength update too old?

@@ -329,6 +329,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	/**
 	 * Initializes map components
 	 */
+	@SuppressLint("NewApi")
 	private void initMap() {
 		// register for layout finalization - we need this to get width and height
 		ViewTreeObserver vto = mapView.getViewTreeObserver();
@@ -397,6 +398,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	 * Saves heatmap to SD card
 	 * @param bitmap
 	 */
+	@SuppressLint("NewApi")
 	private void saveHeatmapToFile(final Bitmap backbuffer) {
 		try {
 			FileOutputStream out = new FileOutputStream("/sdcard/result.png");

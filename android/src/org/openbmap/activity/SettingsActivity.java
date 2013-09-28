@@ -20,10 +20,15 @@ package org.openbmap.activity;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import org.openbmap.Preferences;
 import org.openbmap.R;
+import org.openbmap.utils.LegacyDownloader;
+import org.openbmap.utils.LegacyDownloader.LegacyDownloadListener;
 
+import android.annotation.SuppressLint;
 import android.app.DownloadManager;
 import android.app.DownloadManager.Query;
 import android.app.DownloadManager.Request;
@@ -33,6 +38,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.EditTextPreference;
@@ -49,7 +55,7 @@ import android.widget.Toast;
 /**
  * Preferences activity.
  */
-public class SettingsActivity extends PreferenceActivity {
+public class SettingsActivity extends PreferenceActivity implements LegacyDownloadListener {
 
 	private static final String TAG = SettingsActivity.class.getSimpleName();
 
@@ -57,36 +63,42 @@ public class SettingsActivity extends PreferenceActivity {
 
 	private DownloadManager dm;
 
-	private BroadcastReceiver receiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(final Context context, final Intent intent) {
-			String action = intent.getAction();
-			if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(action)) {
-				long downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0);
-				Query query = new Query();
-				query.setFilterById(downloadId);
-				Cursor c = dm.query(query);
-				if (c.moveToFirst()) {
-					int columnIndex = c.getColumnIndex(DownloadManager.COLUMN_STATUS);
-					if (DownloadManager.STATUS_SUCCESSFUL == c.getInt(columnIndex)) {
-						// we're not checking download id here, that is done in handleDownloads
-						String uriString = c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
-						handleDownloads(uriString);
-					}
-				}
-			}
-		}
-	};
-	
+	private BroadcastReceiver receiver =  null; 
+
+	@SuppressLint("NewApi")
 	@Override
 	protected final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.preferences);
 
 		mDataDirPref = initDataDir();
-		
-		registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-		dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+
+		// with versions >= GINGERBREAD use download manager
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+			registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+			dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+
+			receiver = new BroadcastReceiver() {
+				@Override
+				public void onReceive(final Context context, final Intent intent) {
+					String action = intent.getAction();
+					if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(action)) {
+						long downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0);
+						Query query = new Query();
+						query.setFilterById(downloadId);
+						Cursor c = dm.query(query);
+						if (c.moveToFirst()) {
+							int columnIndex = c.getColumnIndex(DownloadManager.COLUMN_STATUS);
+							if (DownloadManager.STATUS_SUCCESSFUL == c.getInt(columnIndex)) {
+								// we're not checking download id here, that is done in handleDownloads
+								String uriString = c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
+								handleDownloads(uriString);
+							}
+						}
+					}
+				}
+			};
+		}
 
 		initWifiCatalogDownload();
 		initActiveWifiCatalog(mDataDirPref.getText());
@@ -101,16 +113,18 @@ public class SettingsActivity extends PreferenceActivity {
 	@Override
 	protected final void onDestroy() {
 		try {
-			Log.i(TAG, "Unregistering broadcast receivers");
-			unregisterReceiver(receiver);
+			if (receiver != null) {
+				Log.i(TAG, "Unregistering broadcast receivers");
+				unregisterReceiver(receiver);
+			}
 		} catch (IllegalArgumentException e) {
 			// do nothing here {@see http://stackoverflow.com/questions/2682043/how-to-check-if-receiver-is-registered-in-android}
 			return;
 		}
 		super.onDestroy();
 	}
-	
-		/**
+
+	/**
 	 * Initializes gps system preference.
 	 * OnPreferenceClick system gps settings are displayed.
 	 */
@@ -253,72 +267,156 @@ public class SettingsActivity extends PreferenceActivity {
 		lf.setEntries(entries);
 		lf.setEntryValues(values);
 
-		lf.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+			// use download manager for versions >= GINGERBREAD
+			lf.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+				@SuppressLint("NewApi")
+				public boolean onPreferenceChange(final Preference preference, final Object newValue) {
 
-			public boolean onPreferenceChange(final Preference preference, final Object newValue) {
+					// try to create directory
+					File folder = new File(Environment.getExternalStorageDirectory().getPath()
+							+ PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
+							+ Preferences.MAPS_SUBDIR + File.separator);
 
-				// try to create directory
-				File folder = new File(Environment.getExternalStorageDirectory().getPath()
-						+ PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
-						+ Preferences.MAPS_SUBDIR + File.separator);
+					boolean folderAccessible = false;
+					if (folder.exists() && folder.canWrite()) {
+						folderAccessible = true;
+					}
 
-				boolean folderAccessible = false;
-				if (folder.exists() && folder.canWrite()) {
-					folderAccessible = true;
+					if (!folder.exists()) {
+						folderAccessible = folder.mkdirs();
+					}
+					if (folderAccessible) {
+						final String filename = newValue.toString().substring(newValue.toString().lastIndexOf('/') + 1);
+
+						Request request = new Request(Uri.parse(newValue.toString()));
+						request.setDestinationUri(Uri.fromFile(new File(
+								folder.getAbsolutePath() + File.separator + filename)));
+						long mapDownloadId = dm.enqueue(request);
+					} else {
+						Toast.makeText(preference.getContext(), R.string.error_save_file_failed, Toast.LENGTH_SHORT).show();
+					}
+
+					return false;
 				}
+			});
+		} else {
+			// use home-brew download manager for version < GINGERBREAD
+			lf.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+				public boolean onPreferenceChange(final Preference preference, final Object newValue) {
 
-				if (!folder.exists()) {
-					folderAccessible = folder.mkdirs();
+					try {
+						// try to create directory
+						File folder = new File(Environment.getExternalStorageDirectory().getPath()
+								+ PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
+								+ Preferences.MAPS_SUBDIR + File.separator);
+
+						boolean folderAccessible = false;
+						if (folder.exists() && folder.canWrite()) {
+							folderAccessible = true;
+						}
+
+						if (!folder.exists()) {
+							folderAccessible = folder.mkdirs();
+						}
+						if (folderAccessible) {
+							final URL url = new URL(newValue.toString());
+							final String filename = newValue.toString().substring(newValue.toString().lastIndexOf('/') + 1);
+
+							Log.d(TAG, "Saving " + url + " at " + folder.getAbsolutePath() + '/' + filename);
+							LegacyDownloader task = (LegacyDownloader) new LegacyDownloader(preference.getContext()).execute(
+									url, folder.getAbsolutePath() + File.separator + filename);
+
+							// Callback to refresh maps preference on completion
+							task.setListener((SettingsActivity) preference.getContext());
+
+						} else {
+							Toast.makeText(preference.getContext(), R.string.error_save_file_failed, Toast.LENGTH_SHORT).show();
+						}	
+					} catch (MalformedURLException e) {
+						Log.e(TAG, "Malformed download url: " + newValue.toString());
+					}
+					return false;
 				}
-				if (folderAccessible) {
-					final String filename = newValue.toString().substring(newValue.toString().lastIndexOf('/') + 1);
-
-					Request request = new Request(Uri.parse(newValue.toString()));
-					request.setDestinationUri(Uri.fromFile(new File(
-							folder.getAbsolutePath() + File.separator + filename)));
-					long mapDownloadId = dm.enqueue(request);
-				} else {
-					Toast.makeText(preference.getContext(), R.string.error_save_file_failed, Toast.LENGTH_SHORT).show();
-				}
-
-				return false;
-			}
-		});
+			});
+		}
 	}
 
 	/**
 	 * Initializes wifi catalog source preference
 	 */
+	@SuppressLint("NewApi")
 	private void initWifiCatalogDownload() {
 		Preference pref = findPreference(org.openbmap.Preferences.KEY_DOWNLOAD_WIFI_CATALOG);
-		pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-			@Override
-			public boolean onPreferenceClick(final Preference preference) {
-				// try to create directory
-				File folder = new File(Environment.getExternalStorageDirectory().getPath()
-						+ PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
-						+ Preferences.WIFI_CATALOG_SUBDIR + File.separator);
-	
-				boolean folderAccessible = false;
-				if (folder.exists() && folder.canWrite()) {
-					folderAccessible = true;
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+			// use download manager for versions >= GINGERBREAD
+			pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+				@Override
+				public boolean onPreferenceClick(final Preference preference) {
+					// try to create directory
+					File folder = new File(Environment.getExternalStorageDirectory().getPath()
+							+ PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
+							+ Preferences.WIFI_CATALOG_SUBDIR + File.separator);
+
+					boolean folderAccessible = false;
+					if (folder.exists() && folder.canWrite()) {
+						folderAccessible = true;
+					}
+
+					if (!folder.exists()) {
+						folderAccessible = folder.mkdirs();
+					}
+					if (folderAccessible) {
+						Request request = new Request(
+								Uri.parse(Preferences.WIFI_CATALOG_DOWNLOAD_URL));
+						request.setDestinationUri(Uri.fromFile(new File(
+								folder.getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_FILE)));
+						long catalogDownloadId = dm.enqueue(request);
+					} else {
+						Toast.makeText(preference.getContext(), R.string.error_save_file_failed, Toast.LENGTH_SHORT).show();
+					}
+					return true;
 				}
-	
-				if (!folder.exists()) {
-					folderAccessible = folder.mkdirs();
+			});
+		} else {
+			// use home-brew download manager for version < GINGERBREAD
+			pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+				@Override
+				public boolean onPreferenceClick(final Preference preference) {
+					try {
+						// try to create directory
+						File folder = new File(Environment.getExternalStorageDirectory().getPath()
+								+ PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
+								+ Preferences.WIFI_CATALOG_SUBDIR + File.separator);
+
+						boolean folderAccessible = false;
+						if (folder.exists() && folder.canWrite()) {
+							folderAccessible = true;
+						}
+
+						if (!folder.exists()) {
+							folderAccessible = folder.mkdirs();
+						}
+						if (folderAccessible) {
+							final URL url = new URL(Preferences.WIFI_CATALOG_DOWNLOAD_URL);
+							final String filename = Preferences.WIFI_CATALOG_FILE;
+
+							LegacyDownloader task = (LegacyDownloader) new LegacyDownloader(preference.getContext()).execute(
+									url, folder.getAbsolutePath() + File.separator + filename);
+
+							// Callback to refresh maps preference on completion
+							task.setListener((SettingsActivity) preference.getContext());
+
+						} else {
+							Toast.makeText(preference.getContext(), R.string.error_save_file_failed, Toast.LENGTH_SHORT).show();
+						}	
+					} catch (MalformedURLException e) {
+						Log.e(TAG, "Malformed download url: " + Preferences.WIFI_CATALOG_DOWNLOAD_URL);
+					}
+					return true;
 				}
-				if (folderAccessible) {
-					Request request = new Request(
-							Uri.parse(Preferences.WIFI_CATALOG_DOWNLOAD_URL));
-					request.setDestinationUri(Uri.fromFile(new File(
-							folder.getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_FILE)));
-					long catalogDownloadId = dm.enqueue(request);
-				} else {
-					Toast.makeText(preference.getContext(), R.string.error_save_file_failed, Toast.LENGTH_SHORT).show();
-				}
-				return true;
-			}
-		});
+			});
+		}
 	}
 
 	/**
@@ -428,4 +526,24 @@ public class SettingsActivity extends PreferenceActivity {
 		}
 	}
 
+	// [start] Android 2.2 compatiblity: work-around for the missing download manager
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.utils.LegacyDownloader.LegacyDownloadListener#onDownloadCompleted(java.lang.String)
+	 */
+	@Override
+	public void onDownloadCompleted(final String filename) {
+		handleDownloads(filename);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.utils.LegacyDownloader.LegacyDownloadListener#onDownloadFailed(java.lang.String)
+	 */
+	@Override
+	public void onDownloadFailed(final String filename) {
+		Log.e(TAG, "Download (compatiblity mode) failed " + filename);
+		Toast.makeText(this, getResources().getString(R.string.download_failed) + " " + filename , Toast.LENGTH_LONG).show();
+
+	}
+	// [end]
 }
