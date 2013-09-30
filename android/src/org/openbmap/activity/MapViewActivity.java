@@ -50,6 +50,7 @@ import org.openbmap.utils.GpxMapObjectsLoader;
 import org.openbmap.utils.GpxMapObjectsLoader.OnGpxLoadedListener;
 import org.openbmap.utils.LatLongHelper;
 import org.openbmap.utils.MapUtils;
+import org.openbmap.utils.SessionLatLong;
 import org.openbmap.utils.SessionMapObjectsLoader;
 import org.openbmap.utils.SessionMapObjectsLoader.OnSessionLoadedListener;
 import org.openbmap.utils.WifiCatalogMapObjectsLoader;
@@ -89,16 +90,19 @@ OnGpxLoadedListener {
 	 */
 	private static final int	MIN_OBJECT_ZOOM	= 12;
 
-	private static final Color	COLOR_GPX	= Color.BLACK;
-
 	private static final int ALPHA_WIFI_CATALOG_FILL	= 90;
 	private static final int ALPHA_WIFI_CATALOG_STROKE	= 100;
 
 	private static final int ALPHA_SESSION_FILL	= 50;
-	private static final int ALPHA_SESSION_STROKE	= 100;
+	private static final int ALPHA_OTHER_SESSIONS_FILL	= 35;
 
-	private static final int CIRCLE_WIFI_CATALOG_WIDTH = 20;	
+	/**
+	 * Circle size current session objects
+	 */
 	private static final int CIRCLE_SESSION_WIDTH = 30;	
+	private static final int CIRCLE_OTHER_SESSION_WIDTH = 15;	
+	private static final int CIRCLE_WIFI_CATALOG_WIDTH = 15;	
+	
 	private static final int STROKE_GPX_WIDTH = 5;
 
 	/**
@@ -183,11 +187,19 @@ OnGpxLoadedListener {
 
 	private Paint paintCatalogStroke;
 
-	private Paint paintSessionFill;
+	/** 
+	 * Paint style for active sessions objects
+	 */
+	private Paint paintActiveSessionFill;
 
-	private ArrayList<Layer>	catalogObjects;
+	/** 
+	 * Paint style for objects from other sessions
+	 */
+	private Paint paintOtherSessionFill;
 
-	private ArrayList<Layer>	sessionObjects;
+	private ArrayList<Layer> catalogObjects;
+
+	private ArrayList<Layer> sessionObjects;
 
 	private Polyline	gpxObjects;
 	//[end]
@@ -392,6 +404,7 @@ OnGpxLoadedListener {
 					mapCenter.setLongitude(mapView.getModel().mapViewPosition.getCenter().longitude);
 					refreshSessionOverlays(mapCenter);
 					refreshCatalogOverlay(mapCenter);
+					refreshOtherSessionOverlays(mapCenter);
 
 					lastZoom = zoom;
 				}
@@ -445,7 +458,8 @@ OnGpxLoadedListener {
 		});
 		paintCatalogFill = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_WIFI_CATALOG_FILL, 120, 150, 120), 2, Style.FILL);
 		paintCatalogStroke = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_WIFI_CATALOG_STROKE, 120, 150, 120), 2, Style.STROKE);
-		paintSessionFill = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_SESSION_FILL, 0, 0, 255), 2, Style.FILL);
+		paintActiveSessionFill = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_SESSION_FILL, 0, 0, 255), 2, Style.FILL);
+		paintOtherSessionFill = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_OTHER_SESSIONS_FILL, 255, 0, 255), 2, Style.FILL);
 	}
 
 	private void registerReceiver() {
@@ -547,9 +561,15 @@ OnGpxLoadedListener {
 			catalogObjects.add(circle);
 		}		
 
+		/**
+		 * Draw stack (z-order):
+		 * 		base map
+		 * 		catalog objects
+		 * 		session objects
+		 */
 		int insertAfter = -1;
 		if (layers.size() > 0) {
-			// map 
+			// base map 
 			insertAfter = 1;
 		} else {
 			// no map 
@@ -584,6 +604,23 @@ OnGpxLoadedListener {
 	}
 
 	/**
+	 * Refreshes reference and session overlays.
+	 * If another refresh is in progress, update is skipped.
+	 * @param location
+	 */
+	protected final void refreshOtherSessionOverlays(final Location location) {
+		if (!mRefreshSessionPending) {
+			Log.d(TAG, "Updating session overlay");
+			mRefreshSessionPending = true;
+			proceedAfterSessionObjectsLoaded(null);
+			sessionObjectsRefreshTime = System.currentTimeMillis();
+			sessionObjectsRefreshedAt = location;
+		} else {
+			Log.v(TAG, "Session overlay refresh in progress. Skipping refresh..");
+		}
+	}
+	
+	/**
 	 * Is new location far enough from last refresh location and is last refresh to old?
 	 * @return true if session overlay needs refresh
 	 */
@@ -612,13 +649,13 @@ OnGpxLoadedListener {
 
 		if (highlight == null) {
 			// load all session wifis
-
+			ArrayList<Integer> sessions = new DataHelper(this).getSessionList();
 			double minLatitude = bbox.minLatitude;
 			double maxLatitude = bbox.maxLatitude;
 			double minLongitude = bbox.minLongitude;
 			double maxLongitude = bbox.maxLongitude;
 
-			// query more than visible objects for smoother data scrolling / less database queries?
+			// query more than visible objects for smoother data scrolling / less database queries
 			if (PREFETCH_MAP_OBJECTS) {
 				double latSpan = maxLatitude - minLatitude;
 				double lonSpan = maxLongitude - minLongitude;
@@ -627,13 +664,16 @@ OnGpxLoadedListener {
 				minLongitude -= lonSpan * 0.5;
 				maxLongitude += lonSpan * 0.5;
 			}
-
-			SessionMapObjectsLoader task = new SessionMapObjectsLoader(this);
-			task.execute(mSessionId, minLatitude, maxLatitude, minLongitude, maxLatitude, null);
+			
+			SessionMapObjectsLoader task = new SessionMapObjectsLoader(this, sessions);
+			task.execute(minLatitude, maxLatitude, minLongitude, maxLatitude, null);
 		} else {
 			// draw specific wifi
-			SessionMapObjectsLoader task = new SessionMapObjectsLoader(this);
-			task.execute(mSessionId, bbox.minLatitude, bbox.maxLatitude, bbox.minLongitude, bbox.maxLatitude, highlight.getBssid());
+			ArrayList<Integer> sessions = new ArrayList<Integer>();
+			sessions.add(mSessionId);
+			
+			SessionMapObjectsLoader task = new SessionMapObjectsLoader(this, sessions);
+			task.execute(bbox.minLatitude, bbox.maxLatitude, bbox.minLongitude, bbox.maxLatitude, highlight.getBssid());
 		}
 	}
 
@@ -641,7 +681,7 @@ OnGpxLoadedListener {
 	 * @see org.openbmap.utils.SessionMapObjectsLoader.OnSessionLoadedListener#onSessionLoaded(java.util.ArrayList)
 	 */
 	@Override
-	public final void onSessionLoaded(final ArrayList<LatLong> points) {
+	public final void onSessionLoaded(final ArrayList<SessionLatLong> points) {
 		Log.d(TAG, "Loaded session objects");
 		Layers layers = this.mapView.getLayerManager().getLayers();
 
@@ -653,16 +693,29 @@ OnGpxLoadedListener {
 		sessionObjects.clear();
 
 		for (int i = 0; i < points.size(); i++) {
-			Circle circle = new Circle(points.get(i), CIRCLE_SESSION_WIDTH, paintSessionFill, null);
-			sessionObjects.add(circle);
+			if (points.get(i).getSession() == mSessionId) {
+				// current session objects are larger
+				Circle circle = new Circle(points.get(i), CIRCLE_SESSION_WIDTH, paintActiveSessionFill, null);
+				sessionObjects.add(circle);
+			} else {
+				// other session objects are smaller and in other color
+				Circle circle = new Circle(points.get(i), CIRCLE_OTHER_SESSION_WIDTH, paintOtherSessionFill, null);
+				sessionObjects.add(circle);
+			}
 		}		
 
+		/**
+		 * Draw stack (z-order):
+		 * 		base map
+		 * 		catalog objects
+		 * 		session objects
+		 */
 		int insertAfter = -1;
 		if (layers.size() > 0 && catalogObjects.size() > 0) {
-			// map + catalog objects
+			// base map + catalog objects
 			insertAfter = layers.indexOf((Layer) catalogObjects.get(catalogObjects.size() - 1));
 		} else if (layers.size() > 0 && catalogObjects.size() == 0) {
-			// map + no catalog objects
+			// base map + no catalog objects
 			insertAfter = 1;
 		} else {
 			// no map + no catalog objects
@@ -715,7 +768,6 @@ OnGpxLoadedListener {
 		GpxMapObjectsLoader task = new GpxMapObjectsLoader(this);
 		// query with some extra space
 		task.execute(mSessionId, bbox.minLatitude - 0.01, bbox.maxLatitude + 0.01, bbox.minLongitude - 0.15, bbox.maxLatitude + 0.15);
-		//task.execute(null, null, null, null);
 	}
 
 	/**

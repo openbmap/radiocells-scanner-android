@@ -20,7 +20,6 @@ package org.openbmap.utils;
 
 import java.util.ArrayList;
 
-import org.mapsforge.core.model.LatLong;
 import org.openbmap.activity.MapViewActivity;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.DatabaseHelper;
@@ -36,42 +35,46 @@ import android.util.Log;
 /**
  * Loads session wifis asynchronously.
  */
-public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatLong>> {
+public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<SessionLatLong>> {
 
 	private static final String	TAG	= SessionMapObjectsLoader.class.getSimpleName();
-
+	
 	/**
 	 * Indices for doInBackground arguments
 	 */
-	public enum Arguments { SESSION_ID, MIN_LAT_COL, MAX_LAT_COL, MIN_LON_COL, MIN_MAX_COL }
+	public enum Arguments { MIN_LAT_COL, MAX_LAT_COL, MIN_LON_COL, MIN_MAX_COL }
 
-	private static final int 	SESSION_ID = 0;
-	private static final int	MIN_LAT_COL	= 1;
-	private static final int	MAX_LAT_COL	= 2;
-	private static final int	MIN_LON_COL	= 3;
-	private static final int	MAX_LON_COL	= 4;
-	private static final int	HIGHLIGHT_WIFI_COL	= 5;
+	private static final int	MIN_LAT_COL	= 0;
+	private static final int	MAX_LAT_COL	= 1;
+	private static final int	MIN_LON_COL	= 2;
+	private static final int	MAX_LON_COL	= 3;
+	private static final int	HIGHLIGHT_WIFI_COL	= 4;
 
 	/**
 	 * Interface for activity.
 	 */
 	public interface OnSessionLoadedListener {
-		void onSessionLoaded(ArrayList<LatLong> points);
+		void onSessionLoaded(ArrayList<SessionLatLong> points);
 	}
 
 	private Context	mContext;
 
 	private OnSessionLoadedListener mListener;
+	
+	/**
+	 * Sessions to load, by default only active session
+	 */
+	private ArrayList<Integer> mToLoad;
 
-	public SessionMapObjectsLoader(final Context context) {
-
+	public SessionMapObjectsLoader(final Context context, final ArrayList<Integer> sessions) {
 		mContext = context;
-
+		mToLoad = sessions;
+		
 		if (context instanceof MapViewActivity) {
 			setOnSessionLoadedListener((OnSessionLoadedListener) context);
 		}
 	}
-
+	
 	public final void setOnSessionLoadedListener(final OnSessionLoadedListener listener) {
 		this.mListener = listener;
 	}
@@ -80,12 +83,12 @@ public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<L
 	 * Queries reference database for all wifis in specified range around map centre.
 	 * @param args
 	 * 			Args is an object array containing
-	 * 			SESSION_ID, MIN_LAT_COL, MAX_LAT_COL, MIN_LON_COL, MIN_MAX_COL
+	 * 			MIN_LAT_COL, MAX_LAT_COL, MIN_LON_COL, MIN_MAX_COL
 	 */
 	@Override
-	protected final ArrayList<LatLong> doInBackground(final Object... args) {         
+	protected final ArrayList<SessionLatLong> doInBackground(final Object... args) {         
 		Log.d(TAG, "Loading session wifis");
-		ArrayList<LatLong> points = new ArrayList<LatLong>(0);
+		ArrayList<SessionLatLong> points = new ArrayList<SessionLatLong>();
 
 		DataHelper dbHelper = new DataHelper(mContext);
 
@@ -95,32 +98,43 @@ public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<L
 			//long start = System.currentTimeMillis();
 			DatabaseHelper mDbHelper = new DatabaseHelper(mContext);
 			
+			StringBuilder selected = new StringBuilder();
+			for (int i = 0; i < mToLoad.size(); i++) {
+				selected.append(mToLoad.get(i));
+				
+				if (i < mToLoad.size() - 1) {
+					selected.append(", ");
+				}
+			}
+			
 			// use raw query for performance reasons
-			String query = "SELECT w.rowid as " + Schema.COL_ID + ", MAX(" + Schema.COL_LEVEL + "), b." + Schema.COL_LATITUDE
-					+ ", b." + Schema.COL_LONGITUDE + " FROM " + Schema.TBL_WIFIS + " as w "
-					+ "JOIN " + Schema.TBL_POSITIONS + " as b ON " + Schema.COL_BEGIN_POSITION_ID + " = b." + Schema.COL_ID 
-					+ "  WHERE w." + Schema.COL_SESSION_ID + " = " + (Integer) args[SESSION_ID] + " AND " 
+			String query = "SELECT w.rowid as " + Schema.COL_ID + ", MAX(" + Schema.COL_LEVEL + "), w." + Schema.COL_SESSION_ID + ", "
+					+ " b." + Schema.COL_LATITUDE + ", b." + Schema.COL_LONGITUDE
+					+ " FROM " + Schema.TBL_WIFIS + " as w "
+					+ " JOIN " + Schema.TBL_POSITIONS + " as b ON " + Schema.COL_BEGIN_POSITION_ID + " = b." + Schema.COL_ID 
+					+ " WHERE w." + Schema.COL_SESSION_ID + " IN (" + selected + ") AND " 
 					+ " b.longitude >= " + (Double) args[MIN_LON_COL] + " AND "
 					+ " b.longitude <= " + (Double) args[MAX_LON_COL] + " AND " 
 					+ " b.latitude >= " + (Double) args[MIN_LAT_COL] + " AND "
 					+ " b.latitude <= " + (Double) args[MAX_LAT_COL] + " GROUP BY w." + Schema.COL_BSSID + ", w." + Schema.COL_MD5_SSID;
 			
 			Cursor ca = mDbHelper.getReadableDatabase().rawQuery(query, null);
-			final int columnIndex7 = ca.getColumnIndex(Schema.COL_LATITUDE);
-			final int columnIndex8 = ca.getColumnIndex(Schema.COL_LONGITUDE);
+			final int colLat = ca.getColumnIndex(Schema.COL_LATITUDE);
+			final int colLon = ca.getColumnIndex(Schema.COL_LONGITUDE);
+			final int colSession = ca.getColumnIndex(Schema.COL_SESSION_ID);
 
 			while (ca.moveToNext()) {
-				points.add(new LatLong(ca.getDouble(columnIndex7), ca.getDouble(columnIndex8)));
+				points.add(new SessionLatLong(ca.getDouble(colLat), ca.getDouble(colLon), ca.getInt(colSession)));
 			}
 			ca.close();
 			
 			//Log.d(TAG, "loaded wifi overlay in (" + (System.currentTimeMillis() - start) + " ms)");
 		} else {
 			// ... or only selected	
-			ArrayList<WifiRecord> candidates = dbHelper.loadWifisByBssid((String) args[HIGHLIGHT_WIFI_COL], (Integer) args[SESSION_ID]);
+			ArrayList<WifiRecord> candidates = dbHelper.loadWifisByBssid((String) args[HIGHLIGHT_WIFI_COL], mToLoad.get(0));
 			if (candidates.size() > 0) {
-				points.add(new LatLong((candidates.get(0)).getBeginPosition().getLatitude(),
-						(candidates.get(0)).getBeginPosition().getLongitude()));
+				points.add(new SessionLatLong(candidates.get(0).getBeginPosition().getLatitude(),
+						candidates.get(0).getBeginPosition().getLongitude(), candidates.get(0).getSessionId()));
 			}
 		}
 
@@ -131,7 +145,7 @@ public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<L
 	 * Informs activity on available results by calling mListener.
 	 */
 	@Override
-	protected final void onPostExecute(final ArrayList<LatLong> points) {
+	protected final void onPostExecute(final ArrayList<SessionLatLong> points) {
 		if (mListener != null) {
 			mListener.onSessionLoaded(points);
 		}

@@ -51,7 +51,7 @@ public final class BssidBlackListBootstraper {
 	/**
 	 * XML opening tag full mac address
 	 */
-	private static final String	ADDRESS_OPEN	= "<bssid comment=\"default\">";
+	private static final String	ADDRESS_OPEN = "<bssid comment=\"";
 
 	/**
 	 * XML middle tag prefix
@@ -103,7 +103,6 @@ public final class BssidBlackListBootstraper {
 
 		// mostly devices reporting ssid AndroidAP
 		
-		
 		{"Samsung Electronics Co.", "8C:77:12"},
 		{"Longcheer Technology (Singapore) Pte Ltd", "00:23:B1"},
 		{"Samsung Electronics Co.", "D0:C1:B1"},
@@ -149,7 +148,7 @@ public final class BssidBlackListBootstraper {
 		{"Samsung Electro-Mechanics", "00:21:19"},
 		{"Motorola Mobility", "00:21:36"},
 		{"Murata Manufacturing Co.", "00:21:E8"},
-		{"SMT&C Co.", "00:22:31"},
+		{"SMT C Co.", "00:22:31"},
 		{"Digicable Network India Pvt. Ltd.", "00:22:5D"},
 		{"Liteon Technology Corporation", "00:22:5F"},
 		{"Hewlett-Packard Company", "00:22:64"},
@@ -215,7 +214,7 @@ public final class BssidBlackListBootstraper {
 		{"ConSentry Networks", "00:12:36"},
 		{"Samsung Electronics Co.", "00:12:47"},
 		{"Lenovo Mobile Communication Technology Ltd.", "00:12:FE"},
-		{"GuangZhou Post & Telecom Equipment ltd", "00:13:13"},
+		{"GuangZhou Post Telecom Equipment ltd", "00:13:13"},
 		{"AMOD Technology Co.", "00:13:F1"},
 		{"Motorola Mobility", "00:14:9A"},
 		{"Gemtek Technology Co.", "00:14:A5"},
@@ -224,7 +223,7 @@ public final class BssidBlackListBootstraper {
 		{"LibreStream Technologies Inc.", "00:16:13"},
 		{"Sunhillo Corporation", "00:16:43"},
 		{"TPS", "00:16:6A"},
-		{"Yulong Computer Telecommunication Scientific(shenzhen)Co.", "00:16:6D"},
+		{"Yulong Computer Telecommunication Scientific Co.", "00:16:6D"},
 		{"Dovado FZ-LLC", "00:16:A6"},
 		{"Cisco-Linksys", "00:16:B6"},
 		{"Compal Communications", "00:16:D4"},

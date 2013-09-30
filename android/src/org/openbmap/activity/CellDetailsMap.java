@@ -38,7 +38,7 @@ import org.openbmap.db.DataHelper;
 import org.openbmap.db.RadioBeaconContentProvider;
 import org.openbmap.db.Schema;
 import org.openbmap.db.model.CellRecord;
-import org.openbmap.heatmap.HeatPoint;
+import org.openbmap.heatmap.HeatLatLong;
 import org.openbmap.heatmap.HeatmapBuilder;
 import org.openbmap.heatmap.HeatmapBuilder.HeatmapBuilderListener;
 import org.openbmap.utils.MapUtils;
@@ -98,7 +98,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 	// [start] Dynamic map variables
 
-	private ArrayList<HeatPoint> points = new ArrayList<HeatPoint>();
+	private ArrayList<HeatLatLong> points = new ArrayList<HeatLatLong>();
 
 	private boolean	pointsLoaded  = false;
 
@@ -206,7 +206,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 			while (cursor.moveToNext()) {
 				//int intensity = (int) (HEAT_AMPLIFIER * (Math.min(cursor.getInt(colLevel) + MIN_HEAT, 0)) / -10f);
 				int intensity = cursor.getInt(colLevel) / -1;
-				points.add(new HeatPoint(cursor.getDouble(colLat), cursor.getDouble(colLon), intensity));
+				points.add(new HeatLatLong(cursor.getDouble(colLat), cursor.getDouble(colLon), intensity));
 			}
 
 			mapView.getModel().mapViewPosition.setCenter(points.get(points.size()-1));

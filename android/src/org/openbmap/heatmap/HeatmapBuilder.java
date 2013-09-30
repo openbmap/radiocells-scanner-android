@@ -90,9 +90,9 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 		}
 
 		@SuppressWarnings("unchecked")
-		ArrayList<HeatPoint> arrayList = ((ArrayList<HeatPoint>) params[0]);
+		ArrayList<HeatLatLong> arrayList = ((ArrayList<HeatLatLong>) params[0]);
 		for (int i = 0; i < arrayList.size(); i++) {
-			HeatPoint p = arrayList.get(i);
+			HeatLatLong p = arrayList.get(i);
 
 			if (p.longitude >= mBbox.minLongitude && p.longitude <= mBbox.maxLongitude
 					&& p.latitude >= mBbox.minLatitude && p.latitude <= mBbox.maxLatitude) {

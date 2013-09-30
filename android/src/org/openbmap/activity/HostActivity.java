@@ -333,10 +333,6 @@ public class HostActivity extends TabActivity {
 				stopServices();
 				stopNotification();
 				break;
-			case R.id.menu_force_gps:
-				requestPosition(PositioningService.State.GPS);
-			case R.id.menu_force_inertial:
-				requestPosition(PositioningService.State.INERTIAL);
 			default:
 				break; 
 		}

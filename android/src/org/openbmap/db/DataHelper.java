@@ -748,6 +748,19 @@ public class DataHelper {
 	}
 
 	/**
+	 * Gets session ids of all sessions
+	 * @return ArrayList with session ids
+	 */
+	public final ArrayList<Integer> getSessionList() {
+		ArrayList<Integer> sessions = new ArrayList<Integer>();
+		Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_SESSION, new String[]{Schema.COL_ID}, null, null, null);
+		while (ca.moveToNext()) {
+			sessions.add(ca.getInt(ca.getColumnIndex(Schema.COL_ID)));
+		} 
+		ca.close();
+		return sessions;
+	}
+	/**
 	 * Loads session by id.
 	 * @param id
 	 * 			Session to load
@@ -861,6 +874,5 @@ public class DataHelper {
 
 		return contentResolver.insert(RadioBeaconContentProvider.CONTENT_URI_POSITION, values);
 	}
-
 
 }
