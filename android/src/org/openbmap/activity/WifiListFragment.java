@@ -19,12 +19,9 @@
 package org.openbmap.activity;
 
 import org.openbmap.R;
-import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.RadioBeaconContentProvider;
 import org.openbmap.db.Schema;
-import org.openbmap.db.model.Session;
-
 import org.openbmap.utils.TriToggleButton;
 
 import android.content.ContentUris;
@@ -79,19 +76,37 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 	 */
 	private int	mSession;
 
+	/**
+	 * List header
+	 */
+	private View mHheader;
+
 	@Override
 	public final void onActivityCreated(final Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		// setup controls
-		View header = (View) getLayoutInflater(savedInstanceState).inflate(R.layout.wifilistheader, null);
-		this.getListView().addHeaderView(header);
+		mHheader = (View) getLayoutInflater(savedInstanceState).inflate(R.layout.wifilistheader, null);
+		this.getListView().addHeaderView(mHheader);
+		
+		initUi();
 
 		DataHelper dataHelper = new DataHelper(getActivity());
 		mSession = dataHelper.getActiveSessionId();
+	
+		// setup data
+		initAdapter();
+
+		getActivity().getSupportLoaderManager().initLoader(0, null, this); 
+	}
+
+	/**
+	 * Setup Ui controls
+	 * @param savedInstanceState
+	 */
+	private void initUi() {
 		
 		// init sort button
-		final TriToggleButton sortButton = (TriToggleButton) header.findViewById(R.id.triToggleButton1);
+		final TriToggleButton sortButton = (TriToggleButton) mHheader.findViewById(R.id.triToggleButton1);
 		sortButton.setPositiveImage(getResources().getDrawable(R.drawable.ascending));
 		sortButton.setNeutralImage(getResources().getDrawable(R.drawable.neutral));
 		sortButton.setNegativeImage(getResources().getDrawable(R.drawable.descending));
@@ -122,13 +137,7 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 					Log.e(TAG, "Error onClick");
 				}
 			}
-		});
-
-		// setup data
-		initAdapter();
-
-		getActivity().getSupportLoaderManager().initLoader(0, null, this); 
-
+		});	
 	}
 
 	private void initAdapter() {
@@ -214,12 +223,12 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 	}
 
 	/**
-	 * Replaces column values with icons.
+	 * Replaces column values with icons and mark free wifis.
 	 */
-	private static class WifiViewBinder implements ViewBinder {
-		/**
-		 * Sets icons in list view.
-		 */
+	private class WifiViewBinder implements ViewBinder {
+		
+		private final int DEFAULT_TEXT_COLOR = new TextView(getActivity()).getTextColors().getDefaultColor();;
+		
 		public boolean setViewValue(final View view, final Cursor cursor, final int columnIndex) {
 			ImageView isNew = ((ImageView) ((View) view.getParent()).findViewById(R.id.wifilistfragment_statusicon));
 			TextView ssid = ((TextView) view.findViewById(R.id.wifilistfragment_ssid));
@@ -239,26 +248,14 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 
 			if (columnIndex == cursor.getColumnIndex(Schema.COL_SSID)) {
 				String encryp = cursor.getString(cursor.getColumnIndex(Schema.COL_CAPABILITIES));
-				if (encryp.length() < 1) {
+				// some devices report no encryption for free wifis, others (e.g. Nexus 4) 
+				// report [ESS]
+				if (encryp.length() < 1 || encryp.equals("[ESS]")) {
 					ssid.setTextColor(Color.GREEN);
 				} else {
-					ssid.setTextColor(Color.GRAY);
+					ssid.setTextColor(DEFAULT_TEXT_COLOR);
 				}
 				return false;
-				/*
-				// Capability "" means free wifi, thus check length
-				if (cursor.getString(cursor.getColumnIndex(Schema.COL_CAPABILITIES)).length() < 1) {
-					Log.d(TAG, "Changing " + cursor.getString(cursor.getColumnIndex(Schema.COL_SSID)));
-					// show free wifis (capabilities string empty) in green color
-					//final TextView ssid = (TextView) ((View) view.getParent()).findViewById(R.id.wifilistfragment_ssid);
-					ssid.setTextColor(Color.GREEN);
-					//((TextView) view).setTextColor(Color.GREEN);
-					return true;
-				} else {
-					ssid.setTextColor(ssid.getTextColors().getDefaultColor());
-					return true;
-				}
-				 */
 			}
 			return false;
 		}

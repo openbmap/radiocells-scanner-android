@@ -127,12 +127,28 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 
 		mPendingExport = id;
 
+		// checks SD card writeable?
+		if (!FileHelper.isSdCardMountedWritable()) {
+			Log.e(TAG, "SD card not writable");
+			Toast.makeText(this.getBaseContext(), R.string.warning_sd_not_writable, Toast.LENGTH_SHORT).show();
+			return;
+		} else {
+			Log.i(TAG, "Good: SD card writable");
+		}
+
+		// skip the other checks, if we're just exporting (and not uploading)
+		boolean skipUpload = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_SKIP_UPLOAD, Preferences.VAL_SKIP_UPLOAD);
+		if (skipUpload) {
+			onServerGood();
+			return;
+		}
+		
 		// check whether session has been uploaded
 		if (hasBeenUploaded(id)) {
 			Log.i(TAG, this.getString(R.string.warning_already_uploaded));
 
 			new AlertDialog.Builder(this)
-			.setTitle(R.string.session_already_uploaded)
+			.setTitle(R.string.confirmation)
 			.setMessage(R.string.question_delete_session)
 			.setCancelable(true)
 			.setIcon(android.R.drawable.ic_dialog_info)
@@ -182,15 +198,6 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 			}).create().show();
 		} else {
 			Log.i(TAG, "Good: User and password provided");
-		}
-
-		// checks SD card writeable?
-		if (!FileHelper.isSdCardMountedWritable()) {
-			Log.e(TAG, "SD card not writable");
-			Toast.makeText(this.getBaseContext(), R.string.warning_sd_not_writable, Toast.LENGTH_SHORT).show();
-			return;
-		} else {
-			Log.i(TAG, "Good: SD card writable");
 		}
 
 		// acquire wifi lock for export process
@@ -537,7 +544,7 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 				return;
 			}
 		}).create().show();
-		
+
 	}
 
 	/**

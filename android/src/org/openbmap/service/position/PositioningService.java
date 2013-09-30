@@ -115,7 +115,6 @@ public class PositioningService extends AbstractService implements LocationChang
 			stopTracking();
 			return;
 		} else if (newState.equals(State.GPS)) {
-			//Log.d(TAG, "New state is GPS");
 			// activate gps by default
 			gpsProvider = new GpsProvider(this);
 			gpsProvider.setLocationChangeListener(this);
@@ -137,6 +136,7 @@ public class PositioningService extends AbstractService implements LocationChang
 			gpsProvider.stop();
 			gpsProvider = null;
 		}
+
 
 		providerState = State.OFF;
 	}
@@ -208,7 +208,7 @@ public class PositioningService extends AbstractService implements LocationChang
 	}
 
 	/* (non-Javadoc)
-	 * @see org.radiobacon.stepdetection.LocationChangeListener#onLocationChange(android.location.Location)
+	 * @see org.openbmap.stepdetection.LocationChangeListener#onLocationChange(android.location.Location)
 	 */
 	@Override
 	public final void onLocationChange(final Location location) {

@@ -42,8 +42,6 @@ public abstract class LocationProviderImpl implements LocationProvider {
 	private boolean mIsRunning = false;
 	
 	protected LocationChangeListener mListener = null;
-
-	
 	
 	public LocationProviderImpl(final Context ctx) {
 		this(ctx, LocationServiceFactory.getLocationService());
