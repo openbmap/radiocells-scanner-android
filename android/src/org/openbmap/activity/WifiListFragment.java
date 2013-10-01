@@ -99,6 +99,7 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 
 		mHheader = (View) getLayoutInflater(savedInstanceState).inflate(R.layout.wifilistheader, null);
 		this.getListView().addHeaderView(mHheader);
+		registerForContextMenu(mHheader);
 
 		initUi();
 
@@ -149,8 +150,6 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 				}
 			}
 		});	
-
-		registerForContextMenu(getListView());
 	}
 
 	private void initData() {
@@ -188,19 +187,8 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 	@Override
 	public final void onCreateContextMenu(final ContextMenu menu, final View v, final ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, v, menuInfo);
-		AdapterView.AdapterContextMenuInfo amenuInfo = (AdapterView.AdapterContextMenuInfo) menuInfo;
 
-		int menuId;
-		if (amenuInfo.position == 0) {
-			// reduced menu for title bar: Delete all and Create new session
-			//mSelectedId = -1;
-			menuId = R.menu.wifilist_context_min;
-		} else {
-			// otherwise load full mContext menu
-			//mSelectedId = (int) amenuInfo.id;
-			menuId = R.menu.wifilist_context;
-		}
-
+		int menuId = R.menu.wifilist_context;
 		MenuInflater inflater = getActivity().getMenuInflater();
 		inflater.inflate(menuId, menu);
 	}
