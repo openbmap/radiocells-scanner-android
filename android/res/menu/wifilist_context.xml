@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item
+        android:id="@+id/menu_sort_timestamp"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:title="Sort by timestamp">
+    </item>
+    <item
+        android:id="@+id/menu_sort_ssid"
+        android:icon="@android:drawable/ic_notification_clear_all"
+        android:title="Sort by SSID">
+    </item>
+    <item
+        android:id="@+id/menu_display_only_new"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:title="Show only new">
+    </item>
+    <item
+        android:id="@+id/menu_display_free"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:title="Show only free">
+    </item> 
+    <item
+        android:id="@+id/menu_display_all"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:title="Show all">
+    </item> 
+</menu>

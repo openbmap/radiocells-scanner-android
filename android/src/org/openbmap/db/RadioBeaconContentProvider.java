@@ -354,7 +354,6 @@ public class RadioBeaconContentProvider extends ContentProvider {
 				 *  Returns all recorded cells.
 				 */
 				return queryTable(RadioBeaconContentProvider.CONTENT_URI_CELL, Schema.TBL_CELLS, projection, selectionIn, selectionArgsIn, sortOrder, null, null);
-
 			case Schema.URI_CODE_CELL_OVERVIEW:
 				/**
 				 *  if several measurements for specific cell are available only strongest
@@ -417,10 +416,10 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	 *   URI being notified on change
 	 */
 	private Cursor queryRaw(final String rawQuery, final Uri notifyUri) {
-		long start = System.currentTimeMillis();
+		// long start = System.currentTimeMillis();
 		Cursor newCursor = null;
 		newCursor = mDbHelper.getReadableDatabase().rawQuery(rawQuery, null);
-		Log.d(TAG, "Raw query executed (" + (System.currentTimeMillis() - start) + " ms):" + rawQuery);
+		// Log.d(TAG, "Raw query executed (" + (System.currentTimeMillis() - start) + " ms):" + rawQuery);
 
 		newCursor.setNotificationUri(getContext().getContentResolver(), notifyUri);
 		getContext().getContentResolver().notifyChange(notifyUri, null);

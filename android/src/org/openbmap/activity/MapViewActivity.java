@@ -44,7 +44,6 @@ import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.Schema;
-import org.openbmap.db.model.Session;
 import org.openbmap.db.model.WifiRecord;
 import org.openbmap.utils.GpxMapObjectsLoader;
 import org.openbmap.utils.GpxMapObjectsLoader.OnGpxLoadedListener;

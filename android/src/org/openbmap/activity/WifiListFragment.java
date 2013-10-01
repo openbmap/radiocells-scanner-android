@@ -37,7 +37,12 @@ import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter.ViewBinder;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -60,12 +65,12 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 	private static final String TAG = WifiListFragment.class.getSimpleName();
 
 	private CursorLoader mCursorLoader;
-	
+
 	/**
 	 * Adapter for retrieving wifis.
 	 */
 	private SimpleCursorAdapter mAdapter;
-	
+
 	/** 
 	 * Sort order
 	 */
@@ -81,20 +86,24 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 	 */
 	private View mHheader;
 
+	private String	mSelection;
+
+	private String[] mSelectionArgs = null;
+
+	private TriToggleButton	sortButton;
+
+
 	@Override
 	public final void onActivityCreated(final Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
 		mHheader = (View) getLayoutInflater(savedInstanceState).inflate(R.layout.wifilistheader, null);
 		this.getListView().addHeaderView(mHheader);
-		
+
 		initUi();
 
-		DataHelper dataHelper = new DataHelper(getActivity());
-		mSession = dataHelper.getActiveSessionId();
-	
 		// setup data
-		initAdapter();
+		initData();
 
 		getActivity().getSupportLoaderManager().initLoader(0, null, this); 
 	}
@@ -104,9 +113,8 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 	 * @param savedInstanceState
 	 */
 	private void initUi() {
-		
-		// init sort button
-		final TriToggleButton sortButton = (TriToggleButton) mHheader.findViewById(R.id.triToggleButton1);
+
+		sortButton = (TriToggleButton) mHheader.findViewById(R.id.triToggleButton1);
 		sortButton.setPositiveImage(getResources().getDrawable(R.drawable.ascending));
 		sortButton.setNeutralImage(getResources().getDrawable(R.drawable.neutral));
 		sortButton.setNegativeImage(getResources().getDrawable(R.drawable.descending));
@@ -120,15 +128,18 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 					switch(state) {
 						case 0: 
 							mSortOrder = Schema.COL_SSID + " DESC";
-							getLoaderManager().restartLoader(0, null, WifiListFragment.this);
+							resetFilters();
+							reload();
 							break;
 						case 1: 
 							mSortOrder = DEFAULT_SORT_ORDER;
-							getLoaderManager().restartLoader(0, null, WifiListFragment.this);
+							resetFilters();
+							reload();
 							break;
 						case 2:
 							mSortOrder = Schema.COL_SSID + " ASC";				
-							getLoaderManager().restartLoader(0, null, WifiListFragment.this);
+							resetFilters();
+							reload();
 							break;
 						default:
 							break; // Should never occur
@@ -138,9 +149,14 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 				}
 			}
 		});	
+
+		registerForContextMenu(getListView());
 	}
 
-	private void initAdapter() {
+	private void initData() {
+		DataHelper dataHelper = new DataHelper(getActivity());
+		mSession = dataHelper.getActiveSessionId();
+		
 		String[] from = new String []{
 				Schema.COL_ID,
 				Schema.COL_BSSID,
@@ -167,6 +183,65 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 	public final void onDestroy() {
 		setListAdapter(null);
 		super.onDestroy();
+	}
+
+	@Override
+	public final void onCreateContextMenu(final ContextMenu menu, final View v, final ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+		AdapterView.AdapterContextMenuInfo amenuInfo = (AdapterView.AdapterContextMenuInfo) menuInfo;
+
+		int menuId;
+		if (amenuInfo.position == 0) {
+			// reduced menu for title bar: Delete all and Create new session
+			//mSelectedId = -1;
+			menuId = R.menu.wifilist_context_min;
+		} else {
+			// otherwise load full mContext menu
+			//mSelectedId = (int) amenuInfo.id;
+			menuId = R.menu.wifilist_context;
+		}
+
+		MenuInflater inflater = getActivity().getMenuInflater();
+		inflater.inflate(menuId, menu);
+	}
+
+	@Override
+	public final boolean onContextItemSelected(final MenuItem item) {
+		switch (item.getItemId()) {
+			case R.id.menu_sort_timestamp:
+				mSortOrder = DEFAULT_SORT_ORDER;
+				sortButton.setState(1);
+				resetFilters();
+				reload();
+				return true;
+			case R.id.menu_sort_ssid:
+				mSortOrder = Schema.COL_SSID + " DESC";
+				sortButton.setState(1);
+				resetFilters();
+				reload();
+				return true;
+			case R.id.menu_display_only_new:
+				mSortOrder = Schema.COL_SSID + " DESC";
+				sortButton.setState(1);
+				setFilters(Schema.COL_IS_NEW_WIFI + " = ?", new String[]{"1"});
+				reload();
+				return true;
+			case R.id.menu_display_free:
+				mSortOrder = Schema.COL_SSID + " DESC";
+				sortButton.setState(1);
+				setFilters(Schema.COL_CAPABILITIES + " = ?", new String[]{"\"[ESS]\""});
+				reload();
+				return true;
+			case R.id.menu_display_all:
+				mSortOrder = Schema.COL_SSID + " DESC";
+				sortButton.setState(1);
+				resetFilters();
+				reload();
+				return true;
+			default:
+				break;
+		}
+		return super.onContextItemSelected(item);
 	}
 
 	/**
@@ -207,7 +282,7 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 		mCursorLoader = new CursorLoader(
 				getActivity().getBaseContext(), ContentUris.withAppendedId(Uri.withAppendedPath(
 						RadioBeaconContentProvider.CONTENT_URI_WIFI, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), mSession),
-						projection, null, null, mSortOrder);
+						projection, mSelection, mSelectionArgs, mSortOrder);
 
 		return mCursorLoader;
 	}
@@ -222,13 +297,30 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 		mAdapter.swapCursor(null);
 	}
 
+	private void reload() {
+		getLoaderManager().restartLoader(0, null, WifiListFragment.this);
+	}
+	
+	/**
+	 * @param selection
+	 * @param selectionArgs
+	 */
+	private void setFilters(final String selection, final String[] selectionArgs) {
+		mSelection = selection;
+		mSelectionArgs = selectionArgs;
+	}
+	
+	private void resetFilters() {
+		mSelection = null;
+		mSelectionArgs = null;
+	}
 	/**
 	 * Replaces column values with icons and mark free wifis.
 	 */
 	private class WifiViewBinder implements ViewBinder {
-		
+
 		private final int DEFAULT_TEXT_COLOR = new TextView(getActivity()).getTextColors().getDefaultColor();;
-		
+
 		public boolean setViewValue(final View view, final Cursor cursor, final int columnIndex) {
 			ImageView isNew = ((ImageView) ((View) view.getParent()).findViewById(R.id.wifilistfragment_statusicon));
 			TextView ssid = ((TextView) view.findViewById(R.id.wifilistfragment_ssid));

@@ -190,11 +190,6 @@ public class WirelessLoggerService extends AbstractService {
 	 */
 	private DataHelper mDataHelper;
 
-	/*
-	 * Filepath to wifi catalog database, null if not set
-	 */
-	private String mWifiCatalogPath = null;
-
 	private LogFile mLogFile;
 
 	/**
@@ -284,6 +279,8 @@ public class WirelessLoggerService extends AbstractService {
 		}
 	};
 
+	private SQLiteDatabase	mRefdb;
+
 	@Override
 	public final void onCreate() {		
 		Log.d(TAG, "WirelessLoggerService created");
@@ -292,9 +289,10 @@ public class WirelessLoggerService extends AbstractService {
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
 		if (!prefs.getString(Preferences.KEY_WIFI_CATALOG, Preferences.VAL_REF_DATABASE).equals(Preferences.VAL_WIFI_CATALOG_NONE)) {
-			mWifiCatalogPath = Environment.getExternalStorageDirectory().getPath()
+			String catalogPath = Environment.getExternalStorageDirectory().getPath()
 					+ prefs.getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
 					+ Preferences.WIFI_CATALOG_SUBDIR + "/" + prefs.getString(Preferences.KEY_WIFI_CATALOG, Preferences.VAL_REF_DATABASE);
+			mRefdb = SQLiteDatabase.openDatabase(catalogPath, null, SQLiteDatabase.OPEN_READONLY);
 		} else {
 			Log.w(TAG, "No wifi catalog selected. Can't compare scan results with openbmap dataset.");
 		}
@@ -501,6 +499,11 @@ public class WirelessLoggerService extends AbstractService {
 
 		unregisterWakeLocks();
 		unregisterReceivers();
+		
+		if (mRefdb != null && mRefdb.isOpen()) {
+			mRefdb.close();
+		}
+		
 		super.onDestroy();
 	}
 
@@ -1059,13 +1062,12 @@ public class WirelessLoggerService extends AbstractService {
 	private boolean checkIsNew(final String bssid) {
 
 		// default: return true, if ref database n/a
-		if (mWifiCatalogPath == null) {
+		if (mRefdb == null) {
 			Log.e(TAG, "Reference database not specified");
 			return true;
 		}
 
 		try {
-			SQLiteDatabase mRefdb = SQLiteDatabase.openDatabase(mWifiCatalogPath, null, SQLiteDatabase.OPEN_READONLY);
 			/*
 			 * Caution:
 			 * 		Requires wifi catalog's bssid in UPPER CASE. Otherwise no records are returned
@@ -1077,20 +1079,16 @@ public class WirelessLoggerService extends AbstractService {
 			if (exists.moveToFirst()) {
 				Log.i(TAG, bssid + " is in reference database");
 				exists.close();
-				mRefdb.close();
+				// mRefdb.close();
 				return false;
 			} else {
 				Log.i(TAG, bssid + " is NOT in reference database");
 				exists.close();
-				mRefdb.close();
+				//mRefdb.close();
 				return true;
 			}
-
 		} catch (SQLiteException e) {
 			Log.e(TAG, "Couldn't open reference database");
-			return true;
-		} catch (Exception e) {
-			e.printStackTrace();
 			return true;
 		}
 	}
