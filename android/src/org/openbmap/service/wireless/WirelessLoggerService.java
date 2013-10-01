@@ -1078,12 +1078,12 @@ public class WirelessLoggerService extends AbstractService {
 				Log.i(TAG, bssid + " is in reference database");
 				exists.close();
 				mRefdb.close();
-				return true;
+				return false;
 			} else {
 				Log.i(TAG, bssid + " is NOT in reference database");
 				exists.close();
 				mRefdb.close();
-				return false;
+				return true;
 			}
 
 		} catch (SQLiteException e) {
