@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="layers">
+        <item >All</item>
+        <item >Session only</item>
+        <item >Session, Wifi Catalog</item>
+    </string-array>
+    
+</resources>

@@ -98,4 +98,5 @@
     <string name="is_new">New?</string>
     <string name="blacklisted_area">Results not saved: blacklisted area</string>
     <string name="download_failed">Download failed</string>
+    <string name="layers">Layers</string>
 </resources>
