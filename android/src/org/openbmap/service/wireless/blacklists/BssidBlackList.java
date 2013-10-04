@@ -33,7 +33,8 @@ import android.annotation.SuppressLint;
 import android.util.Log;
 
 /**
- * Validates ssid against xml file of black listed wifis (e.g. mobile wlans on buses, trains, etc)
+ * Validates bssid against xml file of black listed wifis (e.g. mobile wlans on buses, trains, etc)
+ * Check http://anonsvn.wireshark.org/wireshark/trunk/manuf for a (GPL licenced) list  manufactures
  */
 public class BssidBlackList {
 

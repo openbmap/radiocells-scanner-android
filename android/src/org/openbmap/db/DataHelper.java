@@ -47,7 +47,6 @@ public class DataHelper {
 
 	private static final String TAG = DataHelper.class.getSimpleName();
 
-
 	/**
 	 * ContentResolver to interact with content provider
 	 */

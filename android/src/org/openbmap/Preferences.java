@@ -70,6 +70,11 @@ public final class Preferences {
 	public static final String	KEY_SKIP_UPLOAD	= "debug.simulate_upload";
 	
 	/**
+	 * Upload files or simulate only
+	 */
+	public static final String	KEY_CLEAN_DATABASE	= "debug.clean_database";
+	
+	/**
 	 * Keep local temp files after upload?
 	 */
 	public static final String	KEY_SKIP_DELETE	= "debug.keep_export_files";

@@ -25,8 +25,10 @@ import java.net.URL;
 
 import org.openbmap.Preferences;
 import org.openbmap.R;
+import org.openbmap.db.DatabaseHelper;
 import org.openbmap.utils.LegacyDownloader;
 import org.openbmap.utils.LegacyDownloader.LegacyDownloadListener;
+import org.openbmap.utils.VacuumCleaner;
 
 import android.annotation.SuppressLint;
 import android.app.DownloadManager;
@@ -37,6 +39,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatabaseLockedException;
+import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -105,7 +110,8 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 		initMapDownload();
 		initActiveMap(mDataDirPref.getText());
 
-		initGpsSystem();
+		initGpsSystemSettings();
+		initCleanDatabase();
 
 		initGpsLogInterval();
 	}
@@ -129,7 +135,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 	 * Initializes gps system preference.
 	 * OnPreferenceClick system gps settings are displayed.
 	 */
-	private void initGpsSystem() {
+	private void initGpsSystemSettings() {
 		Preference pref = findPreference(org.openbmap.Preferences.KEY_GPS_OSSETTINGS);
 		pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			@Override
@@ -138,6 +144,21 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 				return true;
 			}
 		});
+	}
+
+	/**
+	 * 
+	 */
+	private void initCleanDatabase() {
+		Preference pref = findPreference(org.openbmap.Preferences.KEY_CLEAN_DATABASE);
+		pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(final Preference preference) {
+				new VacuumCleaner(SettingsActivity.this).execute(new Void[]{null});
+				return true;
+			}
+		});
+
 	}
 
 	/**

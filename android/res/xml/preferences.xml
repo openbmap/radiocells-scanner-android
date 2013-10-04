@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-
 	<PreferenceCategory android:title="@string/prefs_logging">
 		<CheckBoxPreference android:defaultValue="true"
 			android:key="save_cells" android:summary="@string/prefs_save_cells_summary"
@@ -29,7 +28,6 @@
 			android:summary="" android:title="@string/prefs_data_dir" />
 	</PreferenceCategory>
 	<PreferenceCategory android:title="@string/prefs_maps">
-		
 		<ListPreference android:defaultValue="none"
 			android:key="data.map" android:summary="@string/prefs_data_map_summary"
 			android:title="@string/prefs_data_map">
@@ -86,6 +84,10 @@
 		</CheckBoxPreference>
 		<CheckBoxPreference android:defaultValue="false" android:key="debug.keep_export_files" android:summary="@string/prefs_keep_export_files_summary" android:title="@string/prefs_keep_export_files">
 		</CheckBoxPreference>
+		<Preference android:key="debug.clean_database"
+			android:summary="@string/clean_database_summary"
+			android:title="@string/clean_database_title">
+		</Preference>
 	</PreferenceCategory>
 
 </PreferenceScreen>
