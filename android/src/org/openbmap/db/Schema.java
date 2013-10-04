@@ -76,6 +76,7 @@ public final class Schema {
 	public static final String COL_LAC = "lac";
 	public static final String COL_PSC = "psc";
 	public static final String COL_STRENGTHDBM = "dbm";
+	public static final String	COL_STRENGTHASU	= "asu";
 	
 	/**
 	 * Additional TBL_CDMACELLS, rest is same as TBL_CELLS.
@@ -146,6 +147,7 @@ public final class Schema {
 	public static final int	URI_CODE_SESSIONS	= 70;
 	public static final int	URI_CODE_SESSION_ID	= 71;
 	public static final int	URI_CODE_SESSION_ACTIVE	= 79;
+	
 
 
 	/**

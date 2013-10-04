@@ -790,6 +790,7 @@ public class WirelessLoggerService extends AbstractService {
 
 			serving.setLac(gsmLocation.getLac());
 			serving.setStrengthdBm(gsmStrengthDbm);
+			serving.setStrengthAsu(gsmStrengthAsu);
 
 			return serving;
 		} else if (isValidCdmaLocation(cdmaLocation)) {

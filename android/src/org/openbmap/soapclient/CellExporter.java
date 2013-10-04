@@ -153,6 +153,9 @@ public class CellExporter {
 
 	private int	colLastAcc;
 	
+	private int	colStrengthAsu;
+	
+	
 	/**
 	 * User name, required for file name generation
 	 */
@@ -192,6 +195,7 @@ public class CellExporter {
 			+ Schema.COL_OPERATORNAME + ", "
 			+ Schema.COL_OPERATOR + ", "
 			+ Schema.COL_STRENGTHDBM + ", "
+			+ Schema.COL_STRENGTHASU + ", "
 			+ Schema.TBL_CELLS + "." + Schema.COL_TIMESTAMP + ", "
 			+ Schema.COL_BEGIN_POSITION_ID + ", "
 			+ " \"req\".\"latitude\" AS \"req_latitude\","
@@ -286,6 +290,7 @@ public class CellExporter {
 		colMnc = cursorCells.getColumnIndex(Schema.COL_MNC);
 		colLac = cursorCells.getColumnIndex(Schema.COL_LAC);
 		colStrengthDbm = cursorCells.getColumnIndex(Schema.COL_STRENGTHDBM);
+		colStrengthAsu = cursorCells.getColumnIndex(Schema.COL_STRENGTHASU);
 		colTimestamp = cursorCells.getColumnIndex(Schema.COL_TIMESTAMP);
 		colBeginPosId = cursorCells.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
 		colEndPosId = cursorCells.getColumnIndex(Schema.COL_END_POSITION_ID);
@@ -437,6 +442,7 @@ public class CellExporter {
 						cursor.getString(colLac),
 						cursor.getString(colCellId),
 						cursor.getString(colStrengthDbm),
+						cursor.getString(colStrengthAsu),
 						cursor.getInt(colNetworkType),
 						cursor.getString(colPsc)));
 
@@ -467,7 +473,7 @@ public class CellExporter {
 	 * @return
 	 */
 	private static String cellToXML(final int isServing, final int isNeighbour,
-			final String mcc, final String mnc, final String lac, final String cellId, final String strength, final int type, final String psc) {
+			final String mcc, final String mnc, final String lac, final String cellId, final String strengthDbm, final String strengthAsu, final int type, final String psc) {
 		final StringBuffer s = new StringBuffer(CELL_XML_DEFAULT_LENGTH);
 		if (isServing != 0) {
 			s.append("\n\t\t<gsmserving mcc=\"");
@@ -486,10 +492,13 @@ public class CellExporter {
 			s.append(psc);
 			s.append("\"");
 			s.append(" ss=\"");
-			s.append(strength);
+			s.append(strengthDbm);
 			s.append("\"");
 			s.append(" act=\"");
 			s.append(CellRecord.NETWORKTYPE_MAP().get(type));
+			s.append("\"");
+			s.append(" rxlev=\"");
+			s.append(strengthAsu);
 			s.append("\"");
 			s.append("/>");
 		}
@@ -511,7 +520,7 @@ public class CellExporter {
 			s.append(psc);
 			s.append("\"");
 			s.append(" rxlev=\"");
-			s.append(strength);
+			s.append(strengthAsu);
 			s.append("\"");
 			s.append(" act=\"");
 			s.append(CellRecord.NETWORKTYPE_MAP().get(type));

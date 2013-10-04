@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.openbmap.service.position.providers.LocationProvider;
+import org.openbmap.utils.GeometryToolBox;
 
 import android.location.Location;
 import android.util.Log;
@@ -54,11 +55,6 @@ public class LocationServiceImpl implements LocationService {
 		LocationServiceFactory.setLocationService(this);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see at.fhstp.aploc.interfaces.LocationService#getLocation()
-	 */
 	@Override
 	public final Location getLocation() {
 		return mLocation;
@@ -125,6 +121,14 @@ public class LocationServiceImpl implements LocationService {
 	@Override
 	public final List<LocationProvider> getLocationProviders() {
 		return mProviders;
+	}
+
+	public final void setRelativeNorth(final float angle) {
+		this.angle = GeometryToolBox.normalizeAngle(angle);
+	}
+
+	public final float getRelativeNorth() {
+		return angle;
 	}
 
 }

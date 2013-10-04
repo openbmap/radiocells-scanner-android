@@ -60,6 +60,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+ Schema.COL_OPERATORNAME + " TEXT, "
 			+ Schema.COL_OPERATOR + " TEXT, "
 			+ Schema.COL_STRENGTHDBM + " INTEGER DEFAULT 0, "
+			+ Schema.COL_STRENGTHASU + " INTEGER DEFAULT 0, "
 			+ Schema.COL_TIMESTAMP + " LONG NOT NULL, "
 			+ Schema.COL_BEGIN_POSITION_ID + " INTEGER NOT NULL, "
 			+ Schema.COL_END_POSITION_ID + " INTEGER NOT NULL, "
@@ -143,6 +144,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+ " w." +  Schema.COL_OPERATORNAME  + " AS " + Schema.COL_OPERATORNAME + ","
 			+ " w." +  Schema.COL_OPERATOR  + " AS " + Schema.COL_OPERATOR + ","
 			+ " w." +  Schema.COL_STRENGTHDBM  + " AS " + Schema.COL_STRENGTHDBM + ","
+			+ " w." +  Schema.COL_STRENGTHASU  + " AS " + Schema.COL_STRENGTHASU + ","
 			+ " w." +  Schema.COL_TIMESTAMP  + " AS " + Schema.COL_TIMESTAMP + ","
 			+ " w." +  Schema.COL_BEGIN_POSITION_ID + " AS " + Schema.COL_BEGIN_POSITION_ID + ","
 			+ " w." +  Schema.COL_END_POSITION_ID + " AS " + Schema.COL_END_POSITION_ID + ","
@@ -337,10 +339,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_WIFIS_EXTENDED);
 			db.execSQL(SQL_CREATE_VIEW_WIFI_POSITIONS);
 		} 
+		
 		if (oldVersion == 2) {
 			// add cell position view
 			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_CELLS_EXTENDED);
 			db.execSQL(SQL_CREATE_VIEW_CELL_POSITIONS);
+		}
+		
+		if (oldVersion == 3) {
+			// add asu fields
+			db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_STRENGTHASU + " INTEGER DEFAULT 0");
 		}
 	}
 

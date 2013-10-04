@@ -394,9 +394,12 @@ public class WifiExporter  {
 				 *  At this point, we will always have an open scan and gps tag,
 				 *  so write wifi xml now
 				 *  Note that for performance reasons all columns are casted to strings
-				 *  As bssid can contain invalid characters, it sanitized before
+				 *  
+				 *  BSSID: in xml files mac is printed without ":" (as opposed to database) for backwards compatibility
+				 *  SSID: ssid can contain invalid characters, so sanitize..
 				 */
-				bw.write(wifiToXml(cursor.getString(colBssid),
+				bw.write(wifiToXml(
+						cursor.getString(colBssid).replace(":", ""),
 						cursor.getString(colMd5Essid), 
 						XmlSanitizer.sanitize(cursor.getString(colSsid)),
 						 cursor.getString(colCapa),

@@ -93,6 +93,12 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	private int mStrengthdBm;
 
 	/**
+	 * Signal strength in Asu
+	 * see e.g. http://www.lte-anbieter.info/technik/asu.php
+	 */
+	private int	mStrengthAsu;
+	
+	/**
 	 * Timestamp in openbmap format: YYYYMMDDHHMMSS
 	 */
 	private long mOpenBmapTimestamp;
@@ -108,6 +114,8 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	private PositionRecord mEndPosition;
 
 	private int mSessionId;
+
+	
 
 	public CellRecord() {
 		this(RadioBeacon.SESSION_NOT_TRACKING);
@@ -240,6 +248,14 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 		this.mStrengthdBm = strengthdBm;
 	}
 
+	public final int getStrengthAsu() {
+		return mStrengthAsu;
+	}
+
+	public final void setStrengthAsu(final int strengthAsu) {
+		this.mStrengthAsu = strengthAsu;
+	}
+	
 	public final boolean isCdma() {
 		return mIsCdma;
 	}

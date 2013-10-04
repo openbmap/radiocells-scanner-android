@@ -90,4 +90,9 @@ public interface LocationService {
 	 */
 	List<LocationProvider> getLocationProviders();
 
+	/**
+	 * @return
+	 */
+	float getRelativeNorth();
+
 }

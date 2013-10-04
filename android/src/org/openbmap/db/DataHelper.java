@@ -400,6 +400,7 @@ public class DataHelper {
 						.withValue(Schema.COL_OPERATORNAME, cell.getOperatorName())
 						.withValue(Schema.COL_OPERATOR, cell.getOperator())
 						.withValue(Schema.COL_STRENGTHDBM, cell.getStrengthdBm())
+						.withValue(Schema.COL_STRENGTHASU, cell.getStrengthAsu())
 						.withValue(Schema.COL_TIMESTAMP, cell.getOpenBmapTimestamp())
 						.withValueBackReference (Schema.COL_BEGIN_POSITION_ID, 0) // Index is 0 because first operation stores cell position
 						.withValueBackReference (Schema.COL_END_POSITION_ID, 1)
@@ -511,6 +512,7 @@ public class DataHelper {
 		final int colNetworkId = cursor.getColumnIndex(Schema.COL_NETWORKID);
 		final int colSystemId = cursor.getColumnIndex(Schema.COL_SYSTEMID);
 		final int colStrengthDbm = cursor.getColumnIndex(Schema.COL_STRENGTHDBM);
+		final int colStrengthAsu = cursor.getColumnIndex(Schema.COL_STRENGTHASU);
 		final int colTimestamp = cursor.getColumnIndex(Schema.COL_TIMESTAMP);
 		final int colBeginPositionId = cursor.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
 		final int colEndPositionId = cursor.getColumnIndex(Schema.COL_END_POSITION_ID);
@@ -531,6 +533,7 @@ public class DataHelper {
 		cell.setNetworkId(cursor.getString(colNetworkId));
 		cell.setSystemId(cursor.getString(colSystemId));
 		cell.setStrengthdBm(cursor.getInt(colStrengthDbm)); 
+		cell.setStrengthAsu(cursor.getInt(colStrengthAsu));
 		cell.setOpenBmapTimestamp(cursor.getLong(colTimestamp)); 
 		// TODO: dirty ...
 		cell.setBeginPosition(loadPositionById(cursor.getString(colBeginPositionId)));

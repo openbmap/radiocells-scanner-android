@@ -90,6 +90,8 @@ public final class BssidBlackListBootstraper {
 		{"Continental Automotive Czech Republic s.r.o.", "9C:28:BF"},
 		{"Robert Bosch LLC Automotive Electronics", "D0:B4:98"},
 		{"Panasonic Automotive Systems Company of America", "E0:EE:1B"},
+		{"QCOM Technology Inc (Reporting as InCar Hotspot, probably Daimler)", "00:0D:F0"},
+		{"LessWire AG","00:06:C6"},
 		// mobile devices
 		{"Murata Manufacturing Co., Ltd., used on some LG devices", "44:A7:CF"},
 		{"Murata Manufacturing Co., Ltd., used in some mobile devices", "40:F3:08"},
