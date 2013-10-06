@@ -499,11 +499,11 @@ public class WirelessLoggerService extends AbstractService {
 
 		unregisterWakeLocks();
 		unregisterReceivers();
-		
+
 		if (mRefdb != null && mRefdb.isOpen()) {
 			mRefdb.close();
 		}
-		
+
 		super.onDestroy();
 	}
 
@@ -525,7 +525,7 @@ public class WirelessLoggerService extends AbstractService {
 			Log.d(TAG, "Initiated Wifi scan. Waiting for results..");
 			mWifiManager.startScan();
 			pendingWifiScanResults = true;
-			
+
 			// initialize wifi scan callback if needed
 			if (this.wifiScanResults == null) {
 				this.wifiScanResults = new WifiScanCallback() {
@@ -578,7 +578,7 @@ public class WirelessLoggerService extends AbstractService {
 										skipSpecific = true;
 									}
 
-	//								skipSpecific = false;
+									//								skipSpecific = false;
 									if (!skipSpecific) {
 										WifiRecord wifi = new WifiRecord();
 										wifi.setBssid(r.BSSID);
@@ -753,6 +753,7 @@ public class WirelessLoggerService extends AbstractService {
 	 * @param cellPos 
 	 * @return
 	 */
+	@SuppressLint("NewApi")
 	private CellRecord processServing(final GsmCellLocation gsmLocation, final CdmaCellLocation cdmaLocation, final PositionRecord cellPos) {
 		/*
 		 * In case of GSM network set GSM specific values
@@ -775,6 +776,11 @@ public class WirelessLoggerService extends AbstractService {
 
 			// GSM specific
 			serving.setCid(gsmLocation.getCid());
+			
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+				// at least for Nexus 4, even HSDPA networks broadcast psc
+				serving.setPsc(gsmLocation.getPsc());
+			}
 
 			String operator = mTelephonyManager.getNetworkOperator();
 			serving.setOperator(operator);
@@ -857,79 +863,72 @@ public class WirelessLoggerService extends AbstractService {
 		if (neighboringCellInfos != null) {
 
 			for (NeighboringCellInfo ci : neighboringCellInfos) {
-				// add neigboring cells		
-				CellRecord neighbor = new CellRecord(mSessionId);
-				// TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
-				neighbor.setOpenBmapTimestamp(cellPos.getOpenBmapTimestamp());
-				neighbor.setBeginPosition(cellPos);
-				// so far we set end position = begin position 
-				neighbor.setEndPosition(cellPos);
-				neighbor.setIsServing(false);
-				neighbor.setIsNeighbor(true);
+				boolean skip = !isValidNeigbor(ci);
+				if (!skip) {
+					// add neigboring cells		
+					CellRecord neighbor = new CellRecord(mSessionId);
+					// TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
+					neighbor.setOpenBmapTimestamp(cellPos.getOpenBmapTimestamp());
+					neighbor.setBeginPosition(cellPos);
+					// so far we set end position = begin position 
+					neighbor.setEndPosition(cellPos);
+					neighbor.setIsServing(false);
+					neighbor.setIsNeighbor(true);
 
-				/*
-				 * TelephonyManager doesn't provide all data for NEIGHBOURING cells:
-				 * MCC, MNC, Operator and Operator name are missing.
-				 * Thus, use data from last SERVING cell.
-				 * 
-				 * In typical cases this won't cause any problems, nevertheless problems can occur 
-				 * 	- near country border, where NEIGHBOURING cell can have a different MCC, MNC or Operator
-				 *   - ... ?
-				 */
+					/*
+					 * TelephonyManager doesn't provide all data for NEIGHBOURING cells:
+					 * MCC, MNC, Operator and Operator name are missing.
+					 * Thus, use data from last SERVING cell.
+					 * 
+					 * In typical cases this won't cause any problems, nevertheless problems can occur 
+					 * 	- near country border, where NEIGHBOURING cell can have a different MCC, MNC or Operator
+					 *   - ... ?
+					 */
 
-				neighbor.setMnc(serving.getMnc());
-				neighbor.setMcc(serving.getMcc());
-				neighbor.setOperator(serving.getOperator());
-				neighbor.setOperatorName(serving.getOperatorName());
+					neighbor.setMnc(serving.getMnc());
+					neighbor.setMcc(serving.getMcc());
+					neighbor.setOperator(serving.getOperator());
+					neighbor.setOperatorName(serving.getOperatorName());
 
-				int networkType = ci.getNetworkType();
-				neighbor.setNetworkType(networkType);
+					int networkType = ci.getNetworkType();
+					neighbor.setNetworkType(networkType);
 
-				if (networkType == TelephonyManager.NETWORK_TYPE_GPRS || networkType ==  TelephonyManager.NETWORK_TYPE_EDGE) {
-					// GSM cell
-					neighbor.setIsCdma(false);
+					if (networkType == TelephonyManager.NETWORK_TYPE_GPRS || networkType ==  TelephonyManager.NETWORK_TYPE_EDGE) {
+						// GSM cell
+						neighbor.setIsCdma(false);
 
-					neighbor.setCid(ci.getCid());
-					neighbor.setLac(ci.getLac());
-					neighbor.setStrengthdBm(-113 + 2 * ci.getRssi());
+						neighbor.setCid(ci.getCid());
+						neighbor.setLac(ci.getLac());
+						neighbor.setStrengthdBm(-113 + 2 * ci.getRssi());
+						neighbor.setStrengthAsu(ci.getRssi());
 
-				} else if (networkType == TelephonyManager.NETWORK_TYPE_UMTS || networkType ==  TelephonyManager.NETWORK_TYPE_HSDPA
-						|| networkType == TelephonyManager.NETWORK_TYPE_HSUPA || networkType == TelephonyManager.NETWORK_TYPE_HSPA) {
-					// UMTS cell
-					neighbor.setIsCdma(false);					
-					neighbor.setPsc(ci.getPsc());
-					// TODO do UMTS specific dbm conversion from ci.getRssi());
-					// @see http://developer.android.com/reference/android/telephony/NeighboringCellInfo.html#getRssi()
-					neighbor.setStrengthdBm(ci.getRssi());
+					} else if (networkType == TelephonyManager.NETWORK_TYPE_UMTS || networkType ==  TelephonyManager.NETWORK_TYPE_HSDPA
+							|| networkType == TelephonyManager.NETWORK_TYPE_HSUPA || networkType == TelephonyManager.NETWORK_TYPE_HSPA) {
+						// UMTS cell
+						neighbor.setIsCdma(false);					
+						neighbor.setPsc(ci.getPsc());
+						// TODO do UMTS specific dbm conversion from ci.getRssi());
+						// @see http://developer.android.com/reference/android/telephony/NeighboringCellInfo.html#getRssi()
+						// currently used: http://en.wikipedia.org/wiki/Mobile_phone_signal#ASU
+						neighbor.setStrengthdBm(ci.getRssi());
+						//neighbor.setStrengthAsu(ci.getRssi());
 
-				} else if (networkType == TelephonyManager.NETWORK_TYPE_CDMA) {
-					// TODO what's the strength in cdma mode? API unclear
-					neighbor.setIsCdma(true);
+					} else if (networkType == TelephonyManager.NETWORK_TYPE_CDMA) {
+						// TODO what's the strength in cdma mode? API unclear
+						neighbor.setIsCdma(true);
+					}
+
+					// not available for neighboring cells
+					//cell.setMcc(mcc);
+					//cell.setMnc(mnc);
+					//cell.setOperator(operator);
+					//cell.setOperatorName(operatorName);
+
+					neighbors.add(neighbor);
 				}
-
-				// not available for neighboring cells
-				//cell.setMcc(mcc);
-				//cell.setMnc(mnc);
-				//cell.setOperator(operator);
-				//cell.setOperatorName(operatorName);
-
-				neighbors.add(neighbor);
 			}
 		}
 		return neighbors;
-	}
-
-	/**
-	 * A valid cdma location must have basestation id, network id and system id set
-	 * @param cdmaLocation
-	 * @return
-	 */
-	private boolean isValidCdmaLocation(final CdmaCellLocation cdmaLocation) {
-		if (cdmaLocation == null) {
-			return false;
-		}
-
-		return (cdmaLocation.getBaseStationId() != -1) && (cdmaLocation.getNetworkId() != -1) && (cdmaLocation.getSystemId() != -1);
 	}
 
 	/**
@@ -941,8 +940,32 @@ public class WirelessLoggerService extends AbstractService {
 		if (gsmLocation == null) {
 			return false;
 		}
-
+	
 		return gsmLocation.getCid() != -1;
+	}
+
+	/**
+	 * A valid cdma location must have basestation id, network id and system id set
+	 * @param cdmaLocation
+	 * @return
+	 */
+	private boolean isValidCdmaLocation(final CdmaCellLocation cdmaLocation) {
+		if (cdmaLocation == null) {
+			return false;
+		}
+	
+		return (cdmaLocation.getBaseStationId() != -1) && (cdmaLocation.getNetworkId() != -1) && (cdmaLocation.getSystemId() != -1);
+	}
+
+	/**
+	 * @param ci
+	 * @return
+	 */
+	private boolean isValidNeigbor(NeighboringCellInfo ci) {
+		if (ci == null) {
+			return false;
+		}
+		return (ci.getCid() !=  NeighboringCellInfo.UNKNOWN_CID || ci.getLac() != NeighboringCellInfo.UNKNOWN_CID || ci.getPsc() !=  NeighboringCellInfo.UNKNOWN_CID);
 	}
 
 	/**

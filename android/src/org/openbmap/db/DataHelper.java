@@ -225,7 +225,7 @@ public class DataHelper {
 		} else {
 			selectSql = Schema.COL_BSSID + " = \"" + bssid + "\"";
 		}
-			
+
 		Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_WIFI, null, selectSql, null, null);
 
 		// Performance tweaking: don't call ca.getColumnIndex on each iteration 
@@ -393,6 +393,7 @@ public class DataHelper {
 						.withValue(Schema.COL_IS_SERVING, cell.isServing())
 						.withValue(Schema.COL_IS_NEIGHBOR, cell.isNeighbor())
 						.withValue(Schema.COL_CELLID, cell.getCid())
+						.withValue(Schema.COL_PSC, cell.getPsc())
 						.withValue(Schema.COL_LAC, cell.getLac())
 						.withValue(Schema.COL_MCC, cell.getMcc())
 						.withValue(Schema.COL_MNC, cell.getMnc())
@@ -409,7 +410,7 @@ public class DataHelper {
 						.withValue(Schema.COL_NETWORKID, -1)
 						.withValue(Schema.COL_SYSTEMID, -1)
 						.withValue(Schema.COL_BASEID, -1)
-						.withValue(Schema.COL_PSC, -1)
+
 						.build());	
 			} else {
 				// store CDMA cell
@@ -568,7 +569,7 @@ public class DataHelper {
 			throw new IllegalArgumentException("Position id is null");
 		}
 		//long start = System.currentTimeMillis();
-		
+
 		String selection = null;
 		String[] selectionArgs = null;
 
@@ -736,7 +737,7 @@ public class DataHelper {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Returns Id of active session. (Faster than {@link loadActiveSession()} as no de-serialization to session object takes place
 	 * @return

@@ -120,7 +120,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 		uriMatcher.addURI(AUTHORITY, Schema.TBL_CELLS + "/" + CONTENT_URI_OVERVIEW_SUFFIX + "/#", Schema.URI_CODE_CELL_OVERVIEW);
 		uriMatcher.addURI(AUTHORITY, Schema.TBL_CELLS + "/" + CONTENT_URI_SESSION_SUFFIX + "/#", Schema.URI_CODE_CELLS_BY_SESSION);
 		uriMatcher.addURI(AUTHORITY, Schema.VIEW_CELLS_EXTENDED, Schema.URI_CODE_CELLS_EXTENDED);
-		
+
 		uriMatcher.addURI(AUTHORITY, Schema.TBL_WIFIS, Schema.URI_CODE_WIFIS);
 		uriMatcher.addURI(AUTHORITY, Schema.TBL_WIFIS + "/#", Schema.URI_CODE_WIFI_ID);
 		uriMatcher.addURI(AUTHORITY, Schema.TBL_WIFIS + "/" + CONTENT_URI_OVERVIEW_SUFFIX + "/#", Schema.URI_CODE_WIFI_OVERVIEW);
@@ -300,7 +300,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 			case Schema.URI_CODE_CELLS_EXTENDED:
 				// Returns all wifis including position data
 				return queryTable(RadioBeaconContentProvider.CONTENT_URI_CELL_EXTENDED, Schema.VIEW_CELLS_EXTENDED, projection, selectionIn, selectionArgsIn, sortOrder, null, null);
-			
+
 			case Schema.URI_CODE_WIFI_OVERVIEW:
 				/**
 				 *  if several measurements for specific wifi bssid are available only strongest
@@ -358,7 +358,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 				/**
 				 *  if several measurements for specific cell are available only strongest
 				 *  measurement (criteria level) is returned
-				 *  @author http://stackoverflow.com/questions/3800551/sql-select-first-row-in-each-group-by-group
+				 *  http://stackoverflow.com/questions/3800551/sql-select-first-row-in-each-group-by-group
 				 */
 
 				// TODO: this probably won't work for CDMA as they don't have cell_id
@@ -366,6 +366,10 @@ public class RadioBeaconContentProvider extends ContentProvider {
 				// TODO: implement as in wifiFields, i.e. "rowid AS _id, "
 				Schema.COL_ID + ", "
 				+ Schema.COL_CELLID + ", "
+				+ Schema.COL_PSC + ", "
+				+ Schema.COL_BASEID + ", "
+				+ Schema.COL_SYSTEMID + ", "
+				+ Schema.COL_NETWORKID + ", "
 				+ Schema.COL_OPERATORNAME + ", "
 				+ Schema.COL_OPERATOR + ", "
 				+ Schema.COL_MCC + ", "
@@ -376,11 +380,19 @@ public class RadioBeaconContentProvider extends ContentProvider {
 				+ Schema.COL_IS_SERVING + ", "
 				+ " MAX(" + Schema.COL_STRENGTHDBM + ") ";
 
-				final String cellOverviewQuery = "SELECT " + cellFields + " FROM cells "
-						+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 1 GROUP BY cid"
+				// get gsm cells as well as neigbor gsm cells (gsm cell: cell id > -1
+				String cellOverviewQuery = "SELECT " + cellFields + " FROM cells "
+						+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 1 AND " + Schema.COL_CELLID + " > -1 GROUP BY " + Schema.COL_CELLID
 						+ " UNION SELECT " + cellFields  + " FROM cells "
-						+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 0 GROUP BY cid ORDER BY " + Schema.COL_IS_SERVING + " DESC";
-
+						+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 0 AND " + Schema.COL_CELLID + " > -1 GROUP BY " + Schema.COL_CELLID;
+				
+				// add umts / cdma cells
+				cellOverviewQuery += " UNION SELECT " + cellFields  + " FROM cells "
+						+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 0 AND " + Schema.COL_CELLID + " = -1 GROUP BY "
+						+ Schema.COL_PSC + ", " + Schema.COL_SYSTEMID + ", " + Schema.COL_NETWORKID + ", " + Schema.COL_BASEID;
+				
+				cellOverviewQuery += " ORDER BY " + Schema.COL_IS_SERVING + " DESC";
+				//Log.i(TAG, cellOverviewQuery);
 				return queryRaw(cellOverviewQuery, RadioBeaconContentProvider.CONTENT_URI_CELL);
 			case Schema.URI_CODE_CELL_ID:
 				//  Returns given cell.

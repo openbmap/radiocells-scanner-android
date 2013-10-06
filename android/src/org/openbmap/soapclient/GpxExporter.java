@@ -80,6 +80,7 @@ public class GpxExporter {
 			+ " AS w ON w." + Schema.COL_BEGIN_POSITION_ID + " = p._id WHERE w._id IS NOT NULL AND p." + Schema.COL_SESSION_ID + " = ?"
 			+ " ORDER BY " + Schema.COL_TIMESTAMP
 			+ " LIMIT " + CURSOR_SIZE + " OFFSET ?";*/
+	
 	private static final String WIFI_POINTS_SQL_QUERY = "SELECT w.rowid as " + Schema.COL_ID + ", w." + Schema.COL_BSSID + ", w." + Schema.COL_SSID + ", " 
 			+ " MAX(" + Schema.COL_LEVEL + "), w." + Schema.COL_TIMESTAMP + ", "
 			+ " b." + Schema.COL_LATITUDE + ", b." + Schema.COL_LONGITUDE + ", b." + Schema.COL_ALTITUDE + ", b." + Schema.COL_ACCURACY 
@@ -224,7 +225,7 @@ public class GpxExporter {
 		final int colLongitude = c.getColumnIndex(Schema.COL_LONGITUDE);
 		final int colAltitude = c.getColumnIndex(Schema.COL_ALTITUDE);
 		final int colTimestamp = c.getColumnIndex(Schema.COL_TIMESTAMP);
-		final int colName = c.getColumnIndex(Schema.COL_SSID);
+		final int colSsid = c.getColumnIndex(Schema.COL_SSID);
 
 		long outer = 0;
 		while (!c.isAfterLast()) {
@@ -245,7 +246,7 @@ public class GpxExporter {
 				bw.write(getGpxDate(c.getLong(colTimestamp)));
 				bw.write("</time>\n");
 				bw.write("\t\t<name>");
-				bw.write(StringEscapeUtils.escapeXml(c.getString(colName)));
+				bw.write(StringEscapeUtils.escapeXml(c.getString(colSsid)));
 				bw.write("</name>\n");
 				bw.write("\t</wpt>\n");
 
