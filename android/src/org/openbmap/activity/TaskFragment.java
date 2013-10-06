@@ -33,9 +33,12 @@ public class TaskFragment extends Fragment {
 	}
 
 	private ExportManager mExportTask;
-	private String	mTitle;
-	private String	mMessage;
+
+	private String mTitle;
+	private String mMessage;
 	private int	mProgress;
+
+	private boolean	mIsExecuting = false;
 
 	/**
 	 * Hold a reference to the parent Activity so we can report the
@@ -71,7 +74,7 @@ public class TaskFragment extends Fragment {
 	public void onDetach() {
 		super.onDetach();
 	}
-	
+
 	/**
 	 * Configures task, but doesn't yet start it
 	 * @param session
@@ -85,6 +88,8 @@ public class TaskFragment extends Fragment {
 
 	public void setTask(int session,
 			String targetPath, String user, String password, boolean exportGpx, boolean skipUpload, boolean skipDelete) {
+
+		mIsExecuting = true;
 
 		mExportTask = new ExportManager(getActivity(), (ExportManagerListener) getActivity(), (TaskCallbacks) getActivity(), session, targetPath, user, password);
 		mExportTask.setExportCells(true);
@@ -120,7 +125,7 @@ public class TaskFragment extends Fragment {
 		mMessage = message;
 		mProgress = progress;
 	}
-	
+
 	/**
 	 * Restores previously retain progress dialog state
 	 * @param progressDialog
@@ -129,5 +134,16 @@ public class TaskFragment extends Fragment {
 		progressDialog.setTitle(mTitle);
 		progressDialog.setMessage(mMessage);
 		progressDialog.setProgress(mProgress);
+	}
+
+	/**
+	 * @return
+	 */
+	public boolean isExecuting() {
+		return mIsExecuting;
+	}
+
+	public void resetExecuting() {
+		mIsExecuting = false;
 	}
 }

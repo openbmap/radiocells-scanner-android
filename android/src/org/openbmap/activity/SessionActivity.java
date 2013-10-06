@@ -73,8 +73,8 @@ implements SessionListFragment.SessionFragementListener, ExportManagerListener, 
 
 	private TaskFragment mTaskFragment;
 
-	private ProgressDialog	exportProgress;
-	
+	private ProgressDialog exportProgress;
+
 	// alert builder ids
 	private static final int ID_DELETE_UPLOADED_SESSION = 1;
 	private static final int ID_REPAIR_WIFI	= 2;
@@ -99,13 +99,16 @@ implements SessionListFragment.SessionFragementListener, ExportManagerListener, 
 			fm.beginTransaction().add(mTaskFragment, "task").commit();
 		} else {
 			Log.i(TAG, "Recycling task fragment");
+			
 			if (exportProgress == null) {
 				exportProgress = new ProgressDialog(this);
 				exportProgress.setCancelable(false);
 			}
-			mTaskFragment.restoreProgress(exportProgress);
 			
-			exportProgress.show();
+			if (mTaskFragment.isExecuting()) {
+				mTaskFragment.restoreProgress(exportProgress);
+				exportProgress.show();
+			}
 		}
 
 		initUi();
@@ -550,7 +553,7 @@ implements SessionListFragment.SessionFragementListener, ExportManagerListener, 
 
 		exportProgress.setTitle(defaultTitle);
 		exportProgress.setMessage(defaultMessage);
-		
+
 		exportProgress.setCancelable(false);
 		exportProgress.setIndeterminate(true);
 		exportProgress.show();
@@ -562,7 +565,10 @@ implements SessionListFragment.SessionFragementListener, ExportManagerListener, 
 	 */
 	@Override
 	public void onCancelled() {
-		exportProgress.cancel();
+		if (exportProgress != null) {
+			exportProgress.cancel();
+		}
+		mTaskFragment.resetExecuting();
 	}
 
 	/* (non-Javadoc)
@@ -570,7 +576,10 @@ implements SessionListFragment.SessionFragementListener, ExportManagerListener, 
 	 */
 	@Override
 	public void onPostExecute() {
-		exportProgress.cancel();
+		if (exportProgress != null) {
+			exportProgress.cancel();
+		}
+		mTaskFragment.resetExecuting();
 	}
 
 
@@ -579,10 +588,12 @@ implements SessionListFragment.SessionFragementListener, ExportManagerListener, 
 	 */
 	@Override
 	public void onProgressUpdate(Object[] values) {
-		exportProgress.setTitle((CharSequence) values[0]);
-		exportProgress.setMessage((CharSequence) values[1]);	
-		exportProgress.setProgress((Integer) values[2]);
+		if (exportProgress != null) {
+			exportProgress.setTitle((CharSequence) values[0]);
+			exportProgress.setMessage((CharSequence) values[1]);	
+			exportProgress.setProgress((Integer) values[2]);
+		}
 		mTaskFragment.retainProgress((String) values[0], (String) values[1], (Integer) values[2]);
 	}
-	
+
 }
