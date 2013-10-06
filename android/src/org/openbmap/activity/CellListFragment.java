@@ -88,14 +88,15 @@ public class CellListFragment extends ListFragment implements LoaderManager.Load
 
 		/**
 		 * NETWORK_TYPE column index in cursor
+		 * If you're unsure on index, check getColumnIndex(Schema.COL_NETWORKTYPE)
 		 */
-		private static final int INDEX_NETWORK_TYPE	= 8;
+		private static final int INDEX_NETWORK_TYPE	= 12;
 
 		/**
 		 * Translates network type (int) to human-readable description.
 		 */
 		public boolean setViewValue(final View view, final Cursor cursor, final int columnIndex) {
-			if (columnIndex == INDEX_NETWORK_TYPE) {
+			if (columnIndex == INDEX_NETWORK_TYPE) { 
 				int result = cursor.getInt(columnIndex);
 				((TextView) view).setText(CellRecord.NETWORKTYPE_MAP().get(result));
 				return true;

@@ -738,7 +738,7 @@ public class WirelessLoggerService extends AbstractService {
 		cells.addAll(neigbors);
 
 		// now persist cells in database
-		// Please note: So far we set end position = begin position
+		// Caution: So far we set end position = begin position
 		mDataHelper.storeCellsScanResults(cells, pos, pos);
 
 		broadcastCellInfos(serving);

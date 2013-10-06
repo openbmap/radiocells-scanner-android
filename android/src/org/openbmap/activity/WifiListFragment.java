@@ -42,7 +42,6 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -316,7 +315,7 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 			if (columnIndex == cursor.getColumnIndex(Schema.COL_IS_NEW_WIFI)) {
 				int result = cursor.getInt(columnIndex);
 				// TODO use enumeration instead of result > 1
-				if (result > 1) {
+				if (result > 0) {
 					// (+) icon for new wifis
 					isNew.setImageResource(android.R.drawable.stat_notify_more);
 					isNew.setVisibility(View.VISIBLE);
