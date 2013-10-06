@@ -401,6 +401,12 @@ OnGpxLoadedListener {
 		this.mapView.getMapScaleBar().setVisible(true);
 		this.tileCache = createTileCache();
 
+		// on first start zoom is set to very low value, so users won't see anything
+		// zoom to moderate zoomlevel..
+		if (this.mapView.getModel().mapViewPosition.getZoomLevel() < (byte) 10) {
+			this.mapView.getModel().mapViewPosition.setZoomLevel((byte) 15);
+		}
+				
 		LayerManager layerManager = this.mapView.getLayerManager();
 		Layers layers = layerManager.getLayers();
 
