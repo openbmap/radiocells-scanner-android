@@ -27,13 +27,15 @@ import org.openbmap.db.DataHelper;
 import org.openbmap.db.RadioBeaconContentProvider;
 import org.openbmap.db.Schema;
 import org.openbmap.db.model.Session;
+import org.openbmap.utils.MyAlertDialogFragment;
+import org.openbmap.utils.OnAlertClickInterface;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.CursorLoader;
@@ -55,8 +57,13 @@ import android.widget.Toast;
 /**
  * Fragment for displaying all sessions
  */
-public class SessionListFragment extends ListFragment implements LoaderCallbacks<Cursor> {
+public class SessionListFragment extends ListFragment implements
+LoaderCallbacks<Cursor>, OnAlertClickInterface {
 	private static final String	TAG	= SessionListFragment.class.getSimpleName();
+
+	private static final int	ID_DELETE_ALL	= 1;
+
+	private static final int	ID_DELETE_SESSION	= 2;
 
 	private SimpleCursorAdapter	adapter;
 
@@ -140,7 +147,7 @@ public class SessionListFragment extends ListFragment implements LoaderCallbacks
 	@Override
 	public final void onPause() {
 		getActivity().getContentResolver().unregisterContentObserver(mObserver);
-		
+
 		super.onPause();
 	}
 
@@ -179,30 +186,10 @@ public class SessionListFragment extends ListFragment implements LoaderCallbacks
 				mListener.exportCommand(mSelectedId);
 				return true;
 			case R.id.menu_delete_session:
-				new AlertDialog.Builder(getActivity())
-				.setTitle(R.string.session_uploaded)
-				.setMessage(R.string.do_you_want_to_delete_this_session)
-				.setCancelable(true)
-				.setIcon(android.R.drawable.ic_dialog_alert)
-				.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(final DialogInterface dialog, final int which) {
-						stop(mSelectedId);
-						mListener.deleteCommand(mSelectedId);
-						dialog.dismiss();
-					}
-				})
-				.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(final DialogInterface dialog, final int which) {
-						dialog.cancel();
-					}
-				}).create().show();
-				
+				showAlertDialog(ID_DELETE_SESSION, R.string.delete, R.string.do_you_want_to_delete_this_session, false);
 				return true;
 			case R.id.menu_delete_all_sessions:
-				stop(mSelectedId);
-				mListener.deleteAllCommand();
+				showAlertDialog(ID_DELETE_ALL, R.string.confirmation, R.string.question_delete_all_sessions, false);
 				return true;
 			case R.id.menu_resume_session:
 				resume(mSelectedId);
@@ -332,6 +319,21 @@ public class SessionListFragment extends ListFragment implements LoaderCallbacks
 	}
 
 	/**
+	 * Shows a alert dialog
+	 * @param dialogId
+	 * @param titleId
+	 * @param messageId
+	 * @param onlyNeutral
+	 */
+	private void showAlertDialog(int dialogId, int titleId, int messageId, boolean onlyNeutral) {
+		FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+		DialogFragment alert = MyAlertDialogFragment.newInstance(this, dialogId, 
+				titleId, messageId, onlyNeutral);
+		alert.show(getActivity().getSupportFragmentManager(), "dialog");
+		transaction.commitAllowingStateLoss();
+	}
+
+	/**
 	 * Interface for activity.
 	 */
 	public interface SessionFragementListener {
@@ -363,6 +365,41 @@ public class SessionListFragment extends ListFragment implements LoaderCallbacks
 		 */
 		void exportCommand(int id);
 
-		void reloadFragment();
+		void reloadListFragment();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.utils.OnAlertClickInterface#onAlertPositiveClick(int)
+	 */
+	@Override
+	public void onAlertPositiveClick(int alertId) {
+		if (alertId == ID_DELETE_ALL) {
+			stop(mSelectedId);
+			mListener.deleteAllCommand();
+		} else if (alertId == ID_DELETE_SESSION) {
+			stop(mSelectedId);
+			mListener.deleteCommand(mSelectedId);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.utils.OnAlertClickInterface#onAlertNegativeClick(int)
+	 */
+	@Override
+	public void onAlertNegativeClick(int alertId) {
+		if (alertId == ID_DELETE_ALL) {
+			return;
+		} else if (alertId == ID_DELETE_SESSION) {
+			return;
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.utils.OnAlertClickInterface#onAlertNeutralClick(int)
+	 */
+	@Override
+	public void onAlertNeutralClick(int id) {
+		// TODO Auto-generated method stub
+
 	}
 }

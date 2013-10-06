@@ -19,26 +19,23 @@
 package org.openbmap.activity;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
+import org.openbmap.activity.TaskFragment.TaskCallbacks;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.model.Session;
-import org.openbmap.soapclient.ExportManager;
 import org.openbmap.soapclient.ExportManager.ExportManagerListener;
 import org.openbmap.soapclient.ServerValidation;
 import org.openbmap.soapclient.ServerValidation.ServerReply;
 import org.openbmap.utils.FileHelper;
+import org.openbmap.utils.MyAlertDialogFragment;
+import org.openbmap.utils.OnAlertClickInterface;
 import org.openbmap.utils.TempFileHelper;
 
-import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
@@ -46,7 +43,10 @@ import android.net.wifi.WifiManager.WifiLock;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -56,16 +56,30 @@ import android.widget.Toast;
 /**
  * Parent screen for hosting main screen
  */
-public class SessionActivity extends FragmentActivity implements SessionListFragment.SessionFragementListener, ExportManagerListener, ServerReply
+public class SessionActivity
+extends FragmentActivity
+implements SessionListFragment.SessionFragementListener, ExportManagerListener, ServerReply, OnAlertClickInterface, TaskCallbacks 
 {
-	// TODO: clarify whether we need two different export task listeners, one for cells + one for wifis
 	private static final String TAG = SessionActivity.class.getSimpleName();
 
 	private DataHelper mDataHelper;
 
 	private WifiLock wifiLock;
 
-	private int	mPendingExport;
+	/**
+	 * 
+	 */
+	private int	mPendingSession;
+
+	private TaskFragment mTaskFragment;
+
+	private ProgressDialog	exportProgress;
+	
+	// alert builder ids
+	private static final int ID_DELETE_UPLOADED_SESSION = 1;
+	private static final int ID_REPAIR_WIFI	= 2;
+	private static final int ID_MISSING_CREDENTIALS	= 3;
+	private static final int ID_EXPORT_FAILED = 4;
 
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
@@ -74,8 +88,29 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 		// setup data connections
 		mDataHelper = new DataHelper(this);
 
+		FragmentManager fm = getSupportFragmentManager();
+		mTaskFragment = (TaskFragment) fm.findFragmentByTag("task");
+
+		// If the Fragment is non-null, then it is currently being
+		// retained across a configuration change.
+		if (mTaskFragment == null) {
+			Log.i(TAG, "Task fragment not found. Creating..");
+			mTaskFragment = new TaskFragment();
+			fm.beginTransaction().add(mTaskFragment, "task").commit();
+		} else {
+			Log.i(TAG, "Recycling task fragment");
+			if (exportProgress == null) {
+				exportProgress = new ProgressDialog(this);
+				exportProgress.setCancelable(false);
+			}
+			mTaskFragment.restoreProgress(exportProgress);
+			
+			exportProgress.show();
+		}
+
 		initUi();
 	}
+
 
 	@Override
 	public final void onResume() {
@@ -86,7 +121,7 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 		wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL, "UploadLock");
 
 		// force an fragment refresh
-		reloadFragment();
+		reloadListFragment();
 	}
 
 	@Override
@@ -103,6 +138,11 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 	public final void onDestroy() {
 		if (wifiLock != null && wifiLock.isHeld()) {
 			wifiLock.release();
+		}
+
+		if (exportProgress != null) {
+			// clean up dialogs
+			exportProgress.dismiss();
 		}
 
 		super.onDestroy();
@@ -125,7 +165,7 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 	 */
 	public final void exportCommand(final int id) {
 
-		mPendingExport = id;
+		mPendingSession = id;
 
 		// checks SD card writeable?
 		if (!FileHelper.isSdCardMountedWritable()) {
@@ -142,31 +182,14 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 			onServerGood();
 			return;
 		}
-		
+
 		// check whether session has been uploaded
 		if (hasBeenUploaded(id)) {
 			Log.i(TAG, this.getString(R.string.warning_already_uploaded));
+			showAlertDialog(ID_DELETE_UPLOADED_SESSION, R.string.session_already_uploaded, R.string.question_delete_session, false);
 
-			new AlertDialog.Builder(this)
-			.setTitle(R.string.confirmation)
-			.setMessage(R.string.question_delete_session)
-			.setCancelable(true)
-			.setIcon(android.R.drawable.ic_dialog_info)
-			.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(final DialogInterface dialog, final int which) {
-					deleteCommand(id);
-					dialog.dismiss();
-					return;
-				}
-			})
-			.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(final DialogInterface dialog, final int which) {
-					dialog.cancel();
-					return;
-				}
-			}).create().show();
+			return;
+
 		} else {
 			Log.i(TAG, "Good: Session hasn't yet been uploaded");
 		}
@@ -176,26 +199,9 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 		String password = PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
 
 		if (!isValidLogin(user, password)) {
-			new AlertDialog.Builder(this)
-			.setTitle(R.string.user_or_password_missing)
-			.setMessage(R.string.question_enter_user)
-			.setCancelable(true)
-			.setIcon(android.R.drawable.ic_dialog_info)
-			.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(final DialogInterface dialog, final int which) {
-					startActivity(new Intent(getBaseContext(), SettingsActivity.class));
-					dialog.dismiss();
-					return;
-				}
-			})
-			.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(final DialogInterface dialog, final int which) {
-					dialog.cancel();
-					return;
-				}
-			}).create().show();
+			showAlertDialog(ID_MISSING_CREDENTIALS,R.string.user_or_password_missing, R.string.question_enter_user, false);
+
+			return;
 		} else {
 			Log.i(TAG, "Good: User and password provided");
 		}
@@ -322,32 +328,11 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 	 */
 	@Override
 	public final void deleteAllCommand() {
-
-		new AlertDialog.Builder(this)
-		.setTitle(R.string.confirmation)
-		.setMessage(R.string.question_delete_all_sessions)
-		.setCancelable(true)
-		.setIcon(android.R.drawable.ic_dialog_alert)
-		.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(final DialogInterface dialog, final int which) {
-				dialog.dismiss();
-			}
-		})
-		.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(final DialogInterface dialog, final int which) {
-				dialog.cancel();
-				return;
-			}
-		}).create().show();
-
 		// Signalling service stop request
 		Intent intent = new Intent(RadioBeacon.INTENT_STOP_SERVICES);
 		sendBroadcast(intent);
 
 		mDataHelper.deleteAllSession();
-
 
 		updateUI();
 	}
@@ -400,7 +385,7 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 	 * @see org.openbmap.activity.SessionListFragment.SessionFragementListener#reload()
 	 */
 	@Override
-	public final void reloadFragment() {
+	public final void reloadListFragment() {
 		SessionListFragment sessionFrag = (SessionListFragment) getSupportFragmentManager().findFragmentById(R.id.sessionListFragment);
 
 		if (sessionFrag != null) {
@@ -429,25 +414,22 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 		session.isActive(false);
 		mDataHelper.storeSession(session, false);
 
-		// as we have the session now as xml files, we can delete it from database
-		new AlertDialog.Builder(this)
-		.setTitle(R.string.session_uploaded)
-		.setMessage(R.string.do_you_want_to_delete_this_session)
-		.setCancelable(true)
-		.setIcon(android.R.drawable.ic_dialog_alert)
-		.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(final DialogInterface dialog, final int which) {
-				deleteCommand(id);
-				dialog.dismiss();
-			}
-		})
-		.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(final DialogInterface dialog, final int which) {
-				dialog.cancel();
-			}
-		}).create().show();
+		showAlertDialog(ID_DELETE_UPLOADED_SESSION, R.string.session_uploaded, R.string.do_you_want_to_delete_this_session, false);
+	}
+
+	/**
+	 * Shows a alert dialog
+	 * @param dialogId
+	 * @param titleId
+	 * @param messageId
+	 * @param onlyNeutral
+	 */
+	private void showAlertDialog(int dialogId, int titleId, int messageId, boolean onlyNeutral) {
+		FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+		DialogFragment alert = MyAlertDialogFragment.newInstance(this, dialogId, 
+				titleId, messageId, onlyNeutral);
+		alert.show(getSupportFragmentManager(), "dialog");
+		transaction.commitAllowingStateLoss();
 	}
 
 	/* (non-Javadoc)
@@ -460,17 +442,7 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 			wifiLock.release();
 		}
 
-		new AlertDialog.Builder(this)
-		.setTitle(android.R.string.dialog_alert_title)
-		.setMessage("Export error!" + error)
-		.setIcon(android.R.drawable.ic_dialog_alert)
-		.setNeutralButton(android.R.string.ok, new OnClickListener() {
-			@Override
-			public void onClick(final DialogInterface alert, final int which) {
-				alert.dismiss();						
-			}
-		})
-		.show();
+		showAlertDialog(ID_EXPORT_FAILED, android.R.string.dialog_alert_title, R.string.export_error, true);
 	}
 
 	/* (non-Javadoc)
@@ -489,21 +461,8 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 		boolean skipUpload = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_SKIP_UPLOAD, Preferences.VAL_SKIP_UPLOAD);
 		boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_SKIP_DELETE, Preferences.VAL_SKIP_DELETE);
 
-		// and start export and upload..
-		ExportManager e = new ExportManager(this, this, mPendingExport, targetPath, user, password);
-		e.setExportCells(true);
-		e.setExportWifis(true);
-		e.setExportGpx(exportGpx);
-
-		// debug settings
-		e.setSkipUpload(skipUpload);
-		e.setSkipDelete(skipDelete);
-
-		SimpleDateFormat date = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
-		e.setGpxPath(targetPath);
-		e.setGpxFilename(date.format(new Date(System.currentTimeMillis())) + ".gpx");
-		e.execute((Void[]) null);
-
+		mTaskFragment.setTask(mPendingSession, targetPath, user, password, exportGpx, skipUpload, skipDelete);
+		mTaskFragment.execute();
 	}
 
 	/* (non-Javadoc)
@@ -522,29 +481,7 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 	public final void onServerCheckFailed() {
 		Log.i(TAG, "Server check failed");
 		// if we still have no connection, offer to toggle wifi state
-		new AlertDialog.Builder(this)
-		.setTitle(getResources().getString(R.string.error_version_check_title))
-		.setMessage(getResources().getString(R.string.error_version_check_body))
-		.setCancelable(false)
-		.setIcon(android.R.drawable.ic_dialog_info)
-		.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(final DialogInterface dialog, final int which) {
-				dialog.dismiss();
-				repairWifiConnection();
-				proceedAfterServerValidation();
-			}
-
-		})
-		.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(final DialogInterface dialog, final int which) {
-				dialog.cancel();
-				Toast.makeText(SessionActivity.this, "Upload aborted..", Toast.LENGTH_LONG).show();
-				return;
-			}
-		}).create().show();
-
+		showAlertDialog(ID_REPAIR_WIFI, R.string.error_version_check_title, R.string.error_version_check_body, false);
 	}
 
 	/**
@@ -557,4 +494,95 @@ public class SessionActivity extends FragmentActivity implements SessionListFrag
 		wifiManager.setWifiEnabled(false);
 		wifiManager.setWifiEnabled(true);
 	}
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.utils.OnAlertClickInterface#doPositiveClick()
+	 */
+	@Override
+	public void onAlertPositiveClick(int alertId) {
+		if (alertId == ID_DELETE_UPLOADED_SESSION) {
+			deleteCommand(mPendingSession);
+			return;
+		} else if (alertId == ID_REPAIR_WIFI) {
+			repairWifiConnection();
+			proceedAfterServerValidation();
+			return;
+		} else if ( alertId == ID_MISSING_CREDENTIALS) {
+			startActivity(new Intent(getBaseContext(), SettingsActivity.class));
+			return;
+		}
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.utils.OnAlertClickInterface#doNegativeClick()
+	 */
+	@Override
+	public void onAlertNegativeClick(int alertId) {
+		if (alertId == ID_DELETE_UPLOADED_SESSION) {
+			return;
+		} else if (alertId == ID_REPAIR_WIFI) {
+			Toast.makeText(SessionActivity.this, getResources().getString(R.string.upload_aborted), Toast.LENGTH_LONG).show();
+			return;
+		} else if (alertId == ID_MISSING_CREDENTIALS) {
+			return;
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.utils.OnAlertClickInterface#doNeutralClick(int)
+	 */
+	@Override
+	public void onAlertNeutralClick(int alertId) {
+		if (alertId == ID_EXPORT_FAILED) {
+			return;
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.activity.TaskFragment.TaskCallbacks#onPreExecute()
+	 */
+	@Override
+	public void onPreExecute() {
+		String defaultTitle = getResources().getString(R.string.preparing_export);
+		String defaultMessage = getResources().getString(R.string.please_stay_patient);
+		exportProgress = new ProgressDialog(this);
+
+		exportProgress.setTitle(defaultTitle);
+		exportProgress.setMessage(defaultMessage);
+		
+		exportProgress.setCancelable(false);
+		exportProgress.setIndeterminate(true);
+		exportProgress.show();
+		mTaskFragment.retainProgress(defaultTitle, defaultMessage, (int) exportProgress.getProgress());
+	}
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.activity.TaskFragment.TaskCallbacks#onCancelled()
+	 */
+	@Override
+	public void onCancelled() {
+		exportProgress.cancel();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.activity.TaskFragment.TaskCallbacks#onPostExecute()
+	 */
+	@Override
+	public void onPostExecute() {
+		exportProgress.cancel();
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.activity.TaskFragment.TaskCallbacks#onProgressUpdate(java.lang.Object[])
+	 */
+	@Override
+	public void onProgressUpdate(Object[] values) {
+		exportProgress.setTitle((CharSequence) values[0]);
+		exportProgress.setMessage((CharSequence) values[1]);	
+		exportProgress.setProgress((Integer) values[2]);
+		mTaskFragment.retainProgress((String) values[0], (String) values[1], (Integer) values[2]);
+	}
+	
 }

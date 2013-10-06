@@ -25,7 +25,6 @@ import java.net.URL;
 
 import org.openbmap.Preferences;
 import org.openbmap.R;
-import org.openbmap.db.DatabaseHelper;
 import org.openbmap.utils.LegacyDownloader;
 import org.openbmap.utils.LegacyDownloader.LegacyDownloadListener;
 import org.openbmap.utils.VacuumCleaner;
@@ -39,9 +38,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabaseLockedException;
-import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -128,6 +124,8 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 			super.onDestroy();
 			return;
 		}
+		
+		
 		super.onDestroy();
 	}
 

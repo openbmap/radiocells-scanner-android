@@ -26,6 +26,8 @@ import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.soapclient.FileUploader.UploadTaskListener;
 import org.openbmap.utils.MediaScanner;
+import org.openbmap.activity.TaskFragment;
+import org.openbmap.activity.TaskFragment.TaskCallbacks;
 
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
@@ -98,6 +100,12 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 	private int	mActiveUploads;
 
 	/**
+	 * Wait for how many milliseconds for upload to be completed
+	 * Users have reported issues with GRACE_TIME = 30000, so give it some more time
+	 */
+	private static final int GRACE_TIME	= 60000;
+
+	/**
 	 * OpenBmap cell upload address
 	 */
 	private static final String CELL_WEBSERVICE = "http://openBmap.org/upload/upl.php5";
@@ -117,11 +125,14 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 	 */
 	private int	MAX_THREADS = 7;
 
+	private TaskCallbacks	mCallbacks;
+
 	public interface ExportManagerListener {
 		void onExportCompleted(final int id);
 		void onExportFailed(final String error);
 	}
 
+	//http://stackoverflow.com/questions/9573855/second-instance-of-activity-after-orientation-change
 	/**
 	 * 
 	 * @param context
@@ -131,13 +142,14 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 	 * @param user
 	 * @param password
 	 */
-	public ExportManager(final Context context, final ExportManagerListener listener, final int session, final String targetPath, final String user, final String password) {
+	public ExportManager(final Context context, final ExportManagerListener listener, final TaskCallbacks callbacks, final int session, final String targetPath, final String user, final String password) {
 		this.mContext = context;
 		this.mSession = session;
 		this.mTargetPath = targetPath;
 		this.mUser = user;
 		this.mPassword = password;
 		this.mListener = listener;
+		this.mCallbacks = callbacks;
 
 		// by default: upload and delete local temp files afterward
 		this.setSkipUpload(false);
@@ -148,13 +160,9 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 
 	@Override
 	protected final void onPreExecute() {
-		mDialog = new ProgressDialog(mContext);
-		mDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-		//mDialog.setIndeterminate(true);
-		mDialog.setTitle(mContext.getString(R.string.preparing_export));
-		mDialog.setCancelable(false);
-		mDialog.setIndeterminate(true);
-		mDialog.show();
+		if (mCallbacks != null) {
+			mCallbacks.onPreExecute();
+		}
 	}
 
 	/**
@@ -169,7 +177,7 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 		if (mExportCells) {
 			Log.i(TAG, "Exporting cells");
 			// export cells
-			publishProgress(mContext.getResources().getString(R.string.exporting_cells), 0);
+			publishProgress(mContext.getResources().getString(R.string.please_stay_patient), mContext.getResources().getString(R.string.exporting_cells), 0);
 			cellFiles = new CellExporter(mContext, mSession, mTargetPath, mUser, RadioBeacon.SW_VERSION).export();
 
 			// upload
@@ -183,7 +191,7 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 						} catch (InterruptedException e) {
 						}
 					}
-					publishProgress(mContext.getResources().getString(R.string.uploading_cells) + "(Files: " + String.valueOf(cellFiles.size() -i) +")" , 0);
+					publishProgress(mContext.getResources().getString(R.string.please_stay_patient), mContext.getResources().getString(R.string.uploading_cells) + "(Files: " + String.valueOf(cellFiles.size() -i) +")" , 0);
 
 					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 						// enforce parallel execution on HONEYCOMB
@@ -202,7 +210,7 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 		if (mExportWifis) {
 			Log.i(TAG, "Exporting wifis");
 			// export wifis
-			publishProgress(mContext.getResources().getString(R.string.exporting_wifis), 50);
+			publishProgress(mContext.getResources().getString(R.string.please_stay_patient), mContext.getResources().getString(R.string.exporting_wifis), 50);
 			wifiFiles = new WifiExporter(mContext, mSession, mTargetPath, mUser, RadioBeacon.SW_VERSION).export();
 
 			// upload
@@ -215,7 +223,7 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 						} catch (InterruptedException e) {
 						}
 					}
-					publishProgress(mContext.getResources().getString(R.string.uploading_wifis) + "(Files: " + String.valueOf(wifiFiles.size() -i ) + ")", 50);
+					publishProgress(mContext.getResources().getString(R.string.please_stay_patient), mContext.getResources().getString(R.string.uploading_wifis) + "(Files: " + String.valueOf(wifiFiles.size() -i ) + ")", 50);
 
 					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 						// enforce parallel execution on HONEYCOMB
@@ -240,7 +248,7 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 					Thread.sleep(50);
 				} catch (InterruptedException e) {
 				}
-				if (System.currentTimeMillis() - startGrace > 30000) {
+				if (System.currentTimeMillis() - startGrace > GRACE_TIME) {
 					Log.i(TAG, "Timeout reached");
 					break;
 				}
@@ -275,7 +283,7 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 
 		if (mExportGpx) {
 			Log.i(TAG, "Exporting gpx");
-			publishProgress(mContext.getResources().getString(R.string.exporting_gpx), 75);
+			publishProgress(mContext.getResources().getString(R.string.please_stay_patient), mContext.getResources().getString(R.string.exporting_gpx), 75);
 
 			GpxExporter gpx = new GpxExporter(mContext, mSession);
 
@@ -294,29 +302,31 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 
 	/**
 	 * Updates progress bar.
-	 * @param values[0]
-	 *		  		contains title as string
-	 * @param values[1]
-	 *				contains progress as int
+	 * @param values[0] contains title (as string)
+	 * @param values[1] contains message (as string)
+	 * @param values[1] contains progress (as int)
 	 */
 	@Override
 	protected final void onProgressUpdate(final Object... values) {
-		mDialog.setTitle((String) values[0]);
-		//mDialog.setProgress((Integer) values[1]);
+		if (mCallbacks != null) {
+			mCallbacks.onProgressUpdate(values);
+		}
 	}
 
 	@SuppressLint("NewApi")
 	@Override
 	protected final void onPostExecute(final Boolean success) {
-
+		if (mCallbacks != null) {
+			mCallbacks.onPostExecute();
+		}
+		
 		// rescan SD card on honeycomb devices
 		// Otherwise files may not be visible when connected to desktop pc (MTP cache problem)
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			Log.i(TAG, "Re-indexing SD card temp folder");
 			new MediaScanner(mContext, new File(mTargetPath));
 		}
-		
-		mDialog.dismiss();
+
 		if (success && !mSkipUpload) {
 			if (mListener != null) {
 				mListener.onExportCompleted(mSession);
@@ -334,6 +344,14 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 		}
 	}
 
+	/*
+	@Override 
+	protected final void onCanceled() {
+		if (mCallbacks != null) {
+			mCallbacks.onCancelled();
+		}
+	}*/
+	
 	/**
 	 * Enables or disables cells export
 	 * @param exportCells
@@ -399,6 +417,13 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 	public final void onUploadFailed(final String file, final String error) {
 		Log.e(TAG, "Upload failed:" + file + " " + error);
 		mActiveUploads -= 1;
+	}
+
+	/**
+	 * @param sessionActivity
+	 */
+	public void setContext(Context context) {
+		mContext = context;
 	}
 
 }

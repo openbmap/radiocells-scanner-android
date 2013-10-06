@@ -45,7 +45,6 @@
     <string name="warning_session_closed">Can\'t resume! Session has already been uploaded.</string>
     <string name="warning_already_uploaded">Won\'t upload session. Has already been uploaded!</string>
     <string name="question_delete_session">Do you want to delete session?</string>
-    <string name="yes">Yes</string>
     <string name="question_delete_all_sessions">Do you really want to delete all sessions?</string>
     <string name="session_already_uploaded">Session already uploaded</string>
     <string name="confirmation">Confirmation</string>
@@ -105,4 +104,6 @@
     <string name="finished">Finished</string>
     <string name="database_lock_error">Couldn\'t lock database. Try again later</string>
     <string name="please_stay_patient">Please stay patient..</string>
+    <string name="upload_aborted">Upload aborted..</string>
+    <string name="export_error">Export error!</string>
 </resources>
