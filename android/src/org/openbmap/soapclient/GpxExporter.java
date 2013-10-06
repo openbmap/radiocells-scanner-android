@@ -72,13 +72,20 @@ public class GpxExporter {
 			+ " ORDER BY " + Schema.COL_TIMESTAMP + " LIMIT " + CURSOR_SIZE
 			+ " OFFSET ?";
 
+	/*
 	private static final String WIFI_POINTS_SQL_QUERY = "SELECT " + Schema.COL_LATITUDE + ", " + Schema.COL_LONGITUDE + ", "
 			+ Schema.COL_ALTITUDE + ", " + Schema.COL_ACCURACY + ", " + Schema.COL_TIMESTAMP + ", \"WIFI \"||" + Schema.COL_SSID + " AS name "
 			+ " FROM " + Schema.TBL_POSITIONS + " AS p LEFT JOIN " 
 			+ " (SELECT " + Schema.COL_ID + ", " + Schema.COL_SSID + ", " + Schema.COL_BEGIN_POSITION_ID + " FROM " + Schema.TBL_WIFIS + " )"
 			+ " AS w ON w." + Schema.COL_BEGIN_POSITION_ID + " = p._id WHERE w._id IS NOT NULL AND p." + Schema.COL_SESSION_ID + " = ?"
-			+ " ORDER BY " + Schema.COL_TIMESTAMP + " LIMIT " + CURSOR_SIZE
-			+ " OFFSET ?";
+			+ " ORDER BY " + Schema.COL_TIMESTAMP
+			+ " LIMIT " + CURSOR_SIZE + " OFFSET ?";*/
+	private static final String WIFI_POINTS_SQL_QUERY = "SELECT w.rowid as " + Schema.COL_ID + ", w." + Schema.COL_BSSID + ", w." + Schema.COL_SSID + ", " 
+			+ " MAX(" + Schema.COL_LEVEL + "), w." + Schema.COL_TIMESTAMP + ", "
+			+ " b." + Schema.COL_LATITUDE + ", b." + Schema.COL_LONGITUDE + ", b." + Schema.COL_ALTITUDE + ", b." + Schema.COL_ACCURACY 
+			+ " FROM " + Schema.TBL_WIFIS + " as w JOIN positions as b ON request_pos_id = b._id "
+			+ " WHERE w." + Schema.COL_SESSION_ID + " = ? GROUP BY w." + Schema.COL_BSSID
+			+ " LIMIT " + CURSOR_SIZE + " OFFSET ?";
 
 	private static final String CELL_POINTS_SQL_QUERY = "SELECT " + Schema.COL_LATITUDE + ", " + Schema.COL_LONGITUDE + ", "
 			+ Schema.COL_ALTITUDE + ", " + Schema.COL_ACCURACY + ", " + Schema.COL_TIMESTAMP + ", \"CELL \" ||" + Schema.COL_OPERATORNAME + " ||" + Schema.COL_CELLID + " AS name"
@@ -92,7 +99,7 @@ public class GpxExporter {
 	 * Date format as used internally
 	 */
 	private static final SimpleDateFormat INTERNAL_DATE_FORMAT = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
-	
+
 	/**
 	 * Date format for a gpx point timestamp.
 	 * ISO 8601 format
@@ -121,17 +128,20 @@ public class GpxExporter {
 	public final void doExport(final String trackName, final File target) throws IOException {
 		Log.i(TAG, "Finished building gpx file");
 		mDbHelper = new DatabaseHelper(mContext);
-		
-		BufferedWriter bw = new BufferedWriter(new FileWriter(target) , 32 * 1024);
-		
+
+		BufferedWriter bw = new BufferedWriter(new FileWriter(target));
+
 		bw.write(XML_HEADER);
 		bw.write(TAG_GPX);
 
 		writeTrackPoints(mSession, trackName, bw);
+		bw.flush();
 
 		writeWifis(bw);
+		bw.flush();
 		writeCells(bw);
-		
+		bw.flush();
+
 		bw.write(TAG_GPX_CLOSE);
 		bw.close();
 
@@ -148,7 +158,7 @@ public class GpxExporter {
 	 */
 	private void writeTrackPoints(final int session, final String trackName, final BufferedWriter bw) throws IOException {
 		Log.i(TAG, "Writing trackpoints");
-		
+
 		Cursor c = mDbHelper.getReadableDatabase().rawQuery(POSITION_SQL_QUERY, new String[]{String.valueOf(mSession), String.valueOf(0)});
 
 		final int colLatitude = c.getColumnIndex(Schema.COL_LATITUDE);
@@ -161,7 +171,7 @@ public class GpxExporter {
 		bw.write(trackName);
 		bw.write("</name>\n");
 		bw.write("\t\t<trkseg>\n");
-		
+
 		long outer = 0;
 		while (!c.isAfterLast()) {
 			c.moveToFirst();
@@ -186,14 +196,14 @@ public class GpxExporter {
 			}
 			//bw.write(out.toString());
 			//out = null;
-			
+
 			// fetch next CURSOR_SIZE records
 			outer += CURSOR_SIZE;
 			c.close();
 			c = mDbHelper.getReadableDatabase().rawQuery(POSITION_SQL_QUERY, new String[]{String.valueOf(mSession), String.valueOf(outer)});
 		}
 		c.close();
-		
+
 		bw.write("\t\t</trkseg>\n");
 		bw.write("\t</trk>\n");
 		System.gc();
@@ -207,15 +217,15 @@ public class GpxExporter {
 	 */
 	private void writeWifis(final BufferedWriter bw) throws IOException {
 		Log.i(TAG, "Writing wifi waypoints");
-		
+
 		Cursor c = mDbHelper.getReadableDatabase().rawQuery(WIFI_POINTS_SQL_QUERY, new String[]{String.valueOf(mSession), String.valueOf(0)});
-	
+		Log.i(TAG, WIFI_POINTS_SQL_QUERY);
 		final int colLatitude = c.getColumnIndex(Schema.COL_LATITUDE);
 		final int colLongitude = c.getColumnIndex(Schema.COL_LONGITUDE);
 		final int colAltitude = c.getColumnIndex(Schema.COL_ALTITUDE);
 		final int colTimestamp = c.getColumnIndex(Schema.COL_TIMESTAMP);
-		final int colName = c.getColumnIndex("name");
-		
+		final int colName = c.getColumnIndex(Schema.COL_SSID);
+
 		long outer = 0;
 		while (!c.isAfterLast()) {
 			c.moveToFirst();
@@ -238,7 +248,7 @@ public class GpxExporter {
 				bw.write(StringEscapeUtils.escapeXml(c.getString(colName)));
 				bw.write("</name>\n");
 				bw.write("\t</wpt>\n");
-	
+
 				c.moveToNext();
 			}
 			//bw.write(out.toString());
@@ -261,13 +271,13 @@ public class GpxExporter {
 	private void writeCells(final BufferedWriter bw) throws IOException {
 		Log.i(TAG, "Writing cell waypoints");
 		Cursor c = mDbHelper.getReadableDatabase().rawQuery(CELL_POINTS_SQL_QUERY, new String[]{String.valueOf(mSession), String.valueOf(0)});
-	
+
 		final int colLatitude = c.getColumnIndex(Schema.COL_LATITUDE);
 		final int colLongitude = c.getColumnIndex(Schema.COL_LONGITUDE);
 		final int colAltitude = c.getColumnIndex(Schema.COL_ALTITUDE);
 		final int colTimestamp = c.getColumnIndex(Schema.COL_TIMESTAMP);
 		final int colName = c.getColumnIndex("name");
-	
+
 		long outer = 0;
 		while (!c.isAfterLast()) {
 			c.moveToFirst();
@@ -290,10 +300,10 @@ public class GpxExporter {
 				bw.write(StringEscapeUtils.escapeXml(c.getString(colName)));
 				bw.write("</name>\n");
 				bw.write("\t</wpt>\n");
-	
+
 				c.moveToNext();
 			}
-			
+
 			//bw.write(out.toString());
 			//out = null;
 			// fetch next CURSOR_SIZE records
