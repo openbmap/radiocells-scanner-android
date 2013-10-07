@@ -73,12 +73,12 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 	 * @param request
 	 * @param last
 	 */
-	public WifiRecord(String bssid, String ssid, String capabilities, int frequency, int level, long timestamp, PositionRecord request, PositionRecord last)
+	public WifiRecord(String bssid, String ssid, String capabilities, int frequency, int level, long timestamp, PositionRecord request, PositionRecord last, boolean isNew)
 	{
-		this(bssid, ssid, capabilities, frequency, level, timestamp, request, last, RadioBeacon.SESSION_NOT_TRACKING);
+		this(bssid, ssid, capabilities, frequency, level, timestamp, request, last, RadioBeacon.SESSION_NOT_TRACKING, isNew);
 	}
 
-	public WifiRecord(String bssid, String ssid, String capabilities, int frequency, int level, long timestamp, PositionRecord request, PositionRecord last, int session)
+	public WifiRecord(String bssid, String ssid, String capabilities, int frequency, int level, long timestamp, PositionRecord request, PositionRecord last, int session, boolean isNew)
 	{
 		setBssid(bssid);
 		setSsid(ssid);
@@ -89,6 +89,7 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 		setBeginPosition(request);
 		setEndPosition(last);
 		setSessionId(session);
+		setNew(isNew);
 	}
 
 	@Override

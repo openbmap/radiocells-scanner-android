@@ -150,6 +150,7 @@ public class DataHelper {
 		final int columnIndex6 = ca.getColumnIndex(Schema.COL_TIMESTAMP);
 		final int columnIndex7 = ca.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
 		final int columnIndex8 = ca.getColumnIndex(Schema.COL_END_POSITION_ID);
+		final int columnIndex9 = ca.getColumnIndex(Schema.COL_IS_NEW_WIFI);
 
 		while (ca.moveToNext()) {
 			WifiRecord wifi = new WifiRecord();
@@ -162,7 +163,7 @@ public class DataHelper {
 
 			wifi.setBeginPosition(loadPositionById(ca.getString(columnIndex7)));
 			wifi.setEndPosition(loadPositionById(ca.getString(columnIndex8)));
-
+			wifi.setNew(ca.getInt(columnIndex9) == 1);
 			wifis.add(wifi);
 		}
 		ca.close();
@@ -204,7 +205,8 @@ public class DataHelper {
 					ca.getLong(ca.getColumnIndex(Schema.COL_TIMESTAMP)),
 
 					loadPositionById(ca.getString(ca.getColumnIndex(Schema.COL_BEGIN_POSITION_ID))),
-					loadPositionById(ca.getString(ca.getColumnIndex(Schema.COL_END_POSITION_ID))));
+					loadPositionById(ca.getString(ca.getColumnIndex(Schema.COL_END_POSITION_ID))),
+					ca.getInt(ca.getColumnIndex(Schema.COL_IS_NEW_WIFI)) == 1);
 		}
 		ca.close();
 		return wifi;
@@ -237,6 +239,7 @@ public class DataHelper {
 		final int columnIndex6 = ca.getColumnIndex(Schema.COL_TIMESTAMP);
 		final int columnIndex7 = ca.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
 		final int columnIndex8 = ca.getColumnIndex(Schema.COL_END_POSITION_ID);
+		final int columnIndex9 = ca.getColumnIndex(Schema.COL_IS_NEW_WIFI);
 
 		while (ca.moveToNext()) {
 			WifiRecord wifi = new WifiRecord();
@@ -251,7 +254,7 @@ public class DataHelper {
 			wifi.setBeginPosition(loadPositionById(ca.getString(columnIndex7)));
 			// TODO: not too safe ..
 			wifi.setEndPosition(loadPositionById(ca.getString(columnIndex8)));
-
+			wifi.setNew(ca.getInt(columnIndex9) == 1);
 			wifis.add(wifi);
 		}
 		ca.close();
@@ -301,6 +304,7 @@ public class DataHelper {
 		final int columnIndex6 = ca.getColumnIndex(Schema.COL_TIMESTAMP);
 		final int columnIndex7 = ca.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
 		final int columnIndex8 = ca.getColumnIndex(Schema.COL_END_POSITION_ID);
+		final int columnIndex9 = ca.getColumnIndex(Schema.COL_IS_NEW_WIFI);
 
 		while (ca.moveToNext()) {	
 			WifiRecord wifi = new WifiRecord();
@@ -313,7 +317,8 @@ public class DataHelper {
 
 			wifi.setBeginPosition(loadPositionById(ca.getString(columnIndex7)));
 			wifi.setEndPosition(loadPositionById(ca.getString(columnIndex8)));
-
+			
+			wifi.setNew(ca.getInt(columnIndex9) == 1);
 			wifis.add(wifi);
 		}
 
