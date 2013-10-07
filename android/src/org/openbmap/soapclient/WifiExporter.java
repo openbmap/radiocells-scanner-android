@@ -60,7 +60,7 @@ public class WifiExporter  {
 	 * Cursor windows size, to prevent running out of mem on to large cursor
 	 */
 	private static final int CURSOR_SIZE	= 2000;
-	
+
 	/**
 	 * XML header.
 	 */
@@ -157,7 +157,7 @@ public class WifiExporter  {
 	 */
 	private long mFileTimeStamp;
 
-	
+
 	/**
 	 * User name, required for file name generation
 	 */
@@ -175,7 +175,7 @@ public class WifiExporter  {
 	 * mExportVersion describes the later
 	 */
 	private String	mExportVersion;
-	
+
 	private static final String WIFI_SQL_QUERY = " SELECT " + Schema.TBL_WIFIS + "." + Schema.COL_ID + " AS \"_id\","
 			+ Schema.COL_BSSID + ", "
 			+ Schema.COL_SSID + ", "
@@ -264,7 +264,7 @@ public class WifiExporter  {
 		// get first CHUNK_SIZE records
 		Cursor cursorWifis = mDbHelper.getReadableDatabase().rawQuery(WIFI_SQL_QUERY,
 				new String[] {String.valueOf(mSession), String.valueOf(0)});
-		
+
 		// [start] init columns
 		colBssid = cursorWifis.getColumnIndex(Schema.COL_BSSID);
 		colSsid = cursorWifis.getColumnIndex(Schema.COL_SSID);
@@ -283,7 +283,7 @@ public class WifiExporter  {
 		colReqHead = cursorWifis.getColumnIndex("req_" + Schema.COL_BEARING);
 		colReqSpeed = cursorWifis.getColumnIndex("req_" + Schema.COL_SPEED);
 		colReqAcc = cursorWifis.getColumnIndex("req_" + Schema.COL_ACCURACY);
-		
+
 		colLastLat = cursorWifis.getColumnIndex("last_" + Schema.COL_LATITUDE);
 		colLastTimestamp = cursorWifis.getColumnIndex("last_" + Schema.COL_TIMESTAMP);
 		colLastLon = cursorWifis.getColumnIndex("last_" + Schema.COL_LONGITUDE);
@@ -295,26 +295,21 @@ public class WifiExporter  {
 
 		long startTime = System.currentTimeMillis();
 
-		// get infos for generating filename, basically mcc and timestamp
-		if (cursorWifis.moveToFirst()) {
-			mFileTimeStamp = cursorWifis.getLong(colReqTimestamp);
-			cursorWifis.moveToPrevious();
-
-			// go back to initial position
-			cursorWifis.moveToPrevious();
-		}
-		
 		long outer = 0;
 		while (!cursorWifis.isAfterLast()) {
 			long i = 0;
 			while (!cursorWifis.isAfterLast()) { 
 				// creates files of 100 wifis each
 				Log.i(TAG, "Cycle " + i);
-				String fileName  = mTempPath + generateFilename(mUser, mFileTimeStamp);
-				saveAndMoveCursor(fileName, headerRecord, cursorWifis);
+
+				long fileTimeStamp = determineFileTimestamp(cursorWifis);
+				String filename  = mTempPath + generateFilename(fileTimeStamp);
+
+				saveAndMoveCursor(filename, headerRecord, cursorWifis);
 
 				i += WIFIS_PER_FILE;
-				generatedFiles.add(fileName);
+
+				generatedFiles.add(filename);
 			}
 			// fetch next CURSOR_SIZE records
 			outer += CURSOR_SIZE;
@@ -336,28 +331,42 @@ public class WifiExporter  {
 
 
 	/**
+	 * Gets timestamp from current record
+	 * @param cursor
+	 * @return
+	 */
+	private long determineFileTimestamp(Cursor cursor) {
+		cursor.moveToPrevious();
+		if (cursor.moveToNext()) {
+			long timestamp = cursor.getLong(colReqTimestamp);
+			cursor.moveToPrevious();
+			return timestamp;
+		}
+		return 0;
+	}
+
+	/**
 	 * Builds a valid wifi log file. The number of records per file is limited (CHUNK_SIZE). Once the limit is reached,
 	 * a new file has to be created.
 	 * A log file file consists of an header with basic information on cell manufacturer and model, software id and version.
 	 * Below the log file header, scans are inserted. Each scan can contain several wifis
 	 * @see <a href="http://sourceforge.net/apps/mediawiki/myposition/index.php?title=Wifi_log_format">openBmap format specification</a>
-	 * @param fileName Filename including full path
 	 * @param headerRecord Header information record
 	 * @param cursor Cursor to read from
 	 */
-	private void saveAndMoveCursor(final String fileName, final LogFile headerRecord, final Cursor cursor) {
+	private String saveAndMoveCursor(final String fileName, final LogFile headerRecord, final Cursor cursor) {
 		// for performance reasons direct database access is used here (instead of content provider)
 		//TODO: behaves strange on non-ascii characters, maybe get ideas from https://android.googlesource.com/platform/frameworks/base.git/+/android-4.2.2_r1/wifi/java/android/net/wifi/WifiSsid.java
 		try {
 			cursor.moveToPrevious();
-			
+
 			File file = new File(fileName);
 			Writer bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file.getAbsoluteFile()), "UTF-8"), 30 * 1024);
-			
+
 			// Write header
 			bw.write(XML_HEADER);
 			bw.write(logToXml(headerRecord.getManufacturer(), headerRecord.getModel(), headerRecord.getRevision(), headerRecord.getSwid(), headerRecord.getSwVersion(), mExportVersion));
-			
+
 			long previousBeginId = 0;
 			String previousEnd = "";
 
@@ -416,10 +425,10 @@ public class WifiExporter  {
 						cursor.getString(colBssid).replace(":", ""),
 						cursor.getString(colMd5Essid), 
 						XmlSanitizer.sanitize(cursor.getString(colSsid)),
-						 cursor.getString(colCapa),
-						 cursor.getString(colLevel),
-						 cursor.getString(colFreq)));
-				
+						cursor.getString(colCapa),
+						cursor.getString(colLevel),
+						cursor.getString(colFreq)));
+
 				previousBeginId = beginId;
 				previousEnd = currentEnd;
 
@@ -435,9 +444,11 @@ public class WifiExporter  {
 			bw.close();
 			file = null;
 			bw = null;
+			return fileName;
 		} catch (IOException ioe) {
 			cursor.close();
 			ioe.printStackTrace();
+			return null;
 		}
 	}
 
@@ -486,7 +497,7 @@ public class WifiExporter  {
 		s.append(" >");
 		return s.toString();
 	}
-	
+
 	/**
 	 * Generates position tag
 	 * @param reqTime
@@ -557,7 +568,7 @@ public class WifiExporter  {
 		s.append(freq);
 		s.append("\"");
 		s.append("/>");
-		
+
 		return s.toString();
 	}
 
@@ -568,9 +579,10 @@ public class WifiExporter  {
 	 * i.e. [username]_V[format version]_log[date]-wifi.xml
 	 * Keep in mind, that openbmap server currently only accepts filenames following the above mentioned
 	 * naming pattern, otherwise files are ignored.
+	 * @param timestamp timestamp of first wifi entry
 	 * @return filename
 	 */
-	private String generateFilename(final String user, final long timestamp) {	
+	private String generateFilename(final long timestamp) {	
 		/**
 		 * Option 1: generate filename by export time
 		 */
@@ -582,12 +594,12 @@ public class WifiExporter  {
 		// to avoid file name collisions we add 1 second on each call
 		mTimestamp.add(Calendar.SECOND, 1);
 		return "V1_" + formatter.format(mTimestamp.getTime()) + "-wifi.xml";
-		*/
-		
+		 */
+
 		/**
 		 * Option 2: generate by first timestamp in file
 		 */
-		return "V1_" + timestamp + "-wifi.xml";
+		return "V1_log" + timestamp + "-wifi.xml";
 	}
 
 }
