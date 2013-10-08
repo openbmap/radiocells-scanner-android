@@ -1,0 +1,21 @@
+--------------- ATTENTION ---------------------
+
+Unfortunately I suffered a hard disk defect recently.
+Thus the binaries signing keys have changed. 
+
+If you install the lastest 0.7.5 release, all your
+previous databases will be ERASED due to the changed
+signing key.
+
+To keep your tracking database, save it manually before
+upgrade by using
+
+adb pull data/data/org.openbmap/databases/radiobeacon
+
+After the upgrade you can manually restore them by
+
+adb push radiobeacon
+
+data/data/org.openbmap/databases/radiobeacon 
+
+--------------- ATTENTION ---------------------
