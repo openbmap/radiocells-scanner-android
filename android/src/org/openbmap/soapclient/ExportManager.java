@@ -127,6 +127,8 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 
 	private TaskCallbacks	mCallbacks;
 
+	private boolean	mAnonymiseSsid = false;
+
 	public interface ExportManagerListener {
 		void onExportCompleted(final int id);
 		void onExportFailed(final String error);
@@ -142,7 +144,7 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 	 * @param user
 	 * @param password
 	 */
-	public ExportManager(final Context context, final ExportManagerListener listener, final TaskCallbacks callbacks, final int session, final String targetPath, final String user, final String password) {
+	public ExportManager(final Context context, final ExportManagerListener listener, final TaskCallbacks callbacks, final int session, final String targetPath, final String user, final String password, final boolean anonymiseSsid) {
 		this.mContext = context;
 		this.mSession = session;
 		this.mTargetPath = targetPath;
@@ -150,6 +152,8 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 		this.mPassword = password;
 		this.mListener = listener;
 		this.mCallbacks = callbacks;
+		
+		this.mAnonymiseSsid = anonymiseSsid;
 
 		// by default: upload and delete local temp files afterward
 		this.setSkipUpload(false);
@@ -211,7 +215,7 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 			Log.i(TAG, "Exporting wifis");
 			// export wifis
 			publishProgress(mContext.getResources().getString(R.string.please_stay_patient), mContext.getResources().getString(R.string.exporting_wifis), 50);
-			wifiFiles = new WifiExporter(mContext, mSession, mTargetPath, mUser, RadioBeacon.SW_VERSION).export();
+			wifiFiles = new WifiExporter(mContext, mSession, mTargetPath, mUser, RadioBeacon.SW_VERSION, mAnonymiseSsid).export();
 
 			// upload
 			if (!getSkipUpload()) {

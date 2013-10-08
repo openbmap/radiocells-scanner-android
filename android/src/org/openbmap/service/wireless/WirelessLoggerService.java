@@ -323,18 +323,18 @@ public class WirelessLoggerService extends AbstractService {
 
 		mLocationBlacklist = new LocationBlackList();
 		mLocationBlacklist.openFile(
-				mBlacklistPath + File.separator + "custom_location.xml"
+				mBlacklistPath + File.separator + RadioBeacon.DEFAULT_LOCATION_BLOCK_FILE
 				);
 
 		mSsidBlackList = new SsidBlackList();
 		mSsidBlackList.openFile(
-				mBlacklistPath + File.separator + "default_ssid.xml",
-				mBlacklistPath + File.separator + "custom_ssid.xml");
+				mBlacklistPath + File.separator + RadioBeacon.DEFAULT_SSID_BLOCK_FILE,
+				mBlacklistPath + File.separator + RadioBeacon.CUSTOM_SSID_BLOCK_FILE);
 
 		mBssidBlackList = new BssidBlackList();
 		mBssidBlackList.openFile(
-				mBlacklistPath + File.separator + "default_bssid.xml",
-				mBlacklistPath + File.separator + "custom_bssid.xml");
+				mBlacklistPath + File.separator + RadioBeacon.DEFAULT_BSSID_BLOCK_FILE,
+				mBlacklistPath + File.separator + RadioBeacon.CUSTOM_BSSID_BLOCK_FILE);
 	}
 
 	/** 

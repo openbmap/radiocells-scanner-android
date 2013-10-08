@@ -66,7 +66,7 @@ public class GpsProvider extends LocationProviderImpl implements LocationListene
 		
 		//read the logging interval from preferences
 		gpsLoggingInterval = Long.parseLong(PreferenceManager.getDefaultSharedPreferences(mContext.getApplicationContext()).getString(
-				Preferences.KEY_GPS_LOGGING_INTERVAL, Preferences.VAL_GPS_LOGGING_INTERVAL)) * RadioBeacon.MILLIS_IN_SECOND;
+				Preferences.KEY_GPS_LOGGING_INTERVAL, Preferences.VAL_GPS_LOGGING_INTERVAL)) * 1000;
 
 		// Register ourselves for location updates
 		lmgr = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);

@@ -98,12 +98,12 @@
     <string name="blacklisted_area">Results not saved: blacklisted area</string>
     <string name="download_failed">Download failed</string>
     <string name="layers">Layers</string>
-    <string name="clean_database_summary">Database grows over time. Click to free unused space by reorganising database</string>
-    <string name="clean_database_title">Reorganise database</string>
     <string name="cleaning_database">Reorganising..</string>
     <string name="finished">Finished</string>
     <string name="database_lock_error">Couldn\'t lock database. Try again later</string>
     <string name="please_stay_patient">Please stay patient..</string>
     <string name="upload_aborted">Upload aborted..</string>
     <string name="export_error">Export error!</string>
+    <string name="location_blacklist_saved">Location blacklist saved!</string>
+    <string name="error_writing_location_blacklist">Error writing location blacklist</string>
 </resources>

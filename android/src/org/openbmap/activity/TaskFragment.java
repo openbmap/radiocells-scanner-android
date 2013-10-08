@@ -7,12 +7,16 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import org.openbmap.Preferences;
+import org.openbmap.RadioBeacon;
 import org.openbmap.soapclient.ExportManager;
 import org.openbmap.soapclient.ExportManager.ExportManagerListener;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 
 /**
@@ -91,7 +95,9 @@ public class TaskFragment extends Fragment {
 
 		mIsExecuting = true;
 
-		mExportTask = new ExportManager(getActivity(), (ExportManagerListener) getActivity(), (TaskCallbacks) getActivity(), session, targetPath, user, password);
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+		boolean anonymiseSsid = prefs.getBoolean(Preferences.KEY_ANONYMISE_SSID, Preferences.VAL_ANONYMISE_SSID); 
+		mExportTask = new ExportManager(getActivity(), (ExportManagerListener) getActivity(), (TaskCallbacks) getActivity(), session, targetPath, user, password, anonymiseSsid);
 		mExportTask.setExportCells(true);
 		mExportTask.setExportWifis(true);
 		mExportTask.setExportGpx(exportGpx);

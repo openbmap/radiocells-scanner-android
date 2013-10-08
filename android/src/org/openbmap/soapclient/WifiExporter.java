@@ -176,6 +176,11 @@ public class WifiExporter  {
 	 */
 	private String	mExportVersion;
 
+	/**
+	 * Anonymise SSIDs?
+	 */
+	private boolean	mAnonymise = false;
+
 	private static final String WIFI_SQL_QUERY = " SELECT " + Schema.TBL_WIFIS + "." + Schema.COL_ID + " AS \"_id\","
 			+ Schema.COL_BSSID + ", "
 			+ Schema.COL_SSID + ", "
@@ -218,13 +223,13 @@ public class WifiExporter  {
 	 * @param user OpenBmap user name, required for file name generation
 	 * @param exportVersion current Radiobeacon version (can differ from Radiobeacon version used for tracking) 
 	 */
-	public WifiExporter(final Context context, final int session, final String tempPath, final String user, final String exportVersion) {
+	public WifiExporter(final Context context, final int session, final String tempPath, final String user, final String exportVersion, final boolean anonymise) {
 		this.mContext = context;
 		this.mSession = session;
 		this.mTempPath = tempPath;
 		this.mUser = user;
 		this.mExportVersion = exportVersion;
-		//this.mTimestamp = Calendar.getInstance();
+		this.mAnonymise  = anonymise;
 
 		ensureTempPath(mTempPath);
 
@@ -427,7 +432,8 @@ public class WifiExporter  {
 						XmlSanitizer.sanitize(cursor.getString(colSsid)),
 						cursor.getString(colCapa),
 						cursor.getString(colLevel),
-						cursor.getString(colFreq)));
+						cursor.getString(colFreq),
+						mAnonymise));
 
 				previousBeginId = beginId;
 				previousEnd = currentEnd;
@@ -547,7 +553,7 @@ public class WifiExporter  {
 	 * @param freq
 	 * @return
 	 */
-	private static String wifiToXml(final String bssid, final String md5essid, final String ssid, final String capa, final String level, final String freq) {
+	private static String wifiToXml(final String bssid, final String md5essid, final String ssid, final String capa, final String level, final String freq, final boolean anonymise) {
 		final StringBuffer s = new StringBuffer(WIFI_XML_DEFAULT_LENGTH);
 		s.append("\n\t\t<wifiap bssid=\"");
 		s.append(bssid);
@@ -555,9 +561,11 @@ public class WifiExporter  {
 		s.append(" md5essid=\"");
 		s.append(md5essid);
 		s.append("\"");
-		s.append(" ssid=\"");
-		s.append(ssid);
-		s.append("\"");
+		if (!anonymise) {
+			s.append(" ssid=\"");
+			s.append(ssid);
+			s.append("\"");
+		}
 		s.append(" capa=\"");
 		s.append(capa);
 		s.append("\"");

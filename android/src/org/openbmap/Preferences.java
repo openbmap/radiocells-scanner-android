@@ -79,6 +79,15 @@ public final class Preferences {
 	 */
 	public static final String	KEY_SKIP_DELETE	= "debug.keep_export_files";
 	
+	/**
+	 * Blocks wifi and cell scan around current location
+	 */
+	public static final String KEY_BLOCK_HOMEZONE	= "privacy.block_homezone";
+	
+	/**
+	 * Replace SSIDS by md5 hash on upload
+	 */
+	public static final String KEY_ANONYMISE_SSID = "privacy.anonymise_ssid";
 	/*
 	 * Default values following ..
 	 */
@@ -165,6 +174,10 @@ public final class Preferences {
 	 */
 	public static final String VAL_GPS_LOGGING_INTERVAL = "0";
 	
+	/**
+	 * Don't anonymise SSIDS by default
+	 */
+	public static final boolean VAL_ANONYMISE_SSID = false;
 	/**
 	 * Directory containing maps, relative to application root dir.
 	 */

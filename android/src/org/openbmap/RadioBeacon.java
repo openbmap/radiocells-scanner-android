@@ -136,10 +136,30 @@ public final class RadioBeacon {
 	public static final int SESSION_NOT_TRACKING = 0;
 	
 	/**
-	 * conversion factor for milliseconds
-	 * 1 second equals 1000 milli-seconds
+	 * Default bssid blacklist's filename
 	 */
-	public static final int MILLIS_IN_SECOND = 1000;
+	public static final String	DEFAULT_BSSID_BLOCK_FILE	= "default_bssid.xml";
+
+	/**
+	 * User-defined bssid blacklist's filename
+	 */
+	public static final String	CUSTOM_BSSID_BLOCK_FILE	= "custom_bssid.xml";
+
+	/**
+	 * Default ssid blacklist's filename
+	 */
+	public static final String	DEFAULT_SSID_BLOCK_FILE	= "default_ssid.xml";
+
+	/**
+	 * User-defined ssid blacklist's filename
+	 */
+	public static final String	CUSTOM_SSID_BLOCK_FILE	= "custom_ssid.xml";
+
+	/**
+	 * Location blacklist's filename
+	 */
+	public static final String	DEFAULT_LOCATION_BLOCK_FILE	= "custom_location.xml";
+	
 	
 	/**
 	 * SWID string for XML files
@@ -172,7 +192,7 @@ public final class RadioBeacon {
 	 * Database scheme version
 	 */
 	public static final int DATABASE_VERSION = 4;
-	
+
 	/**
 	 * Private dummy constructor
 	 */

@@ -1,5 +1,5 @@
 /*
-	Radiobeacon - Openbmap wifi and cell logger
+ Radiobeacon - Openbmap wifi and cell logger
     Copyright (C) 2013  wish7
 
     This program is free software: you can redistribute it and/or modify
@@ -95,20 +95,20 @@ OnGpxLoadedListener {
 	/**
 	 * If zoom level < MIN_OBJECT_ZOOM session wifis and wifi catalog objects won't be displayed for performance reasons
 	 */
-	private static final int	MIN_OBJECT_ZOOM	= 12;
+	private static final int MIN_OBJECT_ZOOM = 12;
 
-	private static final int ALPHA_WIFI_CATALOG_FILL	= 90;
-	private static final int ALPHA_WIFI_CATALOG_STROKE	= 100;
+	private static final int ALPHA_WIFI_CATALOG_FILL = 90;
+	private static final int ALPHA_WIFI_CATALOG_STROKE = 100;
 
-	private static final int ALPHA_SESSION_FILL	= 50;
-	private static final int ALPHA_OTHER_SESSIONS_FILL	= 35;
+	private static final int ALPHA_SESSION_FILL = 50;
+	private static final int ALPHA_OTHER_SESSIONS_FILL = 35;
 
 	/**
 	 * Circle size current session objects
 	 */
-	private static final int CIRCLE_SESSION_WIDTH = 30;	
-	private static final int CIRCLE_OTHER_SESSION_WIDTH = 15;	
-	private static final int CIRCLE_WIFI_CATALOG_WIDTH = 15;	
+	private static final int CIRCLE_SESSION_WIDTH = 30; 
+	private static final int CIRCLE_OTHER_SESSION_WIDTH = 15; 
+	private static final int CIRCLE_WIFI_CATALOG_WIDTH = 15; 
 
 	private static final int STROKE_GPX_WIDTH = 5;
 
@@ -123,7 +123,7 @@ OnGpxLoadedListener {
 	private DataHelper dbHelper;
 
 	/**
-	 * 	Minimum time (in millis) between automatic overlay refresh
+	 *  Minimum time (in millis) between automatic overlay refresh
 	 */
 	protected static final float SESSION_REFRESH_INTERVAL = 2000;
 
@@ -141,20 +141,20 @@ OnGpxLoadedListener {
 
 
 	/**
-	 * 	Minimum time (in millis) between automatic catalog refresh
-	 * 	Please note: catalog objects are static, thus updates aren't necessary that often
+	 *  Minimum time (in millis) between automatic catalog refresh
+	 *  Please note: catalog objects are static, thus updates aren't necessary that often
 	 */
 	protected static final float CATALOG_REFRESH_INTERVAL = 5000;
 
 	/**
-	 * 	Minimum time (in millis) between gpx position refresh
+	 *  Minimum time (in millis) between gpx position refresh
 	 */
 	protected static final float GPX_REFRESH_INTERVAL = 1000;
 
 	/**
 	 * Load more than currently visible objects?
 	 */
-	private static final boolean PREFETCH_MAP_OBJECTS	= true;
+	private static final boolean PREFETCH_MAP_OBJECTS = true;
 
 	/**
 	 * Session currently displayed
@@ -166,7 +166,7 @@ OnGpxLoadedListener {
 	 */
 	private long gpxRefreshTime;
 
-	private byte	lastZoom;
+	private byte lastZoom;
 
 	// [start] UI controls
 	/**
@@ -182,12 +182,12 @@ OnGpxLoadedListener {
 	/**
 	 * Zoom button
 	 */
-	private ImageButton	btnZoom;
+	private ImageButton btnZoom;
 
 	/**
 	 * Un-zoom button
 	 */
-	private ImageButton	btnUnzoom;
+	private ImageButton btnUnzoom;
 
 	/**
 	 * Spinner toggling displayed session objects (all or only current)
@@ -219,49 +219,49 @@ OnGpxLoadedListener {
 
 	private ArrayList<Layer> sessionObjects;
 
-	private Polyline	gpxObjects;
+	private Polyline gpxObjects;
 	//[end]
 
 	// [start] Dynamic map variables
 	/**
 	 * Used for persisting zoom and position settings onPause / onDestroy
 	 */
-	private AndroidPreferences	preferencesFacade;
+	private AndroidPreferences preferencesFacade;
 
 	/**
 	 * Observes zoom and map movements (for triggering overlay updates)
 	 */
-	private Observer	mapObserver;
+	private Observer mapObserver;
 
 	/**
 	 * Another wifi catalog overlay refresh is taking place
 	 */
-	private boolean	mRefreshCatalogPending = false;
+	private boolean mRefreshCatalogPending = false;
 
 	/**
 	 * Another session overlay refresh is taking place
 	 */
-	private boolean	mRefreshSessionPending = false;
+	private boolean mRefreshSessionPending = false;
 
 	/**
 	 * Direction marker is currently updated
 	 */
-	private boolean	mRefreshDirectionPending;
+	private boolean mRefreshDirectionPending;
 
 	/**
 	 * Another gpx overlay refresh is taking place
 	 */
-	private boolean	mRefreshGpxPending;
+	private boolean mRefreshGpxPending;
 
 	/**
 	 * System time of last session overlay refresh (in millis)
 	 */
-	private long	sessionObjectsRefreshTime;
+	private long sessionObjectsRefreshTime;
 
 	/**
 	 * System time of last catalog overlay refresh (in millis)
 	 */
-	private long	catalogObjectsRefreshTime;
+	private long catalogObjectsRefreshTime;
 
 	/**
 	 * Location of last session overlay refresh
@@ -298,17 +298,17 @@ OnGpxLoadedListener {
 					 * 1.) current zoom level >= 12 (otherwise single points not visible, huge performance impact)
 					 * 2.) overlay items haven't been refreshed for a while AND user has moved a bit
 					 */
-					if ((mapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && (sessionLayerOutdated(location))) {	
+					if ((mapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && (sessionLayerOutdated(location))) { 
 						refreshSessionOverlays(location);
 					}
 
 					if ((mapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) &&
 							catalogLayerSelected() &&
-							catalogLayerOutdated(location)) {	
+							catalogLayerOutdated(location)) { 
 						refreshCatalogOverlay(location);
 					}
 
-					if (gpxLayerOutdated()) {	
+					if (gpxLayerOutdated()) { 
 						refreshGpxTrace(location);
 					}
 
@@ -406,7 +406,7 @@ OnGpxLoadedListener {
 		if (this.mapView.getModel().mapViewPosition.getZoomLevel() < (byte) 10) {
 			this.mapView.getModel().mapViewPosition.setZoomLevel((byte) 15);
 		}
-				
+
 		LayerManager layerManager = this.mapView.getLayerManager();
 		Layers layers = layerManager.getLayers();
 
@@ -471,8 +471,8 @@ OnGpxLoadedListener {
 
 		btnLayerSelection = (Spinner) findViewById(R.id.mapview_layers_selection);
 		btnLayerSelection.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-		    public void onItemSelected(final AdapterView<?> parent, final View view, final int pos, final long id) {
-		    	Location mapCenter = new Location("DUMMY");
+			public void onItemSelected(final AdapterView<?> parent, final View view, final int pos, final long id) {
+				Location mapCenter = new Location("DUMMY");
 				mapCenter.setLatitude(mapView.getModel().mapViewPosition.getCenter().latitude);
 				mapCenter.setLongitude(mapView.getModel().mapViewPosition.getCenter().longitude);
 				refreshSessionOverlays(mapCenter);
@@ -480,19 +480,19 @@ OnGpxLoadedListener {
 				if (catalogLayerSelected()) {
 					refreshCatalogOverlay(mapCenter);
 				}
-		    }
-		    public void onNothingSelected(final AdapterView<?> parent) {
-		    }
+			}
+			public void onNothingSelected(final AdapterView<?> parent) {
+			}
 		});
-		
+
 		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
 				R.array.layers, android.R.layout.simple_spinner_item);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		btnLayerSelection.setAdapter(adapter);
 
 		btnSnapToLocation = (ToggleButton) findViewById(R.id.mapview_tb_snap_to_location);
-		btnZoom = (ImageButton) findViewById(R.id.btnZoom);		
-		btnZoom.setOnClickListener(new OnClickListener() {	
+		btnZoom = (ImageButton) findViewById(R.id.btnZoom);  
+		btnZoom.setOnClickListener(new OnClickListener() { 
 			@Override
 			public void onClick(final View v) {
 				byte zoom  = mapView.getModel().mapViewPosition.getZoomLevel();
@@ -503,7 +503,7 @@ OnGpxLoadedListener {
 		});
 
 		btnUnzoom = (ImageButton) findViewById(R.id.btnUnzoom);
-		btnUnzoom.setOnClickListener(new OnClickListener() {	
+		btnUnzoom.setOnClickListener(new OnClickListener() { 
 			@Override
 			public void onClick(final View v) {
 				byte zoom  = mapView.getModel().mapViewPosition.getZoomLevel();
@@ -521,7 +521,7 @@ OnGpxLoadedListener {
 	private void registerReceiver() {
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(RadioBeacon.INTENT_BROADCAST_POSITION);
-		registerReceiver(mReceiver, filter);		
+		registerReceiver(mReceiver, filter);  
 	}
 
 	/**
@@ -568,7 +568,7 @@ OnGpxLoadedListener {
 	 * Loads reference wifis around location from openbmap wifi catalog.
 	 * Callback function, upon completion onCatalogLoaded is called for drawing
 	 * @param center
-	 * 			For performance reasons only wifis around specified location are displayed.
+	 *    For performance reasons only wifis around specified location are displayed.
 	 */
 	private void proceedAfterCatalogLoaded() {
 
@@ -603,19 +603,19 @@ OnGpxLoadedListener {
 		Log.d(TAG, "Loaded catalog objects");
 		Layers layers = this.mapView.getLayerManager().getLayers();
 
-		clearCatalogLayer();	
+		clearCatalogLayer(); 
 
 		// redraw
 		for (int i = 0; i < points.size(); i++) {
 			Circle circle = new Circle(points.get(i), CIRCLE_WIFI_CATALOG_WIDTH, paintCatalogFill, paintCatalogStroke);
 			catalogObjects.add(circle);
-		}		
+		}  
 
 		/**
 		 * Draw stack (z-order):
-		 * 		base map
-		 * 		catalog objects
-		 * 		session objects
+		 *   base map
+		 *   catalog objects
+		 *   session objects
 		 */
 		int insertAfter = -1;
 		if (layers.size() > 0) {
@@ -628,7 +628,7 @@ OnGpxLoadedListener {
 
 		for (int i = 0; i < catalogObjects.size(); i++) {
 			layers.add(insertAfter + i, catalogObjects.get(i));
-		}		
+		}  
 
 		// enable next refresh
 		mRefreshCatalogPending = false;
@@ -684,7 +684,7 @@ OnGpxLoadedListener {
 	 * Loads session wifis in visible range.
 	 * Will call onSessionLoaded callback upon completion
 	 * @param highlight
-	 * 			If highlight is specified only this wifi is displayed
+	 *    If highlight is specified only this wifi is displayed
 	 */
 	private void proceedAfterSessionObjectsLoaded(final WifiRecord highlight) {
 		BoundingBox bbox = MapPositionUtil.getBoundingBox(
@@ -754,13 +754,13 @@ OnGpxLoadedListener {
 				Circle circle = new Circle(points.get(i), CIRCLE_OTHER_SESSION_WIDTH, paintOtherSessionFill, null);
 				sessionObjects.add(circle);
 			}
-		}		
+		}  
 
 		/**
 		 * Draw stack (z-order):
-		 * 		base map
-		 * 		catalog objects
-		 * 		session objects
+		 *   base map
+		 *   catalog objects
+		 *   session objects
 		 */
 		int insertAfter = -1;
 		if (layers.size() > 0 && catalogObjects.size() > 0) {
@@ -776,7 +776,7 @@ OnGpxLoadedListener {
 
 		for (int i = 0; i < sessionObjects.size(); i++) {
 			layers.add(insertAfter + i, sessionObjects.get(i));
-		}		
+		}  
 
 		// if we have just loaded on point, set map center
 		if (points.size() == 1) {
@@ -834,7 +834,7 @@ OnGpxLoadedListener {
 
 		for (int i = 0; i < points.size(); i++) {
 			gpxObjects.getLatLongs().add(points.get(i));
-		}	
+		} 
 
 		this.mapView.getLayerManager().getLayers().add(gpxObjects);
 
@@ -888,7 +888,7 @@ OnGpxLoadedListener {
 	 * Draws compass
 	 * @param iv image view used for compass
 	 * @param ressourceId resource id compass needle
-	 * @param bearing	bearing (azimuth)
+	 * @param bearing bearing (azimuth)
 	 */
 	private void drawCompass(final ImageView iv, final Integer ressourceId, final float bearing) {
 		// refresh only if needed
@@ -932,19 +932,6 @@ OnGpxLoadedListener {
 				+ Preferences.MAPS_SUBDIR, 
 				prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE));
 
-		/*
-		if (mapFile.exists()) {
-			mMapView.setClickable(true);
-			//mMapView.setBuiltInZoomControls(true);
-			//mMapView.setMapFile(mapFile);
-		} else {
-			Log.i(TAG, "No map file found!");
-			Toast.makeText(this.getBaseContext(), R.string.please_select_map, Toast.LENGTH_LONG).show();
-			mMapView.setClickable(false);
-			//mMapView.setBuiltInZoomControls(false);
-			mMapView.setVisibility(View.GONE);
-		}
-		 */	
 		return mapFile;
 	}
 
@@ -983,27 +970,6 @@ OnGpxLoadedListener {
 			mapView.destroy();
 		}
 	}
-
-	/**
-	 * Creates gpx overlay line
-	 * @param points
-	 * @return
-	 */
-	/*
-	private static Polyline createGpxSymbol(final ArrayList<LatLong> points) {
-		Paint paintStroke = new Paint(Paint.ANTI_ALIAS_FLAG);
-		paintStroke.setStyle(Paint.Style.STROKE);
-		paintStroke.setColor(Color.BLACK);
-		paintStroke.setAlpha(255);
-		paintStroke.setStrokeWidth(3);
-		paintStroke.setStrokeCap(Cap.ROUND);
-		paintStroke.setStrokeJoin(Paint.Join.ROUND);
-
-		Polygon chain = new Polygon(points);
-		Polyline line = new Polyline(chain, paintStroke);
-		return line;
-	}
-	 */
 
 	static Paint createPaint(final int color, final int strokeWidth, final Style style) {
 		Paint paint = AndroidGraphicFactory.INSTANCE.createPaint();

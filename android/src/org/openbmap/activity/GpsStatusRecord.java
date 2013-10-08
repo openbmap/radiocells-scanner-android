@@ -105,7 +105,7 @@ public class GpsStatusRecord extends LinearLayout implements Listener, LocationL
 		
 		//read the logging interval from preferences
 		gpsLoggingInterval = Long.parseLong(PreferenceManager.getDefaultSharedPreferences(this.getContext()).getString(
-				Preferences.KEY_GPS_LOGGING_INTERVAL, Preferences.VAL_GPS_LOGGING_INTERVAL)) * RadioBeacon.MILLIS_IN_SECOND;
+				Preferences.KEY_GPS_LOGGING_INTERVAL, Preferences.VAL_GPS_LOGGING_INTERVAL)) * 1000;
 
 		if (context instanceof HostActivity) {
 			activity = (HostActivity) context;

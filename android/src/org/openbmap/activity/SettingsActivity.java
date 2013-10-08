@@ -18,15 +18,22 @@
 
 package org.openbmap.activity;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.openbmap.Preferences;
 import org.openbmap.R;
+import org.openbmap.RadioBeacon;
+import org.openbmap.utils.CurrentLocationHelper;
+import org.openbmap.utils.CurrentLocationHelper.LocationResult;
 import org.openbmap.utils.LegacyDownloader;
 import org.openbmap.utils.LegacyDownloader.LegacyDownloadListener;
+import org.openbmap.utils.MediaScanner;
 import org.openbmap.utils.VacuumCleaner;
 
 import android.annotation.SuppressLint;
@@ -37,7 +44,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -108,6 +117,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 
 		initGpsSystemSettings();
 		initCleanDatabase();
+		initHomezoneBlocking();
 
 		initGpsLogInterval();
 	}
@@ -156,7 +166,70 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 				return true;
 			}
 		});
+	}
 
+	/**
+	 * 
+	 */
+	private void initHomezoneBlocking() {
+		Preference pref = findPreference(org.openbmap.Preferences.KEY_BLOCK_HOMEZONE);
+		pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(final Preference preference) {
+				LocationResult locationResult = new LocationResult(){
+				    @Override
+				    public void gotLocation(Location location){
+				    	// get shared preferences
+				    	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SettingsActivity.this);
+
+				    	String blacklistPath = Environment.getExternalStorageDirectory().getPath()
+								+ prefs.getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR) + File.separator 
+								+ Preferences.BLACKLIST_SUBDIR;
+				    	String filename = blacklistPath + File.separator + RadioBeacon.DEFAULT_LOCATION_BLOCK_FILE;
+				    	String blocker = String.format("<ignorelist>"
+				    			+ "<location comment=\"homezone\">"
+				    			+ "<latitude>%s</latitude>"
+				    			+ "<longitude>%s</longitude>"
+				    			+ "<radius>550</radius>"
+				    			+ "</location>"
+				    			+ "</ignorelist>", location.getLatitude(), location.getLongitude());
+				    	
+				    	File folder = new File(filename.substring(1, filename.lastIndexOf(File.separator)));
+						boolean folderAccessible = false;
+						if (folder.exists() && folder.canWrite()) {
+							folderAccessible = true;
+						}
+
+						if (!folder.exists()) {
+							Log.i(TAG, "Folder missing: create " + folder.getAbsolutePath());
+							folderAccessible = folder.mkdirs();
+						}
+						
+						if (folderAccessible) {
+							try {
+								File file = new File(filename);
+								BufferedWriter bw = new BufferedWriter(new FileWriter(file.getAbsoluteFile()));
+								bw.append(blocker);
+								bw.close();
+								Log.i(TAG, "Created default location blacklist");
+								Toast.makeText(SettingsActivity.this, getResources().getString(R.string.location_blacklist_saved), Toast.LENGTH_LONG).show();
+								new MediaScanner(SettingsActivity.this, folder);
+							} catch (IOException e) {
+								Log.e(TAG, "Error writing blacklist");
+							} 
+						} else {
+							Log.e(TAG, "Folder not accessible: can't write blacklist");
+							Toast.makeText(SettingsActivity.this, getResources().getString(R.string.error_writing_location_blacklist), Toast.LENGTH_LONG).show();
+						}
+				    }
+				};
+				
+				CurrentLocationHelper myLocation = new CurrentLocationHelper();
+				myLocation.getLocation(SettingsActivity.this, locationResult);
+				
+				return true;
+			}
+		});
 	}
 
 	/**
@@ -566,4 +639,5 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 
 	}
 	// [end]
+	
 }

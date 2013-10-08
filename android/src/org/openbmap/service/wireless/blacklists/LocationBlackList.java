@@ -1,5 +1,5 @@
 /*
-	Radiobeacon - Openbmap wifi and cell logger
+ Radiobeacon - Openbmap wifi and cell logger
     Copyright (C) 2013  wish7
 
     This program is free software: you can redistribute it and/or modify
@@ -38,42 +38,42 @@ import android.util.Log;
  * Validates ssid against xml file of black listed locations
  * Create a file name custom_location.xml in your org.openbmap/blacklists folder
  * Example content (lat, lon, radius in meters):
- * <ignorelist><location comment="test area"><latitude></latitude>49.55306<longitude>9.0057</longitude><radius>550</radius></location></ignorelist>
+ * <ignorelist><location comment="test area"><latitude>49.55306</latitude><longitude>9.0057</longitude><radius>550</radius></location></ignorelist>
  */
 
 public class LocationBlackList {
 
-	private static final String	TAG	= LocationBlackList.class.getSimpleName();
+	private static final String TAG = LocationBlackList.class.getSimpleName();
 
 	/**
 	 * XML tag prefix location
 	 */
-	private static final String	LOCATION_TAG	= "location";
-	
+	private static final String LOCATION_TAG = "location";
+
 	/**
 	 * XML tag prefix latitude
 	 */
 	private static final String LATITUDE_TAG = "latitude";
-	
+
 	/**
 	 * XML tag prefix longitude
 	 */
 	private static final String LONGITUDE_TAG = "longitude";
-	
+
 	/**
 	 * XML tag prefix radius
 	 */
 	private static final String RADIUS_TAG = "radius";
-	
+
 	/**
 	 * Default: block within 500 m
 	 */
-	private static final int	DEFAULT_RADIUS	= 500;
+	private static final int DEFAULT_RADIUS = 500;
 
 	/**
 	 * List of blocked locations
 	 */
-	private ArrayList<DeadArea>	mLocations;
+	private ArrayList<DeadArea> mLocations;
 
 	/**
 	 * Dead area is defined by center point and radius
@@ -81,7 +81,7 @@ public class LocationBlackList {
 	private class DeadArea {
 		protected Location location;
 		protected long radius;
-		
+
 		/**
 		 * @param loc
 		 * @param rad
@@ -91,7 +91,7 @@ public class LocationBlackList {
 			radius = rad;
 		}
 	}
-	
+
 	public LocationBlackList() {
 		mLocations = new ArrayList<DeadArea>();
 	}
@@ -130,10 +130,10 @@ public class LocationBlackList {
 
 				int eventType = xpp.getEventType();
 				String currentTag = null;
-				
+
 				Location loc = null;
 				long radius = DEFAULT_RADIUS;
-				
+
 				while (eventType != XmlPullParser.END_DOCUMENT) {
 					if (eventType == XmlPullParser.START_TAG) {
 						currentTag = xpp.getName();
