@@ -382,9 +382,14 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 					if (folderAccessible) {
 						final String filename = newValue.toString().substring(newValue.toString().lastIndexOf('/') + 1);
 
+						File target = new File(folder.getAbsolutePath() + File.separator + filename);
+						if (target.exists()) {
+							Log.i(TAG, "Map file " + filename + " already exists. Overwriting..");
+							target.delete();
+						}
+						
 						Request request = new Request(Uri.parse(newValue.toString()));
-						request.setDestinationUri(Uri.fromFile(new File(
-								folder.getAbsolutePath() + File.separator + filename)));
+						request.setDestinationUri(Uri.fromFile(target));
 						long mapDownloadId = dm.enqueue(request);
 					} else {
 						Toast.makeText(preference.getContext(), R.string.error_save_file_failed, Toast.LENGTH_SHORT).show();
