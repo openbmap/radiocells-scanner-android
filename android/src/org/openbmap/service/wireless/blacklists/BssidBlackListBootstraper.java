@@ -204,7 +204,7 @@ public final class BssidBlackListBootstraper {
 		{"Kyocera Corporation", "00:22:94"},
 		{"Nintendo Co.", "00:22:D7"},
 		{"AMPAK Technology", "00:22:F4"},
-		{"Arcadyan Technology Corporation", "00:23:08"},
+		//{"Arcadyan Technology Corporation, has mobile as well as fixed devices", "00:23:08"},
 		{"LNC Technology Co.", "00:23:10"},
 		{"Hon Hai Precision Ind. Co.", "00:23:4D"},
 		{"HTC Corporation", "00:23:76"},

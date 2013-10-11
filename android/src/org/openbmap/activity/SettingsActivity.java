@@ -460,10 +460,14 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 						folderAccessible = folder.mkdirs();
 					}
 					if (folderAccessible) {
+						File target = new File(folder.getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_FILE);
+						if (target.exists()) {
+							Log.i(TAG, "Catalog file already exists. Overwriting..");
+							target.delete();
+						}
 						Request request = new Request(
 								Uri.parse(Preferences.WIFI_CATALOG_DOWNLOAD_URL));
-						request.setDestinationUri(Uri.fromFile(new File(
-								folder.getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_FILE)));
+						request.setDestinationUri(Uri.fromFile(target));
 						long catalogDownloadId = dm.enqueue(request);
 					} else {
 						Toast.makeText(preference.getContext(), R.string.error_save_file_failed, Toast.LENGTH_SHORT).show();
