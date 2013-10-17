@@ -30,6 +30,7 @@ public final class Preferences {
 	public static final String KEY_GPS_PROVIDER = "gps.provider";
 	public static final String KEY_GPS_SAVE_COMPLETE_TRACK = "gps.save_track";
 	public static final String KEY_DATA_DIR = "data.dir";
+	public static final String KEY_MAP_DIR	= "data.dir_map";
 	public static final String KEY_MAP_FILE = "data.map";
 
 	public static final String KEY_DOWNLOAD_MAP = "data.download";	
@@ -183,6 +184,7 @@ public final class Preferences {
 	 */
 	public static final String MAPS_SUBDIR = "/maps";
 	
+	public static final String VAL_MAP_DIR = VAL_DATA_DIR + MAPS_SUBDIR;
 	/**
 	 * Directory containing wifi catalog database, relative to application root dir.
 	 */
@@ -210,7 +212,7 @@ public final class Preferences {
 	/**
 	 * URL, where wifi catalog with openbmap's preprocessed wifi positions can be downloaded
 	 */
-	public static final String	WIFI_CATALOG_DOWNLOAD_URL = "https://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/openbmap.sqlite";
+	public static final String	WIFI_CATALOG_DOWNLOAD_URL = "http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/openbmap.sqlite";
 	
 	/**
 	 * URL, which is called to check whether this client version is out-of-date
