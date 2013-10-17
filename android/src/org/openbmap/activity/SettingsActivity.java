@@ -113,7 +113,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 		initWifiCatalogDownload();
 		initActiveWifiCatalog(mDataDirPref.getText());
 		initMapDownload();
-		initActiveMap(mDataDirPref.getText());
+		initActiveMap(PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_MAP_DIR, Preferences.VAL_MAP_DIR));
 
 		initGpsSystemSettings();
 		initCleanDatabase();
@@ -144,7 +144,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 	 * OnPreferenceClick system gps settings are displayed.
 	 */
 	private void initGpsSystemSettings() {
-		Preference pref = findPreference(org.openbmap.Preferences.KEY_GPS_OSSETTINGS);
+		Preference pref = findPreference(Preferences.KEY_GPS_OSSETTINGS);
 		pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			@Override
 			public boolean onPreferenceClick(final Preference preference) {
@@ -260,7 +260,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 	 */
 	private EditTextPreference initDataDir() {
 		// External storage directory
-		EditTextPreference pref = (EditTextPreference) findPreference(org.openbmap.Preferences.KEY_DATA_DIR);
+		EditTextPreference pref = (EditTextPreference) findPreference(Preferences.KEY_DATA_DIR);
 		pref.setSummary(PreferenceManager.getDefaultSharedPreferences(this).getString(org.openbmap.Preferences.KEY_DATA_DIR, org.openbmap.Preferences.VAL_DATA_DIR));
 		pref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 			@Override
@@ -289,7 +289,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 				preference.setSummary((String) pathName);
 
 				// Re-populate available maps
-				initActiveMap((String) pathName); 
+				//initActiveMap((String) pathName); 
 
 				return true;
 			}
@@ -299,9 +299,9 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 
 	/**
 	 * Populates the active map list preference.
-	 * @param rootDir Root folder for MAPS_SUBDIR
+	 * @param mapFolder Folder for maps
 	 */
-	private void initActiveMap(final String rootDir) {
+	private void initActiveMap(final String mapFolder) {
 		String[] entries;
 		String[] values;
 
@@ -309,8 +309,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 
 		// Check for presence of maps directory
 		File mapsDir = new File(Environment.getExternalStorageDirectory(),
-				rootDir + File.separator
-				+ org.openbmap.Preferences.MAPS_SUBDIR + File.separator);
+				mapFolder);
 
 		// List each map file
 		if (mapsDir.exists() && mapsDir.canRead()) {
@@ -339,7 +338,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 			values = new String[] {org.openbmap.Preferences.VAL_MAP_NONE};
 		}
 
-		ListPreference lf = (ListPreference) findPreference(org.openbmap.Preferences.KEY_MAP_FILE);
+		ListPreference lf = (ListPreference) findPreference(Preferences.KEY_MAP_FILE);
 		lf.setEntries(entries);
 		lf.setEntryValues(values);
 	}
@@ -368,8 +367,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 
 					// try to create directory
 					File folder = new File(Environment.getExternalStorageDirectory().getPath()
-							+ PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
-							+ Preferences.MAPS_SUBDIR + File.separator);
+							+ PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(Preferences.KEY_MAP_DIR, Preferences.VAL_MAP_DIR));
 
 					boolean folderAccessible = false;
 					if (folder.exists() && folder.canWrite()) {
@@ -406,8 +404,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 					try {
 						// try to create directory
 						File folder = new File(Environment.getExternalStorageDirectory().getPath()
-								+ PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
-								+ Preferences.MAPS_SUBDIR + File.separator);
+								+ PreferenceManager.getDefaultSharedPreferences(preference.getContext()).getString(Preferences.KEY_MAP_DIR, Preferences.VAL_MAP_DIR));
 
 						boolean folderAccessible = false;
 						if (folder.exists() && folder.canWrite()) {
@@ -445,7 +442,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 	 */
 	@SuppressLint("NewApi")
 	private void initWifiCatalogDownload() {
-		Preference pref = findPreference(org.openbmap.Preferences.KEY_DOWNLOAD_WIFI_CATALOG);
+		Preference pref = findPreference(Preferences.KEY_DOWNLOAD_WIFI_CATALOG);
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
 			// use download manager for versions >= GINGERBREAD
 			pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
@@ -572,7 +569,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 	 * @param file
 	 */
 	public final void handleDownloads(final String file) {
-		initActiveMap(mDataDirPref.getText());
+		initActiveMap(PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_MAP_DIR, Preferences.VAL_MAP_DIR));
 		initActiveWifiCatalog(mDataDirPref.getText());
 
 		// get current file extension

@@ -220,7 +220,7 @@ public class GpxExporter {
 		Log.i(TAG, "Writing wifi waypoints");
 
 		Cursor c = mDbHelper.getReadableDatabase().rawQuery(WIFI_POINTS_SQL_QUERY, new String[]{String.valueOf(mSession), String.valueOf(0)});
-		Log.i(TAG, WIFI_POINTS_SQL_QUERY);
+		//Log.i(TAG, WIFI_POINTS_SQL_QUERY);
 		final int colLatitude = c.getColumnIndex(Schema.COL_LATITUDE);
 		final int colLongitude = c.getColumnIndex(Schema.COL_LONGITUDE);
 		final int colAltitude = c.getColumnIndex(Schema.COL_ALTITUDE);

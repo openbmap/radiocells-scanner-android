@@ -319,8 +319,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 		File mapFile = new File(
 				Environment.getExternalStorageDirectory().getPath()
-				+ prefs.getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
-				+ Preferences.MAPS_SUBDIR, 
+				+ prefs.getString(Preferences.KEY_MAP_DIR, Preferences.VAL_MAP_DIR), 
 				prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE));
 
 		return mapFile;

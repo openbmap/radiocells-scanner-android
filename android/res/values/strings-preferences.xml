@@ -77,5 +77,6 @@
     <string name="prefs_block_homezone_title">Don\'t scan my back-yard</string>
     <string name="prefs_anonymise_ssid_summary">Replaces SSIDs in uploads with a MD5 value to mitigate privacy issues (ssid \'John Does wifi\' would something like \'FD33531\')</string>
     <string name="prefs_anonymise_ssid">Anonymise SSID in upload files</string>
-
+    <string name="prefs_data_map_folder">Map folder</string>
+    <string name="prefs_data_map_folder_summary">Select map folder</string>
 </resources>

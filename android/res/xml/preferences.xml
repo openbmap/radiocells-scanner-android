@@ -59,6 +59,13 @@
             android:title="@string/prefs_data_download" >
         </ListPreference>
 
+        <EditTextPreference
+            android:dialogTitle="Map folder"
+            android:key="data.dir_map"
+            android:defaultValue="/org.openbmap/maps/"
+            android:summary="@string/prefs_data_map_folder_summary"
+            android:title="@string/prefs_data_map_folder" />
+
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="ui.keep_screen_on"
@@ -110,7 +117,7 @@
         <!--
              <ListPreference android:entries="@array/prefs_gps_provider_keys"
 			android:entryValues="@array/prefs_gps_provider_values" android:key="gps.provider"
-			android:summary="@string/prefs_gps_provider_summary" android:title="@string/prefs_gps_provider" />
+			android:summary="@string/prefs_gps_provider_summary" android:title="@string/prefs_gps_provider" />
         -->
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/prefs_credentials" >
@@ -152,6 +159,7 @@
             android:summary="@string/prefs_block_homezone_summary"
             android:title="@string/prefs_block_homezone_title" >
         </Preference>
+
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="privacy.anonymise_ssid"

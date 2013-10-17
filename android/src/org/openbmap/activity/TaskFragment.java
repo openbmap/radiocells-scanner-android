@@ -8,7 +8,6 @@ import java.util.Date;
 import java.util.Locale;
 
 import org.openbmap.Preferences;
-import org.openbmap.RadioBeacon;
 import org.openbmap.soapclient.ExportManager;
 import org.openbmap.soapclient.ExportManager.ExportManagerListener;
 
