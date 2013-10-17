@@ -24,10 +24,9 @@ import java.util.ArrayList;
 
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
+import org.openbmap.activity.TaskFragment.TaskCallbacks;
 import org.openbmap.soapclient.FileUploader.UploadTaskListener;
 import org.openbmap.utils.MediaScanner;
-import org.openbmap.activity.TaskFragment;
-import org.openbmap.activity.TaskFragment.TaskCallbacks;
 
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
@@ -103,7 +102,7 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 	 * Wait for how many milliseconds for upload to be completed
 	 * Users have reported issues with GRACE_TIME = 30000, so give it some more time
 	 */
-	private static final int GRACE_TIME	= 60000;
+	private static final int GRACE_TIME	= 120000;
 
 	/**
 	 * OpenBmap cell upload address
@@ -334,6 +333,8 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 		if (success && !mSkipUpload) {
 			if (mListener != null) {
 				mListener.onExportCompleted(mSession);
+				// TODO testing only
+				//mListener.onExportFailed("FAILED");
 			}
 			return;
 		} else if (success && mSkipUpload) {

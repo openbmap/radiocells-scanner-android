@@ -81,6 +81,8 @@ implements SessionListFragment.SessionFragementListener, ExportManagerListener, 
 	private static final int ID_MISSING_CREDENTIALS	= 3;
 	private static final int ID_EXPORT_FAILED = 4;
 
+	private FragmentManager	fm;
+
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -88,7 +90,7 @@ implements SessionListFragment.SessionFragementListener, ExportManagerListener, 
 		// setup data connections
 		mDataHelper = new DataHelper(this);
 
-		FragmentManager fm = getSupportFragmentManager();
+		fm = getSupportFragmentManager();
 		mTaskFragment = (TaskFragment) fm.findFragmentByTag("task");
 
 		// If the Fragment is non-null, then it is currently being
@@ -99,12 +101,12 @@ implements SessionListFragment.SessionFragementListener, ExportManagerListener, 
 			fm.beginTransaction().add(mTaskFragment, "task").commit();
 		} else {
 			Log.i(TAG, "Recycling task fragment");
-			
+
 			if (exportProgress == null) {
 				exportProgress = new ProgressDialog(this);
 				exportProgress.setCancelable(false);
 			}
-			
+
 			if (mTaskFragment.isExecuting()) {
 				mTaskFragment.restoreProgress(exportProgress);
 				exportProgress.show();
@@ -431,7 +433,11 @@ implements SessionListFragment.SessionFragementListener, ExportManagerListener, 
 		FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 		DialogFragment alert = MyAlertDialogFragment.newInstance(this, dialogId, 
 				titleId, messageId, onlyNeutral);
-		alert.show(getSupportFragmentManager(), "dialog");
+		// TODO throws IllegalStateException: Cannot perform this action after onSaveInstance
+		// see http://www.androiddesignpatterns.com/2013/08/fragment-transaction-commit-state-loss.html
+		// see http://stackoverflow.com/questions/7992496/how-to-handle-asynctask-onpostexecute-when-paused-to-avoid-illegalstateexception
+		// see http://stackoverflow.com/questions/8040280/how-to-handle-handler-messages-when-activity-fragment-is-paused/8122789#8122789
+		alert.show(fm /*getSupportFragmentManager()*/, "dialog");
 		transaction.commitAllowingStateLoss();
 	}
 
