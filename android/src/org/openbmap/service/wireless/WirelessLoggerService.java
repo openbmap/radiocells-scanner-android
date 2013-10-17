@@ -57,6 +57,11 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
+import android.telephony.CellInfo;
+import android.telephony.CellInfoCdma;
+import android.telephony.CellInfoGsm;
+import android.telephony.CellInfoLte;
+import android.telephony.CellInfoWcdma;
 import android.telephony.CellLocation;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.PhoneStateListener;
@@ -185,6 +190,13 @@ public class WirelessLoggerService extends AbstractService {
 	 */
 	private static final String	WIFILOCK_NAME = "WakeLock.WIFI";
 
+	/**
+	 * Database value for missing data
+	 * Cave eat: Old api (CellLocation) reports missing data as -1, whereas new api (getAllCellInfo) reports missing data as Integer.MAX_VALUE
+	 * Regardless which api is used invalid values are saved with INVALID_ID
+	 */
+	private static final int INVALID_VALUE	= -1;
+
 	/*
 	 * DataHelper for persisting recorded information in database
 	 */
@@ -207,6 +219,15 @@ public class WirelessLoggerService extends AbstractService {
 	 * List of blocked areas, e.g. home zone
 	 */
 	private LocationBlackList	mLocationBlacklist;
+
+	/**
+	 * Wifi catalog database (used for checking if new wifi)
+	 */
+	private SQLiteDatabase	mRefdb;
+
+	// Can TelephonyManager.getAllCellInfo be used on this phone?
+	private boolean	mNewApiSupported;
+
 
 	/**
 	 * Receives location updates as well as wifi scan result updates
@@ -279,8 +300,6 @@ public class WirelessLoggerService extends AbstractService {
 		}
 	};
 
-	private SQLiteDatabase	mRefdb;
-
 	@Override
 	public final void onCreate() {		
 		Log.d(TAG, "WirelessLoggerService created");
@@ -349,6 +368,8 @@ public class WirelessLoggerService extends AbstractService {
 	 */
 	private void registerPhoneStateManager() {
 		mTelephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
+		mNewApiSupported = isNewApiSupported();
+
 		mPhoneListener = new PhoneStateListener() {
 			@Override
 			public void onSignalStrengthsChanged(final SignalStrength signalStrength) {
@@ -696,11 +717,16 @@ public class WirelessLoggerService extends AbstractService {
 			return false;
 		}
 
+		ArrayList<CellRecord> cells = new ArrayList<CellRecord>(); 
+		// Common data across all cells from scan:
+		// 		All cells share same position
+		// 		Neighbor cells share mnc, mcc and operator with serving cell
+		PositionRecord pos = new PositionRecord(location, mSessionId, providerName);
 
-		// TODO with API > 17 there's also TelephonyManager.getAllCellInfos()
-		// This might be an option for the future
-		// TODO check, if signal strength update too old?
-
+		// can't use new api for the moment, as new api doesn't expose network type for individual cells
+		//if (mNewApiSupported) {
+		//}
+		
 		/* 
 		 * Determine, whether we are on GSM or CDMA network.
 		 * Decision is based on voice-call technology used (i.e. getPhoneType instead of getNetworkType)
@@ -722,13 +748,6 @@ public class WirelessLoggerService extends AbstractService {
 			return false;
 		}
 
-		ArrayList<CellRecord> cells = new ArrayList<CellRecord>(); 
-
-		// Common data across all cells from scan:
-		// 		All cells share same position
-		// 		Neighbor cells share mnc, mcc and operator with serving cell
-		PositionRecord pos = new PositionRecord(location, mSessionId, providerName);
-
 		CellRecord serving = processServing(gsmLocation, cdmaLocation, pos);
 		if (serving != null) {
 			cells.add(serving);
@@ -737,9 +756,11 @@ public class WirelessLoggerService extends AbstractService {
 		ArrayList<CellRecord> neigbors = processNeighbors(serving, pos);
 		cells.addAll(neigbors);
 
-		// now persist cells in database
+
+		// now persist list of cell records in database
 		// Caution: So far we set end position = begin position
 		mDataHelper.storeCellsScanResults(cells, pos, pos);
+
 
 		broadcastCellInfos(serving);
 		broadcastCellUpdate();
@@ -747,11 +768,28 @@ public class WirelessLoggerService extends AbstractService {
 	}
 
 	/**
+	 * Checks if new cell info api is supported (i.e. TelephonyManager.getAllCellInfo())
+	 * @return true if new api is supported by phone
+	 */
+	@SuppressLint("NewApi")
+	private boolean isNewApiSupported() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+			if (mTelephonyManager.getAllCellInfo() != null) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+
+	/**
 	 * Returns a cell record with serving cell
 	 * @param cdmaLocation 
 	 * @param gsmLocation 
 	 * @param cellPos 
-	 * @return
+	 * @return serving cell record
 	 */
 	@SuppressLint("NewApi")
 	private CellRecord processServing(final GsmCellLocation gsmLocation, final CdmaCellLocation cdmaLocation, final PositionRecord cellPos) {
@@ -776,7 +814,7 @@ public class WirelessLoggerService extends AbstractService {
 
 			// GSM specific
 			serving.setCid(gsmLocation.getCid());
-			
+
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
 				// at least for Nexus 4, even HSDPA networks broadcast psc
 				serving.setPsc(gsmLocation.getPsc());
@@ -853,7 +891,7 @@ public class WirelessLoggerService extends AbstractService {
 	 * 		Serving cell, used to complete missing api information for neighbor cells (mcc, mnc, ..)
 	 * @param cellPos 
 	 * 		Current position
-	 * @return
+	 * @return list of neigboring cell records
 	 */
 	private ArrayList<CellRecord> processNeighbors(final CellRecord serving, final PositionRecord cellPos) {
 		ArrayList<CellRecord> neighbors = new ArrayList<CellRecord>();
@@ -940,7 +978,7 @@ public class WirelessLoggerService extends AbstractService {
 		if (gsmLocation == null) {
 			return false;
 		}
-	
+
 		return gsmLocation.getCid() != -1;
 	}
 
@@ -953,7 +991,7 @@ public class WirelessLoggerService extends AbstractService {
 		if (cdmaLocation == null) {
 			return false;
 		}
-	
+
 		return (cdmaLocation.getBaseStationId() != -1) && (cdmaLocation.getNetworkId() != -1) && (cdmaLocation.getSystemId() != -1);
 	}
 

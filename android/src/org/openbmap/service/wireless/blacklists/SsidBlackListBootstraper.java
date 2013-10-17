@@ -104,6 +104,8 @@ public final class SsidBlackListBootstraper {
 		{"default", "SAMSUNG"},
 		{"default", "Samsung"},
 		{"default", "Sprint"},
+		{"German long haul buses", "DeinBus"},
+		{"German long haul buses", "MeinFernbus"},
 		{"German fast trains", "Telekom_ICE"},
 		{"default", "Trimble "},
 		{"default", "Verizon"},
