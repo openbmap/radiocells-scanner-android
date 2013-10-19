@@ -464,7 +464,7 @@ implements SessionListFragment.SessionFragementListener, ExportManagerListener, 
 		String password = PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
 
 		String targetPath = Environment.getExternalStorageDirectory().getPath()
-				+ PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR) + File.separator;
+				+ PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_DATA_FOLDER, Preferences.VAL_DATA_FOLDER) + File.separator;
 		boolean exportGpx = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_GPS_SAVE_COMPLETE_TRACK, false);
 
 		boolean skipUpload = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_SKIP_UPLOAD, Preferences.VAL_SKIP_UPLOAD);

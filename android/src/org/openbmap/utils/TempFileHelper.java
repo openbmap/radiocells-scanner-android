@@ -46,7 +46,7 @@ public final class TempFileHelper {
 		// List each map file
 		File logDir = new File(
 				Environment.getExternalStorageDirectory().getPath()
-				+ prefs.getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR) + File.separator
+				+ prefs.getString(Preferences.KEY_DATA_FOLDER, Preferences.VAL_DATA_FOLDER) + File.separator
 				);
 
 		if (logDir.exists() && logDir.canWrite()) {

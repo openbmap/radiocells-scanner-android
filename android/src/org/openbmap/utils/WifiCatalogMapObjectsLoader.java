@@ -18,6 +18,7 @@
 
 package org.openbmap.utils;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import org.mapsforge.core.model.LatLong;
@@ -124,8 +125,8 @@ public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayLi
 
 			// Open catalog database
 			String path = Environment.getExternalStorageDirectory().getPath()
-					+ prefs.getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
-					+ Preferences.WIFI_CATALOG_SUBDIR + "/" + prefs.getString(Preferences.KEY_WIFI_CATALOG, Preferences.VAL_REF_DATABASE);
+					+ prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER, Preferences.VAL_WIFI_CATALOG_FOLDER)
+					+ File.separator + prefs.getString(Preferences.KEY_WIFI_CATALOG, Preferences.VAL_REF_DATABASE);
 			mRefdb = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.OPEN_READONLY);
 
 			Cursor refs = null;

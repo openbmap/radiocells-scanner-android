@@ -14,9 +14,15 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.utils;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
 
 import android.os.Environment;
 
@@ -24,7 +30,7 @@ import android.os.Environment;
  * File helper methods
  */
 public final class FileHelper {
-	
+
 	@SuppressWarnings("unused")
 	private static final String TAG = FileHelper.class.getSimpleName();
 
@@ -42,7 +48,7 @@ public final class FileHelper {
 		}
 		return externalStorageAvailable;
 	}
-	
+
 	public static boolean isSdCardMountedWritable() {
 		@SuppressWarnings("unused")
 		boolean externalStorageAvailable = false;
@@ -56,8 +62,38 @@ public final class FileHelper {
 		} else {
 			externalStorageAvailable = externalStorageWritable = false;
 		}
-			 
+
 		return externalStorageWritable;
+	}
+
+	public static void moveFile(File src, File dst) throws IOException
+	{
+		copyFile(src, dst);
+		src.delete();
+	}
+	
+	/**
+	 * Copies file to destination.
+	 * This was needed to copy file from temp folder to SD card. A simple renameTo fails..
+	 * see http://stackoverflow.com/questions/4770004/how-to-move-rename-file-from-internal-app-storage-to-external-storage-on-android
+	 * @param src
+	 * @param dst
+	 * @throws IOException
+	 */
+	public static void copyFile(File src, File dst) throws IOException {
+		FileChannel inChannel = new FileInputStream(src).getChannel();
+		FileChannel outChannel = new FileOutputStream(dst).getChannel();
+		try {
+			inChannel.transferTo(0, inChannel.size(), outChannel);
+		} finally {
+			if (inChannel != null) {
+				inChannel.close();
+			}
+			
+			if (outChannel != null) {
+				outChannel.close();
+			}
+		}
 	}
 
 	/**

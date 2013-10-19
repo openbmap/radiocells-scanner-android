@@ -1,7 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <PreferenceCategory android:title="@string/prefs_logging" >
+    <PreferenceCategory android:title="@string/prefs_credentials">
+        <EditTextPreference android:dialogTitle="@string/prefs_credentials_user" android:key="credentials.user" android:summary="@string/prefs_credentials_user_summary" android:title="@string/prefs_credentials_user" />
+        <EditTextPreference android:dialogTitle="@string/prefs_credentials_password" android:key="credentials.password" android:password="true" android:summary="@string/prefs_credentials_password_summary" android:title="@string/prefs_credentials_password" />
+    </PreferenceCategory><PreferenceCategory android:title="@string/prefs_maps">
+        <ListPreference android:defaultValue="none" android:key="data.map" android:summary="@string/prefs_data_map_summary" android:title="@string/prefs_data_map">
+        </ListPreference>
+        <ListPreference android:defaultValue="none" android:key="data.download" android:summary="@string/prefs_data_download_summary" android:title="@string/prefs_data_download">
+        </ListPreference>
+
+        <CheckBoxPreference android:defaultValue="true" android:key="ui.keep_screen_on" android:summary="@string/prefs_ui_keep_screen_on_summary" android:title="@string/prefs_ui_keep_screen_on">
+        </CheckBoxPreference>
+    </PreferenceCategory><PreferenceCategory android:title="@string/prefs_wifi_catalog">
+        <ListPreference android:defaultValue="none" android:key="data.ref_database" android:summary="@string/prefs_data_ref_database_summary" android:title="@string/prefs_data_ref_database">
+        </ListPreference>
+
+        <Preference android:key="data.download_wifi_catalog" android:summary="@string/prefs_download_wifi_catalog_summary" android:title="@string/prefs_download_wifi_catalog">
+        </Preference>
+    </PreferenceCategory><PreferenceCategory android:title="@string/prefs_logging" >
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="save_cells"
@@ -37,56 +54,8 @@
             android:summary="@string/prefs_req_gps_accuracy_hint"
             android:title="@string/prefs_req_gps_accuracy" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="@string/prefs_storage" >
-        <EditTextPreference
-            android:defaultValue="/org.openbmap"
-            android:dialogMessage="@string/prefs_data_dir_hint"
-            android:key="data.dir"
-            android:summary=""
-            android:title="@string/prefs_data_dir" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="@string/prefs_maps" >
-        <ListPreference
-            android:defaultValue="none"
-            android:key="data.map"
-            android:summary="@string/prefs_data_map_summary"
-            android:title="@string/prefs_data_map" >
-        </ListPreference>
-        <ListPreference
-            android:defaultValue="none"
-            android:key="data.download"
-            android:summary="@string/prefs_data_download_summary"
-            android:title="@string/prefs_data_download" >
-        </ListPreference>
-
-        <EditTextPreference
-            android:dialogTitle="Map folder"
-            android:key="data.dir_map"
-            android:defaultValue="/org.openbmap/maps/"
-            android:summary="@string/prefs_data_map_folder_summary"
-            android:title="@string/prefs_data_map_folder" />
-
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="ui.keep_screen_on"
-            android:summary="@string/prefs_ui_keep_screen_on_summary"
-            android:title="@string/prefs_ui_keep_screen_on" >
-        </CheckBoxPreference>
-    </PreferenceCategory>
-    <PreferenceCategory android:title="@string/prefs_wifi_catalog" >
-        <ListPreference
-            android:defaultValue="none"
-            android:key="data.ref_database"
-            android:summary="@string/prefs_data_ref_database_summary"
-            android:title="@string/prefs_data_ref_database" >
-        </ListPreference>
-
-        <Preference
-            android:key="data.download_wifi_catalog"
-            android:summary="@string/prefs_download_wifi_catalog_summary"
-            android:title="@string/prefs_download_wifi_catalog" >
-        </Preference>
-    </PreferenceCategory>
+    
+    
     <PreferenceCategory android:title="@string/prefs_gps" >
         <Preference
             android:key="gps.ossettings"
@@ -117,22 +86,10 @@
         <!--
              <ListPreference android:entries="@array/prefs_gps_provider_keys"
 			android:entryValues="@array/prefs_gps_provider_values" android:key="gps.provider"
-			android:summary="@string/prefs_gps_provider_summary" android:title="@string/prefs_gps_provider" />
+			android:summary="@string/prefs_gps_provider_summary" android:title="@string/prefs_gps_provider" />
         -->
     </PreferenceCategory>
-    <PreferenceCategory android:title="@string/prefs_credentials" >
-        <EditTextPreference
-            android:dialogTitle="@string/prefs_credentials_user"
-            android:key="credentials.user"
-            android:summary="@string/prefs_credentials_user_summary"
-            android:title="@string/prefs_credentials_user" />
-        <EditTextPreference
-            android:dialogTitle="@string/prefs_credentials_password"
-            android:key="credentials.password"
-            android:password="true"
-            android:summary="@string/prefs_credentials_password_summary"
-            android:title="@string/prefs_credentials_password" />
-    </PreferenceCategory>
+    
     <PreferenceCategory android:title="@string/prefs_debug" >
         <CheckBoxPreference
             android:defaultValue="false"
@@ -166,6 +123,26 @@
             android:summary="@string/prefs_anonymise_ssid_summary"
             android:title="@string/prefs_anonymise_ssid" >
         </CheckBoxPreference>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/prefs_folder_settings" >
+        <EditTextPreference
+            android:defaultValue="/org.openbmap"
+            android:dialogMessage="@string/prefs_data_dir_hint"
+            android:key="data.dir"
+            android:summary=""
+            android:title="@string/prefs_data_dir" />
+        <EditTextPreference
+            android:defaultValue="/org.openbmap/maps"
+            android:dialogTitle="@string/prefs_map_folder"
+            android:key="data.folder_map"
+            android:summary="@string/prefs_data_map_folder_summary"
+            android:title="@string/prefs_map_folder" />
+        <EditTextPreference
+            android:defaultValue="/org.openbmap/databases"
+            android:dialogTitle="@string/prefs_wifi_catalog_folder"
+            android:key="data.folder_catalog"
+            android:summary="@string/prefs_wifi_catalog_folder_summary"
+            android:title="@string/prefs_wifi_catalog_folder" />
     </PreferenceCategory>
 
 </PreferenceScreen>

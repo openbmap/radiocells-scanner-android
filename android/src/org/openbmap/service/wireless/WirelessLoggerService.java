@@ -44,6 +44,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.location.Location;
@@ -223,7 +224,7 @@ public class WirelessLoggerService extends AbstractService {
 	/**
 	 * Wifi catalog database (used for checking if new wifi)
 	 */
-	private SQLiteDatabase	mRefdb;
+	private SQLiteDatabase	mRefDb;
 
 	// Can TelephonyManager.getAllCellInfo be used on this phone?
 	private boolean	mNewApiSupported;
@@ -309,9 +310,15 @@ public class WirelessLoggerService extends AbstractService {
 
 		if (!prefs.getString(Preferences.KEY_WIFI_CATALOG, Preferences.VAL_REF_DATABASE).equals(Preferences.VAL_WIFI_CATALOG_NONE)) {
 			String catalogPath = Environment.getExternalStorageDirectory().getPath()
-					+ prefs.getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR)
-					+ Preferences.WIFI_CATALOG_SUBDIR + "/" + prefs.getString(Preferences.KEY_WIFI_CATALOG, Preferences.VAL_REF_DATABASE);
-			mRefdb = SQLiteDatabase.openDatabase(catalogPath, null, SQLiteDatabase.OPEN_READONLY);
+					+ prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER, Preferences.VAL_WIFI_CATALOG_FOLDER)
+					+ File.separator + prefs.getString(Preferences.KEY_WIFI_CATALOG, Preferences.VAL_REF_DATABASE);
+
+			try {
+				mRefDb = SQLiteDatabase.openDatabase(catalogPath, null, SQLiteDatabase.OPEN_READONLY);
+			} catch (SQLiteCantOpenDatabaseException ex) {
+				Log.e(TAG, "Can't open wifi catalog database");
+				mRefDb = null;
+			}
 		} else {
 			Log.w(TAG, "No wifi catalog selected. Can't compare scan results with openbmap dataset.");
 		}
@@ -337,7 +344,7 @@ public class WirelessLoggerService extends AbstractService {
 	private void initBlacklists() {
 
 		String mBlacklistPath = Environment.getExternalStorageDirectory().getPath()
-				+ prefs.getString(Preferences.KEY_DATA_DIR, Preferences.VAL_DATA_DIR) + File.separator 
+				+ prefs.getString(Preferences.KEY_DATA_FOLDER, Preferences.VAL_DATA_FOLDER) + File.separator 
 				+ Preferences.BLACKLIST_SUBDIR;
 
 		mLocationBlacklist = new LocationBlackList();
@@ -521,8 +528,8 @@ public class WirelessLoggerService extends AbstractService {
 		unregisterWakeLocks();
 		unregisterReceivers();
 
-		if (mRefdb != null && mRefdb.isOpen()) {
-			mRefdb.close();
+		if (mRefDb != null && mRefDb.isOpen()) {
+			mRefDb.close();
 		}
 
 		super.onDestroy();
@@ -726,7 +733,7 @@ public class WirelessLoggerService extends AbstractService {
 		// can't use new api for the moment, as new api doesn't expose network type for individual cells
 		//if (mNewApiSupported) {
 		//}
-		
+
 		/* 
 		 * Determine, whether we are on GSM or CDMA network.
 		 * Decision is based on voice-call technology used (i.e. getPhoneType instead of getNetworkType)
@@ -1124,7 +1131,7 @@ public class WirelessLoggerService extends AbstractService {
 	private boolean checkIsNew(final String bssid) {
 
 		// default: return true, if ref database n/a
-		if (mRefdb == null) {
+		if (mRefDb == null) {
 			Log.e(TAG, "Reference database not specified");
 			return true;
 		}
@@ -1137,7 +1144,7 @@ public class WirelessLoggerService extends AbstractService {
 			 *		If wifi catalog's bssid aren't in UPPER case, consider SELECT bssid FROM wifi_zone WHERE UPPER(bssid) = ?
 			 *		Drawback: can't use indices then
 			 */
-			Cursor exists = mRefdb.rawQuery("SELECT bssid FROM wifi_zone WHERE bssid = ?", new String[]{bssid.replace(":", "").toUpperCase()});
+			Cursor exists = mRefDb.rawQuery("SELECT bssid FROM wifi_zone WHERE bssid = ?", new String[]{bssid.replace(":", "").toUpperCase()});
 			if (exists.moveToFirst()) {
 				Log.i(TAG, bssid + " is in reference database");
 				exists.close();

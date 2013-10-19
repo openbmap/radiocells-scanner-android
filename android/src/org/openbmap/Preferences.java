@@ -17,6 +17,8 @@
 */
 package org.openbmap;
 
+import java.io.File;
+
 /**
  * Stores settings keys and default values.
  * See preferences.xml for layout, strings-preferences.xml for text.
@@ -29,8 +31,9 @@ public final class Preferences {
 	// TODO add support for external (e.g. bluetooth gps provider)
 	public static final String KEY_GPS_PROVIDER = "gps.provider";
 	public static final String KEY_GPS_SAVE_COMPLETE_TRACK = "gps.save_track";
-	public static final String KEY_DATA_DIR = "data.dir";
-	public static final String KEY_MAP_DIR	= "data.dir_map";
+	public static final String KEY_DATA_FOLDER = "data.dir";
+	public static final String KEY_MAP_FOLDER	= "data.folder_map";
+	public static final String KEY_WIFI_CATALOG_FOLDER	= "data.folder_catalog";
 	public static final String KEY_MAP_FILE = "data.map";
 
 	public static final String KEY_DOWNLOAD_MAP = "data.download";	
@@ -96,12 +99,12 @@ public final class Preferences {
 	/**
 	 * Root folder for all additional data
 	 */
-	public static final String VAL_DATA_DIR = "/org.openbmap";
+	public static final String VAL_DATA_FOLDER = "/org.openbmap";
 	
 	/**
 	 * Default map file name
 	 */
-	public static final String VAL_MAP_FILE = "nordrhein-westfalen.map";
+	public static final String VAL_MAP_FILE = "germany.map";
 	
 	/**
 	 * No map set
@@ -179,16 +182,22 @@ public final class Preferences {
 	 * Don't anonymise SSIDS by default
 	 */
 	public static final boolean VAL_ANONYMISE_SSID = false;
-	/**
-	 * Directory containing maps, relative to application root dir.
-	 */
-	public static final String MAPS_SUBDIR = "/maps";
 	
-	public static final String VAL_MAP_DIR = VAL_DATA_DIR + MAPS_SUBDIR;
 	/**
-	 * Directory containing wifi catalog database, relative to application root dir.
+	 * Default maps folder name, relative to application root dir.
+	 * Can be overwritten in settings by specifying KEY_MAP_FOLDER
 	 */
-	public static final String WIFI_CATALOG_SUBDIR = "/databases";
+	private static final String MAPS_SUBDIR = "maps";
+	
+	public static final String VAL_MAP_FOLDER = VAL_DATA_FOLDER  + File.separator + MAPS_SUBDIR;
+	
+	/**
+	 * Default wifi catalog folder name, relative to application root dir.
+	 * Can be overwritten in settings by specifying KEY_WIFI_CATALOG_FOLDER
+	 */
+	private static final String WIFI_CATALOG_SUBDIR = "databases";
+	
+	public static final String VAL_WIFI_CATALOG_FOLDER = VAL_DATA_FOLDER + File.separator + WIFI_CATALOG_SUBDIR;
 	
 	/**
 	 * Directory containing wifi blacklists, relative to application root dir.
@@ -215,14 +224,14 @@ public final class Preferences {
 	public static final String	WIFI_CATALOG_DOWNLOAD_URL = "http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/openbmap.sqlite";
 	
 	/**
-	 * URL, which is called to check whether this client version is out-of-date
-	 */
-	public static final String	VERSION_CHECK_URL = "http://www.openbmap.org/current_version.xml";
-	
-	/**
 	 * Filename catalog database
 	 */
 	public static final String	WIFI_CATALOG_FILE	= "openbmap.sqlite";
+	
+	/**
+	 * URL, which is called to check whether this client version is out-of-date
+	 */
+	public static final String	VERSION_CHECK_URL = "http://www.openbmap.org/current_version.xml";
 	
 	/**
 	 * Private dummy constructor

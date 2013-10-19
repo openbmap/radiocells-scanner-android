@@ -928,7 +928,7 @@ OnGpxLoadedListener {
 	protected final File getMapFile() {
 		File mapFile = new File(
 				Environment.getExternalStorageDirectory().getPath()
-				+ prefs.getString(Preferences.KEY_MAP_DIR, Preferences.VAL_MAP_DIR),
+				+ prefs.getString(Preferences.KEY_MAP_FOLDER, Preferences.VAL_MAP_FOLDER),
 				prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE));
 
 		return mapFile;
