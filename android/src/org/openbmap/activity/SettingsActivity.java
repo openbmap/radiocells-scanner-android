@@ -313,21 +313,21 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 	 * @return EditTextPreference with data directory.
 	 */
 	private EditTextPreference initMapFolderControl() {
-
+	
 		EditTextPreference pref = (EditTextPreference) findPreference(Preferences.KEY_MAP_FOLDER);
 		//pref.setSummary(PreferenceManager.getDefaultSharedPreferences(this).getString(org.openbmap.Preferences.KEY_DATA_FOLDER, org.openbmap.Preferences.VAL_DATA_FOLDER));
 		pref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 			@Override
 			public boolean onPreferenceChange(final Preference preference, final Object newValue) {
 				String pathName = "";
-
+	
 				// Ensure there is always a leading slash
 				if (!((String) newValue).startsWith(File.separator)) {
 					pathName = File.separator + (String) newValue;
 				} else {
 					pathName = (String) newValue;
 				}
-
+	
 				// try to create directory
 				File folder = new File(Environment.getExternalStorageDirectory() + pathName);
 				boolean success = true;
@@ -338,60 +338,19 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 					Toast.makeText(getBaseContext(), R.string.error_create_directory_failed + pathName, Toast.LENGTH_LONG).show();
 					return false;
 				}
-
+	
 				// Set summary with the directory value
 				//preference.setSummary((String) pathName);
-
-				// Re-populate available maps
-				//initActiveMap((String) pathName); 
-
-				return true;
-			}
-		});
-		return pref;
-	}
 	
-	/**
-	 * Initializes data directory preference.
-	 * @return EditTextPreference with data directory.
-	 */
-	private EditTextPreference initWifiCatalogFolderControl() {
-		EditTextPreference pref = (EditTextPreference) findPreference(Preferences.KEY_WIFI_CATALOG_FOLDER);
-		//pref.setSummary(PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_WIFI_CATALOG_FOLDER, Preferences.VAL_WIFI_CATALOG_FOLDER));
-		pref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-			@Override
-			public boolean onPreferenceChange(final Preference preference, final Object newValue) {
-				String pathName = "";
-
-				// Ensure there is always a leading slash
-				if (!((String) newValue).startsWith(File.separator)) {
-					pathName = File.separator + (String) newValue;
-				} else {
-					pathName = (String) newValue;
-				}
-
-				// try to create directory
-				File folder = new File(Environment.getExternalStorageDirectory() + pathName);
-				boolean success = true;
-				if (!folder.exists()) {
-					success = folder.mkdirs();
-				}
-				if (!success) {
-					Toast.makeText(getBaseContext(), R.string.error_create_directory_failed + pathName, Toast.LENGTH_LONG).show();
-					return false;
-				}
-
-				// Set summary with the directory value
-				preference.setSummary((String) pathName);
-
 				// Re-populate available maps
-				//initActiveMap((String) pathName); 
-
+				initActiveMapControl(pathName);
+	
 				return true;
 			}
 		});
 		return pref;
 	}
+
 	/**
 	 * Populates the download list with links to mapsforge downloads.
 	 * @param rootDir Root folder for MAPS_SUBDIR
@@ -562,6 +521,48 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 				lf.setValueIndex(i);
 			}
 		}
+	}
+
+	/**
+	 * Initializes data directory preference.
+	 * @return EditTextPreference with data directory.
+	 */
+	private EditTextPreference initWifiCatalogFolderControl() {
+		EditTextPreference pref = (EditTextPreference) findPreference(Preferences.KEY_WIFI_CATALOG_FOLDER);
+		//pref.setSummary(PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_WIFI_CATALOG_FOLDER, Preferences.VAL_WIFI_CATALOG_FOLDER));
+		pref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+			@Override
+			public boolean onPreferenceChange(final Preference preference, final Object newValue) {
+				String pathName = "";
+	
+				// Ensure there is always a leading slash
+				if (!((String) newValue).startsWith(File.separator)) {
+					pathName = File.separator + (String) newValue;
+				} else {
+					pathName = (String) newValue;
+				}
+	
+				// try to create directory
+				File folder = new File(Environment.getExternalStorageDirectory() + pathName);
+				boolean success = true;
+				if (!folder.exists()) {
+					success = folder.mkdirs();
+				}
+				if (!success) {
+					Toast.makeText(getBaseContext(), R.string.error_create_directory_failed + pathName, Toast.LENGTH_LONG).show();
+					return false;
+				}
+	
+				// Set summary with the directory value
+				//preference.setSummary((String) pathName);
+	
+				// Re-populate available maps
+				initActiveWifiCatalogControl(pathName); 
+	
+				return true;
+			}
+		});
+		return pref;
 	}
 
 	/**
