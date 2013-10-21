@@ -169,15 +169,24 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 		ArrayList<String> args = new ArrayList<String>();
 		String selectSql = "";
 
-		if (mCell != null && mCell.getCid() != -1) {
+		if (mCell != null && mCell.getCid() != -1  && !mCell.isCdma()) {
+			// typical gsm/hdspa cells
+			selectSql = Schema.COL_CELLID + " = ? AND " + Schema.COL_PSC + " = ?" ;
 			args.add(String.valueOf(mCell.getCid()));
-			selectSql = Schema.COL_CELLID + " = ?";
+			args.add(String.valueOf(mCell.getPsc()));
+		} else if (mCell != null && mCell.getCid() == -1 &&  !mCell.isCdma()) {
+			// umts cells
+			selectSql = Schema.COL_PSC + " = ?";
+			args.add(String.valueOf(mCell.getPsc()));
 		} else if (mCell != null && mCell.isCdma()
 				&& !mCell.getBaseId().equals("-1") && !mCell.getNetworkId().equals("-1") && !mCell.getSystemId().equals("-1")) {
+			// cdma cells
+			selectSql = Schema.COL_BASEID + " = ? AND " + Schema.COL_NETWORKID + " = ? AND " + Schema.COL_SYSTEMID + " = ? AND " + Schema.COL_PSC + " = ?";
+			
 			args.add(mCell.getBaseId());
 			args.add(mCell.getNetworkId());
 			args.add(mCell.getSystemId());
-			selectSql = Schema.COL_BASEID + " = ? AND " + Schema.COL_NETWORKID + " = ? AND " + Schema.COL_SYSTEMID + " = ?";
+			args.add(String.valueOf(mCell.getPsc()));
 		}
 
 		DataHelper dbHelper = new DataHelper(this.getActivity());
