@@ -78,7 +78,7 @@ public class WifiExporter  {
 	/**
 	 * Entries per log file
 	 */
-	private static final int WIFIS_PER_FILE	= 100;
+	private static final int WIFIS_PER_FILE	= 500;
 
 
 	private Context mContext;

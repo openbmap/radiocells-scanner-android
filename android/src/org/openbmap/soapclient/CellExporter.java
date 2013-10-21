@@ -55,7 +55,7 @@ public class CellExporter {
 	/**
 	 * Cursor windows size, to prevent running out of mem on to large cursor
 	 */
-	private static final int CURSOR_SIZE	= 2000;
+	private static final int CURSOR_SIZE = 2000;
 
 	/**
 	 * XML header.
@@ -75,7 +75,7 @@ public class CellExporter {
 	/**
 	 * Entries per log file
 	 */
-	private static final int CELLS_PER_FILE	= 100;
+	private static final int CELLS_PER_FILE	= 500;
 
 
 	private Context mContext;
