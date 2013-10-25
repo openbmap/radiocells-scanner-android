@@ -72,14 +72,13 @@ import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, LoaderManager.LoaderCallbacks<Cursor>  {
 
 	private static final String TAG = WifiDetailsMap.class.getSimpleName();
-	
+
 	/**
-	 * 
+	 * Radius heat-map circles
 	 */
 	private static final float	RADIUS	= 20f;
-	
-	private WifiRecord mWifiSelected;
 
+	private WifiRecord mWifiSelected;
 
 	// [start] UI controls
 	/**
@@ -107,15 +106,15 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 	private Observer mapObserver;
 
-	private byte	lastZoom;
+	private byte lastZoom;
 
 	private LatLong	target;
 
 	private boolean	updatePending;
 
-	private Marker	heatmapLayer;
+	private Marker heatmapLayer;
 
-	private byte	initialZoom;
+	private byte initialZoom;
 
 	private AsyncTask<Object, Integer, Boolean>	builder;
 
@@ -125,15 +124,12 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		this.tileCache = createTileCache();
-
 	}
+
 	@Override
 	public final View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.wifidetailsmap, container, false);	
 		this.mapView = (MapView) view.findViewById(R.id.map);
-		initMap();
-
 		return view;
 	}
 
@@ -141,15 +137,17 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	public final void onActivityCreated(final Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);	
 
-		mapView.getLayerManager().getLayers().add(MapUtils.createTileRendererLayer(
-				this.tileCache,
-				this.mapView.getModel().mapViewPosition,
-				getMapFile()));
-
+		initMap();
 
 		mWifiSelected = ((WifiDetailsActivity) getActivity()).getWifi();
 
-		getActivity().getSupportLoaderManager().initLoader(0, null, this); 
+		if (savedInstanceState != null) {
+			// reset loader after screen rotation
+			// also see http://stackoverflow.com/questions/12009895/loader-restarts-on-orientation-change
+			getActivity().getSupportLoaderManager().restartLoader(0, null, this);
+		} else {
+			getActivity().getSupportLoaderManager().initLoader(0, null, this);
+		}
 	}
 
 	@Override 
@@ -173,7 +171,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 		}
 		DataHelper dbHelper = new DataHelper(this.getActivity());
 		args[1] = String.valueOf(dbHelper.getActiveSessionId());
-		
+
 		String[] projection = { Schema.COL_ID, Schema.COL_SSID, Schema.COL_LEVEL,  "begin_" + Schema.COL_LATITUDE, "begin_" + Schema.COL_LONGITUDE};
 		CursorLoader cursorLoader =
 				new CursorLoader(getActivity().getBaseContext(),  RadioBeaconContentProvider.CONTENT_URI_WIFI_EXTENDED,
@@ -195,7 +193,9 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 				points.add(new HeatLatLong(cursor.getDouble(colLat), cursor.getDouble(colLon), intensity));
 			}
 
-			mapView.getModel().mapViewPosition.setCenter(points.get(points.size()-1));
+			if (points.size() > 0) {
+				mapView.getModel().mapViewPosition.setCenter(points.get(points.size()-1));
+			}
 			pointsLoaded  = true;
 			proceedAfterHeatmapCompleted();
 		}
@@ -256,7 +256,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	public final void onHeatmapFailed() {
 		updatePending = false;
 	}
-	
+
 	/**
 	 * Sets map-related object to null to enable garbage collection.
 	 */
@@ -312,6 +312,14 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	 * Initializes map components
 	 */
 	private void initMap() {
+		this.tileCache = createTileCache();
+
+		mapView.getLayerManager().getLayers().add(MapUtils.createTileRendererLayer(
+				this.tileCache,
+				this.mapView.getModel().mapViewPosition,
+				getMapFile()));
+
+
 		// register for layout finalization - we need this to get width and height
 		ViewTreeObserver vto = mapView.getViewTreeObserver();
 		vto.addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
@@ -346,7 +354,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 					if (builder != null) {
 						builder.cancel(true);
 					}
-					
+
 					clearLayer();
 					proceedAfterHeatmapCompleted();
 					lastZoom = zoom;

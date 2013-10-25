@@ -71,14 +71,13 @@ import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, LoaderManager.LoaderCallbacks<Cursor>  {
 
 	private static final String TAG = CellDetailsMap.class.getSimpleName();
-	
+
 	/**
 	 * Radius heat-map circles
 	 */
 	private static final float RADIUS	= 50f;
 
 	private CellRecord mCell;
-
 
 	// [start] UI controls
 	/**
@@ -114,7 +113,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 	private Marker	heatmapLayer;
 
-	private byte	initialZoom;
+	private byte initialZoom;
 
 	private AsyncTask<Object, Integer, Boolean>	builder;
 
@@ -124,14 +123,12 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		this.tileCache = createTileCache();
-
 	}
+	
 	@Override
 	public final View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.celldetailsmap, container, false);	
 		this.mapView = (MapView) view.findViewById(R.id.map);
-		initMap();
 
 		return view;
 	}
@@ -140,15 +137,17 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	public final void onActivityCreated(final Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);	
 
-		mapView.getLayerManager().getLayers().add(MapUtils.createTileRendererLayer(
-				this.tileCache,
-				this.mapView.getModel().mapViewPosition,
-				getMapFile()));
-
+		initMap();
 
 		mCell = ((CellDetailsActivity) getActivity()).getCell();
 
-		getActivity().getSupportLoaderManager().initLoader(0, null, this); 
+		if (savedInstanceState != null) {
+			// reset loader after screen rotation
+			// also see http://stackoverflow.com/questions/12009895/loader-restarts-on-orientation-change
+			getActivity().getSupportLoaderManager().restartLoader(0, null, this);
+		} else {
+			getActivity().getSupportLoaderManager().initLoader(0, null, this);
+		}
 	}
 
 	@Override 
@@ -182,7 +181,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 				&& !mCell.getBaseId().equals("-1") && !mCell.getNetworkId().equals("-1") && !mCell.getSystemId().equals("-1")) {
 			// cdma cells
 			selectSql = Schema.COL_BASEID + " = ? AND " + Schema.COL_NETWORKID + " = ? AND " + Schema.COL_SYSTEMID + " = ? AND " + Schema.COL_PSC + " = ?";
-			
+
 			args.add(mCell.getBaseId());
 			args.add(mCell.getNetworkId());
 			args.add(mCell.getSystemId());
@@ -218,10 +217,12 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 				points.add(new HeatLatLong(cursor.getDouble(colLat), cursor.getDouble(colLon), intensity));
 			}
 
-			mapView.getModel().mapViewPosition.setCenter(points.get(points.size()-1));
+			if (points.size() > 0) {
+				mapView.getModel().mapViewPosition.setCenter(points.get(points.size()-1));
+			}
 			pointsLoaded  = true;
 			proceedAfterHeatmapCompleted();
-			
+
 			// update host activity
 			((CellDetailsActivity) getActivity()).setNoMeasurements(cursor.getCount());
 		}
@@ -339,6 +340,14 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	 */
 	@SuppressLint("NewApi")
 	private void initMap() {
+		this.tileCache = createTileCache();
+
+		mapView.getLayerManager().getLayers().add(MapUtils.createTileRendererLayer(
+				this.tileCache,
+				this.mapView.getModel().mapViewPosition,
+				getMapFile()));
+
+		
 		// register for layout finalization - we need this to get width and height
 		ViewTreeObserver vto = mapView.getViewTreeObserver();
 		vto.addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
