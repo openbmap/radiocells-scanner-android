@@ -94,9 +94,6 @@ public final class BssidBlackListBootstraper {
 		{"LessWire AG","00:06:C6"},
 		{"Wistron Neweb Corp.","00:0B:6B"}, // device reporting as ssid Moovbox
 		// mobile devices
-		{"Murata Manufacturing Co., Ltd., used on some LG devices", "44:A7:CF"},
-		{"Murata Manufacturing Co., Ltd., used in some mobile devices", "40:F3:08"},
-		{"LG Electronics, used in Nexus 4",	"10:68:3F"},
 		{"Apple", "00:26:B0"},
 		{"Apple", "00:26:BB"},
 		{"Apple Computer Inc.", "00:19:E3"},
@@ -104,6 +101,11 @@ public final class BssidBlackListBootstraper {
 		{"Apple", "00:26:4A"},
 		{"Apple", "00:C6:10"},
 		
+		// LG
+		{"Murata Manufacturing Co., Ltd., used on some LG devices", "44:A7:CF"},
+		{"Murata Manufacturing Co., Ltd., used in some mobile devices", "40:F3:08"},
+		{"LG Electronics, used in Nexus 4",	"10:68:3F"},
+		{"LG Electronics", "C4:43:8F"}, 	
 		// Sony Mobile
 		{"00:0A:D9","Sony Ericsson Mobile Communications AB"},
 		{"00:0E:07","Sony Ericsson Mobile Communications AB"},
