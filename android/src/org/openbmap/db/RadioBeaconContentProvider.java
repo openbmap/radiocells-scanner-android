@@ -96,6 +96,10 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	 */
 	public static final String CONTENT_URI_ACTIVE_SUFFIX = "active";
 
+	/**
+	 * Can be appended to certain URIs to get only items of specific bssid
+	 */
+	public static final String CONTENT_URI_BSSID_SUFFIX = "bssid";
 
 	/**
 	 * Uri Matcher
@@ -319,7 +323,8 @@ public class RadioBeaconContentProvider extends ContentProvider {
 				+ "w." + Schema.COL_TIMESTAMP + "," 
 				+ "w." + Schema.COL_BEGIN_POSITION_ID + ", " 
 				+ "w." + Schema.COL_END_POSITION_ID + ", "
-				+ "w." + Schema.COL_IS_NEW_WIFI + " "; 
+				//+ "w." + Schema.COL_IS_NEW_WIFI + " "; 
+				+ "w." + Schema.COL_KNOWN_WIFI + " "; 
 
 				String wifiOverviewQuery = "SELECT " + wifiFields + " FROM " + Schema.TBL_WIFIS + " as w "
 						+ " JOIN " + Schema.TBL_POSITIONS +  " as b ON " + Schema.COL_BEGIN_POSITION_ID + " = b." + Schema.COL_ID + " ";
@@ -385,12 +390,12 @@ public class RadioBeaconContentProvider extends ContentProvider {
 						+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 1 AND " + Schema.COL_CELLID + " > -1 GROUP BY " + Schema.COL_CELLID
 						+ " UNION SELECT " + cellFields  + " FROM cells "
 						+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 0 AND " + Schema.COL_CELLID + " > -1 GROUP BY " + Schema.COL_CELLID;
-				
+
 				// add umts / cdma cells
 				cellOverviewQuery += " UNION SELECT " + cellFields  + " FROM cells "
 						+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 0 AND " + Schema.COL_CELLID + " = -1 GROUP BY "
 						+ Schema.COL_PSC + ", " + Schema.COL_SYSTEMID + ", " + Schema.COL_NETWORKID + ", " + Schema.COL_BASEID;
-				
+
 				cellOverviewQuery += " ORDER BY " + Schema.COL_IS_SERVING + " DESC";
 				//Log.i(TAG, cellOverviewQuery);
 				return queryRaw(cellOverviewQuery, RadioBeaconContentProvider.CONTENT_URI_CELL);
@@ -512,7 +517,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	@Override
 	public final int update(final Uri uri, final ContentValues values,
 			final String selectionIn, final String[] selectionArgsIn) {
-		Log.v(TAG, "update(), uri=" + uri);
+		//Log.v(TAG, "update(), uri=" + uri);
 
 		switch (uriMatcher.match(uri)) {
 			case Schema.URI_CODE_SESSIONS:
@@ -527,6 +532,8 @@ public class RadioBeaconContentProvider extends ContentProvider {
 				}
 			case Schema.URI_CODE_SESSION_ID:
 				return updateTable(uri, Schema.TBL_SESSIONS, values, addColumntoSelection(Schema.COL_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn));
+			case Schema.URI_CODE_WIFIS:
+				return updateTable(uri, Schema.TBL_WIFIS, values, selectionIn, selectionArgsIn);
 			default:
 				throw new IllegalArgumentException("Unknown URI: " + uri);
 		} 

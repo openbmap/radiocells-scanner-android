@@ -25,6 +25,7 @@ import org.openbmap.db.DataHelper;
 import org.openbmap.db.Schema;
 import org.openbmap.db.model.WifiChannel;
 import org.openbmap.db.model.WifiRecord;
+import org.openbmap.db.model.WifiRecord.CatalogStatus;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -114,7 +115,7 @@ public class WifiDetailsActivity extends FragmentActivity {
 						+ "  (" + freq + " MHz)");
 			}
 			
-			if (wifi.isNew()) {
+			if (wifi.getCatalogStatus().equals(CatalogStatus.NEW)) {
 				ivIsNew.setImageResource(android.R.drawable.checkbox_on_background);
 			} else {
 				ivIsNew.setImageResource(android.R.drawable.checkbox_off_background);

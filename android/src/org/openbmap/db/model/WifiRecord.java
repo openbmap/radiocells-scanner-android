@@ -28,9 +28,10 @@ import org.openbmap.RadioBeacon;
  */
 public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 	
-
 	@SuppressWarnings("unused")
 	private static final String TAG = WifiRecord.class.getSimpleName();
+	
+	public enum CatalogStatus {NEW, OPENBMAP, LOCAL};
 	
 	private String mBSsid;
 	private String mSsid;
@@ -42,11 +43,12 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 	 * Timestamp in openbmap format: YYYYMMDDHHMMSS
 	 */
 	private long mOpenBmapTimestamp;
-	private boolean mIsNew;
 
 	private PositionRecord mBeginPosition;
 	private PositionRecord mEndPosition;
 	private int mSessionID;
+
+	private CatalogStatus mCatalogStatus;
 
 	/**
 	 * used for contains method
@@ -73,12 +75,12 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 	 * @param request
 	 * @param last
 	 */
-	public WifiRecord(String bssid, String ssid, String capabilities, int frequency, int level, long timestamp, PositionRecord request, PositionRecord last, boolean isNew)
+	public WifiRecord(String bssid, String ssid, String capabilities, int frequency, int level, long timestamp, PositionRecord request, PositionRecord last, CatalogStatus catalogStatus)
 	{
-		this(bssid, ssid, capabilities, frequency, level, timestamp, request, last, RadioBeacon.SESSION_NOT_TRACKING, isNew);
+		this(bssid, ssid, capabilities, frequency, level, timestamp, request, last, RadioBeacon.SESSION_NOT_TRACKING, catalogStatus);
 	}
 
-	public WifiRecord(String bssid, String ssid, String capabilities, int frequency, int level, long timestamp, PositionRecord request, PositionRecord last, int session, boolean isNew)
+	public WifiRecord(String bssid, String ssid, String capabilities, int frequency, int level, long timestamp, PositionRecord request, PositionRecord last, int session, CatalogStatus catalogStatus)
 	{
 		setBssid(bssid);
 		setSsid(ssid);
@@ -89,7 +91,8 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 		setBeginPosition(request);
 		setEndPosition(last);
 		setSessionId(session);
-		setNew(isNew);
+		//setNew(knownWifi);
+		setCatalogStatus(catalogStatus);
 	}
 
 	@Override
@@ -183,12 +186,20 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 		this.mEndPosition = end;
 	}
 
-	public final boolean isNew() {
-		return mIsNew;
+	/**
+	 * Is wifi new, in openbmap wifi catalog or in local wifi catalog
+	 * @param catalogStatus Wifi's status
+	 */
+	public void setCatalogStatus(CatalogStatus catalogStatus) {
+		mCatalogStatus = catalogStatus;
 	}
-
-	public final void setNew(final boolean isNew) {
-		this.mIsNew = isNew;
+	
+	public CatalogStatus getCatalogStatus() {
+		return mCatalogStatus;
+	}
+	
+	public int getCatalogStatusInt() {
+		return mCatalogStatus.ordinal();
 	}
 
 	public static String md5(final String source) {  
@@ -211,5 +222,6 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 		return "";  
 	}  
 
+	
 }
 

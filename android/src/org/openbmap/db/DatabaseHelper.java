@@ -86,7 +86,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+  Schema.COL_BEGIN_POSITION_ID + " INTEGER NOT NULL, "
 			+  Schema.COL_END_POSITION_ID + " INTEGER NOT NULL, "
 			+  Schema.COL_SESSION_ID + " INTEGER, "
-			+  Schema.COL_IS_NEW_WIFI + " INTEGER, "
+			//+  Schema.COL_IS_NEW_WIFI + " INTEGER, "
+			+  Schema.COL_KNOWN_WIFI + " INTEGER, "
 			+  " FOREIGN KEY (" + Schema.COL_SESSION_ID + ") REFERENCES " + Schema.TBL_SESSIONS + "( " + Schema.COL_ID + ") ON DELETE CASCADE, "
 			+  " FOREIGN KEY (" + Schema.COL_BEGIN_POSITION_ID + ") REFERENCES " + Schema.TBL_POSITIONS + "( " + Schema.COL_ID + "), "
 			+  " FOREIGN KEY (" + Schema.COL_END_POSITION_ID + ") REFERENCES " + Schema.TBL_POSITIONS + "( " + Schema.COL_ID + ")" 
@@ -106,7 +107,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+ " w." + Schema.COL_BEGIN_POSITION_ID +  " AS " + Schema.COL_BEGIN_POSITION_ID + ","
 			+ " w." + Schema.COL_END_POSITION_ID +  " AS " + Schema.COL_END_POSITION_ID + ","
 			+ " w." + Schema.COL_SESSION_ID +  " AS " + Schema.COL_SESSION_ID + ","
-			+ " w." + Schema.COL_IS_NEW_WIFI +  " AS " + Schema.COL_IS_NEW_WIFI + ","
+			//+ " w." + Schema.COL_IS_NEW_WIFI +  " AS " + Schema.COL_IS_NEW_WIFI + ","
+			+ " w." + Schema.COL_KNOWN_WIFI +  " AS " + Schema.COL_KNOWN_WIFI + ","
 			+ " b." + Schema.COL_LATITUDE + " as begin_latitude,"
 			+ " b." + Schema.COL_LONGITUDE + " as begin_longitude,"
 			+ " b." + Schema.COL_ALTITUDE + " as begin_altitude,"
@@ -349,6 +351,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		if (oldVersion == 3) {
 			// add asu fields
 			db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_STRENGTHASU + " INTEGER DEFAULT 0");
+		}
+		
+		if (oldVersion == 4) {
+			// add known wifi column (replacement for is_new_wifi)
+			db.execSQL("ALTER TABLE " + Schema.TBL_WIFIS + " ADD COLUMN " + Schema.COL_KNOWN_WIFI + " INTEGER DEFAULT 0");
+			db.execSQL("UPDATE " + Schema.TBL_WIFIS + " SET " + Schema.COL_KNOWN_WIFI + " = 1 WHERE is_new_wifi = 0");
+			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_WIFIS_EXTENDED);
+			db.execSQL(SQL_CREATE_VIEW_WIFI_POSITIONS);
 		}
 	}
 

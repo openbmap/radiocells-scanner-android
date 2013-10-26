@@ -85,8 +85,24 @@
             android:textAppearance="?android:attr/textAppearanceLarge" />
     </TableRow>
 
+   
     <TableRow>
+        <TextView
+            android:id="@+id/stats_new_wifis_caption"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.35"
+            android:text="@string/stats_new_wifis" />
 
+        <TextView
+            android:id="@+id/stats_new_wifis"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.65"
+            android:text="(--)" />
+    </TableRow>
+
+     <TableRow>
         <ImageView
             android:id="@+id/stats_icon_alert"
             android:layout_width="0dp"
@@ -104,7 +120,6 @@
             android:maxLines="2"
             android:text=""
             android:textAppearance="?android:attr/textAppearanceMedium" />
-
     </TableRow>
-
+    
 </TableLayout>

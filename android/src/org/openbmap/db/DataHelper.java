@@ -27,6 +27,7 @@ import org.openbmap.db.model.LogFile;
 import org.openbmap.db.model.PositionRecord;
 import org.openbmap.db.model.Session;
 import org.openbmap.db.model.WifiRecord;
+import org.openbmap.db.model.WifiRecord.CatalogStatus;
 
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
@@ -114,7 +115,8 @@ public class DataHelper {
 					.withValueBackReference (Schema.COL_BEGIN_POSITION_ID, 0) /* Index is 0 because Foo A is the first operation in the array*/
 					.withValueBackReference (Schema.COL_END_POSITION_ID, 1)
 					.withValue(Schema.COL_SESSION_ID, wifi.getSessionId())
-					.withValue(Schema.COL_IS_NEW_WIFI, wifi.isNew() ? 1 : 0)
+					//.withValue(Schema.COL_IS_NEW_WIFI, wifi.isNew() ? 1 : 0)
+					.withValue(Schema.COL_KNOWN_WIFI, wifi.getCatalogStatusInt())
 					.build());	
 		}
 
@@ -163,7 +165,8 @@ public class DataHelper {
 
 			wifi.setBeginPosition(loadPositionById(ca.getString(columnIndex7)));
 			wifi.setEndPosition(loadPositionById(ca.getString(columnIndex8)));
-			wifi.setNew(ca.getInt(columnIndex9) == 1);
+			//wifi.setNew(ca.getInt(columnIndex9) == 1);
+			wifi.setCatalogStatus(CatalogStatus.values()[ca.getInt(columnIndex9)]);
 			wifis.add(wifi);
 		}
 		ca.close();
@@ -179,6 +182,20 @@ public class DataHelper {
 		Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
 				RadioBeaconContentProvider.CONTENT_URI_WIFI, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
 				new String[]{Schema.COL_ID}, null, null, null);
+		int count = ca.getCount();
+		ca.close();
+		return count;
+	}
+	
+	/**
+	 * Counts number of wifis in session.
+	 * @param session
+	 * @return number of wifis
+	 */
+	public final int countNewWifis(final int session) {
+		Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
+				RadioBeaconContentProvider.CONTENT_URI_WIFI, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
+				new String[]{Schema.COL_ID}, Schema.COL_KNOWN_WIFI + " = ?", new String[]{"0"}, null);
 		int count = ca.getCount();
 		ca.close();
 		return count;
@@ -206,7 +223,8 @@ public class DataHelper {
 
 					loadPositionById(ca.getString(ca.getColumnIndex(Schema.COL_BEGIN_POSITION_ID))),
 					loadPositionById(ca.getString(ca.getColumnIndex(Schema.COL_END_POSITION_ID))),
-					ca.getInt(ca.getColumnIndex(Schema.COL_IS_NEW_WIFI)) == 1);
+					//ca.getInt(ca.getColumnIndex(Schema.COL_IS_NEW_WIFI)) == 1);
+					CatalogStatus.values()[ca.getInt(ca.getColumnIndex(Schema.COL_KNOWN_WIFI))]);
 		}
 		ca.close();
 		return wifi;
@@ -254,7 +272,8 @@ public class DataHelper {
 			wifi.setBeginPosition(loadPositionById(ca.getString(columnIndex7)));
 			// TODO: not too safe ..
 			wifi.setEndPosition(loadPositionById(ca.getString(columnIndex8)));
-			wifi.setNew(ca.getInt(columnIndex9) == 1);
+			//wifi.setNew(ca.getInt(columnIndex9) == 1);
+			wifi.setCatalogStatus(CatalogStatus.values()[ca.getInt(columnIndex9)]);
 			wifis.add(wifi);
 		}
 		ca.close();
@@ -318,7 +337,8 @@ public class DataHelper {
 			wifi.setBeginPosition(loadPositionById(ca.getString(columnIndex7)));
 			wifi.setEndPosition(loadPositionById(ca.getString(columnIndex8)));
 			
-			wifi.setNew(ca.getInt(columnIndex9) == 1);
+			//wifi.setNew(ca.getInt(columnIndex9) == 1);
+			wifi.setCatalogStatus(CatalogStatus.values()[ca.getInt(columnIndex9)]);
 			wifis.add(wifi);
 		}
 

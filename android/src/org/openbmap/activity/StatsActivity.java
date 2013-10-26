@@ -14,7 +14,7 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.activity;
 
@@ -49,14 +49,16 @@ public class StatsActivity extends Activity {
 	private TextView tvSession;
 	private TextView tvCountCells;
 	private TextView tvCountWifis;
+	private TextView tvNewWifis;
 	private TextView tvIgnored;
 	private ImageView ivAlert;
-	
-	private DataHelper	dbHelper;
+
+	private DataHelper	mDataHelper;
+	private Session	mSession;
 
 	Runnable mHidder;
 	Handler mHandler = new Handler();
-	
+
 	/**
 	 * Receives cell / wifi news
 	 */
@@ -71,30 +73,28 @@ public class StatsActivity extends Activity {
 				String lastCell = intent.getStringExtra(RadioBeacon.MSG_KEY);
 				tvLastCell.setText(lastCell);
 
-				Session active = dbHelper.loadActiveSession();
-				refreshSessionStats(active);
+				refreshSessionStats(mSession);
 
 			} else if (RadioBeacon.INTENT_NEW_WIFI.equals(intent.getAction())) {
 				String lastWifi = intent.getStringExtra(RadioBeacon.MSG_SSID);
 				String extraInfo = intent.getStringExtra(RadioBeacon.MSG_KEY);
 				tvLastWifi.setText(lastWifi + " " + extraInfo);
 
-				Session active = dbHelper.loadActiveSession();
-				refreshSessionStats(active);
-				
+				refreshSessionStats(mSession);
+
 			} else if (RadioBeacon.INTENT_NEW_SESSION.equals(intent.getAction())) {
 				String id = intent.getStringExtra(RadioBeacon.MSG_KEY);
-				Session session = dbHelper.loadSession(Integer.valueOf(id));
-				refreshSessionStats(session);
-				
+				mSession = mDataHelper.loadSession(Integer.valueOf(id));
+				refreshSessionStats(mSession);
+
 			} else if (RadioBeacon.INTENT_WIFI_BLACKLISTED.equals(intent.getAction())) {
 				// let's display warning for 10 seconds
 				mHandler.removeCallbacks(mHidder);
-				
+
 				String reason = intent.getStringExtra(RadioBeacon.MSG_KEY);
 				String ssid = intent.getStringExtra(RadioBeacon.MSG_SSID);
 				String bssid = intent.getStringExtra(RadioBeacon.MSG_BSSID);
-				
+
 				// can be null, so set default values
 				if (ssid == null) {
 					ssid = "";
@@ -102,7 +102,7 @@ public class StatsActivity extends Activity {
 				if (bssid == null) {
 					bssid = "";
 				}
-				
+
 				if (reason.equals(RadioBeacon.MSG_BSSID)) {
 					tvIgnored.setText(ssid + " (" + bssid + ")\n" + getResources().getString(R.string.blacklisted_bssid));
 				} else if (reason.equals(RadioBeacon.MSG_SSID)) {
@@ -122,19 +122,19 @@ public class StatsActivity extends Activity {
 		super.onCreate(savedInstanceState);
 
 		mHidder = new Runnable() {
-            @Override
-            public void run() {
-            	tvIgnored.setVisibility(View.INVISIBLE); 
-            	ivAlert.setVisibility(View.INVISIBLE);
-            }
-        };
-		
+			@Override
+			public void run() {
+				tvIgnored.setVisibility(View.INVISIBLE); 
+				ivAlert.setVisibility(View.INVISIBLE);
+			}
+		};
+
 		// setup UI controls
 		initUi();
 
 		// setup broadcast filters
 		registerReceiver();	
-		dbHelper = new DataHelper(this);
+		mDataHelper = new DataHelper(this);
 	}
 
 	/**
@@ -147,6 +147,7 @@ public class StatsActivity extends Activity {
 		tvSession = (TextView) findViewById(R.id.stats_session_description);
 		tvCountCells = (TextView) findViewById(R.id.stats_cell_total);
 		tvCountWifis = (TextView) findViewById(R.id.stats_wifi_total);
+		tvNewWifis = (TextView) findViewById(R.id.stats_new_wifis);
 		tvIgnored = (TextView) findViewById(R.id.stats_blacklisted);
 		ivAlert = (ImageView) findViewById(R.id.stats_icon_alert);
 	}
@@ -167,7 +168,7 @@ public class StatsActivity extends Activity {
 		filter.addAction(RadioBeacon.INTENT_WIFI_BLACKLISTED);
 		registerReceiver(mReceiver, filter);
 	}
-	
+
 	/**
 	 * Unregisters receivers for GPS and wifi scan results.
 	 */
@@ -178,37 +179,41 @@ public class StatsActivity extends Activity {
 			// do nothing here {@see http://stackoverflow.com/questions/2682043/how-to-check-if-receiver-is-registered-in-android}
 		}
 	}
-	
+
 
 	@Override
 	protected final void onResume() {
 		super.onResume();
-		
+
 		registerReceiver();	
-		
-		if (dbHelper != null) {
-			Session active = dbHelper.loadActiveSession();
-			refreshSessionStats(active);
+
+		if (mDataHelper != null) {
+			mSession = mDataHelper.loadActiveSession();
+			refreshSessionStats(mSession);
 		}
 	}
-	
+
 	/**
 	 * Refreshes session id, number of cells and wifis.
 	 */
 	private void refreshSessionStats(final Session session) {
-			
+
 		if (session != null) {
 			tvSession.setText(String.valueOf(session.getId()));
 			tvCountCells.setText(
 					"("
-							+ String.valueOf(dbHelper.countCells(session.getId()))
+							+ String.valueOf(mDataHelper.countCells(session.getId()))
 							+ ")"
 					);	
 			tvCountWifis.setText(
 					"("
-							+ String.valueOf(dbHelper.countWifis(session.getId()))
+							+ String.valueOf(mDataHelper.countWifis(session.getId()))
 							+ ")"
 					);
+			
+			if (mSession != null) {
+				tvNewWifis.setText(String.valueOf(mDataHelper.countNewWifis(mSession.getId())));
+			}
 		} else {
 			tvSession.setText("-");
 			tvCountCells.setText("(--)");

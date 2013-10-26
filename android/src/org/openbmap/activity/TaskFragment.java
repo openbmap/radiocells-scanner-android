@@ -100,7 +100,9 @@ public class TaskFragment extends Fragment {
 		mExportTask.setExportCells(true);
 		mExportTask.setExportWifis(true);
 		mExportTask.setExportGpx(exportGpx);
-
+		// currently deactivated to prevent crashes
+		mExportTask.setUpdateWifiCatalog(false);
+		
 		// debug settings
 		mExportTask.setSkipUpload(skipUpload);
 		mExportTask.setSkipDelete(skipDelete);

@@ -36,6 +36,7 @@ import org.openbmap.utils.LegacyDownloader;
 import org.openbmap.utils.LegacyDownloader.LegacyDownloadListener;
 import org.openbmap.utils.MediaScanner;
 import org.openbmap.utils.VacuumCleaner;
+import org.openbmap.utils.WifiCatalogUpdater;
 
 import android.annotation.SuppressLint;
 import android.app.DownloadManager;
@@ -96,6 +97,8 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 
 		initGpsSystemSettingsControl();
 		initCleanDatabaseControl();
+		
+		initUpdateWifiCatalogControl();
 		initHomezoneBlockingControl();
 
 		initGpsLogIntervalControl();
@@ -160,20 +163,6 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 			@Override
 			public boolean onPreferenceClick(final Preference preference) {
 				startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-				return true;
-			}
-		});
-	}
-
-	/**
-	 * 
-	 */
-	private void initCleanDatabaseControl() {
-		Preference pref = findPreference(org.openbmap.Preferences.KEY_CLEAN_DATABASE);
-		pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-			@Override
-			public boolean onPreferenceClick(final Preference preference) {
-				new VacuumCleaner(SettingsActivity.this).execute(new Void[]{null});
 				return true;
 			}
 		});
@@ -699,7 +688,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 			values = new String[] {org.openbmap.Preferences.VAL_WIFI_CATALOG_NONE};
 		}
 
-		ListPreference lf = (ListPreference) findPreference(org.openbmap.Preferences.KEY_WIFI_CATALOG);
+		ListPreference lf = (ListPreference) findPreference(org.openbmap.Preferences.KEY_WIFI_CATALOG_FILE);
 		lf.setEntries(entries);
 		lf.setEntryValues(values);
 	}
@@ -710,7 +699,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 	 * @param absoluteFile absolute filename (including path)
 	 */
 	private void activateWifiCatalog(final String absoluteFile) {
-		ListPreference lf = (ListPreference) findPreference(org.openbmap.Preferences.KEY_WIFI_CATALOG);
+		ListPreference lf = (ListPreference) findPreference(org.openbmap.Preferences.KEY_WIFI_CATALOG_FILE);
 	
 		// get filename
 		String[] filenameArray = absoluteFile.split("\\/");
@@ -722,6 +711,35 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 				lf.setValueIndex(i);
 			}
 		}
+	}
+
+	/**
+	 * 
+	 */
+	private void initCleanDatabaseControl() {
+		Preference pref = findPreference(Preferences.KEY_CLEAN_DATABASE);
+		pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(final Preference preference) {
+				new VacuumCleaner(SettingsActivity.this).execute(new Void[]{null});
+				return true;
+			}
+		});
+	}
+
+	/**
+	 * Updates wifi catalog with new local wifis
+	 */
+	private void initUpdateWifiCatalogControl() {
+		Preference pref = findPreference(Preferences.KEY_UPDATE_CATALOG);
+		pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(final Preference preference) {
+				Toast.makeText(SettingsActivity.this, R.string.synchronizing, Toast.LENGTH_LONG).show();
+				new WifiCatalogUpdater(SettingsActivity.this).execute(new Void[]{null});
+				return true;
+			}
+		});
 	}
 
 	/**

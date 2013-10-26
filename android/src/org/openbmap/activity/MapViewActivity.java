@@ -88,7 +88,7 @@ OnGpxLoadedListener {
 	/**
 	 * 
 	 */
-	public enum LayersDisplayed { ALL, SESSION_ONLY, SESSION_AND_CATALOG};
+	public enum LayersDisplayed { ALL, SESSION_ONLY};
 
 	private static final String TAG = MapViewActivity.class.getSimpleName();
 
@@ -479,6 +479,8 @@ OnGpxLoadedListener {
 
 				if (catalogLayerSelected()) {
 					refreshCatalogOverlay(mapCenter);
+				} else {
+					clearCatalogLayer();
 				}
 			}
 			public void onNothingSelected(final AdapterView<?> parent) {
@@ -535,7 +537,11 @@ OnGpxLoadedListener {
 			return;
 		}
 	}
-
+	
+	/**
+	 * Refreshes catalog overlay, if not other overlay update takes place
+	 * @param location
+	 */
 	protected final void refreshCatalogOverlay(final Location location) {
 		if (!mRefreshCatalogPending) {
 			Log.d(TAG, "Updating wifi catalog overlay");
@@ -694,12 +700,12 @@ OnGpxLoadedListener {
 		if (highlight == null) {
 
 			ArrayList<Integer> sessions = new ArrayList<Integer>();
-			if (allLayerSelected()) {
+			/*if (allLayerSelected()) {
 				// load all session wifis
 				sessions = new DataHelper(this).getSessionList();
-			} else {
-				sessions.add(mSessionId);
-			}
+			} else {*/
+			sessions.add(mSessionId);
+			//}
 
 			double minLatitude = bbox.minLatitude;
 			double maxLatitude = bbox.maxLatitude;
@@ -908,18 +914,10 @@ OnGpxLoadedListener {
 	 * @return true if catalog objects need to be drawn
 	 */
 	private boolean catalogLayerSelected() {
-		return (btnLayerSelection.getSelectedItemPosition() == LayersDisplayed.ALL.ordinal()
-				|| btnLayerSelection.getSelectedItemPosition() == LayersDisplayed.SESSION_AND_CATALOG.ordinal());
+		return (btnLayerSelection.getSelectedItemPosition() == LayersDisplayed.ALL.ordinal());
 	}
 
 
-	/**
-	 * Checks whether user wants to see all sessions' objects (i.e. not only active)
-	 * @return true if all sessions need to be drawn
-	 */
-	private boolean allLayerSelected() {
-		return (btnLayerSelection.getSelectedItemPosition() ==  LayersDisplayed.ALL.ordinal());
-	}
 
 	/**
 	 * Opens selected map file

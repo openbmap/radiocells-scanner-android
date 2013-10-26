@@ -32,15 +32,42 @@ public final class Preferences {
 	public static final String KEY_GPS_PROVIDER = "gps.provider";
 	public static final String KEY_GPS_SAVE_COMPLETE_TRACK = "gps.save_track";
 	public static final String KEY_DATA_FOLDER = "data.dir";
-	public static final String KEY_MAP_FOLDER	= "data.folder_map";
-	public static final String KEY_WIFI_CATALOG_FOLDER	= "data.folder_catalog";
+	public static final String KEY_MAP_FOLDER = "data.folder_map";
+	public static final String KEY_WIFI_CATALOG_FOLDER = "data.folder_catalog";
+	
+	/**
+	 * Selected map file
+	 */
 	public static final String KEY_MAP_FILE = "data.map";
 
+	/**
+	 * Map download button
+	 */
 	public static final String KEY_DOWNLOAD_MAP = "data.download";	
+	
+	/**
+	 * Wifi catalog download button
+	 */
 	public static final String KEY_DOWNLOAD_WIFI_CATALOG = "data.download_wifi_catalog";
-	public static final String KEY_WIFI_CATALOG = "data.ref_database";
+	
+	/**
+	 * Selected wifi catalog file
+	 */
+	public static final String KEY_WIFI_CATALOG_FILE = "data.ref_database";
+	
+	/**
+	 * Keeps screen on during logging?
+	 */
 	public static final String KEY_KEEP_SCREEN_ON = "ui.keep_screen_on";
+	
+	/**
+	 * Openbmap user name
+	 */
 	public static final String KEY_CREDENTIALS_USER = "credentials.user";
+	
+	/**
+	 * Openbmap password
+	 */
 	public static final String KEY_CREDENTIALS_PASSWORD = "credentials.password";
 	
 	/**
@@ -69,24 +96,29 @@ public final class Preferences {
 	public static final String KEY_REQ_GPS_ACCURACY = "logging.gps_accuracy";
 	
 	/**
-	 * Upload files or simulate only
+	 * Simulate upload only?
 	 */
-	public static final String	KEY_SKIP_UPLOAD	= "debug.simulate_upload";
+	public static final String	KEY_SKIP_UPLOAD = "debug.simulate_upload";
 	
 	/**
-	 * Upload files or simulate only
+	 * Clean database button
 	 */
-	public static final String	KEY_CLEAN_DATABASE	= "debug.clean_database";
+	public static final String	KEY_CLEAN_DATABASE = "debug.clean_database";
+	
+	/**
+	 * Update wifi catalog button
+	 */
+	public static final String KEY_UPDATE_CATALOG = "debug.update_catalog";
 	
 	/**
 	 * Keep local temp files after upload?
 	 */
-	public static final String	KEY_SKIP_DELETE	= "debug.keep_export_files";
+	public static final String	KEY_SKIP_DELETE = "debug.keep_export_files";
 	
 	/**
 	 * Blocks wifi and cell scan around current location
 	 */
-	public static final String KEY_BLOCK_HOMEZONE	= "privacy.block_homezone";
+	public static final String KEY_BLOCK_HOMEZONE = "privacy.block_homezone";
 	
 	/**
 	 * Replace SSIDS by md5 hash on upload
@@ -144,12 +176,12 @@ public final class Preferences {
 	/**
 	 * By default upload session
 	 */
-	public static final boolean	VAL_SKIP_UPLOAD	= false;
+	public static final boolean	VAL_SKIP_UPLOAD = false;
 	
 	/**
 	 * By default delete local temp files after upload
 	 */
-	public static final boolean	VAL_SKIP_DELETE	= false;
+	public static final boolean	VAL_SKIP_DELETE = false;
 	
 	/**
 	 * Save cells by default
@@ -166,7 +198,7 @@ public final class Preferences {
 	 * If activated not only wifi and cell positions are saved,
 	 * but the complete track. Useful for debugging purposes
 	 */
-	public static final boolean	VAL_GPS_SAVE_COMPLETE_TRACK	= false;
+	public static final boolean	VAL_GPS_SAVE_COMPLETE_TRACK = false;
 	
 	/**
 	 * Check whether GPS is enabled by default
@@ -226,10 +258,10 @@ public final class Preferences {
 	/**
 	 * Filename catalog database
 	 */
-	public static final String	WIFI_CATALOG_FILE	= "openbmap.sqlite";
+	public static final String	WIFI_CATALOG_FILE = "openbmap.sqlite";
 	
 	/**
-	 * URL, which is called to check whether this client version is out-of-date
+	 * URL, which is called to check whether this client version is up-to-date
 	 */
 	public static final String	VERSION_CHECK_URL = "http://www.openbmap.org/current_version.xml";
 	

@@ -31,6 +31,7 @@ import org.openbmap.db.model.CellRecord;
 import org.openbmap.db.model.LogFile;
 import org.openbmap.db.model.PositionRecord;
 import org.openbmap.db.model.WifiRecord;
+import org.openbmap.db.model.WifiRecord.CatalogStatus;
 import org.openbmap.service.AbstractService;
 import org.openbmap.service.wireless.blacklists.BssidBlackList;
 import org.openbmap.service.wireless.blacklists.LocationBlackList;
@@ -58,11 +59,6 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
-import android.telephony.CellInfo;
-import android.telephony.CellInfoCdma;
-import android.telephony.CellInfoGsm;
-import android.telephony.CellInfoLte;
-import android.telephony.CellInfoWcdma;
 import android.telephony.CellLocation;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.PhoneStateListener;
@@ -169,7 +165,11 @@ public class WirelessLoggerService extends AbstractService {
 	 * Wifi scan is asynchronous. pendingWifiScanResults ensures that only one scan is mIsRunning
 	 */
 	private boolean pendingWifiScanResults = false;
-	private WifiScanCallback wifiScanResults;
+	
+	/**
+	 * Wifi scan result callback
+	 */
+	private WifiScanCallback mWifiScanResults;
 
 	/**
 	 * WakeLock to prevent cpu from going into sleep mode
@@ -292,8 +292,8 @@ public class WirelessLoggerService extends AbstractService {
 			if (WifiManager.SCAN_RESULTS_AVAILABLE_ACTION.equals(intent.getAction())) {
 				Log.d(TAG, "Wifi manager signals wifi scan results.");
 				// scan callback can be null after service has been stopped or another app has requested an update
-				if (wifiScanResults != null) {
-					wifiScanResults.onWifiResultsAvailable();
+				if (mWifiScanResults != null) {
+					mWifiScanResults.onWifiResultsAvailable();
 				} else {
 					Log.i(TAG, "Scan Callback is null, skipping message");
 				}
@@ -308,10 +308,10 @@ public class WirelessLoggerService extends AbstractService {
 		// get shared preferences
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-		if (!prefs.getString(Preferences.KEY_WIFI_CATALOG, Preferences.VAL_REF_DATABASE).equals(Preferences.VAL_WIFI_CATALOG_NONE)) {
+		if (!prefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_REF_DATABASE).equals(Preferences.VAL_WIFI_CATALOG_NONE)) {
 			String catalogPath = Environment.getExternalStorageDirectory().getPath()
 					+ prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER, Preferences.VAL_WIFI_CATALOG_FOLDER)
-					+ File.separator + prefs.getString(Preferences.KEY_WIFI_CATALOG, Preferences.VAL_REF_DATABASE);
+					+ File.separator + prefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_REF_DATABASE);
 
 			try {
 				mRefDb = SQLiteDatabase.openDatabase(catalogPath, null, SQLiteDatabase.OPEN_READONLY);
@@ -555,8 +555,8 @@ public class WirelessLoggerService extends AbstractService {
 			pendingWifiScanResults = true;
 
 			// initialize wifi scan callback if needed
-			if (this.wifiScanResults == null) {
-				this.wifiScanResults = new WifiScanCallback() {
+			if (this.mWifiScanResults == null) {
+				this.mWifiScanResults = new WifiScanCallback() {
 					public void onWifiResultsAvailable() {
 						Log.d(TAG, "Wifi results are available now.");
 
@@ -606,11 +606,11 @@ public class WirelessLoggerService extends AbstractService {
 										skipSpecific = true;
 									}
 
-									//								skipSpecific = false;
+									// skipSpecific = false;
 									if (!skipSpecific) {
 										WifiRecord wifi = new WifiRecord();
 										wifi.setBssid(r.BSSID);
-										wifi.setSsid(r.SSID);
+										wifi.setSsid(r.SSID.toLowerCase());
 										wifi.setCapabilities(r.capabilities);
 										wifi.setFrequency(r.frequency);
 										wifi.setLevel(r.level);
@@ -619,7 +619,8 @@ public class WirelessLoggerService extends AbstractService {
 										wifi.setBeginPosition(begin);
 										wifi.setEndPosition(end);
 										wifi.setSessionId(mSessionId);
-										wifi.setNew(checkIsNew(r.BSSID));
+										//wifi.setNew(checkIsNew(r.BSSID));
+										wifi.setCatalogStatus(checkCatalogStatus(r.BSSID));
 										wifis.add(wifi);
 									}
 								}
@@ -952,12 +953,17 @@ public class WirelessLoggerService extends AbstractService {
 						// UMTS cell
 						neighbor.setIsCdma(false);					
 						neighbor.setPsc(ci.getPsc());
-						// TODO do UMTS specific dbm conversion from ci.getRssi());
-						// @see http://developer.android.com/reference/android/telephony/NeighboringCellInfo.html#getRssi()
-						// currently used: http://en.wikipedia.org/wiki/Mobile_phone_signal#ASU
-						neighbor.setStrengthdBm(ci.getRssi());
-						//neighbor.setStrengthAsu(ci.getRssi());
 
+						neighbor.setStrengthdBm(ci.getRssi());
+
+						// There are several approaches on calculating ASU strength in UMTS:
+						// 1) Wikipedia: ASU = dBm + 116
+						// 	  @see http://en.wikipedia.org/wiki/Mobile_phone_signal#ASU
+						// 2) Android way: ASU = (dbm + 113) / 2
+						//	  @see TelephonyManager.getAllCellInfo.getCellStrength.getAsu() TelephonyManager.getAllCellInfo.getCellStrength.getDbm() 
+						// 	  @see http://developer.android.com/reference/android/telephony/NeighboringCellInfo.html#getRssi()
+						int asu = (int) Math.round((ci.getRssi() + 113.0)/2.0);
+						neighbor.setStrengthAsu(asu);
 					} else if (networkType == TelephonyManager.NETWORK_TYPE_CDMA) {
 						// TODO what's the strength in cdma mode? API unclear
 						neighbor.setIsCdma(true);
@@ -1079,7 +1085,7 @@ public class WirelessLoggerService extends AbstractService {
 		Log.d(TAG, "Stop tracking on session " + mSessionId);
 		mIsTracking = false;
 		mSessionId = RadioBeacon.SESSION_NOT_TRACKING;
-		wifiScanResults = null;
+		mWifiScanResults = null;
 		mLogFile = null;
 	}
 
@@ -1128,37 +1134,42 @@ public class WirelessLoggerService extends AbstractService {
 	 * @return Returns
 	 */
 	@SuppressLint("DefaultLocale")
-	private boolean checkIsNew(final String bssid) {
+	private CatalogStatus checkCatalogStatus(final String bssid) {
 
 		// default: return true, if ref database n/a
 		if (mRefDb == null) {
 			Log.e(TAG, "Reference database not specified");
-			return true;
+			return CatalogStatus.NEW;
 		}
 
 		try {
 			/*
 			 * Caution:
-			 * 		Requires wifi catalog's bssid in UPPER CASE. Otherwise no records are returned
+			 * 		Requires wifi catalog's bssid in LOWER CASE. Otherwise no records are returned
 			 * 
-			 *		If wifi catalog's bssid aren't in UPPER case, consider SELECT bssid FROM wifi_zone WHERE UPPER(bssid) = ?
+			 *		If wifi catalog's bssid aren't in LOWER case, consider SELECT bssid FROM wifi_zone WHERE LOWER(bssid) = ?
 			 *		Drawback: can't use indices then
 			 */
-			Cursor exists = mRefDb.rawQuery("SELECT bssid FROM wifi_zone WHERE bssid = ?", new String[]{bssid.replace(":", "").toUpperCase()});
+			Cursor exists = mRefDb.rawQuery("SELECT bssid, source FROM wifi_zone WHERE bssid = ?", new String[]{bssid.replace(":", "").toLowerCase()});
 			if (exists.moveToFirst()) {
-				Log.i(TAG, bssid + " is in reference database");
+				int source = exists.getInt(1);
 				exists.close();
-				// mRefdb.close();
-				return false;
+				if (source == CatalogStatus.OPENBMAP.ordinal()) {
+					Log.i(TAG, bssid + " is in openbmap reference database");
+					return CatalogStatus.OPENBMAP;
+				} else {
+					Log.i(TAG, bssid + " is in local reference database");
+					return CatalogStatus.LOCAL;
+				}
 			} else {
 				Log.i(TAG, bssid + " is NOT in reference database");
 				exists.close();
 				//mRefdb.close();
-				return true;
+				return CatalogStatus.NEW;
 			}
 		} catch (SQLiteException e) {
 			Log.e(TAG, "Couldn't open reference database");
-			return true;
+			return CatalogStatus.NEW;
 		}
 	}
 

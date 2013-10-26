@@ -90,26 +90,7 @@
         -->
     </PreferenceCategory>
     
-    <PreferenceCategory android:title="@string/prefs_debug" >
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="debug.simulate_upload"
-            android:summary="@string/prefs_simulate_upload_summary"
-            android:title="@string/prefs_simulate_upload" >
-        </CheckBoxPreference>
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="debug.keep_export_files"
-            android:summary="@string/prefs_keep_export_files_summary"
-            android:title="@string/prefs_keep_export_files" >
-        </CheckBoxPreference>
-
-        <Preference
-            android:key="debug.clean_database"
-            android:summary="@string/prefs_clean_database_summary"
-            android:title="@string/prefs_clean_database_title" >
-        </Preference>
-    </PreferenceCategory>
+    
     <PreferenceCategory android:title="@string/prefs_privacy" >
         <Preference
             android:key="privacy.block_homezone"
@@ -143,6 +124,18 @@
             android:key="data.folder_catalog"
             android:summary="@string/prefs_wifi_catalog_folder_summary"
             android:title="@string/prefs_wifi_catalog_folder" />
+    </PreferenceCategory><PreferenceCategory android:title="@string/prefs_debug">
+        <CheckBoxPreference android:defaultValue="false" android:key="debug.simulate_upload" android:summary="@string/prefs_simulate_upload_summary" android:title="@string/prefs_simulate_upload">
+        </CheckBoxPreference>
+        <CheckBoxPreference android:defaultValue="false" android:key="debug.keep_export_files" android:summary="@string/prefs_keep_export_files_summary" android:title="@string/prefs_keep_export_files">
+        </CheckBoxPreference>
+
+        <Preference android:key="debug.clean_database" android:summary="@string/prefs_clean_database_summary" android:title="@string/prefs_clean_database_title">
+        </Preference>
+        
+        <Preference android:key="debug.update_catalog" android:summary="@string/prefs_update_catalog_summary" android:title="@string/prefs_update_catalog">
+        </Preference>
+        
     </PreferenceCategory>
 
 </PreferenceScreen>

@@ -27,9 +27,9 @@ import org.openbmap.RadioBeacon;
 import org.openbmap.activity.TaskFragment.TaskCallbacks;
 import org.openbmap.soapclient.FileUploader.UploadTaskListener;
 import org.openbmap.utils.MediaScanner;
+import org.openbmap.utils.WifiCatalogUpdater;
 
 import android.annotation.SuppressLint;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -43,17 +43,33 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 
 	private static final String TAG = ExportManager.class.getSimpleName();
 
+	/**
+	 * Max. number of parallel uploads
+	 */
+	private int	MAX_THREADS = 7;
+	
+	/**
+	 * Wait for how many milliseconds for upload to be completed
+	 * Users have reported issues with GRACE_TIME = 30000, so give it some more time
+	 */
+	private static final int GRACE_TIME	= 120000;
+
+	/**
+	 * OpenBmap cell upload address
+	 */
+	private static final String CELL_WEBSERVICE = "http://openBmap.org/upload/upl.php5";
+
+	/**
+	 * OpenBmap wifi upload address
+	 */
+	private static final String WIFI_WEBSERVICE = "http://www.openbmap.org/upload_wifi/upl.php5";
+
 	private Context mContext;
 
 	/**
 	 * Session Id to export
 	 */
 	private int mSession;
-
-	/**
-	 * Progress dialog
-	 */
-	private ProgressDialog mDialog;
 
 	/**
 	 * Message in case of an error
@@ -73,25 +89,53 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 	/*
 	 *  Openbmap credentials : openbmap username
 	 */
-	private final String	mUser;
+	private final String mUser;
 	/*
 	 *  Openbmap credentials : openbmap password
 	 */
-	private final String	mPassword;
+	private final String mPassword;
 
+	/**
+	 * Export and upload cells?
+	 */
 	private boolean	mExportCells = false;
 
+	/**
+	 * Export and upload wifis?
+	 */
 	private boolean	mExportWifis = false;
 
+	/**
+	 * Upload md5ssid only?
+	 */
+	private boolean	mAnonymiseSsid = false;
+	
+	/**
+	 * Create GPX file after upload?
+	 */
 	private boolean	mExportGpx = false;
 
 	private String	mGpxFile;
 
-	private String	mGpxPath;
+	/**
+	 * Folder for GPX tracks
+	 */
+	private String	mGpxFolder;
 
+	/**
+	 * Skip upload?
+	 */
 	private boolean	mSkipUpload;
 
+	/**
+	 * Skip cleanup?
+	 */
 	private boolean	mSkipDelete;
+	
+	/**
+	 * Update wifi catalog with new wifis?
+	 */
+	private boolean	mUpdateWifiCatalog = false;
 
 	/**
 	 * Number of active upload tasks
@@ -99,34 +143,11 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 	private int	mActiveUploads;
 
 	/**
-	 * Wait for how many milliseconds for upload to be completed
-	 * Users have reported issues with GRACE_TIME = 30000, so give it some more time
-	 */
-	private static final int GRACE_TIME	= 120000;
-
-	/**
-	 * OpenBmap cell upload address
-	 */
-	private static final String CELL_WEBSERVICE = "http://openBmap.org/upload/upl.php5";
-
-	/**
-	 * OpenBmap wifi upload address
-	 */
-	private static final String WIFI_WEBSERVICE = "http://www.openbmap.org/upload_wifi/upl.php5";
-
-	/**
 	 * List of all successfully uploaded files. For the moment no differentiation between cells and wifis
 	 */
 	private ArrayList<String>	mUploadedFiles;
 
-	/**
-	 * Max. number of parallel uploads
-	 */
-	private int	MAX_THREADS = 7;
-
-	private TaskCallbacks	mCallbacks;
-
-	private boolean	mAnonymiseSsid = false;
+	private TaskCallbacks mCallbacks;
 
 	public interface ExportManagerListener {
 		void onExportCompleted(final int id);
@@ -157,7 +178,9 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 		// by default: upload and delete local temp files afterward
 		this.setSkipUpload(false);
 		this.setSkipDelete(false);
-
+		
+		this.setUpdateWifiCatalog(false);
+		
 		mUploadedFiles = new ArrayList<String>();
 	}
 
@@ -290,16 +313,21 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 
 			GpxExporter gpx = new GpxExporter(mContext, mSession);
 
-			File target = new File(mGpxPath, mGpxFile);
+			File target = new File(mGpxFolder, mGpxFile);
 			try {
 				gpx.doExport(mGpxFile, target);
 			} catch (IOException e) {
-				Log.e(TAG, "Can't write gpx file " + mGpxPath + File.separator + mGpxFile);
+				Log.e(TAG, "Can't write gpx file " + mGpxFolder + File.separator + mGpxFile);
 			}
 		} else {
 			Log.i(TAG, "GPX export skipped");
 		}
 
+		if (mUpdateWifiCatalog) {
+			Log.i(TAG, "Updating wifi catalog");
+			new WifiCatalogUpdater(mContext).execute((Void[]) null);			
+		}
+		
 		return true;
 	}
 
@@ -386,7 +414,7 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 	}
 
 	public final void setGpxPath(final String gpxPath) {
-		this.mGpxPath = gpxPath;
+		this.mGpxFolder = gpxPath;
 	}
 
 	public final Boolean getSkipUpload() {
@@ -429,6 +457,13 @@ public class ExportManager extends AsyncTask<Void, Object, Boolean> implements U
 	 */
 	public void setContext(Context context) {
 		mContext = context;
+	}
+
+	/**
+	 * @param b
+	 */
+	public void setUpdateWifiCatalog(boolean updateCatalog) {
+		mUpdateWifiCatalog = updateCatalog;
 	}
 
 }

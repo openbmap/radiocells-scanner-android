@@ -78,7 +78,7 @@ public class WifiExporter  {
 	/**
 	 * Entries per log file
 	 */
-	private static final int WIFIS_PER_FILE	= 500;
+	private static final int WIFIS_PER_FILE	= 250;
 
 
 	private Context mContext;
@@ -189,7 +189,8 @@ public class WifiExporter  {
 			+ Schema.COL_BEGIN_POSITION_ID + " AS \"request_pos_id\","
 			+ Schema.COL_END_POSITION_ID + " AS \"last_pos_id\","
 			+ Schema.TBL_WIFIS + "." + Schema.COL_SESSION_ID + ", "
-			+ Schema.COL_IS_NEW_WIFI + " AS \"is_new_wifi\","
+			//+ Schema.COL_IS_NEW_WIFI + " AS \"is_new_wifi\","
+			+ Schema.COL_KNOWN_WIFI + " AS \"known_wifi\","
 			+ " \"req\".\"latitude\" AS \"req_latitude\","
 			+ " \"req\".\"longitude\" AS \"req_longitude\","
 			+ " \"req\".\"altitude\" AS \"req_altitude\","

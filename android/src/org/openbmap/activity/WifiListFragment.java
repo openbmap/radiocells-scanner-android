@@ -160,7 +160,8 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 				Schema.COL_BSSID,
 				Schema.COL_SSID,
 				"MAX(" + Schema.COL_LEVEL + ")",
-				Schema.COL_IS_NEW_WIFI,
+				/*Schema.COL_IS_NEW_WIFI,*/
+				Schema.COL_KNOWN_WIFI,
 				Schema.COL_CAPABILITIES};
 
 		int[] to = new int [] {
@@ -210,7 +211,8 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 			case R.id.menu_display_only_new:
 				mSortOrder = Schema.COL_SSID + " DESC";
 				sortButton.setState(1);
-				setFilters(Schema.COL_IS_NEW_WIFI + " = ?", new String[]{"1"});
+				//setFilters(Schema.COL_IS_NEW_WIFI + " = ?", new String[]{"1"});
+				setFilters(Schema.COL_KNOWN_WIFI + " = ?", new String[]{"0"});
 				reload();
 				return true;
 			case R.id.menu_display_free:
@@ -262,7 +264,8 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 				Schema.COL_BSSID,
 				Schema.COL_SSID,
 				"MAX(" + Schema.COL_LEVEL + ")",
-				Schema.COL_IS_NEW_WIFI,
+				//Schema.COL_IS_NEW_WIFI,
+				Schema.COL_KNOWN_WIFI,
 				Schema.COL_CAPABILITIES
 		};
 
@@ -312,10 +315,9 @@ public class WifiListFragment extends ListFragment implements LoaderManager.Load
 			ImageView isNew = ((ImageView) ((View) view.getParent()).findViewById(R.id.wifilistfragment_statusicon));
 			TextView ssid = ((TextView) view.findViewById(R.id.wifilistfragment_ssid));
 
-			if (columnIndex == cursor.getColumnIndex(Schema.COL_IS_NEW_WIFI)) {
+			if (columnIndex == cursor.getColumnIndex(Schema.COL_KNOWN_WIFI)) {
 				int result = cursor.getInt(columnIndex);
-				// TODO use enumeration instead of result > 1
-				if (result > 0) {
+				if (result == 0) {
 					// (+) icon for new wifis
 					isNew.setImageResource(android.R.drawable.stat_notify_more);
 					isNew.setVisibility(View.VISIBLE);

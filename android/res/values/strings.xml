@@ -238,4 +238,8 @@
 	<string name="prefs_wifi_catalog_folder">Wifi catalog folder</string>
 	<string name="prefs_wifi_catalog_folder_summary">Select folder for downloaded wifi catalogs
 		(relative to SD root)</string>
+	<string name="stats_new_wifis">New wifis</string>
+	<string name="prefs_update_catalog_summary">Adds scanned wifis to local wifi catalog</string>
+	<string name="prefs_update_catalog">Sync wifi catalog locally</string>
+	<string name="synchronizing">Synchronizing..</string>
 </resources>

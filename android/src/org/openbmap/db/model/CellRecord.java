@@ -317,16 +317,13 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 		result.put(TelephonyManager.NETWORK_TYPE_GPRS, "GSM");
 		result.put(TelephonyManager.NETWORK_TYPE_EDGE, "EDGE");
 		result.put(TelephonyManager.NETWORK_TYPE_UMTS, "UMTS");
-		// TODO: original openbmap client had comment "4 TelephonyManager.NETWORK_TYPE_HSDPA not in API"
-		// actually 4 as used in original openbmap client is actually TelephonyManager.NETWORK_TYPE_CDMA
-		// check whether this has to be changed
 		result.put(TelephonyManager.NETWORK_TYPE_CDMA, "CDMA");
+		result.put(TelephonyManager.NETWORK_TYPE_EVDO_0, "EDVO_0");
+		result.put(TelephonyManager.NETWORK_TYPE_EVDO_A, "EDVO_A");
 		result.put(TelephonyManager.NETWORK_TYPE_1xRTT, "1xRTT");
+		
 		result.put(TelephonyManager.NETWORK_TYPE_HSDPA, "HSDPA");
 		result.put(TelephonyManager.NETWORK_TYPE_HSUPA, "HSUPA");
-		
-		result.put(TelephonyManager.NETWORK_TYPE_EVDO_0, "EDV0_0");
-		result.put(TelephonyManager.NETWORK_TYPE_EVDO_A, "EDV0_A");
 		result.put(TelephonyManager.NETWORK_TYPE_HSPA, "HSPA");
 		result.put(TelephonyManager.NETWORK_TYPE_IDEN, "IDEN"); 
 
@@ -335,8 +332,8 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 			result.put(TelephonyManager.NETWORK_TYPE_EVDO_B, "EDV0_B");
 		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-			result.put(TelephonyManager.NETWORK_TYPE_EHRPD, "eHRPD");
 			result.put(TelephonyManager.NETWORK_TYPE_LTE, "LTE");
+			result.put(TelephonyManager.NETWORK_TYPE_EHRPD, "eHRPD");
 		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
 			result.put(TelephonyManager.NETWORK_TYPE_HSPAP, "HSPA+");

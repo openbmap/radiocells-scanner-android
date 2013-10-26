@@ -75,7 +75,7 @@ public class CellExporter {
 	/**
 	 * Entries per log file
 	 */
-	private static final int CELLS_PER_FILE	= 500;
+	private static final int CELLS_PER_FILE	= 250;
 
 
 	private Context mContext;

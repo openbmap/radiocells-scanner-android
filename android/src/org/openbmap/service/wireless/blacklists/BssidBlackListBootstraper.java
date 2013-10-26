@@ -93,6 +93,7 @@ public final class BssidBlackListBootstraper {
 		{"QCOM Technology Inc (Reporting as InCar Hotspot, probably Daimler)", "00:0D:F0"},
 		{"LessWire AG","00:06:C6"},
 		{"Wistron Neweb Corp.","00:0B:6B"}, // device reporting as ssid Moovbox
+		{"Ford Motor Company", "00:26:B4"},
 		// mobile devices
 		{"Apple", "00:26:B0"},
 		{"Apple", "00:26:BB"},
@@ -106,6 +107,7 @@ public final class BssidBlackListBootstraper {
 		{"Murata Manufacturing Co., Ltd., used in some mobile devices", "40:F3:08"},
 		{"LG Electronics, used in Nexus 4",	"10:68:3F"},
 		{"LG Electronics", "C4:43:8F"}, 	
+		
 		// Sony Mobile
 		{"00:0A:D9","Sony Ericsson Mobile Communications AB"},
 		{"00:0E:07","Sony Ericsson Mobile Communications AB"},
@@ -151,9 +153,19 @@ public final class BssidBlackListBootstraper {
 		{"D0:51:62","Sony Mobile Communications AB"},
 		{"E0:63:E5","Sony Mobile Communications AB"},
 
-		// mostly devices reporting ssid AndroidAP
+		// mostly devices
+		// 	- reporting ssid AndroidAP
+		//  - catched during 'Autobahn hunting', i.e. driving around on highways and find
+		//	  wifis where no building are around
 		{"Samsung Electronics Co.", "8C:77:12"},
 		{"Samsung Electronics Co.", "9C:E6:E7"},
+		{"Samsung Electronics Co.,Ltd","50:F5:20"},
+		{"Samsung Electro Mechanics co.,LTD.","88:32:9B"},
+		{"Samsung Electronics Co.,Ltd","60:A1:0A"},
+		{"Shenzhen Huawei Communication Technologies Co., Ltd", "20:2B:C1"},
+		{"zte corporation","6C:8B:2F"},
+		{"TCT Mobile Limited", "4C:0B:3A"},
+		{"SAMSUNG ELECTRO-MECHANICS CO., LTD.", "5C:A3:9D"},
 		{"HTC Corporation", "A8:26:D9"},
 		{"Longcheer Technology (Singapore) Pte Ltd", "00:23:B1"},
 		{"Samsung Electronics Co.", "D0:C1:B1"},

@@ -96,6 +96,7 @@ public final class Schema {
 	public static final String COL_LEVEL = "level";
 	public static final String COL_MAX_LEVEL = "MAX(" + COL_LEVEL + ")";
 	public static final String COL_IS_NEW_WIFI	= "is_new_wifi";	
+	public static final String COL_KNOWN_WIFI = "is_known";
 	
 	/**
 	 * Columns TBL_LOG_FILE.
@@ -133,6 +134,12 @@ public final class Schema {
 	 * Get all session wifis
 	 */
 	public static final int	URI_CODE_WIFIS_BY_SESSION = 23;
+	
+	/**
+	 * Gets all wifis with given BSSID
+	 */
+	public static final int	URI_CODE_WIFIS_BY_BSSID	= 24;
+	
 	/**
 	 * Get all wifis including position data
 	 */
@@ -147,6 +154,7 @@ public final class Schema {
 	public static final int	URI_CODE_SESSIONS	= 70;
 	public static final int	URI_CODE_SESSION_ID	= 71;
 	public static final int	URI_CODE_SESSION_ACTIVE	= 79;
+	
 	
 
 
