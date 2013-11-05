@@ -1,0 +1,4 @@
+.deps
+autom4te.cache
+.vagrant
+/root/openbmap.sqlite
