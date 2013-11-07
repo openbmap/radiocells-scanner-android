@@ -58,6 +58,24 @@
 			<Filter>[source] = 'openbmap'</Filter>
 			<PointSymbolizer file="wifi_symbols/wifi_red.svg" allow-overlap="true" transform="scale(0.125)" />
 		</Rule>
+                <Rule>
+                        &maxscale_zoom9;
+                        &minscale_zoom9;
+                        <Filter>[source] = 'openbmap'</Filter>
+                        <PointSymbolizer file="wifi_symbols/wifi_red.svg" allow-overlap="true" transform="scale(0.125)" />
+                </Rule>
+                <Rule>
+                        &maxscale_zoom8;
+                        &minscale_zoom8;
+                        <Filter>[source] = 'openbmap'</Filter>
+                        <PointSymbolizer file="wifi_symbols/wifi_red.svg" allow-overlap="true" transform="scale(0.125)" />
+                </Rule>
+                <Rule>
+                        &maxscale_zoom7;
+                        &minscale_zoom7;
+                        <Filter>[source] = 'openbmap'</Filter>
+                        <PointSymbolizer file="wifi_symbols/wifi_red.svg" allow-overlap="true" transform="scale(0.125)" />
+                </Rule>
 		<Rule>
 			&maxscale_zoom17;
 			<Filter>[source] &gt;=  0</Filter>
