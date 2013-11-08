@@ -141,3 +141,5 @@ su postgres -c "psql -d gis -c 'CREATE EXTENSION IF NOT EXISTS hstore;'"
 # default test data is taiwan (about 16MB by .pbf)
 #echo  COUNTRY=taiwan >> /etc/tileman.conf
 (cd /tmp;su osm -c /usr/bin/tileman-load)
+
+#tirex-batch --prio=25 map=base,wifis bbox=-180,-90,180,90 z=0-6

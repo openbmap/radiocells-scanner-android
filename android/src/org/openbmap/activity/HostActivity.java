@@ -44,6 +44,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -99,7 +100,7 @@ public class HostActivity extends TabActivity {
 	 * Selected navigation provider, default GPS
 	 */
 	private State mSelectedProvider = State.GPS;
-	
+
 	/**
 	 * Receives GPS location updates 
 	 */
@@ -112,16 +113,17 @@ public class HostActivity extends TabActivity {
 		public void onReceive(final Context context, final Intent intent) {
 			Log.d(TAG, "Received intent " + intent.getAction().toString());
 			if (RadioBeacon.INTENT_START_SERVICES.equals(intent.getAction())) {
-				Log.d(TAG, "INTENT_START_SERVICES received");
 				startServices();
 			} else if (RadioBeacon.INTENT_STOP_SERVICES.equals(intent.getAction())) {
 				Log.d(TAG, "INTENT_STOP_SERVICES received");
 				// invalidates active track
-				stopActiveSession();
+				closeActiveSession();
 				// stops background services
 				stopServices();
 			}
 		}
+
+
 	};
 
 	/**
@@ -234,11 +236,12 @@ public class HostActivity extends TabActivity {
 		Log.d(TAG, "onResume called");
 		setupBroadcastReceiver();
 
+		setupSession();
+
 		/* TODO: sort out, what is needed here
 		 * // Check GPS status if (checkGPSFlag &&
 		 * prefs.getBoolean(OSMTracker.Preferences.KEY_GPS_CHECKSTARTUP, OSMTracker.Preferences.VAL_GPS_CHECKSTARTUP)) { checkGPSProvider(); }
 		 */
-
 		// Register GPS status update for upper controls
 		((GpsStatusRecord) findViewById(R.id.gpsStatus)).requestLocationUpdates(true);
 
@@ -269,14 +272,14 @@ public class HostActivity extends TabActivity {
 	@Override
 	protected final void onDestroy() {
 		Log.d(TAG, "OnDestroy called");
-	
+
 		updateSessionStats();
 		unregisterReceiver();
-	
+
 		if (positionServiceManager != null) { positionServiceManager.unbind();};
 		if (wirelessServiceManager != null) { wirelessServiceManager.unbind();}
 		if (gpxLoggerServiceManager != null) { gpxLoggerServiceManager.unbind();};
-	
+
 		stopNotification();
 		super.onDestroy();
 	}
@@ -316,7 +319,7 @@ public class HostActivity extends TabActivity {
 			case R.id.menu_starttracking:
 				// kill previous session
 				stopServices();
-				
+
 				requestPosition(PositioningService.State.GPS);
 				requestWirelessTracking();
 				requestGpxTracking();
@@ -329,7 +332,7 @@ public class HostActivity extends TabActivity {
 				break;*/
 			case R.id.menu_stoptracking:
 				updateSessionStats();
-				stopActiveSession();
+				closeActiveSession();
 				stopServices();
 				stopNotification();
 				break;
@@ -422,11 +425,11 @@ public class HostActivity extends TabActivity {
 
 			Bundle aProviderBundle = new Bundle();
 			aProviderBundle.putString("provider", provider.toString());
-			
+
 			Message msgGpsUp = new Message(); 
 			msgGpsUp.what = RadioBeacon.MSG_START_TRACKING;
 			msgGpsUp.setData(aProviderBundle);
-			
+
 			positionServiceManager.sendAsync(msgGpsUp);
 
 			// update recording indicator
@@ -537,15 +540,6 @@ public class HostActivity extends TabActivity {
 		}
 	}
 
-	/**
-	 * 
-	 */
-	private void stopActiveSession() {
-		mDataHelper.invalidateActiveSessions();
-		// update recording indicator
-		// ((GpsStatusRecord) findViewById(R.id.gpsStatus)).manageRecordingIndicator(false);
-	}
-
 	private void setupBroadcastReceiver() {
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(RadioBeacon.INTENT_START_SERVICES);
@@ -562,20 +556,80 @@ public class HostActivity extends TabActivity {
 		try {
 			gpsPositionServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
 			wirelessServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
-	
+
 			Session toPause = mDataHelper.loadActiveSession();
 			if (toPause != null) {
 				toPause.isActive(false);
 				mDataHelper.storeSession(toPause, true);
 			}
-	
+
 			((GpsStatusRecord) findViewById(R.id.gpsStatus)).manageRecordingIndicator(false); 
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
 	}
 	 */
-	
+
+	/**
+	 * 
+	 */
+	private void setupSession() {
+		// Check tracking state: do we need a new session or are we just resuming
+		if (getIntent().getIntExtra("id", RadioBeacon.SESSION_NOT_TRACKING) != RadioBeacon.SESSION_NOT_TRACKING) {
+			Log.i(TAG, "Resuming session " + getIntent().getIntExtra("id", RadioBeacon.SESSION_NOT_TRACKING));
+			resumeSession(getIntent().getIntExtra("id", RadioBeacon.SESSION_NOT_TRACKING));
+		} else {
+			Log.i(TAG, "Starting new session");
+			openActiveSession();
+		}
+	}
+
+	/**
+	 * Opens new session
+	 */
+	private void openActiveSession() {
+		// invalidate all active session
+		mDataHelper.invalidateActiveSessions();
+		// Create a new session and activate it
+		// Then start HostActivity. HostActivity onStart() and onResume() check active session
+		// and starts services for active session
+		Session active = new Session();
+		active.setCreatedAt(System.currentTimeMillis());
+		active.setLastUpdated(System.currentTimeMillis());
+		active.setDescription("No description yet");
+		active.isActive(true);
+		// id can only be set after session has been stored to database.
+		Uri result = mDataHelper.storeSession(active);
+		active.setId(result);
+	}
+
+	/**
+	 * Resumes specific session
+	 * @param id
+	 */
+	private void resumeSession(int id) {
+		// TODO: check whether we need a INTENT_START_SERVICE here
+		Session resume = mDataHelper.loadSession(id);
+
+		if (resume == null) {
+			Log.e(TAG, "Couldn't load session " + id);
+			return;
+		}
+
+		resume.isActive(true);
+		mDataHelper.storeSession(resume, true);
+
+	}
+
+	/**
+	 * 
+	 */
+	private void closeActiveSession() {
+		mDataHelper.invalidateActiveSessions();
+		// update recording indicator
+		// ((GpsStatusRecord) findViewById(R.id.gpsStatus)).manageRecordingIndicator(false);
+	}
+
 	/**
 	 * Setups services.
 	 */
@@ -584,12 +638,12 @@ public class HostActivity extends TabActivity {
 			positionServiceManager = new ServiceManager(this, PositioningService.class, new GpsLocationHandler(this));
 		}
 		positionServiceManager.bindAndStart();
-	
+
 		if (wirelessServiceManager == null) {
 			wirelessServiceManager = new ServiceManager(this, WirelessLoggerService.class, new WirelessHandler(this));
 		}
 		wirelessServiceManager.bindAndStart();
-	
+
 		// Gpx logger service is optional, it's only started when activated in settings
 		if (prefs.getBoolean(Preferences.KEY_GPS_SAVE_COMPLETE_TRACK, Preferences.VAL_GPS_SAVE_COMPLETE_TRACK)) {
 			if (gpxLoggerServiceManager == null) {
@@ -614,7 +668,7 @@ public class HostActivity extends TabActivity {
 			Log.w(TAG, "Failed to stop gpsPositionServiceManager. Is service runnign?" + e.getMessage());
 			e.printStackTrace();
 		}
-	
+
 		try {
 			wirelessServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
 			wirelessServiceManager.unbindAndStop();
@@ -622,7 +676,7 @@ public class HostActivity extends TabActivity {
 			Log.w(TAG, "Failed to stop wirelessServiceManager. Is service running?" + e.getMessage());
 			e.printStackTrace();
 		}
-	
+
 		try {
 			gpxLoggerServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
 			gpxLoggerServiceManager.unbindAndStop();
@@ -630,7 +684,7 @@ public class HostActivity extends TabActivity {
 			Log.w(TAG, "Failed to stop gpxLoggerServiceManager. Is service running?" + e.getMessage());
 			e.printStackTrace();
 		}
-	
+
 		this.finish();
 	}
 
@@ -639,7 +693,7 @@ public class HostActivity extends TabActivity {
 	 */
 	private void startNotification() {
 		int session = mDataHelper.getActiveSessionId();
-		
+
 		if (session == RadioBeacon.SESSION_NOT_TRACKING) {
 			stopNotification();
 			return;

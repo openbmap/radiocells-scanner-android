@@ -254,22 +254,9 @@ implements SessionListFragment.SessionFragementListener, ExportManagerListener, 
 	 */
 	@Override
 	public final void startCommand() {
-
-		// invalidate all active session
-		mDataHelper.invalidateActiveSessions();
-		// Create a new session and activate it
-		// Then start HostActivity. HostActivity onStart() and onResume() check active session
-		// and starts services for active session
-		Session active = new Session();
-		active.setCreatedAt(System.currentTimeMillis());
-		active.setLastUpdated(System.currentTimeMillis());
-		active.setDescription("No description yet");
-		active.isActive(true);
-		// id can only be set after session has been stored to database.
-		Uri result = mDataHelper.storeSession(active);
-		active.setId(result);
-
-		startActivity(new Intent(this, HostActivity.class));
+		final Intent newSession = new Intent(this, HostActivity.class);
+		newSession.putExtra("new_session", true);
+		startActivity(newSession);
 	}
 
 	/* (non-Javadoc)
@@ -277,18 +264,11 @@ implements SessionListFragment.SessionFragementListener, ExportManagerListener, 
 	 */
 	@Override
 	public final void resumeCommand(final int id) {
-		// TODO: check whether we need a INTENT_START_SERVICE here
-		Session resume = mDataHelper.loadSession(id);
+		final Intent resumeSession = new Intent(this, HostActivity.class);
+		resumeSession.putExtra("new_session", false);
+		resumeSession.putExtra("id", id);
 
-		if (resume == null) {
-			Log.e(TAG, "Couldn't load session " + id);
-			return;
-		}
-
-		resume.isActive(true);
-		mDataHelper.storeSession(resume, true);
-
-		startActivity(new Intent(this, HostActivity.class));
+		startActivity(resumeSession);
 	}
 
 	/* (non-Javadoc)

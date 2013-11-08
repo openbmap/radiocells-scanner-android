@@ -15,18 +15,27 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 History
-0.7.7	 - Option to sync wifi catalog locally (see settings)
-	 - a couple of device rotation bugs fixed
-	 - Cell details improved, especially for UMTS cells
-	 - Performance improvements,
 
-0.7.6	 - Breaking change: Colons (:) in wifi export files removed
-	 - Added rxlevel to serving cells
+Nightly build
+    - Exposed intent org.openbmap.activity.HostActivity to start tracking automatically
+      (e.g. by using apps like Llhama, NFC Trigger, etc..)
+0.7.7
+    - Option to sync wifi catalog locally (see settings)
+	- a couple of device rotation bugs fixed
+	- Cell details improved, especially for UMTS cells
+	- Performance improvements,
 
-0.7.5    - Heatmap display for cell and wifis
-	 - Pre-seeded bssid, ssid blacklists, added location blacklists
+0.7.6
+    - Breaking change: Colons (:) in wifi export files removed
+	- Added rxlevel to serving cells
 
-0.7.3    - Included mapsforge 0.4.0 rewrite snapshot
-         - Refactored session overlay
+0.7.5
+    - Heatmap display for cell and wifis
+	- Pre-seeded bssid, ssid blacklists, added location blacklists
 
-0.7.2    - Added experimental support for SSID and BSSID blacklists
+0.7.3
+    - Included mapsforge 0.4.0 rewrite snapshot
+    - Refactored session overlay
+
+0.7.2
+    - Added experimental support for SSID and BSSID blacklists

@@ -19,12 +19,11 @@
 package org.openbmap.activity;
 
 import org.openbmap.R;
-import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.RadioBeaconContentProvider;
 import org.openbmap.db.Schema;
 import org.openbmap.db.model.CellRecord;
-import org.openbmap.db.model.Session;
+
 import android.content.ContentUris;
 import android.content.Intent;
 import android.database.Cursor;
@@ -36,7 +35,6 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter.ViewBinder;
-import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
