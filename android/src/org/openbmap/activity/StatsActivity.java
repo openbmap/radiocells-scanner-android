@@ -22,7 +22,7 @@ import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.model.Session;
-
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -39,8 +39,19 @@ import android.widget.TextView;
  * Activity for displaying basic session infos (# of cells, wifis, etc.)
  */
 public class StatsActivity extends Activity {
+	
 	private static final String TAG = StatsActivity.class.getSimpleName();
 
+	/**
+	 * Fade message after which time (in millis)
+	 */
+	private static final long	FADE_TIME	= 10 * 1000;
+
+	/**
+	 * Display periodic messages how often (in millis)
+	 */
+	private final static int REFRESH_INTERVAL = 1000 * 10; 
+	
 	/**
 	 * UI controls
 	 */
@@ -53,17 +64,35 @@ public class StatsActivity extends Activity {
 	private TextView tvIgnored;
 	private ImageView ivAlert;
 
-	private DataHelper	mDataHelper;
+	private DataHelper mDataHelper;
 	private Session	mSession;
 
-	Runnable mHidder;
-	Handler mHandler = new Handler();
+	/**
+	 * Time of last new wifi in millis
+	 */
+	private long mLastWifiUpdate;
+	
+	/**
+	 * Time of last new cell in millis
+	 */
+	private long mLastCellUpdate;
+	
+	/**
+	 * Hides messages after certain time
+	 */
+	private Runnable mFadeMessageTask;
+	private Handler mFadeHandler = new Handler();
 
+	/**
+	 * Update certain infos at periodic intervals
+	 */
+	private Handler mRefreshHandler = new Handler();
+	private Runnable mPeriodicRefreshTask;
+	
 	/**
 	 * Receives cell / wifi news
 	 */
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
-
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
 			Log.d(TAG, "Received intent " + intent.getAction());
@@ -73,23 +102,25 @@ public class StatsActivity extends Activity {
 				String lastCell = intent.getStringExtra(RadioBeacon.MSG_KEY);
 				tvLastCell.setText(lastCell);
 
-				refreshSessionStats(mSession);
-
+				refreshObjectCount(mSession);
+				mLastCellUpdate = System.currentTimeMillis();
+				
 			} else if (RadioBeacon.INTENT_NEW_WIFI.equals(intent.getAction())) {
 				String lastWifi = intent.getStringExtra(RadioBeacon.MSG_SSID);
 				String extraInfo = intent.getStringExtra(RadioBeacon.MSG_KEY);
 				tvLastWifi.setText(lastWifi + " " + extraInfo);
 
-				refreshSessionStats(mSession);
-
+				refreshObjectCount(mSession);
+				mLastWifiUpdate = System.currentTimeMillis();
+				
 			} else if (RadioBeacon.INTENT_NEW_SESSION.equals(intent.getAction())) {
 				String id = intent.getStringExtra(RadioBeacon.MSG_KEY);
 				mSession = mDataHelper.loadSession(Integer.valueOf(id));
-				refreshSessionStats(mSession);
+				refreshObjectCount(mSession);
 
 			} else if (RadioBeacon.INTENT_WIFI_BLACKLISTED.equals(intent.getAction())) {
 				// let's display warning for 10 seconds
-				mHandler.removeCallbacks(mHidder);
+				mFadeHandler.removeCallbacks(mFadeMessageTask);
 
 				String reason = intent.getStringExtra(RadioBeacon.MSG_KEY);
 				String ssid = intent.getStringExtra(RadioBeacon.MSG_SSID);
@@ -112,7 +143,7 @@ public class StatsActivity extends Activity {
 				}
 				tvIgnored.setVisibility(View.VISIBLE);
 				ivAlert.setVisibility(View.VISIBLE);
-				mHandler.postDelayed(mHidder, 10 * 1000);
+				mFadeHandler.postDelayed(mFadeMessageTask, FADE_TIME);
 			}
 		}
 	};
@@ -121,7 +152,7 @@ public class StatsActivity extends Activity {
 	public final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		mHidder = new Runnable() {
+		mFadeMessageTask = new Runnable() {
 			@Override
 			public void run() {
 				tvIgnored.setVisibility(View.INVISIBLE); 
@@ -129,6 +160,16 @@ public class StatsActivity extends Activity {
 			}
 		};
 
+		mPeriodicRefreshTask = new Runnable()
+		{
+			@SuppressLint("DefaultLocale")
+			@Override 
+			public void run() {
+				refreshTimeSinceUpdate();
+				
+				mRefreshHandler.postDelayed(mPeriodicRefreshTask, REFRESH_INTERVAL);
+			}
+		};
 		// setup UI controls
 		initUi();
 
@@ -137,8 +178,40 @@ public class StatsActivity extends Activity {
 		mDataHelper = new DataHelper(this);
 	}
 
+	@Override
+	protected final void onResume() {
+		super.onResume();
+
+		registerReceiver();	
+
+		if (mDataHelper != null) {
+			mSession = mDataHelper.loadActiveSession();
+			refreshObjectCount(mSession);
+		}
+		startRepeatingTask();
+	}
+
+	void startRepeatingTask()
+	{
+		mPeriodicRefreshTask.run(); 
+	}
+
+	void stopRepeatingTask()
+	{
+		mRefreshHandler.removeCallbacks(mPeriodicRefreshTask);
+	}
+
+	@Override
+	protected final void onPause() {
+		unregisterReceiver();
+
+		stopRepeatingTask();
+
+		super.onPause();
+	}
+
 	/**
-	 * 
+	 * Init UI contols
 	 */
 	private void initUi() {
 		setContentView(R.layout.stats);
@@ -152,11 +225,6 @@ public class StatsActivity extends Activity {
 		ivAlert = (ImageView) findViewById(R.id.stats_icon_alert);
 	}
 
-	@Override
-	protected final void onPause() {
-		unregisterReceiver();
-		super.onPause();
-	}
 	/**
 	 * Registers broadcast receivers.
 	 */
@@ -180,23 +248,10 @@ public class StatsActivity extends Activity {
 		}
 	}
 
-
-	@Override
-	protected final void onResume() {
-		super.onResume();
-
-		registerReceiver();	
-
-		if (mDataHelper != null) {
-			mSession = mDataHelper.loadActiveSession();
-			refreshSessionStats(mSession);
-		}
-	}
-
 	/**
 	 * Refreshes session id, number of cells and wifis.
 	 */
-	private void refreshSessionStats(final Session session) {
+	private void refreshObjectCount(final Session session) {
 
 		if (session != null) {
 			tvSession.setText(String.valueOf(session.getId()));
@@ -210,7 +265,7 @@ public class StatsActivity extends Activity {
 							+ String.valueOf(mDataHelper.countWifis(session.getId()))
 							+ ")"
 					);
-			
+
 			if (mSession != null) {
 				tvNewWifis.setText(String.valueOf(mDataHelper.countNewWifis(mSession.getId())));
 			}
@@ -219,5 +274,38 @@ public class StatsActivity extends Activity {
 			tvCountCells.setText("(--)");
 			tvCountWifis.setText("(--)");
 		}
+	}
+	
+	/**
+	 * Displays message x seconds since last cell/wifi update
+	 */
+	private void refreshTimeSinceUpdate() {
+		String deltaCellString = String.format(getString(R.string.time_since_last_cell_update), getTimeSinceLastUpdate(mLastCellUpdate));  
+		String deltaWifiString =String.format(getString(R.string.time_since_last_wifi_update), getTimeSinceLastUpdate(mLastWifiUpdate));  
+		
+		Log.i(TAG, deltaCellString);
+		Log.i(TAG, deltaWifiString);
+	}
+	
+	/**
+	 * Returns time since base value as human-readable string
+	 * @return
+	 */
+	private String getTimeSinceLastUpdate(long base) {
+		String deltaString = "";
+		
+		// no previous updates
+		if (base == 0) {
+			return deltaString;
+		}
+		
+		long delta = (System.currentTimeMillis() - base);
+		
+		if (delta < 60000) {
+			deltaString = String.valueOf(delta / 1000) + getString(R.string.seconds);
+		} else {
+			deltaString = String.valueOf(delta / 60000) + getString(R.string.minutes);
+		}
+		return deltaString;
 	}
 }

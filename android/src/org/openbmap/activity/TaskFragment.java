@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import org.openbmap.Preferences;
+import org.openbmap.activity.SessionActivity.ExportTasks;
 import org.openbmap.soapclient.ExportManager;
 import org.openbmap.soapclient.ExportManager.ExportManagerListener;
 
@@ -66,9 +67,6 @@ public class TaskFragment extends Fragment {
 		setRetainInstance(true);
 	}
 
-	public void setTask() {
-
-	}
 	/**
 	 * Set the callback to null so we don't accidentally leak the
 	 * Activity instance.
@@ -89,14 +87,14 @@ public class TaskFragment extends Fragment {
 	 * @param skipDelete
 	 */
 
-	public void setTask(int session,
+	public void setTask(ExportTasks tasks, int session,
 			String targetPath, String user, String password, boolean exportGpx, boolean skipUpload, boolean skipDelete) {
 
 		mIsExecuting = true;
 
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 		boolean anonymiseSsid = prefs.getBoolean(Preferences.KEY_ANONYMISE_SSID, Preferences.VAL_ANONYMISE_SSID); 
-		mExportTask = new ExportManager(getActivity(), (ExportManagerListener) getActivity(), (TaskCallbacks) getActivity(), session, targetPath, user, password, anonymiseSsid);
+		mExportTask = new ExportManager(getActivity(), (ExportManagerListener) tasks, (TaskCallbacks) getActivity(), session, targetPath, user, password, anonymiseSsid);
 		mExportTask.setExportCells(true);
 		mExportTask.setExportWifis(true);
 		mExportTask.setExportGpx(exportGpx);

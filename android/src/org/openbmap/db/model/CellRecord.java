@@ -367,31 +367,4 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 		this.mSystemId = systemId;
 	}
 
-	public static final Map<Integer, String> NetworkTypeDescription = new HashMap<Integer, String>() {
-		private static final long	serialVersionUID	= 1L;
-		{
-			put(TelephonyManager.NETWORK_TYPE_GPRS, "GSM");
-			// GPRS shall be mapped to "GSM"
-			put(TelephonyManager.NETWORK_TYPE_GPRS, "GSM");
-			put(TelephonyManager.NETWORK_TYPE_EDGE, "EDGE");
-			put(TelephonyManager.NETWORK_TYPE_UMTS, "UMTS");
-			// TODO: original openbmap client had comment "4 TelephonyManager.NETWORK_TYPE_HSDPA not in API"
-			// actually 4 as used in original openbmap client is actually TelephonyManager.NETWORK_TYPE_CDMA
-			// check whether this has to be changed
-			put(TelephonyManager.NETWORK_TYPE_CDMA, "CDMA");
-			put(TelephonyManager.NETWORK_TYPE_1xRTT, "1xRTT");
-			put(TelephonyManager.NETWORK_TYPE_HSDPA, "HSDPA");
-			put(TelephonyManager.NETWORK_TYPE_HSUPA, "HSUPA");
-
-			//result.put(TelephonyManager.NETWORK_TYPE_EHRPD, "eHRPD");
-			//result.put(TelephonyManager.NETWORK_TYPE_HSPAP, "HSPA+"); 
-			//result.put(TelephonyManager.NETWORK_TYPE_LTE, "LTE");
-
-			put(TelephonyManager.NETWORK_TYPE_EVDO_0, "EDV0_0");
-			put(TelephonyManager.NETWORK_TYPE_EVDO_A, "EDV0_A");
-			put(TelephonyManager.NETWORK_TYPE_EVDO_B, "EDV0_B");
-			put(TelephonyManager.NETWORK_TYPE_HSPA, "HSPA");
-			put(TelephonyManager.NETWORK_TYPE_IDEN, "IDEN"); 
-		} };
-
 }

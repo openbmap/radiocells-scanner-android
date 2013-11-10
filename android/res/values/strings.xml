@@ -242,4 +242,10 @@
 	<string name="prefs_update_catalog_summary">Adds scanned wifis to local wifi catalog</string>
 	<string name="prefs_update_catalog">Sync wifi catalog locally</string>
 	<string name="synchronizing">Synchronizing..</string>
+	<string name="time_since_last_cell_update">Last cell update %s ago</string>
+	<string name="time_since_last_wifi_update">Last wifi update %s ago</string>
+	<string name="seconds">" seconds"</string>
+	<string name="minutes">" minutes"</string>
+	<string name="stopped_tracking">Stopped tracking</string>
+	<string name="upload_all">Upload all</string>
 </resources>

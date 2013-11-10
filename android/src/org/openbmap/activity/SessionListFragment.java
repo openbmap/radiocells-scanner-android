@@ -185,6 +185,9 @@ LoaderCallbacks<Cursor>, OnAlertClickInterface {
 				stop(mSelectedId);
 				mListener.exportCommand(mSelectedId);
 				return true;
+			case R.id.menu_upload_all:
+				stop(mSelectedId);
+				mListener.exportAllCommand();
 			case R.id.menu_delete_session:
 				showAlertDialog(ID_DELETE_SESSION, R.string.delete, R.string.do_you_want_to_delete_this_session, false);
 				return true;
@@ -364,6 +367,10 @@ LoaderCallbacks<Cursor>, OnAlertClickInterface {
 		 *		Session to resume
 		 */
 		void exportCommand(int id);
+		/**
+		 * Exports and uploads all sessions not yet uploaded
+		 */
+		void exportAllCommand();
 
 		void reloadListFragment();
 	}

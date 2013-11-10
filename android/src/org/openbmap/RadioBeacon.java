@@ -35,12 +35,12 @@ public final class RadioBeacon {
 	/**
 	 * Intent to start services
 	 */
-	public static final String INTENT_START_SERVICES = RadioBeacon.PACKAGE_NAME + ".intent.START_SERVICES";
+	//public static final String INTENT_START_TRACKING = RadioBeacon.PACKAGE_NAME + ".intent.START_SERVICES";
 
 	/**
-	 * Intent to stop services.
+	 * Intent to stop tracking and kill the services.
 	 */
-	public static final String INTENT_STOP_SERVICES = RadioBeacon.PACKAGE_NAME + ".intent.STOP_SERVICES";
+	public static final String INTENT_STOP_TRACKING = RadioBeacon.PACKAGE_NAME + ".intent.STOP_TRACKING";
 
 	/**
 	 * Intent to broadcast new GPS position

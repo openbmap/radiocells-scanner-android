@@ -21,6 +21,11 @@
         android:title="@string/upload">
     </item>
     <item
+        android:id="@+id/menu_upload_all"
+        android:icon="@android:drawable/ic_menu_upload"
+        android:title="@string/upload_all">
+    </item>
+    <item
         android:id="@+id/menu_delete_all_sessions"
         android:icon="@android:drawable/ic_notification_clear_all"
         android:title="@string/delete_all">

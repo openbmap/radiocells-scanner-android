@@ -1035,7 +1035,7 @@ public class WirelessLoggerService extends AbstractService {
 		Intent intent = new Intent(RadioBeacon.INTENT_NEW_CELL);
 		intent.putExtra(RadioBeacon.MSG_KEY, recent.getOperatorName() 
 				+ " " + recent.getCid()
-				+ " " + CellRecord.NetworkTypeDescription.get(recent.getNetworkType())
+				+ " " + CellRecord.NETWORKTYPE_MAP().get(recent.getNetworkType())
 				+ " " + recent.getStrengthdBm() + "dBm");
 		sendBroadcast(intent);
 	}

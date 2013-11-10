@@ -61,7 +61,7 @@ import android.widget.TabHost;
  * HostActity for "tracking" mode. It hosts the tabs "Stats", "Wifi Overview", "Cell Overview" and "Map".
  * HostActity is also in charge of service communication. 
  * Services are automatically started onCreate() and onResume()
- * They can be manually stopped by calling INTENT_STOP_SERVICES.
+ * They can be manually stopped by calling INTENT_STOP_TRACKING.
  * 
  */
 public class HostActivity extends TabActivity {
@@ -112,18 +112,17 @@ public class HostActivity extends TabActivity {
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
 			Log.d(TAG, "Received intent " + intent.getAction().toString());
-			if (RadioBeacon.INTENT_START_SERVICES.equals(intent.getAction())) {
+			/*if (RadioBeacon.INTENT_START_TRACKING.equals(intent.getAction())) {
 				startServices();
-			} else if (RadioBeacon.INTENT_STOP_SERVICES.equals(intent.getAction())) {
-				Log.d(TAG, "INTENT_STOP_SERVICES received");
+			} else*/
+			if (RadioBeacon.INTENT_STOP_TRACKING.equals(intent.getAction())) {
+				Log.d(TAG, "INTENT_STOP_TRACKING received");
 				// invalidates active track
 				closeActiveSession();
 				// stops background services
 				stopServices();
 			}
 		}
-
-
 	};
 
 	/**
@@ -219,7 +218,7 @@ public class HostActivity extends TabActivity {
 		boolean keepScreenOn = prefs.getBoolean(Preferences.KEY_KEEP_SCREEN_ON, false);
 		ActivityHelper.setKeepScreenOn(this, keepScreenOn);
 
-		initControls();
+		initUi();
 
 		// service related stuff
 		verifyGPSProvider();
@@ -542,8 +541,8 @@ public class HostActivity extends TabActivity {
 
 	private void setupBroadcastReceiver() {
 		IntentFilter filter = new IntentFilter();
-		filter.addAction(RadioBeacon.INTENT_START_SERVICES);
-		filter.addAction(RadioBeacon.INTENT_STOP_SERVICES);
+		//filter.addAction(RadioBeacon.INTENT_START_TRACKING);
+		filter.addAction(RadioBeacon.INTENT_STOP_TRACKING);
 		registerReceiver(mReceiver, filter);		
 	}
 
@@ -571,23 +570,24 @@ public class HostActivity extends TabActivity {
 	 */
 
 	/**
-	 * 
+	 * Opens a new session object. If start intent contains id, previous session is resumed,
+	 * otherwise a new session created
 	 */
 	private void setupSession() {
 		// Check tracking state: do we need a new session or are we just resuming
 		if (getIntent().getIntExtra("id", RadioBeacon.SESSION_NOT_TRACKING) != RadioBeacon.SESSION_NOT_TRACKING) {
 			Log.i(TAG, "Resuming session " + getIntent().getIntExtra("id", RadioBeacon.SESSION_NOT_TRACKING));
-			resumeSession(getIntent().getIntExtra("id", RadioBeacon.SESSION_NOT_TRACKING));
+			openExistingSession(getIntent().getIntExtra("id", RadioBeacon.SESSION_NOT_TRACKING));
 		} else {
 			Log.i(TAG, "Starting new session");
-			openActiveSession();
+			openNewSession();
 		}
 	}
 
 	/**
 	 * Opens new session
 	 */
-	private void openActiveSession() {
+	private void openNewSession() {
 		// invalidate all active session
 		mDataHelper.invalidateActiveSessions();
 		// Create a new session and activate it
@@ -607,7 +607,7 @@ public class HostActivity extends TabActivity {
 	 * Resumes specific session
 	 * @param id
 	 */
-	private void resumeSession(int id) {
+	private void openExistingSession(int id) {
 		// TODO: check whether we need a INTENT_START_SERVICE here
 		Session resume = mDataHelper.loadSession(id);
 
@@ -726,7 +726,7 @@ public class HostActivity extends TabActivity {
 	/**
 	 * Configures tabs.
 	 */
-	private void initControls() {
+	private void initUi() {
 		TabHost host = getTabHost();
 
 		TabHost.TabSpec spec = host.newTabSpec("tag1");
