@@ -21,6 +21,7 @@ package org.openbmap.db;
 import org.openbmap.RadioBeacon;
 
 import android.content.Context;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -341,24 +342,35 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_WIFIS_EXTENDED);
 			db.execSQL(SQL_CREATE_VIEW_WIFI_POSITIONS);
 		} 
-		
+
 		if (oldVersion == 2) {
+			// add asu fields
+			db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_STRENGTHASU + " INTEGER DEFAULT 0");
+		}
+
+		if (oldVersion == 3) {
 			// add cell position view
 			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_CELLS_EXTENDED);
 			db.execSQL(SQL_CREATE_VIEW_CELL_POSITIONS);
 		}
-		
-		if (oldVersion == 3) {
-			// add asu fields
-			db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_STRENGTHASU + " INTEGER DEFAULT 0");
-		}
-		
+
 		if (oldVersion == 4) {
 			// add known wifi column (replacement for is_new_wifi)
 			db.execSQL("ALTER TABLE " + Schema.TBL_WIFIS + " ADD COLUMN " + Schema.COL_KNOWN_WIFI + " INTEGER DEFAULT 0");
 			db.execSQL("UPDATE " + Schema.TBL_WIFIS + " SET " + Schema.COL_KNOWN_WIFI + " = 1 WHERE is_new_wifi = 0");
 			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_WIFIS_EXTENDED);
 			db.execSQL(SQL_CREATE_VIEW_WIFI_POSITIONS);
+		}
+
+		if (oldVersion == 5) {
+			// on some clients column from version 2 wasn't added
+			try {
+				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_STRENGTHASU + " INTEGER DEFAULT 0");
+			} catch (SQLException e) {
+				Log.i(TAG, "Nothing to do: asu column already exists");
+			}
+			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_CELLS_EXTENDED);
+			db.execSQL(SQL_CREATE_VIEW_CELL_POSITIONS);
 		}
 	}
 

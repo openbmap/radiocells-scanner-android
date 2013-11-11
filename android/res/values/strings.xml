@@ -248,4 +248,6 @@
 	<string name="minutes">" minutes"</string>
 	<string name="stopped_tracking">Stopped tracking</string>
 	<string name="upload_all">Upload all</string>
+	<string name="new_session">New session</string>
+	<string name="settings">Settings</string>
 </resources>

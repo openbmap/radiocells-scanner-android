@@ -233,6 +233,8 @@ public class HostActivity extends TabActivity {
 	@Override
 	protected final void onResume() {
 		Log.d(TAG, "onResume called");
+		super.onResume();
+		
 		setupBroadcastReceiver();
 
 		setupSession();
@@ -247,8 +249,6 @@ public class HostActivity extends TabActivity {
 		startServices();
 		requestPosition(mSelectedProvider);
 		startNotification();
-
-		super.onResume();
 	}
 
 	@Override

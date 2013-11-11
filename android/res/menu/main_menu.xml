@@ -4,17 +4,20 @@
     <item
         android:id="@+id/menu_create_new_session"
         android:icon="@android:drawable/ic_menu_add"
-        android:title="New session">
+        android:showAsAction="always|withText"
+        android:title="@string/new_session">
     </item>
     <item
         android:id="@+id/menu_settings"
         android:icon="@android:drawable/ic_menu_preferences"
-        android:title="Settings">
+        android:showAsAction="always|withText"
+        android:title="@string/settings">
     </item>
     <item
         android:id="@+id/menu_credits"
-        android:icon="@android:drawable/ic_menu_help" 
-        android:title="Credits">
+        android:icon="@android:drawable/ic_menu_help"
+        android:showAsAction="always|withText"
+        android:title="@string/credits">
     </item>
 
 </menu>
