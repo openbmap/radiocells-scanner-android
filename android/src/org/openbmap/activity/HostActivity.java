@@ -121,6 +121,8 @@ public class HostActivity extends TabActivity {
 				closeActiveSession();
 				// stops background services
 				stopServices();
+
+				HostActivity.this.finish();
 			}
 		}
 	};
@@ -332,8 +334,9 @@ public class HostActivity extends TabActivity {
 			case R.id.menu_stoptracking:
 				updateSessionStats();
 				closeActiveSession();
-				stopServices();
 				stopNotification();
+				stopServices();
+				this.finish();
 				break;
 			default:
 				break; 
@@ -631,9 +634,12 @@ public class HostActivity extends TabActivity {
 	}
 
 	/**
-	 * Setups services.
+	 * Setups services. Any running services will be restart.
 	 */
 	private void startServices() {
+		
+		stopServices();
+		
 		if (positionServiceManager == null) {
 			positionServiceManager = new ServiceManager(this, PositioningService.class, new GpsLocationHandler(this));
 		}
@@ -665,27 +671,25 @@ public class HostActivity extends TabActivity {
 			positionServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
 			positionServiceManager.unbindAndStop();
 		} catch (Exception e) {
-			Log.w(TAG, "Failed to stop gpsPositionServiceManager. Is service runnign?" + e.getMessage());
-			e.printStackTrace();
+			Log.w(TAG, "Failed to stop gpsPositionServiceManager. Is service runnign?" /*+ e.getMessage()*/);
+			//e.printStackTrace();
 		}
 
 		try {
 			wirelessServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
 			wirelessServiceManager.unbindAndStop();
 		} catch (Exception e) {
-			Log.w(TAG, "Failed to stop wirelessServiceManager. Is service running?" + e.getMessage());
-			e.printStackTrace();
+			Log.w(TAG, "Failed to stop wirelessServiceManager. Is service running?" /*+ e.getMessage()*/);
+			//e.printStackTrace();
 		}
 
 		try {
 			gpxLoggerServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
 			gpxLoggerServiceManager.unbindAndStop();
 		} catch (Exception e) {
-			Log.w(TAG, "Failed to stop gpxLoggerServiceManager. Is service running?" + e.getMessage());
-			e.printStackTrace();
+			Log.w(TAG, "Failed to stop gpxLoggerServiceManager. Is service running?" /*+ e.getMessage()*/);
+			//e.printStackTrace();
 		}
-
-		this.finish();
 	}
 
 	/**
