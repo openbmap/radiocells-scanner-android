@@ -573,14 +573,15 @@ public class HostActivity extends TabActivity {
 	 */
 
 	/**
-	 * Opens a new session object. If start intent contains id, previous session is resumed,
+	 * Opens a new session object. If any active session is found, previous session is resumed,
 	 * otherwise a new session created
 	 */
 	private void setupSession() {
 		// Check tracking state: do we need a new session or are we just resuming
-		if (getIntent().getIntExtra("id", RadioBeacon.SESSION_NOT_TRACKING) != RadioBeacon.SESSION_NOT_TRACKING) {
-			Log.i(TAG, "Resuming session " + getIntent().getIntExtra("id", RadioBeacon.SESSION_NOT_TRACKING));
-			openExistingSession(getIntent().getIntExtra("id", RadioBeacon.SESSION_NOT_TRACKING));
+		int activeSession = mDataHelper.getActiveSessionId();
+		if (activeSession != RadioBeacon.SESSION_NOT_TRACKING) {
+			Log.i(TAG, "Resuming session " + activeSession);
+			openExistingSession(activeSession);
 		} else {
 			Log.i(TAG, "Starting new session");
 			openNewSession();

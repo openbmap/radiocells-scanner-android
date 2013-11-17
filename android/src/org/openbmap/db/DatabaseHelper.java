@@ -363,6 +363,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		}
 
 		if (oldVersion == 5) {
+			// F-Droid 0.7.7 second release
 			// on some clients column from version 2 wasn't added
 			try {
 				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_STRENGTHASU + " INTEGER DEFAULT 0");

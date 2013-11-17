@@ -765,7 +765,7 @@ public class DataHelper {
 
 	/**
 	 * Returns Id of active session. (Faster than {@link loadActiveSession()} as no de-serialization to session object takes place
-	 * @return
+	 * @return session id if any active session, RadioBeacon.SESSION_NOT_TRACKING else
 	 */
 	public final int getActiveSessionId() {
 		Cursor ca = contentResolver.query(Uri.withAppendedPath(RadioBeaconContentProvider.CONTENT_URI_SESSION, "active"), null, null, null, null);

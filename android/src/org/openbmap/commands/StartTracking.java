@@ -18,9 +18,7 @@
 
 package org.openbmap.commands;
 
-import org.openbmap.RadioBeacon;
 import org.openbmap.activity.HostActivity;
-import org.openbmap.db.DataHelper;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -37,14 +35,7 @@ public class StartTracking  extends Activity {
 	protected final void onResume() {
 		super.onResume();
 		
-		DataHelper dataHelper = new DataHelper(this);
-		
 		final Intent intent = new Intent(this, HostActivity.class);
-
-		int activeSession = dataHelper.getActiveSessionId();
-		if (activeSession != RadioBeacon.SESSION_NOT_TRACKING) {
-			intent.putExtra("id", activeSession);
-		}
 		
 		startActivity(intent);
 		this.finish();

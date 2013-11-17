@@ -134,6 +134,7 @@ public final class SsidBlackListBootstraper {
 		{"default", "ipad"},
 		{"default", "iphone"},
 		{"default", "tether"},
+		{"default", "adhoc"},
 		{"Google's SSID opt-out", "_nomap"}
 	};
 

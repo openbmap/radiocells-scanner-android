@@ -19,6 +19,7 @@ History
 Nightly build
     - Exposed intent org.openbmap.activity.HostActivity to start tracking automatically
       (e.g. by using apps like Llhama, NFC Trigger, etc..)
+    - Fixed bug where session stats where not displayed properly
 0.7.7
     - Option to sync wifi catalog locally (see settings)
 	- a couple of device rotation bugs fixed
