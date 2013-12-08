@@ -45,12 +45,19 @@ import android.util.Log;
 
 public final class ServerValidation extends AsyncTask<String, Object, Object[]> {
 
+	private static final String	TAG	= ServerValidation.class.getSimpleName();
+
+	public interface ServerReply {
+		void onServerGood();
+		void onServerBad(String text);
+		void onServerCheckFailed();
+	}
+	
 	/**
 	 * 
 	 */
 	private static final int	CONNECTION_TIMEOUT	= 10000;
 
-	private static final String	TAG	= ServerValidation.class.getSimpleName();
 	
 	/**
 	 * Especially after wifi sleep / wifi repair, it takes a couple of seconds before
@@ -83,12 +90,6 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 	private Context	mContext;
 	
 	private ServerReply	mListener;
-
-	public interface ServerReply {
-		void onServerGood();
-		void onServerBad(String text);
-		void onServerCheckFailed();
-	}
 
 	public ServerValidation(final Context context, final ServerReply listener) {
 		mListener = listener;

@@ -16,9 +16,9 @@
         android:id="@+id/triToggleButton1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        negative_image="@drawable/descending"
-        neutral_image="@drawable/neutral"
-        positive_image="@drawable/ascending"
+        negative_image="@drawable/ic_action_down"
+        neutral_image="@drawable/ic_action_unsorted"
+        positive_image="@drawable/ic_action_up"
         android:src="@drawable/arrow" />
 
     <TextView

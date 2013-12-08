@@ -19,7 +19,7 @@
 package org.openbmap.utils;
 
 public interface OnAlertClickInterface {
-    abstract void onAlertPositiveClick(int alertId);
-    abstract void onAlertNegativeClick(int alertId);
-	abstract void onAlertNeutralClick(int alertId);
+    abstract void onAlertPositiveClick(int alertId, String args);
+    abstract void onAlertNegativeClick(int alertId, String args);
+	abstract void onAlertNeutralClick(int alertId, String args);
 }

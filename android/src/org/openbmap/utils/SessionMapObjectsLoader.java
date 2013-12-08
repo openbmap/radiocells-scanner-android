@@ -20,12 +20,11 @@ package org.openbmap.utils;
 
 import java.util.ArrayList;
 
-import org.openbmap.activity.MapViewActivity;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.DatabaseHelper;
 import org.openbmap.db.Schema;
-import org.openbmap.db.model.PositionRecord;
-import org.openbmap.db.model.WifiRecord;
+import org.openbmap.db.models.PositionRecord;
+import org.openbmap.db.models.WifiRecord;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -66,13 +65,11 @@ public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<S
 	 */
 	private ArrayList<Integer> mToLoad;
 
-	public SessionMapObjectsLoader(final Context context, final ArrayList<Integer> sessions) {
+	public SessionMapObjectsLoader(final Context context, OnSessionLoadedListener listener, final ArrayList<Integer> sessions) {
 		mContext = context;
 		mToLoad = sessions;
 		
-		if (context instanceof MapViewActivity) {
-			setOnSessionLoadedListener((OnSessionLoadedListener) context);
-		}
+		setOnSessionLoadedListener(listener);
 	}
 	
 	public final void setOnSessionLoadedListener(final OnSessionLoadedListener listener) {

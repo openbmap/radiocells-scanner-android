@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="layers">
-        <item >All (Current session + wifi catalog)</item>
-        <item >Current session only</item>
+        <item >All (Session + wifi catalog)</item>
+        <item >Session</item>
     </string-array>
 </resources>

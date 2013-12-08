@@ -22,7 +22,10 @@
  */
 package org.openbmap.utils;
 
-
+/**
+ * Replaces critical characters in xml files
+ *
+ */
 public final class XmlSanitizer {
 	
 	public static String sanitize(final String raw) {

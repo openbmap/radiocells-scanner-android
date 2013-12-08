@@ -13,7 +13,8 @@
     </item>-->
     <item
         android:id="@+id/menu_stoptracking"
-        android:icon="@android:drawable/ic_menu_save"
+        android:icon="@drawable/ic_action_save"
+        android:showAsAction="always|withText"
         android:title="@string/stop_tracking">
     </item>
 

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.openbmap"
-    android:versionCode="7"
-    android:versionName="0.7.7" >
+    android:versionCode="8"
+    android:versionName="0.7.9" >
 
     <uses-sdk
         android:minSdkVersion="8"
-        android:targetSdkVersion="10" />
+        android:targetSdkVersion="11" />
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -22,15 +22,19 @@
         android:allowBackup="true"
         android:icon="@drawable/radiobeacon"
         android:label="@string/app_name"
-        android:theme="@android:style/Theme.NoTitleBar" >
+        android:theme="@style/Theme.Sherlock" >
         <activity
-            android:name=".activity.HostActivity"
+            android:name="org.openbmap.activities.HostActivity"
             android:label="@string/app_name" >
         </activity>
         <activity
-            android:name=".activity.SessionActivity"
-            android:label="Radiobeacon" >
-            <intent-filter>
+            android:name="org.openbmap.activities.StartscreenActivity"
+            android:label="Radiobeacon"
+            android:uiOptions="splitActionBarWhenNarrow" >
+            <meta-data
+                android:name="android.support.UI_OPTIONS"
+                android:value="splitActionBarWhenNarrow" />
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -52,52 +56,49 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.StatsActivity"
+            android:name="org.openbmap.activities.StatsActivity"
             android:label="Overview" >
         </activity>
         <activity
-            android:name=".activity.WifiListActivity"
+            android:name="org.openbmap.activities.WifiListContainer"
             android:label="Wifis" >
         </activity>
         <activity
-            android:name=".activity.WifiDetailsActivity"
+            android:name="org.openbmap.activities.WifiDetailsActivity"
             android:label="Wifi Details" >
         </activity>
         <activity
-            android:name=".activity.CellsListActivity"
+            android:name="org.openbmap.activities.CellsListContainer"
             android:label="Cells" >
         </activity>
         <activity
-            android:name=".activity.CellDetailsActivity"
+            android:name="org.openbmap.activities.CellDetailsActivity"
             android:label="Cell Details" >
         </activity>
         <activity
-            android:name=".activity.MapViewActivity"
+            android:name="org.openbmap.activities.MapViewActivity"
             android:label="Maps" >
         </activity>
         <activity
-            android:name=".activity.SettingsActivity"
+            android:name="org.openbmap.activities.SettingsActivity"
             android:label="Preferences" >
         </activity>
         <activity
-            android:name=".activity.CreditsActivity"
+            android:name="org.openbmap.activities.CreditsActivity"
             android:label="Credits" >
         </activity>
 
         <service
-            android:name=".service.position.PositioningService"
+            android:name="org.openbmap.services.position.PositioningService"
             android:exported="false" >
             <intent-filter>
                 <action android:name=".intent.GPS_SERVICE" />
             </intent-filter>
         </service>
-        <service android:name=".service.position.GpxLoggerService" >
+        <service android:name="org.openbmap.services.position.GpxLoggerService" >
         </service>
-        <service android:name=".service.wireless.WirelessLoggerService" >
+        <service android:name="org.openbmap.services.wireless.WirelessLoggerService" >
         </service>
-        <service android:name=".soapclient.UploadService" >
-        </service>
-
         <provider
             android:name=".db.RadioBeaconContentProvider"
             android:authorities="org.openbmap.provider"

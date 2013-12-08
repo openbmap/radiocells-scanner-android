@@ -14,16 +14,15 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.utils;
 
 import java.util.ArrayList;
 
 import org.mapsforge.core.model.LatLong;
-import org.openbmap.activity.MapViewActivity;
 import org.openbmap.db.DataHelper;
-import org.openbmap.db.model.PositionRecord;
+import org.openbmap.db.models.PositionRecord;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -58,13 +57,9 @@ public class GpxMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatLo
 
 	private OnGpxLoadedListener mListener;
 
-	public GpxMapObjectsLoader(final Context context) {
-
+	public GpxMapObjectsLoader(final Context context, final OnGpxLoadedListener listener) {
 		mContext = context;
-
-		if (context instanceof MapViewActivity) {
-			setOnGpxLoadedListener((OnGpxLoadedListener) context);
-		}
+		setOnGpxLoadedListener(listener);
 	}
 
 	public final void setOnGpxLoadedListener(final OnGpxLoadedListener listener) {
@@ -85,16 +80,16 @@ public class GpxMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatLo
 	protected final ArrayList<LatLong> doInBackground(final Object... args) {         
 		//Log.d(TAG, "Loading gpx points");
 		ArrayList<LatLong> points = new ArrayList<LatLong>();
-		
+
 		DataHelper dbHelper = new DataHelper(mContext);
-		
+
 		ArrayList<PositionRecord> positions = dbHelper.loadPositions((Integer) args[SESSION_ID],
 				(Double) args[MIN_LAT_COL], (Double) args[MAX_LAT_COL], (Double) args[MIN_LON_COL], (Double) args[MAX_LON_COL]);
-		
+
 		for (int i = 0; i < positions.size(); i++) {
 			points.add(new LatLong(positions.get(i).getLatitude(), positions.get(i).getLongitude()));
 		}
-		
+
 		return points;
 	}
 

@@ -19,6 +19,7 @@
 package org.openbmap.utils;
 
 import java.io.File;
+
 import android.content.Context;
 import android.media.MediaScannerConnection;
 import android.media.MediaScannerConnection.MediaScannerConnectionClient;

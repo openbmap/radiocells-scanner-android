@@ -22,12 +22,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openbmap.RadioBeacon;
-import org.openbmap.db.model.CellRecord;
-import org.openbmap.db.model.LogFile;
-import org.openbmap.db.model.PositionRecord;
-import org.openbmap.db.model.Session;
-import org.openbmap.db.model.WifiRecord;
-import org.openbmap.db.model.WifiRecord.CatalogStatus;
+import org.openbmap.db.models.CellRecord;
+import org.openbmap.db.models.LogFile;
+import org.openbmap.db.models.PositionRecord;
+import org.openbmap.db.models.Session;
+import org.openbmap.db.models.WifiRecord;
+import org.openbmap.db.models.WifiRecord.CatalogStatus;
 
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
@@ -152,7 +152,7 @@ public class DataHelper {
 		final int columnIndex6 = ca.getColumnIndex(Schema.COL_TIMESTAMP);
 		final int columnIndex7 = ca.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
 		final int columnIndex8 = ca.getColumnIndex(Schema.COL_END_POSITION_ID);
-		final int columnIndex9 = ca.getColumnIndex(Schema.COL_IS_NEW_WIFI);
+		final int columnIndex9 = ca.getColumnIndex(Schema.COL_KNOWN_WIFI);
 
 		while (ca.moveToNext()) {
 			WifiRecord wifi = new WifiRecord();
@@ -186,7 +186,7 @@ public class DataHelper {
 		ca.close();
 		return count;
 	}
-	
+
 	/**
 	 * Counts number of wifis in session.
 	 * @param session
@@ -257,7 +257,7 @@ public class DataHelper {
 		final int columnIndex6 = ca.getColumnIndex(Schema.COL_TIMESTAMP);
 		final int columnIndex7 = ca.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
 		final int columnIndex8 = ca.getColumnIndex(Schema.COL_END_POSITION_ID);
-		final int columnIndex9 = ca.getColumnIndex(Schema.COL_IS_NEW_WIFI);
+		final int columnIndex9 = ca.getColumnIndex(Schema.COL_KNOWN_WIFI);
 
 		while (ca.moveToNext()) {
 			WifiRecord wifi = new WifiRecord();
@@ -323,7 +323,7 @@ public class DataHelper {
 		final int columnIndex6 = ca.getColumnIndex(Schema.COL_TIMESTAMP);
 		final int columnIndex7 = ca.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
 		final int columnIndex8 = ca.getColumnIndex(Schema.COL_END_POSITION_ID);
-		final int columnIndex9 = ca.getColumnIndex(Schema.COL_IS_NEW_WIFI);
+		final int columnIndex9 = ca.getColumnIndex(Schema.COL_KNOWN_WIFI);
 
 		while (ca.moveToNext()) {	
 			WifiRecord wifi = new WifiRecord();
@@ -336,7 +336,7 @@ public class DataHelper {
 
 			wifi.setBeginPosition(loadPositionById(ca.getString(columnIndex7)));
 			wifi.setEndPosition(loadPositionById(ca.getString(columnIndex8)));
-			
+
 			//wifi.setNew(ca.getInt(columnIndex9) == 1);
 			wifi.setCatalogStatus(CatalogStatus.values()[ca.getInt(columnIndex9)]);
 			wifis.add(wifi);
@@ -345,6 +345,71 @@ public class DataHelper {
 		ca.close();
 		//Log.d(TAG, "loadWifisOverviewWithiny executed (" + (System.currentTimeMillis() - start) + " ms)");
 		return wifis;
+	}
+
+	/**
+	 * Loads session by id.
+	 * @param id
+	 * 			Session to load
+	 * @return On success session is returned, otherwise null.
+	 */
+	public final Session loadSession(final int id) {
+		Session session = null;
+		Cursor ca = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_SESSION, id), null, null, null, null);
+		if (ca.moveToNext()) {
+			session = new Session(
+					ca.getInt(ca.getColumnIndex(Schema.COL_ID)), 
+					ca.getLong(ca.getColumnIndex(Schema.COL_CREATED_AT)),
+					ca.getLong(ca.getColumnIndex(Schema.COL_LAST_UPDATED)),
+					ca.getString(ca.getColumnIndex(Schema.COL_DESCRIPTION)),
+					ca.getInt(ca.getColumnIndex(Schema.COL_HAS_BEEN_EXPORTED)),
+					ca.getInt(ca.getColumnIndex(Schema.COL_IS_ACTIVE)),
+					ca.getInt(ca.getColumnIndex(Schema.COL_NUMBER_OF_CELLS)),
+					ca.getInt(ca.getColumnIndex(Schema.COL_NUMBER_OF_WIFIS)));
+		} 
+		ca.close();
+		return session;
+	}
+
+	/**
+	 * Persists given session in database. If session already exists, session is updated, otherwise new session is created
+	 * @param session
+	 * 			session to store
+	 * @param invalidateActive
+	 * 			shall all other active sessions will be deactivated?
+	 * @return Number of rows updated.
+	 */
+	public final int storeSession(final Session session, final boolean invalidateActive) {
+		if (session == null) {
+			Log.e(TAG, "Error storing session: Session is null");
+			return 0;
+		}
+
+		if (invalidateActive) {
+			// deactivate all active sessions
+			invalidateActiveSessions();
+		}
+
+		// check, whether session already exists, then update, otherwise save new session
+		Cursor ca = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_SESSION, session.getId()), null, null, null, null);
+		if (!ca.moveToNext()) {
+			storeSession(session);
+			ca.close();
+			return 1;
+		} else {
+			Log.d(TAG, "Updating existing session " + session.getId());
+			ContentValues values = new ContentValues();
+			values.put(Schema.COL_CREATED_AT, session.getCreatedAt());
+			values.put(Schema.COL_LAST_UPDATED, session.getLastUpdated());
+			values.put(Schema.COL_DESCRIPTION, session.getDescription());
+			values.put(Schema.COL_HAS_BEEN_EXPORTED, session.hasBeenExported());
+			values.put(Schema.COL_IS_ACTIVE, session.isActive());
+			values.put(Schema.COL_NUMBER_OF_CELLS, session.getNumberOfCells());
+			values.put(Schema.COL_NUMBER_OF_WIFIS, session.getNumberOfWifis());
+			ca.close();
+			return contentResolver.update(RadioBeaconContentProvider.CONTENT_URI_SESSION, values,
+					Schema.COL_ID + " = ?", new String[]{String.valueOf(session.getId())});
+		}
 	}
 
 	/**
@@ -367,6 +432,87 @@ public class DataHelper {
 		values.put(Schema.COL_NUMBER_OF_CELLS, 0);
 		values.put(Schema.COL_NUMBER_OF_WIFIS, 0);
 		return contentResolver.insert(RadioBeaconContentProvider.CONTENT_URI_SESSION, values);
+	}
+
+	/**
+	 * Deletes a session. This will also delete all objects referencing this session as foreign key
+	 * @param id
+	 *            Session to delete
+	 * @return number of delete rows
+	 */
+	public final long deleteSession(final long id) {	
+		return contentResolver.delete(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_SESSION, id), null, null);
+	}
+
+	/**
+	 * Deletes all sessions. This will also delete all objects referencing this session as foreign key
+	 */
+	public final long deleteAllSession() {	
+		return contentResolver.delete(RadioBeaconContentProvider.CONTENT_URI_SESSION, null, null);
+	}
+
+	/**
+	 * Loads current session.
+	 * If you just need current session's id, you might consider {@link getActiveSessionId()}
+	 * @return active session if any, null otherwise
+	 */
+	public final Session loadActiveSession() {
+		Session session = null;
+		Cursor ca = contentResolver.query(Uri.withAppendedPath(RadioBeaconContentProvider.CONTENT_URI_SESSION, "active"), null, null, null, null);
+		if (ca.moveToFirst()) {
+			session = new Session(
+					ca.getInt(ca.getColumnIndex(Schema.COL_ID)), 
+					ca.getLong(ca.getColumnIndex(Schema.COL_CREATED_AT)),
+					ca.getLong(ca.getColumnIndex(Schema.COL_LAST_UPDATED)),
+					ca.getString(ca.getColumnIndex(Schema.COL_DESCRIPTION)),
+					ca.getInt(ca.getColumnIndex(Schema.COL_HAS_BEEN_EXPORTED)),
+					ca.getInt(ca.getColumnIndex(Schema.COL_IS_ACTIVE)),
+					ca.getInt(ca.getColumnIndex(Schema.COL_NUMBER_OF_CELLS)),
+					ca.getInt(ca.getColumnIndex(Schema.COL_NUMBER_OF_WIFIS)));
+			ca.close();
+			return session;
+		} else {
+			ca.close();
+			return null;
+		}
+	}
+
+	/**
+	 * Gets session ids of all sessions
+	 * @return ArrayList with session ids
+	 */
+	public final ArrayList<Integer> getSessionList() {
+		ArrayList<Integer> sessions = new ArrayList<Integer>();
+		Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_SESSION, new String[]{Schema.COL_ID}, null, null, null);
+		while (ca.moveToNext()) {
+			sessions.add(ca.getInt(ca.getColumnIndex(Schema.COL_ID)));
+		} 
+		ca.close();
+		return sessions;
+	}
+
+	/**
+	 * Returns Id of active session. (Faster than {@link loadActiveSession()} as no de-serialization to session object takes place
+	 * @return session id if any active session, RadioBeacon.SESSION_NOT_TRACKING else
+	 */
+	public final int getActiveSessionId() {
+		Cursor ca = contentResolver.query(Uri.withAppendedPath(RadioBeaconContentProvider.CONTENT_URI_SESSION, "active"), null, null, null, null);
+		if (ca.moveToFirst()) {
+			return ca.getInt(ca.getColumnIndex(Schema.COL_ID));
+		}
+		return RadioBeacon.SESSION_NOT_TRACKING;
+	}
+
+	/**
+	 * Counts session, which haven't been exported yet
+	 * @return
+	 */
+	public int countPendingExports() {
+		Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_SESSION, new String[]{Schema.COL_ID}, Schema.COL_HAS_BEEN_EXPORTED + "= 0", null, null);
+
+		int count = ca.getCount();
+		ca.close();
+		return count;
 	}
 
 	/**
@@ -417,7 +563,9 @@ public class DataHelper {
 						.withValue(Schema.COL_IS_CDMA, cell.isCdma())
 						.withValue(Schema.COL_IS_SERVING, cell.isServing())
 						.withValue(Schema.COL_IS_NEIGHBOR, cell.isNeighbor())
-						.withValue(Schema.COL_CELLID, cell.getCid())
+						.withValue(Schema.COL_LOGICAL_CELLID, cell.getLogicalCellId())
+						.withValue(Schema.COL_ACTUAL_CELLID, cell.getActualCellId())
+						.withValue(Schema.COL_UTRAN_RNC, cell.getUtranRnc())
 						.withValue(Schema.COL_PSC, cell.getPsc())
 						.withValue(Schema.COL_LAC, cell.getLac())
 						.withValue(Schema.COL_MCC, cell.getMcc())
@@ -431,10 +579,10 @@ public class DataHelper {
 						.withValueBackReference (Schema.COL_END_POSITION_ID, 1)
 						.withValue(Schema.COL_SESSION_ID, cell.getSessionId())
 						// set unused (CDMA) fields to default
-						.withValue(Schema.COL_BASEID, -1)
-						.withValue(Schema.COL_NETWORKID, -1)
-						.withValue(Schema.COL_SYSTEMID, -1)
-						.withValue(Schema.COL_BASEID, -1)
+						.withValue(Schema.COL_CDMA_BASEID, -1)
+						.withValue(Schema.COL_CDMA_NETWORKID, -1)
+						.withValue(Schema.COL_CDMA_SYSTEMID, -1)
+						.withValue(Schema.COL_CDMA_BASEID, -1)
 
 						.build());	
 			} else {
@@ -448,9 +596,9 @@ public class DataHelper {
 						.withValue(Schema.COL_MCC, cell.getMcc())
 						.withValue(Schema.COL_MNC, cell.getMnc())
 						.withValue(Schema.COL_PSC, cell.getPsc())
-						.withValue(Schema.COL_BASEID, cell.getBaseId())
-						.withValue(Schema.COL_NETWORKID, cell.getNetworkId())
-						.withValue(Schema.COL_SYSTEMID, cell.getSystemId())
+						.withValue(Schema.COL_CDMA_BASEID, cell.getBaseId())
+						.withValue(Schema.COL_CDMA_NETWORKID, cell.getNetworkId())
+						.withValue(Schema.COL_CDMA_SYSTEMID, cell.getSystemId())
 						.withValue(Schema.COL_PSC, cell.getPsc())
 						.withValue(Schema.COL_PSC, cell.getPsc())
 						.withValue(Schema.COL_OPERATORNAME, cell.getOperatorName())
@@ -462,7 +610,7 @@ public class DataHelper {
 						.withValue(Schema.COL_SESSION_ID, cell.getSessionId())
 
 						// set unused (GSM) fields to -1
-						.withValue(Schema.COL_CELLID, -1)
+						.withValue(Schema.COL_LOGICAL_CELLID, -1)
 						.withValue(Schema.COL_LAC, -1)
 						.build());	
 			}
@@ -526,16 +674,18 @@ public class DataHelper {
 		final int colIsCdma = cursor.getColumnIndex(Schema.COL_IS_CDMA);
 		final int colIsServing = cursor.getColumnIndex(Schema.COL_IS_SERVING);
 		final int colIsNeigbor = cursor.getColumnIndex(Schema.COL_IS_NEIGHBOR);
-		final int colCellId = cursor.getColumnIndex(Schema.COL_CELLID);
+		final int colLogicalCellId = cursor.getColumnIndex(Schema.COL_LOGICAL_CELLID);
+		final int colActualCellId = cursor.getColumnIndex(Schema.COL_ACTUAL_CELLID);
+		final int colUtranRnc = cursor.getColumnIndex(Schema.COL_UTRAN_RNC);
 		final int colPsc = cursor.getColumnIndex(Schema.COL_PSC);
 		final int colOperatorName = cursor.getColumnIndex(Schema.COL_OPERATORNAME);
 		final int colOperator = cursor.getColumnIndex(Schema.COL_OPERATOR);
 		final int colMcc = cursor.getColumnIndex(Schema.COL_MCC);
 		final int colMnc = cursor.getColumnIndex(Schema.COL_MNC);
 		final int colLac = cursor.getColumnIndex(Schema.COL_LAC);
-		final int colBaseId = cursor.getColumnIndex(Schema.COL_BASEID);
-		final int colNetworkId = cursor.getColumnIndex(Schema.COL_NETWORKID);
-		final int colSystemId = cursor.getColumnIndex(Schema.COL_SYSTEMID);
+		final int colBaseId = cursor.getColumnIndex(Schema.COL_CDMA_BASEID);
+		final int colNetworkId = cursor.getColumnIndex(Schema.COL_CDMA_NETWORKID);
+		final int colSystemId = cursor.getColumnIndex(Schema.COL_CDMA_SYSTEMID);
 		final int colStrengthDbm = cursor.getColumnIndex(Schema.COL_STRENGTHDBM);
 		final int colStrengthAsu = cursor.getColumnIndex(Schema.COL_STRENGTHASU);
 		final int colTimestamp = cursor.getColumnIndex(Schema.COL_TIMESTAMP);
@@ -547,7 +697,9 @@ public class DataHelper {
 		cell.setIsCdma(cursor.getInt(colIsCdma) != 0); 
 		cell.setIsServing(cursor.getInt(colIsServing) != 0); 
 		cell.setIsNeighbor(cursor.getInt(colIsNeigbor) != 0); 
-		cell.setCid(cursor.getInt(colCellId));
+		cell.setLogicalCellId(cursor.getInt(colLogicalCellId));
+		cell.setActualCid(cursor.getInt(colActualCellId));
+		cell.setUtranRnc(cursor.getInt(colUtranRnc));
 		cell.setPsc(cursor.getInt(colPsc)); 
 		cell.setOperatorName(cursor.getString(colOperatorName));
 		cell.setOperator(cursor.getString(colOperator)); 
@@ -735,139 +887,6 @@ public class DataHelper {
 		values.put(Schema.COL_SESSION_ID, sessionId);
 
 		return contentResolver.insert(RadioBeaconContentProvider.CONTENT_URI_LOGFILE, values);
-	}
-
-	/**
-	 * Loads current session.
-	 * If you just need current session's id, you might consider {@link getActiveSessionId()}
-	 * @return active session if any, null otherwise
-	 */
-	public final Session loadActiveSession() {
-		Session session = null;
-		Cursor ca = contentResolver.query(Uri.withAppendedPath(RadioBeaconContentProvider.CONTENT_URI_SESSION, "active"), null, null, null, null);
-		if (ca.moveToFirst()) {
-			session = new Session(
-					ca.getInt(ca.getColumnIndex(Schema.COL_ID)), 
-					ca.getLong(ca.getColumnIndex(Schema.COL_CREATED_AT)),
-					ca.getLong(ca.getColumnIndex(Schema.COL_LAST_UPDATED)),
-					ca.getString(ca.getColumnIndex(Schema.COL_DESCRIPTION)),
-					ca.getInt(ca.getColumnIndex(Schema.COL_HAS_BEEN_EXPORTED)),
-					ca.getInt(ca.getColumnIndex(Schema.COL_IS_ACTIVE)),
-					ca.getInt(ca.getColumnIndex(Schema.COL_NUMBER_OF_CELLS)),
-					ca.getInt(ca.getColumnIndex(Schema.COL_NUMBER_OF_WIFIS)));
-			ca.close();
-			return session;
-		} else {
-			ca.close();
-			return null;
-		}
-	}
-
-	/**
-	 * Returns Id of active session. (Faster than {@link loadActiveSession()} as no de-serialization to session object takes place
-	 * @return session id if any active session, RadioBeacon.SESSION_NOT_TRACKING else
-	 */
-	public final int getActiveSessionId() {
-		Cursor ca = contentResolver.query(Uri.withAppendedPath(RadioBeaconContentProvider.CONTENT_URI_SESSION, "active"), null, null, null, null);
-		if (ca.moveToFirst()) {
-			return ca.getInt(ca.getColumnIndex(Schema.COL_ID));
-		}
-		return RadioBeacon.SESSION_NOT_TRACKING;
-	}
-
-	/**
-	 * Gets session ids of all sessions
-	 * @return ArrayList with session ids
-	 */
-	public final ArrayList<Integer> getSessionList() {
-		ArrayList<Integer> sessions = new ArrayList<Integer>();
-		Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_SESSION, new String[]{Schema.COL_ID}, null, null, null);
-		while (ca.moveToNext()) {
-			sessions.add(ca.getInt(ca.getColumnIndex(Schema.COL_ID)));
-		} 
-		ca.close();
-		return sessions;
-	}
-	/**
-	 * Loads session by id.
-	 * @param id
-	 * 			Session to load
-	 * @return On success session is returned, otherwise null.
-	 */
-	public final Session loadSession(final int id) {
-		Session session = null;
-		Cursor ca = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_SESSION, id), null, null, null, null);
-		if (ca.moveToNext()) {
-			session = new Session(
-					ca.getInt(ca.getColumnIndex(Schema.COL_ID)), 
-					ca.getLong(ca.getColumnIndex(Schema.COL_CREATED_AT)),
-					ca.getLong(ca.getColumnIndex(Schema.COL_LAST_UPDATED)),
-					ca.getString(ca.getColumnIndex(Schema.COL_DESCRIPTION)),
-					ca.getInt(ca.getColumnIndex(Schema.COL_HAS_BEEN_EXPORTED)),
-					ca.getInt(ca.getColumnIndex(Schema.COL_IS_ACTIVE)),
-					ca.getInt(ca.getColumnIndex(Schema.COL_NUMBER_OF_CELLS)),
-					ca.getInt(ca.getColumnIndex(Schema.COL_NUMBER_OF_WIFIS)));
-		} 
-		ca.close();
-		return session;
-	}
-
-	/**
-	 * Persists given session in database. If session already exists, session is updated, otherwise new session is created
-	 * @param session
-	 * 			session to store
-	 * @param invalidateActive
-	 * 			shall all other active sessions will be deactivated?
-	 * @return Number of rows updated.
-	 */
-	public final int storeSession(final Session session, final boolean invalidateActive) {
-		if (session == null) {
-			Log.e(TAG, "Error storing session: Session is null");
-			return 0;
-		}
-
-		if (invalidateActive) {
-			// deactivate all active sessions
-			invalidateActiveSessions();
-		}
-
-		// check, whether session already exists, then update, otherwise save new session
-		Cursor ca = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_SESSION, session.getId()), null, null, null, null);
-		if (!ca.moveToNext()) {
-			storeSession(session);
-			ca.close();
-			return 1;
-		} else {
-			Log.d(TAG, "Updating existing session " + session.getId());
-			ContentValues values = new ContentValues();
-			values.put(Schema.COL_CREATED_AT, session.getCreatedAt());
-			values.put(Schema.COL_LAST_UPDATED, session.getLastUpdated());
-			values.put(Schema.COL_DESCRIPTION, session.getDescription());
-			values.put(Schema.COL_HAS_BEEN_EXPORTED, session.hasBeenExported());
-			values.put(Schema.COL_IS_ACTIVE, session.isActive());
-			values.put(Schema.COL_NUMBER_OF_CELLS, session.getNumberOfCells());
-			values.put(Schema.COL_NUMBER_OF_WIFIS, session.getNumberOfWifis());
-			ca.close();
-			return contentResolver.update(RadioBeaconContentProvider.CONTENT_URI_SESSION, values,
-					Schema.COL_ID + " = ?", new String[]{String.valueOf(session.getId())});
-		}
-	}
-
-	/**
-	 * Deletes a session. This will also delete all objects referencing this session as foreign key
-	 * @param id
-	 *            Session to delete
-	 * @return number of delete rows
-	 */
-	public final long deleteSession(final long id) {	
-		return contentResolver.delete(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_SESSION, id), null, null);
-	}
-
-	/**
-	 * Deletes all sessions. This will also delete all objects referencing this session as foreign key
-	 */
-	public final long deleteAllSession() {	
-		return contentResolver.delete(RadioBeaconContentProvider.CONTENT_URI_SESSION, null, null);
 	}
 
 	/**

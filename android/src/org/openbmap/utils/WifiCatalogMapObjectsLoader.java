@@ -23,7 +23,6 @@ import java.util.ArrayList;
 
 import org.mapsforge.core.model.LatLong;
 import org.openbmap.Preferences;
-import org.openbmap.activity.MapViewActivity;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -53,23 +52,23 @@ public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayLi
 	/**
 	 * Indices for doInBackground arguments
 	 */
-	private static final int	MIN_LAT_COL	= 0;
-	private static final int	MAX_LAT_COL	= 1;
-	private static final int	MIN_LON_COL	= 2;
-	private static final int	MAX_LON_COL	= 3;
+	private static final int MIN_LAT_COL	= 0;
+	private static final int MAX_LAT_COL	= 1;
+	private static final int MIN_LON_COL	= 2;
+	private static final int MAX_LON_COL	= 3;
 
 	/**
 	 * Maximum overlay items diplayed
 	 * Prevents out of memory/performance issues
 	 */
 	private static final int MAX_REFS = 5000;
-	
+
 	/**
 	 * Creating a overlay item for each wifi can cause performance issues
 	 * in densely mapped areas. If GROUP_WIFIS = true near wifis are merged
 	 * into a single overlay item
 	 */
-	private static final boolean GROUP_WIFIS	= true;
+	private static final boolean GROUP_WIFIS = true;
 
 	/**
 	 * Keeps the SharedPreferences.
@@ -83,13 +82,8 @@ public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayLi
 
 	private OnCatalogLoadedListener mListener;
 
-	public WifiCatalogMapObjectsLoader(final Context context) {
-
-		// dialog = new ProgressDialog(mContext);
-		// get shared preferences
-		if (context instanceof MapViewActivity) {
-			setOnCatalogLoadedListener((OnCatalogLoadedListener) context);
-		}
+	public WifiCatalogMapObjectsLoader(final Context context, final OnCatalogLoadedListener listener) {
+		setOnCatalogLoadedListener(listener);
 		prefs = PreferenceManager.getDefaultSharedPreferences(context);
 	}
 

@@ -370,11 +370,12 @@ public class RadioBeaconContentProvider extends ContentProvider {
 				final String cellFields =
 				// TODO: implement as in wifiFields, i.e. "rowid AS _id, "
 				Schema.COL_ID + ", "
-				+ Schema.COL_CELLID + ", "
+				+ Schema.COL_LOGICAL_CELLID + ", "
+				+ Schema.COL_ACTUAL_CELLID + ", "
 				+ Schema.COL_PSC + ", "
-				+ Schema.COL_BASEID + ", "
-				+ Schema.COL_SYSTEMID + ", "
-				+ Schema.COL_NETWORKID + ", "
+				+ Schema.COL_CDMA_BASEID + ", "
+				+ Schema.COL_CDMA_SYSTEMID + ", "
+				+ Schema.COL_CDMA_NETWORKID + ", "
 				+ Schema.COL_OPERATORNAME + ", "
 				+ Schema.COL_OPERATOR + ", "
 				+ Schema.COL_MCC + ", "
@@ -387,14 +388,14 @@ public class RadioBeaconContentProvider extends ContentProvider {
 
 				// get gsm cells as well as neigbor gsm cells (gsm cell: cell id > -1
 				String cellOverviewQuery = "SELECT " + cellFields + " FROM cells "
-						+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 1 AND " + Schema.COL_CELLID + " > -1 GROUP BY " + Schema.COL_CELLID
+						+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 1 AND " + Schema.COL_LOGICAL_CELLID + " > -1 GROUP BY " + Schema.COL_LOGICAL_CELLID
 						+ " UNION SELECT " + cellFields  + " FROM cells "
-						+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 0 AND " + Schema.COL_CELLID + " > -1 GROUP BY " + Schema.COL_CELLID;
+						+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 0 AND " + Schema.COL_LOGICAL_CELLID + " > -1 GROUP BY " + Schema.COL_LOGICAL_CELLID;
 
 				// add umts / cdma cells
 				cellOverviewQuery += " UNION SELECT " + cellFields  + " FROM cells "
-						+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 0 AND " + Schema.COL_CELLID + " = -1 GROUP BY "
-						+ Schema.COL_PSC + ", " + Schema.COL_SYSTEMID + ", " + Schema.COL_NETWORKID + ", " + Schema.COL_BASEID;
+						+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 0 AND " + Schema.COL_LOGICAL_CELLID + " = -1 GROUP BY "
+						+ Schema.COL_PSC + ", " + Schema.COL_CDMA_SYSTEMID + ", " + Schema.COL_CDMA_NETWORKID + ", " + Schema.COL_CDMA_BASEID;
 
 				cellOverviewQuery += " ORDER BY " + Schema.COL_IS_SERVING + " DESC";
 				//Log.i(TAG, cellOverviewQuery);

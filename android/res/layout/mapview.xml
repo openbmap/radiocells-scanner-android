@@ -60,22 +60,4 @@
         android:scaleType="center"
         android:src="@android:drawable/btn_plus" />
 
-    <Spinner
-        android:id="@+id/mapview_layers_selection"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/btnZoom"
-        android:layout_alignParentTop="true"
-        android:layout_toLeftOf="@+id/btnZoom"
-        android:layout_toRightOf="@+id/textView1" />
-
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/mapview_tb_snap_to_location"
-        android:layout_alignBottom="@+id/mapview_tb_snap_to_location"
-        android:layout_alignParentLeft="true"
-        android:text="@string/layers" />
-
 </RelativeLayout>

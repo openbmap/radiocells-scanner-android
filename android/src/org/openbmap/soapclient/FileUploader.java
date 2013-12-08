@@ -57,12 +57,12 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 	 * Field for multipart message: password
 	 */
 	private static final String	PASSWORD_FIELD	= "openBmap_passwd";
-	
+
 	/**
 	 * Retry upload how many times on failed upload
 	 * 0 means no retry
 	 */
-	private static final int	MAX_RETRIES	= 2;
+	private static final int MAX_RETRIES	= 2;
 
 
 	/**
@@ -102,7 +102,7 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 	protected final Boolean doInBackground(final String... params) {
 		Log.i(TAG, "Uploading " + params[0]);
 		mFile = params[0];
-		
+
 		Boolean uploadOk = upload(mFile);
 		return uploadOk;
 	}
@@ -130,7 +130,7 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 	 */
 	private boolean upload(final String file) {
 		boolean success = performUpload(file);
-		
+
 		// simple resume upload mechanism on failed upload
 		int i = 0;
 		while (!success && i < MAX_RETRIES) {
@@ -138,11 +138,11 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 			success = performUpload(file);
 			i++;
 		}
-		
+
 		if (!success) {
 			Log.e(TAG, "Upload failed after " + i + " retries");
 		}
-		
+
 		return success;
 	}
 
@@ -176,8 +176,12 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 			HttpResponse response = httpclient.execute(httppost);
 
 			int reply = response.getStatusLine().getStatusCode();
-			Log.i(TAG, "Uploaded " + file + ": Server reply " + reply);
-
+			if (reply == 200) {
+				Log.i(TAG, "Uploaded " + file + ": Server reply " + reply);
+			} else {
+				Log.w(TAG, "Uploaded " + file + ": Server reply " + reply);
+			}
+			
 			// everything is ok if we receive HTTP 200
 			// TODO: redirects (301, 302) are NOT handled here 
 			// thus if something changes on the server side we're dead here

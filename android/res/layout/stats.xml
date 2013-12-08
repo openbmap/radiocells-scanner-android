@@ -121,5 +121,24 @@
             android:text=""
             android:textAppearance="?android:attr/textAppearanceMedium" />
     </TableRow>
+    <TableRow>
+        <ImageView
+            android:id="@+id/stats_icon_free"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.1"
+            android:src="@drawable/stat_sys_free"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/stats_free"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.9"
+            android:ellipsize="marquee"
+            android:maxLines="2"
+            android:text=""
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+    </TableRow>
     
 </TableLayout>

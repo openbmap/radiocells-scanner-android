@@ -18,7 +18,7 @@
 
 package org.openbmap.commands;
 
-import org.openbmap.activity.SessionActivity;
+import org.openbmap.activities.StartscreenActivity;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -36,7 +36,7 @@ public class UploadAll extends Activity {
 	protected final void onResume() {
 		super.onResume();
 
-		final Intent intent = new Intent(this, SessionActivity.class);
+		final Intent intent = new Intent(this, StartscreenActivity.class);
 		Bundle b = new Bundle();
 		b.putString("command", "upload_all");
 		intent.putExtras(b); 

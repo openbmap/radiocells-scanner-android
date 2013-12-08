@@ -25,11 +25,12 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.DatabaseHelper;
 import org.openbmap.db.Schema;
-import org.openbmap.db.model.CellRecord;
-import org.openbmap.db.model.LogFile;
+import org.openbmap.db.models.CellRecord;
+import org.openbmap.db.models.LogFile;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -75,7 +76,7 @@ public class CellExporter {
 	/**
 	 * Entries per log file
 	 */
-	private static final int CELLS_PER_FILE	= 250;
+	private static final int CELLS_PER_FILE	= 100;
 
 
 	private Context mContext;
@@ -180,14 +181,14 @@ public class CellExporter {
 			+ Schema.COL_IS_CDMA + ", "
 			+ Schema.COL_IS_SERVING + ", "
 			+ Schema.COL_IS_NEIGHBOR + ", "
-			+ Schema.COL_CELLID + ", "
+			+ Schema.COL_LOGICAL_CELLID + ", "
 			+ Schema.COL_LAC + ", "
 			+ Schema.COL_MCC + ", "
 			+ Schema.COL_MNC + ", "
 			+ Schema.COL_PSC + ", "
-			+ Schema.COL_BASEID + ", "
-			+ Schema.COL_NETWORKID + ", "
-			+ Schema.COL_SYSTEMID + ", "
+			+ Schema.COL_CDMA_BASEID + ", "
+			+ Schema.COL_CDMA_NETWORKID + ", "
+			+ Schema.COL_CDMA_SYSTEMID + ", "
 			+ Schema.COL_OPERATORNAME + ", "
 			+ Schema.COL_OPERATOR + ", "
 			+ Schema.COL_STRENGTHDBM + ", "
@@ -278,7 +279,7 @@ public class CellExporter {
 		mColIsCdma = cursorCells.getColumnIndex(Schema.COL_IS_CDMA);
 		mColIsServing = cursorCells.getColumnIndex(Schema.COL_IS_SERVING);
 		mColIsNeigbor = cursorCells.getColumnIndex(Schema.COL_IS_NEIGHBOR);
-		mColCellId = cursorCells.getColumnIndex(Schema.COL_CELLID);
+		mColCellId = cursorCells.getColumnIndex(Schema.COL_LOGICAL_CELLID);
 		mColPsc = cursorCells.getColumnIndex(Schema.COL_PSC);
 		mColOperatorName = cursorCells.getColumnIndex(Schema.COL_OPERATORNAME);
 		mColOperator = cursorCells.getColumnIndex(Schema.COL_OPERATOR);

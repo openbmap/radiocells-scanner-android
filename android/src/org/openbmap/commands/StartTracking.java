@@ -18,7 +18,7 @@
 
 package org.openbmap.commands;
 
-import org.openbmap.activity.HostActivity;
+import org.openbmap.activities.HostActivity;
 
 import android.app.Activity;
 import android.content.Intent;

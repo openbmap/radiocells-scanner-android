@@ -5,15 +5,15 @@
     android:layout_height="wrap_content"
     android:orientation="vertical" >
 
-    <fragment
-        android:name="org.openbmap.activity.CellListFragment"
+    <ListView
+        android:id="@id/android:list"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_gravity="right"
         android:layout_toRightOf="@+id/verticalLabelView1"
-		android:id="@+id/cellListFragment">
-    </fragment>
+        android:drawSelectorOnTop="false" >
+    </ListView>
 
     <org.openbmap.utils.VerticalLabelView
         xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -24,5 +24,5 @@
         android:layout_alignParentTop="true"
         app:text="Cell History"
         app:textColor="#FFFFFF" />
-    
+
 </RelativeLayout>

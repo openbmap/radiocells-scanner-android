@@ -23,8 +23,7 @@ import android.location.Location;
 import android.util.Log;
 
 /**
- * @author power
- *
+ * Location helpers
  */
 public final class LatLongHelper {
 

@@ -68,6 +68,11 @@ public final class RadioBeacon {
 	public static final String INTENT_WIFI_BLACKLISTED = RadioBeacon.PACKAGE_NAME + ".intent.WIFI_BLACKLISTED";
 
 	/**
+	 * Intent signalling free wifi has been found
+	 */
+	public static final String INTENT_WIFI_FREE = RadioBeacon.PACKAGE_NAME + ".intent_WIFI_FREE";
+	
+	/**
 	 * Intent signalling cells have been changed (e.g. deletes)
 	 */
 	public static final String INTENT_CELL_UPDATE = RadioBeacon.PACKAGE_NAME + ".intent.CELL_UPDATE";
@@ -172,7 +177,7 @@ public final class RadioBeacon {
      * 			- If you change client version, check whether you need to adjust current_version.xml on server and {@link VERSION_COMPATIBILITY} 
      * 			- Also consider updating android:versionCode="x+1" android:versionName="XYZ" in AndroidManifest.xml (e.g. for automatic F-Droid updates)
 	 */
-	public static final String SW_VERSION = "0.7.8";
+	public static final String SW_VERSION = "0.7.9";
 	
 	/**
 	 * {@link ServerValidation} compares server version against VERSION_COMPATIBILITY to check whether client is outdated.
@@ -191,7 +196,7 @@ public final class RadioBeacon {
 	/**
 	 * Database scheme version
 	 */
-	public static final int DATABASE_VERSION = 6;
+	public static final int DATABASE_VERSION = 7;
 
 	/**
 	 * Private dummy constructor

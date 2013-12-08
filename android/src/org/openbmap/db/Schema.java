@@ -64,7 +64,9 @@ public final class Schema {
 	/**
 	 * Columns TBL_CELLS.
 	 */
-	public static final String COL_CELLID = "cid";
+	public static final String COL_LOGICAL_CELLID = "cid";
+	public static final String COL_UTRAN_RNC = "utran_rnc";
+	public static final String COL_ACTUAL_CELLID = "actual_cid";
 	public static final String COL_NETWORKTYPE = "type";
 	public static final String COL_IS_CDMA = "is_cdma";
 	public static final String COL_IS_SERVING = "is_serving";
@@ -81,9 +83,9 @@ public final class Schema {
 	/**
 	 * Additional TBL_CDMACELLS, rest is same as TBL_CELLS.
 	 */
-	public static final String COL_BASEID = "baseid";
-	public static final String COL_NETWORKID = "networkid";
-	public static final String COL_SYSTEMID = "systemid";
+	public static final String COL_CDMA_BASEID = "baseid";
+	public static final String COL_CDMA_NETWORKID = "networkid";
+	public static final String COL_CDMA_SYSTEMID = "systemid";
 	
 	/**
 	 * Columns TBL_WIFIS.
@@ -95,7 +97,7 @@ public final class Schema {
 	public static final String COL_FREQUENCY = "frequency";
 	public static final String COL_LEVEL = "level";
 	public static final String COL_MAX_LEVEL = "MAX(" + COL_LEVEL + ")";
-	public static final String COL_IS_NEW_WIFI	= "is_new_wifi";	
+	//public static final String COL_IS_NEW_WIFI	= "is_new_wifi";	
 	public static final String COL_KNOWN_WIFI = "is_known";
 	
 	/**

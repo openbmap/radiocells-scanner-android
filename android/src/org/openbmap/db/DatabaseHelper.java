@@ -50,14 +50,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+ Schema.COL_IS_CDMA + " INTEGER DEFAULT 0," 
 			+ Schema.COL_IS_SERVING + " INTEGER DEFAULT 0," 
 			+ Schema.COL_IS_NEIGHBOR + " INTEGER DEFAULT 0," 
-			+ Schema.COL_CELLID + " INTEGER DEFAULT -1, "
+			+ Schema.COL_LOGICAL_CELLID + " INTEGER DEFAULT -1, "
+			+ Schema.COL_ACTUAL_CELLID + " INTEGER DEFAULT -1,"
+			+ Schema.COL_UTRAN_RNC + " INTEGER DEFAULT -1,"
 			+ Schema.COL_LAC + " INTEGER DEFAULT 0, "
 			+ Schema.COL_MCC + " TEXT, "
 			+ Schema.COL_MNC + " TEXT, "
 			+ Schema.COL_PSC + " INTEGER DEFAULT -1, "
-			+ Schema.COL_BASEID + " INTEGER DEFAULT -1,"
-			+ Schema.COL_NETWORKID  + " INTEGER DEFAULT -1,"
-			+ Schema.COL_SYSTEMID + " INTEGER DEFAULT -1,"
+			+ Schema.COL_CDMA_BASEID + " INTEGER DEFAULT -1,"
+			+ Schema.COL_CDMA_NETWORKID  + " INTEGER DEFAULT -1,"
+			+ Schema.COL_CDMA_SYSTEMID + " INTEGER DEFAULT -1,"
 			+ Schema.COL_OPERATORNAME + " TEXT, "
 			+ Schema.COL_OPERATOR + " TEXT, "
 			+ Schema.COL_STRENGTHDBM + " INTEGER DEFAULT 0, "
@@ -136,14 +138,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+ " w." +  Schema.COL_IS_CDMA  + " AS " + Schema.COL_IS_CDMA + ","
 			+ " w." +  Schema.COL_IS_SERVING  + " AS " + Schema.COL_IS_SERVING  + ","
 			+ " w." +  Schema.COL_IS_NEIGHBOR  + " AS " + Schema.COL_IS_NEIGHBOR  + ","
-			+ " w." +  Schema.COL_CELLID  + " AS " + Schema.COL_CELLID + ","
+			+ " w." +  Schema.COL_LOGICAL_CELLID  + " AS " + Schema.COL_LOGICAL_CELLID + ","
+			+ " w." +  Schema.COL_ACTUAL_CELLID  + " AS " + Schema.COL_ACTUAL_CELLID + ","
+			+ " w." +  Schema.COL_UTRAN_RNC  + " AS " + Schema.COL_UTRAN_RNC + ","
 			+ " w." +  Schema.COL_LAC  + " AS " + Schema.COL_LAC + ","
 			+ " w." +  Schema.COL_MCC  + " AS " + Schema.COL_MCC + ","
 			+ " w." +  Schema.COL_MNC  + " AS " + Schema.COL_MNC + ","
 			+ " w." +  Schema.COL_PSC  + " AS " + Schema.COL_PSC + ","
-			+ " w." +  Schema.COL_BASEID  + " AS " + Schema.COL_BASEID + ","
-			+ " w." +  Schema.COL_NETWORKID   + " AS " + Schema.COL_NETWORKID + ","
-			+ " w." +  Schema.COL_SYSTEMID  + " AS " + Schema.COL_SYSTEMID + ","
+			+ " w." +  Schema.COL_CDMA_BASEID  + " AS " + Schema.COL_CDMA_BASEID + ","
+			+ " w." +  Schema.COL_CDMA_NETWORKID   + " AS " + Schema.COL_CDMA_NETWORKID + ","
+			+ " w." +  Schema.COL_CDMA_SYSTEMID  + " AS " + Schema.COL_CDMA_SYSTEMID + ","
 			+ " w." +  Schema.COL_OPERATORNAME  + " AS " + Schema.COL_OPERATORNAME + ","
 			+ " w." +  Schema.COL_OPERATOR  + " AS " + Schema.COL_OPERATOR + ","
 			+ " w." +  Schema.COL_STRENGTHDBM  + " AS " + Schema.COL_STRENGTHDBM + ","
@@ -272,7 +276,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final String SQL_CREATE_IDX_CELLS = ""
 			+  "CREATE INDEX idx_cells ON "
 			+  Schema.TBL_CELLS + "("
-			+  Schema.COL_CELLID + ", "		
+			+  Schema.COL_LOGICAL_CELLID + ", "		
 			+  Schema.COL_STRENGTHDBM + ""
 			+  ")";
 
@@ -369,6 +373,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_STRENGTHASU + " INTEGER DEFAULT 0");
 			} catch (SQLException e) {
 				Log.i(TAG, "Nothing to do: asu column already exists");
+			}
+			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_CELLS_EXTENDED);
+			db.execSQL(SQL_CREATE_VIEW_CELL_POSITIONS);
+		}
+
+		if (oldVersion == 6) {
+			// add UTRAN radio network controller and UTRAN cid
+			try {
+				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_UTRAN_RNC + " INTEGER DEFAULT -1");
+				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_ACTUAL_CELLID + " INTEGER DEFAULT -1");
+			} catch (SQLException e) {
+				Log.i(TAG, "Nothing to do: utran columns already exists");
 			}
 			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_CELLS_EXTENDED);
 			db.execSQL(SQL_CREATE_VIEW_CELL_POSITIONS);

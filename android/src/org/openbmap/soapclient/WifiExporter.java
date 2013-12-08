@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.DatabaseHelper;
 import org.openbmap.db.Schema;
-import org.openbmap.db.model.LogFile;
+import org.openbmap.db.models.LogFile;
 import org.openbmap.utils.XmlSanitizer;
 
 import android.content.Context;
@@ -46,7 +46,7 @@ public class WifiExporter  {
 	/**
 	 * Initial size wifi StringBuffer
 	 */
-	private static final int WIFI_XML_DEFAULT_LENGTH	= 220;
+	private static final int WIFI_XML_DEFAULT_LENGTH = 220;
 
 	/**
 	 * Initial size position StringBuffer
@@ -78,7 +78,7 @@ public class WifiExporter  {
 	/**
 	 * Entries per log file
 	 */
-	private static final int WIFIS_PER_FILE	= 250;
+	private static final int WIFIS_PER_FILE	= 100;
 
 
 	private Context mContext;

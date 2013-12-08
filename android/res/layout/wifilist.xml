@@ -6,17 +6,16 @@
     android:gravity="left"
     android:orientation="vertical" >
 
-    <fragment
-        android:id="@+id/wifiListFragment"
-        android:name="org.openbmap.activity.WifiListFragment"
+    <ListView
+        android:id="@id/android:list"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_above="@+id/credits_client_version_caption"
         android:layout_alignParentTop="true"
         android:layout_gravity="right"
-        android:layout_toRightOf="@+id/verticalLabelView1" >
-
-    </fragment>
+        android:layout_toRightOf="@+id/verticalLabelView1"
+        android:drawSelectorOnTop="false" >
+    </ListView>
 
     <org.openbmap.utils.VerticalLabelView
         xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -32,8 +31,8 @@
         android:id="@+id/credits_client_version_caption"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/wifiListFragment"
         android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
         android:gravity="center_horizontal"
         android:text="@string/tap_hotspot_to_see_details"
