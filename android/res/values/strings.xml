@@ -170,7 +170,6 @@
 	<string name="warning_already_uploaded">Won\'t upload session. Has already been uploaded!
 	</string>
 	<string name="question_delete_session">Do you want to delete session?</string>
-	<string name="question_delete_all_sessions">Do you really want to delete all sessions?</string>
 	<string name="session_already_uploaded">Session already uploaded</string>
 	<string name="confirmation">Confirmation</string>
 	<string name="user_or_password_missing">User name or password is missing</string>
@@ -187,7 +186,7 @@
 	<string name="start_tracking">Start tracking</string>
 	<string name="stop_tracking">Stop tracking</string>
 	<string name="version">Version:</string>
-	<string name="warning_delete_all_sessions">Do you really want to delete all sessions?</string>
+	
 	<string name="warning">Warning!</string>
 	<string name="hint_notification">Tap here to display main screen</string>
 	<string name="notification">RadioBeacon is tracking (#{0})</string>
@@ -267,4 +266,6 @@
 	
 	<string name="dialog_found_pending_uploads_title">Found several sessions, which haven\'t been uploaded yet</string>
 	<string name="dialog_found_pending_uploads_message">Would you like to upload all pending sessions now?</string>
+	<string name="dialog_delete_all_sessions_title">Delete ALL sessions?</string>
+	<string name="dialog_delete_all_sessions_message">Do you really want to delete all sessions?</string>
 </resources>

@@ -284,6 +284,10 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		}
 	}
 
+	/**
+	 * User has confirmed delete
+	 * @param id
+	 */
 	public final void deleteConfirmed(final int id) {
 		if (id == RadioBeacon.SESSION_NOT_TRACKING) {
 			return;
@@ -314,6 +318,10 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 */
 	@Override
 	public final void deleteAllCommand() {
+		AlertDialogHelper.newInstance(ID_DELETE_ALL, R.string.dialog_delete_all_sessions_title, R.string.dialog_delete_all_sessions_message, null, false).show(getSupportFragmentManager(), "delete_all");
+	}
+
+	public final void deleteAllConfirmed() {
 		// Signalling service stop request
 		Intent intent = new Intent(RadioBeacon.INTENT_STOP_TRACKING);
 		sendBroadcast(intent);
@@ -322,7 +330,6 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
 		updateUI();
 	}
-
 
 	/**
 	 * Updates session list fragment and informs
@@ -458,19 +465,19 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		if (alertId == ID_DELETE_ALL) {
 			int id = (args != null ? Integer.valueOf(args) : RadioBeacon.SESSION_NOT_TRACKING);
 			stopCommand(id);
-			deleteAllCommand();
+			deleteAllConfirmed();
 		} else if (alertId == ID_DELETE_SESSION) {
 			int id = (args != null ? Integer.valueOf(args) : RadioBeacon.SESSION_NOT_TRACKING);
 			stopCommand(id);
 			deleteConfirmed(id);
 		} else if (alertId == ID_DELETE_PROCESSED) {
 			String candidates = (args != null ? String.valueOf(args) : "");
-			
+
 			ArrayList<Integer> list = new ArrayList<Integer>();
 			for (String s : candidates.split("\\s*;\\s*")) {
 				list.add(Integer.valueOf(s));
 			}
-			
+
 			deleteBatchCommand(list);
 		}
 	}
@@ -530,10 +537,10 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
 			pendingExports.clear();
 			completedExports = 0;
-			
+
 			hideExportDialog();
 			releaseWifiLock();
-			
+
 			deleteCommand(id);
 		} else if (pendingExports.size() == completedExports + failedExports) {
 			Log.i(TAG, "All exports finished");
@@ -545,7 +552,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 				// if everything is ok, offer to delete
 				String candidates = "";
 				for (int one : pendingExports){
-				    candidates += one + ";";
+					candidates += one + ";";
 				}
 				AlertDialogHelper.newInstance(ID_DELETE_PROCESSED, R.string.delete, R.string.do_you_want_to_delete_processed_sessions, candidates, false).show(getSupportFragmentManager(), "failed");
 			}
@@ -553,10 +560,10 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 			pendingExports.clear();
 			completedExports = 0;
 			failedExports = 0;
-			
+
 			hideExportDialog();
 			releaseWifiLock();
-			
+
 			// TODO move to onAlertNegative with ID_DELETE_PROCESSED
 			reloadListFragment();
 		} else {
