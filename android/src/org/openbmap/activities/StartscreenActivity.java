@@ -521,7 +521,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * @see org.openbmap.soapclient.ExportSessionTask.ExportTaskListener#onExportCompleted(int)
 	 */
 	@Override
-	public void onExportCompleted(int id) {
+	public void onExportCompleted(final int id) {
 		// mark as exported
 		Session session = mDataHelper.loadSession(id);
 		session.hasBeenExported(true);
@@ -556,6 +556,45 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 				}
 				AlertDialogHelper.newInstance(ID_DELETE_PROCESSED, R.string.delete, R.string.do_you_want_to_delete_processed_sessions, candidates, false).show(getSupportFragmentManager(), "failed");
 			}
+
+			pendingExports.clear();
+			completedExports = 0;
+			failedExports = 0;
+
+			hideExportDialog();
+			releaseWifiLock();
+
+			// TODO move to onAlertNegative with ID_DELETE_PROCESSED
+			reloadListFragment();
+		} else {
+			// we've got more exports
+			showExportDialog();
+		}
+	}
+
+	@Override
+	public void onDryRunCompleted(final int id) {
+
+		completedExports += 1;
+		Log.i(TAG, "Session " + id + " exported");
+		Log.i(TAG, "Exported " + completedExports + "/" + pendingExports.size() + " sessions");
+
+		if (pendingExports.size() == 1) {
+			Log.i(TAG, "Export simulated");
+
+			pendingExports.clear();
+			completedExports = 0;
+
+			hideExportDialog();
+			releaseWifiLock();
+
+		} else if (pendingExports.size() == completedExports + failedExports) {
+			Log.i(TAG, "All exports simulated");
+
+			if (failedExports > 0) {
+				// at least one export failed
+				AlertDialogHelper.newInstance(ID_EXPORT_FAILED, R.string.export_error_title, R.string.export_error, String.valueOf(id), true).show(getSupportFragmentManager(), "failed");
+			} 
 
 			pendingExports.clear();
 			completedExports = 0;

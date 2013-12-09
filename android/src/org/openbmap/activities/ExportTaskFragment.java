@@ -279,11 +279,21 @@ public class ExportTaskFragment extends SherlockFragment implements ExportTaskLi
 	 * @see org.openbmap.soapclient.ExportSessionTask.ExportTaskListener#onExportCompleted(int)
 	 */
 	@Override
-	public void onExportCompleted(int id) {
+	public void onExportCompleted(final int id) {
 		// forward to activity
 		((ExportTaskListener) getSherlockActivity()).onExportCompleted(id);
 
 		Log.i(TAG, "Export completed. Processing next");
+		toExport.remove(Integer.valueOf(id));
+		looper();
+	}
+
+	@Override
+	public void onDryRunCompleted(final int id) {
+		// forward to activity
+		((ExportTaskListener) getSherlockActivity()).onDryRunCompleted(id);
+
+		Log.i(TAG, "Export simulated. Processing next");
 		toExport.remove(Integer.valueOf(id));
 		looper();
 	}

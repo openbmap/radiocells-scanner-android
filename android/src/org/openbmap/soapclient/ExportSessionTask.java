@@ -46,7 +46,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	 * Max. number of parallel uploads
 	 */
 	private int	MAX_THREADS = 5;
-	
+
 	/**
 	 * Wait for how many milliseconds for upload to be completed
 	 * Users have reported issues with GRACE_TIME = 30000, so give it some more time
@@ -108,7 +108,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	 * Upload md5ssid only?
 	 */
 	private boolean	mAnonymiseSsid = false;
-	
+
 	/**
 	 * Create GPX file after upload?
 	 */
@@ -130,7 +130,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	 * Skip cleanup?
 	 */
 	private boolean	mSkipDelete;
-	
+
 	/**
 	 * Update wifi catalog with new wifis?
 	 */
@@ -149,6 +149,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	public interface ExportTaskListener {
 		void onProgressUpdate(Object... values);
 		void onExportCompleted(final int id);
+		void onDryRunCompleted(final int id);
 		void onExportFailed(final int id, final String error);
 	}
 
@@ -171,15 +172,15 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 		this.mUser = user;
 		this.mPassword = password;
 		this.mListener = listener;
-		
+
 		this.mAnonymiseSsid = anonymiseSsid;
 
 		// by default: upload and delete local temp files afterward
 		this.setSkipUpload(false);
 		this.setSkipDelete(false);
-		
+
 		this.setUpdateWifiCatalog(false);
-		
+
 		mUploadedFiles = new ArrayList<String>();
 	}
 
@@ -319,7 +320,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 			Log.i(TAG, "Updating wifi catalog");
 			new WifiCatalogUpdater(mAppContext).execute((Void[]) null);			
 		}
-		
+
 		return true;
 	}
 
@@ -350,13 +351,15 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 		if (success && !mSkipUpload) {
 			if (mListener != null) {
 				mListener.onExportCompleted(mSession);
-				// TODO testing only
-				//mListener.onExportFailed("FAILED");
 			}
 			return;
 		} else if (success && mSkipUpload) {
-			// do nothing if upload has been skipped
+			// upload simulated only
 			Toast.makeText(mAppContext, R.string.upload_skipped, Toast.LENGTH_LONG).show();
+			if (mListener != null) {
+				mListener.onDryRunCompleted(mSession);
+			}
+			
 			return;
 		} else {
 			if (mListener != null) {
@@ -373,7 +376,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 			mCallbacks.onCancelled();
 		}
 	}*/
-	
+
 	/**
 	 * Enables or disables cells export
 	 * @param exportCells
