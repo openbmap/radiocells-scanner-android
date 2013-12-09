@@ -154,12 +154,6 @@ public class WifiExporter  {
 	 */
 	private long mFileTimeStamp;
 
-
-	/**
-	 * User name, required for file name generation
-	 */
-	private String	mUser;
-
 	/**
 	 * Timestamp, required for file name generation
 	 */
@@ -221,11 +215,10 @@ public class WifiExporter  {
 	 * @param user OpenBmap user name, required for file name generation
 	 * @param exportVersion current Radiobeacon version (can differ from Radiobeacon version used for tracking) 
 	 */
-	public WifiExporter(final Context context, final int session, final String tempPath, final String user, final String exportVersion, final boolean anonymise) {
+	public WifiExporter(final Context context, final int session, final String tempPath, final String exportVersion, final boolean anonymise) {
 		this.mContext = context;
 		this.mSession = session;
 		this.mTempPath = tempPath;
-		this.mUser = user;
 		this.mExportVersion = exportVersion;
 		this.mAnonymise  = anonymise;
 

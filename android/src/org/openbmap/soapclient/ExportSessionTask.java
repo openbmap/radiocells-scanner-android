@@ -196,7 +196,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 			Log.i(TAG, "Exporting cells");
 			// export cells
 			publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.exporting_cells), 0);
-			cellFiles = new CellExporter(mAppContext, mSession, mTargetPath, mUser, RadioBeacon.SW_VERSION).export();
+			cellFiles = new CellExporter(mAppContext, mSession, mTargetPath, RadioBeacon.SW_VERSION).export();
 
 			// upload
 			if (!getSkipUpload()) {
@@ -229,7 +229,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 			Log.i(TAG, "Exporting wifis");
 			// export wifis
 			publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.exporting_wifis), 50);
-			wifiFiles = new WifiExporter(mAppContext, mSession, mTargetPath, mUser, RadioBeacon.SW_VERSION, mAnonymiseSsid).export();
+			wifiFiles = new WifiExporter(mAppContext, mSession, mTargetPath, RadioBeacon.SW_VERSION, mAnonymiseSsid).export();
 
 			// upload
 			if (!getSkipUpload()) {

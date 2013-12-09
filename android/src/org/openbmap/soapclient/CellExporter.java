@@ -105,7 +105,9 @@ public class CellExporter {
 	private int mColIsCdma;
 	private int mColIsServing;
 	private int mColIsNeigbor;
-	private int mColCellId;
+	private int mColLogicalCellId;
+	private int mColActualCellId;
+	private int mColUtranRnc;
 	private int mColPsc;
 	private int mColOperatorName;
 	private int mColOperator;
@@ -153,11 +155,6 @@ public class CellExporter {
 
 
 	/**
-	 * User name, required for file name generation
-	 */
-	private String	mUser;
-
-	/**
 	 * Timestamp, required for file name generation
 	 */
 	//private Calendar mTimestamp;
@@ -182,6 +179,8 @@ public class CellExporter {
 			+ Schema.COL_IS_SERVING + ", "
 			+ Schema.COL_IS_NEIGHBOR + ", "
 			+ Schema.COL_LOGICAL_CELLID + ", "
+			+ Schema.COL_ACTUAL_CELLID + ", "
+			+ Schema.COL_UTRAN_RNC + ", "
 			+ Schema.COL_LAC + ", "
 			+ Schema.COL_MCC + ", "
 			+ Schema.COL_MNC + ", "
@@ -226,11 +225,10 @@ public class CellExporter {
 	 * @param exportVersion current Radiobeacon version (can differ from Radiobeacon version used for tracking) 
 
 	 */
-	public CellExporter(final Context context, final int session, final String tempPath, final String user, final String exportVersion) {
+	public CellExporter(final Context context, final int session, final String tempPath, final String exportVersion) {
 		this.mContext = context;
 		this.mSession = session;
 		this.mTempPath = tempPath;
-		this.mUser = user;
 		this.mExportVersion = exportVersion;
 		//this.mTimestamp = Calendar.getInstance();
 
@@ -279,7 +277,9 @@ public class CellExporter {
 		mColIsCdma = cursorCells.getColumnIndex(Schema.COL_IS_CDMA);
 		mColIsServing = cursorCells.getColumnIndex(Schema.COL_IS_SERVING);
 		mColIsNeigbor = cursorCells.getColumnIndex(Schema.COL_IS_NEIGHBOR);
-		mColCellId = cursorCells.getColumnIndex(Schema.COL_LOGICAL_CELLID);
+		mColLogicalCellId = cursorCells.getColumnIndex(Schema.COL_LOGICAL_CELLID);
+		mColActualCellId = cursorCells.getColumnIndex(Schema.COL_ACTUAL_CELLID);
+		mColUtranRnc = cursorCells.getColumnIndex(Schema.COL_UTRAN_RNC);
 		mColPsc = cursorCells.getColumnIndex(Schema.COL_PSC);
 		mColOperatorName = cursorCells.getColumnIndex(Schema.COL_OPERATORNAME);
 		mColOperator = cursorCells.getColumnIndex(Schema.COL_OPERATOR);
@@ -460,7 +460,9 @@ public class CellExporter {
 						cursor.getString(mColMcc),
 						cursor.getString(mColMnc), 
 						cursor.getString(mColLac),
-						cursor.getString(mColCellId),
+						cursor.getString(mColLogicalCellId),
+						cursor.getString(mColActualCellId),
+						cursor.getString(mColUtranRnc),
 						cursor.getString(mColStrengthDbm),
 						cursor.getString(mColStrengthAsu),
 						cursor.getInt(mColNetworkType),
@@ -488,12 +490,24 @@ public class CellExporter {
 		}
 	}
 
-	/**
-	 * Generates cell xml
-	 * @return
-	 */
+/**
+ * Generates cell xml
+ * @param isServing
+ * @param isNeighbour
+ * @param mcc
+ * @param mnc
+ * @param lac
+ * @param logicalId	logical cell id (lcid)
+ * @param actualId	actual cell id (cid), may equal logicalId on GSM networks
+ * @param rnc		radio network controller id
+ * @param strengthDbm
+ * @param strengthAsu
+ * @param type
+ * @param psc
+ * @return
+ */
 	private static String cellToXML(final int isServing, final int isNeighbour,
-			final String mcc, final String mnc, final String lac, final String cellId, final String strengthDbm, final String strengthAsu, final int type, final String psc) {
+			final String mcc, final String mnc, final String lac, final String logicalId, final String actualId, final String rnc, final String strengthDbm, final String strengthAsu, final int type, final String psc) {
 		final StringBuffer s = new StringBuffer(CELL_XML_DEFAULT_LENGTH);
 		if (isServing != 0) {
 			s.append("\n\t\t<gsmserving mcc=\"");
@@ -506,7 +520,13 @@ public class CellExporter {
 			s.append(lac);
 			s.append("\"");
 			s.append(" id=\"");
-			s.append(cellId);
+			s.append(logicalId);
+			s.append("\"");
+			s.append(" act_id=\"");
+			s.append(actualId);
+			s.append("\"");
+			s.append(" rnc=\"");
+			s.append(rnc);
 			s.append("\"");
 			s.append(" psc=\"");
 			s.append(psc);
@@ -534,7 +554,13 @@ public class CellExporter {
 			s.append(lac);
 			s.append("\"");
 			s.append(" id=\"");
-			s.append(cellId);
+			s.append(logicalId);
+			s.append("\"");
+			s.append(" act_id=\"");
+			s.append(actualId);
+			s.append("\"");
+			s.append(" rnc=\"");
+			s.append(rnc);
 			s.append("\"");
 			s.append(" psc=\"");
 			s.append(psc);
