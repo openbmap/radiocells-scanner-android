@@ -115,6 +115,7 @@ public final class BssidBlackListBootstraper {
 		{"Murata Manufacturing Co., Ltd.", "04:46:65"},
 		{"Murata Manufacturing Co., Ltd.", "44:A7:CF"},
 		{"Murata Manufacturing Co., Ltd.", "40:F3:08"},
+	 	{"Murata Manufactuaring Co.,Ltd.", "60:21:C0"},
 		
 		// Sony Mobile
 		{"Sony Ericsson Mobile Communications AB", "00:0A:D9",},
@@ -192,6 +193,7 @@ public final class BssidBlackListBootstraper {
 		{"Samsung Electronics Co.", "8C:77:12"},
 		{"Samsung Electronics Co.", "9C:E6:E7"},
 		{"SamsungE", "A0:21:B7"},
+		{"SAMSUNG ELECTRO MECHANICS CO., LTD.", "CC:3A:61"},
 		{"Samsung Electronics Co.", "D0:66:7B"},
 		{"Samsung Electronics Co.", "D0:C1:B1"},
 		{"Samsung Electronics Co.,Ltd", "F0:E7:7E"},

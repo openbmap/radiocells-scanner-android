@@ -20,6 +20,9 @@ package org.openbmap.soapclient;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -78,18 +81,45 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 	/**
 	 * Message in case of an error
 	 */
-	private String errorMsg = null;
+	private String lastErrorMsg = null;
 
 	private final String mUser;
 	private final String mPassword;
 	private String	mServer;
 	private String mFile;
 
-	public FileUploader(final UploadTaskListener listener, final String user, final String password, final String server) {
+	/**
+	 * If set to true, following the upload a request is sent to the server, verifying file is actually there
+	 * Background: On wrong or missing credentials server accepts upload (server response 200),
+	 * but discards the file later on.
+	 * 
+	 * Reference:
+	 * http://code.google.com/p/openbmap/issues/detail?id=40
+	 */
+	private boolean	mValidateServerSide;
+
+	/**
+	 * Remote folder, in which uploaded files are searched upon validation
+	 * No trailing slash!
+	 */
+	private String mValidationBaseUrl;
+
+	/**
+	 * 
+	 * @param listener UploadTaskListener which is informed about upload result
+	 * @param user	   user name
+	 * @param password password
+	 * @param server   remote URL
+	 * @param validateServerSide	additional check, whether file is actually uploaded (more safe than just relying on server response 200)
+	 * @param validationBaseUrl		base URL for additional check 
+	 */
+	public FileUploader(final UploadTaskListener listener, final String user, final String password, final String server, final boolean validateServerSide, final String validationBaseUrl) {
 		mListener = listener;
 		mUser = user;
 		mPassword = password;
 		mServer = server;
+		mValidateServerSide = validateServerSide;
+		mValidationBaseUrl = validationBaseUrl;
 	}
 
 	/**
@@ -103,8 +133,17 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 		Log.i(TAG, "Uploading " + params[0]);
 		mFile = params[0];
 
-		Boolean uploadOk = upload(mFile);
-		return uploadOk;
+		Boolean httpResponseGood = upload(mFile);
+
+		// perform additional checks if needed
+		if (mValidateServerSide && httpResponseGood && !fileActuallyExists(mFile)) {
+			lastErrorMsg = "Server reported code 200 on " + mUser + "_" + mFile + ", but the file's not there";
+			Log.e(TAG, lastErrorMsg);
+			Log.e(TAG, "Hint: Check user/password! Typo?");
+			return false;
+		}
+
+		return httpResponseGood;
 	}
 
 	@Override
@@ -116,11 +155,50 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 			return;
 		} else {
 			if (mListener != null) {
-				Log.e(TAG, "Upload failed " + errorMsg);
-				mListener.onUploadFailed(mFile, errorMsg);
+				Log.e(TAG, "Upload failed " + lastErrorMsg);
+				mListener.onUploadFailed(mFile, lastErrorMsg);
 			}
 			return;
 		}
+	}
+
+	/**
+	 * Sends a head request to the server to check whether uploaded file actually exists on the server
+	 * @param file	file
+	 * @return true if file was available
+	 */
+	private boolean fileActuallyExists(final String file) {
+		if (mValidationBaseUrl == null) {
+			Log.i(TAG, "Validation url not set. Skipping server side validation");
+			return true;
+		}
+
+		try {
+			// not very generic yet
+			final String expectedUrl = 
+					mValidationBaseUrl
+					+ mUser + "_"
+					+ file.substring(file.lastIndexOf(File.separator) + 1, file.length());
+			
+			HttpURLConnection connection = (HttpURLConnection) new URL(expectedUrl).openConnection();
+			connection.setRequestMethod("HEAD");
+			int responseCode = connection.getResponseCode();
+			if (responseCode != 200) {
+				// Not OK.
+				return false;
+			}
+		}
+		catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return true;
+		}
+		catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return true;
 	}
 
 	/**
@@ -140,6 +218,7 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 		}
 
 		if (!success) {
+			lastErrorMsg = "Upload failed after " + i + " retries";
 			Log.e(TAG, "Upload failed after " + i + " retries");
 		}
 
@@ -181,7 +260,7 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 			} else {
 				Log.w(TAG, "Uploaded " + file + ": Server reply " + reply);
 			}
-			
+
 			// everything is ok if we receive HTTP 200
 			// TODO: redirects (301, 302) are NOT handled here 
 			// thus if something changes on the server side we're dead here

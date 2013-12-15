@@ -59,9 +59,19 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	private static final String CELL_WEBSERVICE = "http://openBmap.org/upload/upl.php5";
 
 	/**
+	 * Cell target folder, always add trailing slash!
+	 */
+	private static final String CELL_TARGET_FOLDER = "http://openBmap.org/upload/maps/";
+
+	/**
 	 * OpenBmap wifi upload address
 	 */
 	private static final String WIFI_WEBSERVICE = "http://www.openbmap.org/upload_wifi/upl.php5";
+
+	/**
+	 * Wifi target folder, always add trailing slash!
+	 */
+	private static final String WIFI_TARGET_FOLDER = "http://www.openbmap.org/upload_wifi/maps/";
 
 	private Context mAppContext;
 
@@ -192,6 +202,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	protected final Boolean doInBackground(final Void... params) {
 		ArrayList<String> wifiFiles = new ArrayList<String>();
 		ArrayList<String> cellFiles = new ArrayList<String>();
+		Boolean success = true;
 
 		if (mExportCells) {
 			Log.i(TAG, "Exporting cells");
@@ -211,13 +222,12 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 						}
 					}
 					publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.uploading_cells) + "(Files: " + String.valueOf(cellFiles.size() -i) +")" , 0);
-
 					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 						// enforce parallel execution on HONEYCOMB
-						new FileUploader(this, mUser, mPassword, CELL_WEBSERVICE).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, cellFiles.get(i));
+						new FileUploader(this, mUser, mPassword, CELL_WEBSERVICE, true, CELL_TARGET_FOLDER).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, cellFiles.get(i));
 						mActiveUploads += 1;
 					} else {
-						new FileUploader(this, mUser, mPassword, CELL_WEBSERVICE).execute(cellFiles.get(i));
+						new FileUploader(this, mUser, mPassword, CELL_WEBSERVICE, true, CELL_TARGET_FOLDER).execute(cellFiles.get(i));
 						mActiveUploads += 1;
 					}
 				}		
@@ -243,13 +253,12 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 						}
 					}
 					publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.uploading_wifis) + "(Files: " + String.valueOf(wifiFiles.size() -i ) + ")", 50);
-
 					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 						// enforce parallel execution on HONEYCOMB
-						new FileUploader(this, mUser, mPassword, WIFI_WEBSERVICE).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, wifiFiles.get(i));
+						new FileUploader(this, mUser, mPassword, WIFI_WEBSERVICE, true, WIFI_TARGET_FOLDER).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, wifiFiles.get(i));
 						mActiveUploads += 1;
 					} else {
-						new FileUploader(this, mUser, mPassword, WIFI_WEBSERVICE).execute(wifiFiles.get(i));
+						new FileUploader(this, mUser, mPassword, WIFI_WEBSERVICE, true, WIFI_TARGET_FOLDER).execute(wifiFiles.get(i));
 						mActiveUploads += 1;
 					}	
 				}
@@ -276,6 +285,8 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 			// check, whether all files are uploaded
 			if (mUploadedFiles.size() != (wifiFiles.size() + cellFiles.size())) {
 				Log.w(TAG, "Problem: Not all files have been uploaded!");
+				// set state to failed on upload problems
+				success = false;
 			} else {
 				Log.i(TAG, "All files uploaded");
 			}
@@ -321,7 +332,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 			new WifiCatalogUpdater(mAppContext).execute((Void[]) null);			
 		}
 
-		return true;
+		return success;
 	}
 
 	/**
@@ -348,18 +359,19 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 			new MediaScanner(mAppContext, new File(mTargetPath));
 		}
 
-		if (success && !mSkipUpload) {
-			if (mListener != null) {
-				mListener.onExportCompleted(mSession);
-			}
-			return;
-		} else if (success && mSkipUpload) {
+		if (mSkipUpload) {
 			// upload simulated only
 			Toast.makeText(mAppContext, R.string.upload_skipped, Toast.LENGTH_LONG).show();
 			if (mListener != null) {
 				mListener.onDryRunCompleted(mSession);
 			}
-			
+			return;
+		}
+
+		if (success && !mSkipUpload) {
+			if (mListener != null) {
+				mListener.onExportCompleted(mSession);
+			}
 			return;
 		} else {
 			if (mListener != null) {
@@ -432,7 +444,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	public final void onUploadCompleted(final String file) {
 		mUploadedFiles.add(file);
 		mActiveUploads -= 1;
-		Log.i(TAG, "Finished upload, open uploads" + mActiveUploads);
+		Log.i(TAG, "Finished upload, pending uploads " + mActiveUploads);
 	}
 
 	/* (non-Javadoc)
