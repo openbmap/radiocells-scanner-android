@@ -70,7 +70,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
@@ -89,12 +88,12 @@ OnSessionLoadedListener,
 OnGpxLoadedListener,
 ActionBar.OnNavigationListener {
 
+	private static final String TAG = MapViewActivity.class.getSimpleName();
+	
 	/**
-	 * 
+	 * Layers (Session layer + catalog layer, session layer only)
 	 */
 	public enum LayersDisplayed { ALL, SESSION_ONLY};
-
-	private static final String TAG = MapViewActivity.class.getSimpleName();
 
 	/**
 	 * If zoom level < MIN_OBJECT_ZOOM session wifis and wifi catalog objects won't be displayed for performance reasons
@@ -193,10 +192,6 @@ ActionBar.OnNavigationListener {
 	 */
 	private ImageButton btnUnzoom;
 
-	/**
-	 * Spinner toggling displayed session objects (all or only current)
-	 */
-	private Spinner btnLayerSelection;
 	//[end]
 
 	// [start] Map styles
@@ -289,8 +284,13 @@ ActionBar.OnNavigationListener {
 			if (RadioBeacon.INTENT_BROADCAST_POSITION.equals(intent.getAction())) {
 				Location location = intent.getExtras().getParcelable("android.location.Location");
 
+				if (mapView == null) {
+					Log.wtf(TAG, "Map view is null");
+					return;
+				}
+				
 				// if btnSnapToLocation is checked, move map
-				if (btnSnapToLocation.isChecked() && mapView != null) {
+				if (btnSnapToLocation.isChecked()) {
 					LatLong currentPos = new LatLong(location.getLatitude(), location.getLongitude());
 					mapView.getModel().mapViewPosition.setCenter(currentPos);
 				}
@@ -327,9 +327,6 @@ ActionBar.OnNavigationListener {
 			} 
 		}
 	};
-
-	private ArrayAdapter<CharSequence>	layerList;
-
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

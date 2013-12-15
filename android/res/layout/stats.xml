@@ -85,7 +85,6 @@
             android:textAppearance="?android:attr/textAppearanceLarge" />
     </TableRow>
 
-   
     <TableRow>
         <TextView
             android:id="@+id/stats_new_wifis_caption"

@@ -80,7 +80,7 @@ public class HostActivity extends SherlockFragmentActivity {
 	/**
 	 * Tab pager
 	 */
-	private ViewPager mPager;
+	private CustomViewPager mPager;
 
 	private Tab tab;
 
@@ -770,7 +770,7 @@ public class HostActivity extends SherlockFragmentActivity {
 		mActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
 		// Locate ViewPager in activity_main.xml
-		mPager = (ViewPager) findViewById(R.id.pager);
+		mPager = (CustomViewPager) findViewById(R.id.pager);
 		// Activate Fragment Manager
 		FragmentManager fm = getSupportFragmentManager();
 
@@ -785,8 +785,8 @@ public class HostActivity extends SherlockFragmentActivity {
 		};
 
 		mPager.setOnPageChangeListener(ViewPagerListener);
-		// Locate the adapter class called ViewPagerAdapter.java
-		ViewPagerAdapter viewpageradapter = new ViewPagerAdapter(fm);
+		// Locate the adapter class called CustomViewPagerAdapter.java
+		CustomViewPagerAdapter viewpageradapter = new CustomViewPagerAdapter(fm);
 		// Set the View Pager Adapter into ViewPager
 		mPager.setAdapter(viewpageradapter);
 
