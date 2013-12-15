@@ -23,6 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.openbmap.Preferences;
 import org.openbmap.RadioBeacon;
@@ -593,25 +594,25 @@ public class WirelessLoggerService extends AbstractService {
 
 								// Generates a list of wifis from scan results
 								for (ScanResult r : scanlist) {
-									boolean skipSpecific = false;
+									boolean skipThis = false;
 									if (mBssidBlackList.contains(r.BSSID)) {
 										// skip invalid wifis
 										Log.i(TAG, "Ignored " + r.BSSID + " (on bssid blacklist)");
 										broadcastBlacklisted(r.SSID, r.BSSID, BlacklistReasonType.BssidBlocked);
-										skipSpecific = true;
+										skipThis = true;
 									}
 									if (mSsidBlackList.contains(r.SSID)) {
 										// skip invalid wifis
 										Log.i(TAG, "Ignored " + r.SSID + " (on ssid blacklist)");
 										broadcastBlacklisted(r.SSID, r.BSSID, BlacklistReasonType.SsidBlocked);
-										skipSpecific = true;
+										skipThis = true;
 									}
-
+									
 									// skipSpecific = false;
-									if (!skipSpecific) {
+									if (!skipThis) {
 										WifiRecord wifi = new WifiRecord();
 										wifi.setBssid(r.BSSID);
-										wifi.setSsid(r.SSID.toLowerCase());
+										wifi.setSsid(r.SSID.toLowerCase(Locale.US));
 										wifi.setCapabilities(r.capabilities);
 										wifi.setFrequency(r.frequency);
 										wifi.setLevel(r.level);
@@ -625,6 +626,7 @@ public class WirelessLoggerService extends AbstractService {
 										wifis.add(wifi);
 										
 										if (wifi.isFree()) {
+											Log.i(TAG, "Found free wifi, broadcasting");
 											broadcastFree(r.SSID);
 										}
 									}

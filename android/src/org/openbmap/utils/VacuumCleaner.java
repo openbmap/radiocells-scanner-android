@@ -21,12 +21,16 @@ package org.openbmap.utils;
 import org.openbmap.R;
 import org.openbmap.db.DatabaseHelper;
 
+import com.actionbarsherlock.app.SherlockDialogFragment;
+
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabaseLockedException;
 import android.database.sqlite.SQLiteException;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -87,4 +91,5 @@ public class VacuumCleaner extends AsyncTask<Void, Void, Boolean> {
 			Toast.makeText(mContext,  mContext.getResources().getString(R.string.database_lock_error), Toast.LENGTH_LONG).show();
 		}
 	}
+
 }

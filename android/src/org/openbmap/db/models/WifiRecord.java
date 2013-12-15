@@ -147,7 +147,7 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 	}
 
 	public final boolean isFree() {
-		return mCapabilities.equals("\"[ESS]\"");
+		return mCapabilities.equals("[ESS]");
 	}
 	
 	public final int getFrequency() {

@@ -102,6 +102,12 @@ public class StatsActivity extends SherlockFragment {
 	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
+			
+			if (intent == null) {
+				Log.wtf(TAG, "Intent is null");
+				return;
+			}
+			
 			Log.d(TAG, "Received intent " + intent.getAction());
 
 			// handling cell and wifi broadcasts
@@ -299,7 +305,7 @@ public class StatsActivity extends SherlockFragment {
 	}
 
 	/**
-	 * Displays message x seconds since last cell/wifi update
+	 * Displays time since last cell/wifi update
 	 */
 	private void refreshTimeSinceUpdate() {
 		String deltaCellString = String.format(getString(R.string.time_since_last_cell_update), getTimeSinceLastUpdate(mLastCellUpdate));  

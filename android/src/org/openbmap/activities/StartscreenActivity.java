@@ -603,7 +603,6 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 			hideExportDialog();
 			releaseWifiLock();
 
-			// TODO move to onAlertNegative with ID_DELETE_PROCESSED
 			reloadListFragment();
 		} else {
 			// we've got more exports
