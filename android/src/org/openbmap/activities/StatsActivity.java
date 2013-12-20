@@ -162,11 +162,11 @@ public class StatsActivity extends SherlockFragment {
 				mFadeFreeHandler.removeCallbacks(mFadeFreeTask);
 				String ssid = intent.getStringExtra(RadioBeacon.MSG_SSID);
 				if (ssid != null) {
-					tvFree.setText(getResources().getString(R.string.free_wifi) + ssid);
+					tvFree.setText(getResources().getString(R.string.free_wifi) + "\n" + ssid);
 				}
 				tvFree.setVisibility(View.VISIBLE);
 				ivFree.setVisibility(View.VISIBLE);
-				mFadeIgnoreHandler.postDelayed(mFadeFreeTask, FADE_TIME);
+				mFadeFreeHandler.postDelayed(mFadeFreeTask, FADE_TIME);
 			}
 		}
 	};

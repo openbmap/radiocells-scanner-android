@@ -138,10 +138,18 @@ public class HostActivity extends SherlockFragmentActivity {
 				
 				HostActivity.this.finish();
 			}
+			
+			if (Intent.ACTION_BATTERY_LOW.equals(intent.getAction())) {
+				Log.d(TAG, "ACTION_BATTERY_LOW received");
+				// invalidates active track
+				closeActiveSession();
+				// stops background services
+				stopServices();
+				
+				HostActivity.this.finish();
+			}
 		}
 	};
-
-	
 
 	/**
 	 * Reacts on messages from gps location service 
@@ -566,6 +574,7 @@ public class HostActivity extends SherlockFragmentActivity {
 		IntentFilter filter = new IntentFilter();
 		//filter.addAction(RadioBeacon.INTENT_START_TRACKING);
 		filter.addAction(RadioBeacon.INTENT_STOP_TRACKING);
+		filter.addAction(Intent.ACTION_BATTERY_LOW);
 		registerReceiver(mReceiver, filter);		
 	}
 

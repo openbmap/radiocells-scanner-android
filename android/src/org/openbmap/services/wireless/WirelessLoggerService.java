@@ -600,16 +600,21 @@ public class WirelessLoggerService extends AbstractService {
 										Log.i(TAG, "Ignored " + r.BSSID + " (on bssid blacklist)");
 										broadcastBlacklisted(r.SSID, r.BSSID, BlacklistReasonType.BssidBlocked);
 										skipThis = true;
+									} else {
+										Log.v(TAG, "Wifi not bssid blocked");
 									}
 									if (mSsidBlackList.contains(r.SSID)) {
 										// skip invalid wifis
 										Log.i(TAG, "Ignored " + r.SSID + " (on ssid blacklist)");
 										broadcastBlacklisted(r.SSID, r.BSSID, BlacklistReasonType.SsidBlocked);
 										skipThis = true;
+									} else {
+										Log.v(TAG, "Wifi not ssid blocked");
 									}
 									
 									// skipSpecific = false;
 									if (!skipThis) {
+										Log.i(TAG, "Serializing wifi");
 										WifiRecord wifi = new WifiRecord();
 										wifi.setBssid(r.BSSID);
 										wifi.setSsid(r.SSID.toLowerCase(Locale.US));
@@ -622,15 +627,18 @@ public class WirelessLoggerService extends AbstractService {
 										wifi.setEndPosition(end);
 										wifi.setSessionId(mSessionId);
 										//wifi.setNew(checkIsNew(r.BSSID));
+										Log.i(TAG, "Checking catalog status");
 										wifi.setCatalogStatus(checkCatalogStatus(r.BSSID));
 										wifis.add(wifi);
-										
+										Log.i(TAG, "Serialisation finished");
 										if (wifi.isFree()) {
 											Log.i(TAG, "Found free wifi, broadcasting");
 											broadcastFree(r.SSID);
 										}
+										
 									}
 								}
+								Log.i(TAG, "Saving wifis");
 								mDataHelper.storeWifiScanResults(begin, end, wifis);
 
 								// take last seen wifi and broadcast infos in ui
