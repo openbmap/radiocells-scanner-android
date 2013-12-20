@@ -666,10 +666,10 @@ ActionBar.OnNavigationListener {
 		clearCatalogLayer(); 
 
 		// redraw
-		for (int i = 0; i < points.size(); i++) {
-			Circle circle = new Circle(points.get(i), CIRCLE_WIFI_CATALOG_WIDTH, paintCatalogFill, paintCatalogStroke);
-			catalogObjects.add(circle);
-		}  
+		for (LatLong point : points) {
+			 Circle circle = new Circle(point, CIRCLE_WIFI_CATALOG_WIDTH, paintCatalogFill, paintCatalogStroke);
+				catalogObjects.add(circle);
+		}
 
 		/**
 		 * Draw stack (z-order):
@@ -795,17 +795,18 @@ ActionBar.OnNavigationListener {
 		}
 		sessionObjects.clear();
 
-		for (int i = 0; i < points.size(); i++) {
-			if (points.get(i).getSession() == mSessionId) {
+		for (SessionLatLong point : points) {
+			if (point.getSession() == mSessionId) {
 				// current session objects are larger
-				Circle circle = new Circle(points.get(i), CIRCLE_SESSION_WIDTH, paintActiveSessionFill, null);
+				Circle circle = new Circle(point, CIRCLE_SESSION_WIDTH, paintActiveSessionFill, null);
 				sessionObjects.add(circle);
 			} else {
 				// other session objects are smaller and in other color
-				Circle circle = new Circle(points.get(i), CIRCLE_OTHER_SESSION_WIDTH, paintOtherSessionFill, null);
+				Circle circle = new Circle(point, CIRCLE_OTHER_SESSION_WIDTH, paintOtherSessionFill, null);
 				sessionObjects.add(circle);
 			}
-		}  
+		}
+		
 
 		/**
 		 * Draw stack (z-order):
@@ -906,9 +907,10 @@ ActionBar.OnNavigationListener {
 
 		gpxObjects = new Polyline(MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(Color.BLACK), STROKE_GPX_WIDTH,
 				Style.STROKE), AndroidGraphicFactory.INSTANCE);
-		for (int i = 0; i < points.size(); i++) {
-			gpxObjects.getLatLongs().add(points.get(i));
-		} 
+		
+		for (LatLong point : points) {
+			gpxObjects.getLatLongs().add(point);	
+		}
 
 		synchronized (this) {
 			mapView.getLayerManager().getLayers().add(gpxObjects);

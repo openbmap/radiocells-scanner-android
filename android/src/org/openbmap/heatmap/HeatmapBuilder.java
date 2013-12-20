@@ -90,20 +90,20 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 		}
 
 		@SuppressWarnings("unchecked")
-		ArrayList<HeatLatLong> arrayList = ((ArrayList<HeatLatLong>) params[0]);
-		for (int i = 0; i < arrayList.size(); i++) {
-			HeatLatLong p = arrayList.get(i);
-
-			if (p.longitude >= mBbox.minLongitude && p.longitude <= mBbox.maxLongitude
-					&& p.latitude >= mBbox.minLatitude && p.latitude <= mBbox.maxLatitude) {
+		ArrayList<HeatLatLong> heatLatLongs = ((ArrayList<HeatLatLong>) params[0]);
+		
+		for (HeatLatLong heat : heatLatLongs) {
+			
+			if (heat.longitude >= mBbox.minLongitude && heat.longitude <= mBbox.maxLongitude
+					&& heat.latitude >= mBbox.minLatitude && heat.latitude <= mBbox.maxLatitude) {
 				float leftBorder = (float) MercatorProjection.longitudeToPixelX(mBbox.minLongitude, mZoom);
 				float topBorder = (float) MercatorProjection.latitudeToPixelY(mBbox.maxLatitude, mZoom);
 				
-				float x = (float) (MercatorProjection.longitudeToPixelX(p.longitude, mZoom) - leftBorder);
-				float y = (float) (MercatorProjection.latitudeToPixelY(p.latitude, mZoom) - topBorder);
+				float x = (float) (MercatorProjection.longitudeToPixelX(heat.longitude, mZoom) - leftBorder);
+				float y = (float) (MercatorProjection.latitudeToPixelY(heat.latitude, mZoom) - topBorder);
 				
 				// Log.i(TAG, "X:" + x + " Y:" + y);
-				addPoint(x, y, p.getIntensity());
+				addPoint(x, y, heat.getIntensity());
 
 				// skip loop if canceled..
 				if (isCancelled()) {
@@ -111,7 +111,7 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 				}
 			}
 		}
-
+		
 		colorize(0, 0);
 
 		return !isCancelled();
