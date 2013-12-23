@@ -137,7 +137,9 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 
 		// perform additional checks if needed
 		if (mValidateServerSide && httpResponseGood && !fileActuallyExists(mFile)) {
-			lastErrorMsg = "Server reported code 200 on " + mUser + "_" + mFile + ", but the file's not there";
+			String filename = mUser + "_" + mFile.substring(mFile.lastIndexOf(File.separator) + 1, mFile.length());
+			
+			lastErrorMsg = "Server reported code 200 on " + filename + ", but the file's not there..";
 			Log.e(TAG, lastErrorMsg);
 			Log.e(TAG, "Hint: Check user/password! Typo?");
 			return false;

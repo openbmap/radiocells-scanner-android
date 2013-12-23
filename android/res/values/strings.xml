@@ -172,7 +172,7 @@
 	<string name="question_delete_session">Do you want to delete session?</string>
 	<string name="session_already_uploaded">Session already uploaded</string>
 	<string name="confirmation">Confirmation</string>
-	<string name="user_or_password_missing">User name or password is missing</string>
+	<string name="user_or_password_missing">User name or password is missing!</string>
 	<string name="question_enter_user">Enter user name and password now?</string>
 	<string name="deleted">Deleted!</string>
 	<string name="warning_sd_not_writable">Can\'t write to SD card. Perhaps mounted on desktop

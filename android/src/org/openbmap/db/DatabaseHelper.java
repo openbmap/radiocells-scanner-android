@@ -378,8 +378,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			} catch (SQLException e) {
 				Log.i(TAG, "Nothing to do: asu column already exists");
 			}
-			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_CELLS_EXTENDED);
-			db.execSQL(SQL_CREATE_VIEW_CELL_POSITIONS);
+			
+			try {
+				db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_CELLS_EXTENDED);
+				db.execSQL(SQL_CREATE_VIEW_CELL_POSITIONS);
+			} catch (SQLException e) {
+				Log.w(TAG, "Couldn't create cell position view: maybe we're yet missing some other migrations");
+			}
 		}
 
 		if (oldVersion == 6) {
@@ -390,8 +395,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			} catch (SQLException e) {
 				Log.i(TAG, "Nothing to do: utran columns already exist");
 			}
-			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_CELLS_EXTENDED);
-			db.execSQL(SQL_CREATE_VIEW_CELL_POSITIONS);
+			
+			try {
+				db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_CELLS_EXTENDED);
+				db.execSQL(SQL_CREATE_VIEW_CELL_POSITIONS);
+			} catch (SQLException e) {
+				Log.w(TAG, "Couldn't create cell position view: maybe we're yet missing some other migrations");
+			}
 		}
 	}
 

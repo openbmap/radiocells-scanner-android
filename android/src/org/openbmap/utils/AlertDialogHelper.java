@@ -42,15 +42,15 @@ public class AlertDialogHelper extends SherlockDialogFragment{
 	 * @param neutralOnly show only neutral button
 	 * @return
 	 */
-	public static AlertDialogHelper newInstance(int id, int title, int message, String args, boolean neutralOnly) {
+	public static AlertDialogHelper newInstance(int id, String title, String message, String args, boolean neutralOnly) {
 		AlertDialogHelper frag = new AlertDialogHelper();
 		// Caution: Don't set setRetainInstance(true) explicitly. This will cause the dialog to disappear
 		// see http://stackoverflow.com/questions/11307390/dialogfragment-disappears-on-rotation-despite-setretaininstancetrue
 		//frag.setRetainInstance(true);
 		Bundle bundle = new Bundle();
 		bundle.putInt("dialog_id", id);
-		bundle.putInt("title", title);
-		bundle.putInt("message", message);
+		bundle.putString("title", title);
+		bundle.putString("message", message);
 		bundle.putString("args", args);
 		bundle.putBoolean("only_neutral", neutralOnly);
 		frag.setArguments(bundle);
@@ -60,8 +60,8 @@ public class AlertDialogHelper extends SherlockDialogFragment{
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		final int dialogId = getArguments().getInt("dialog_id");
-		final int title = getArguments().getInt("title");
-		final int message = getArguments().getInt("message");
+		final String title = getArguments().getString("title");
+		final String message = getArguments().getString("message");
 		final String args = getArguments().getString("args");
 		final boolean neutralOnly = getArguments().getBoolean("only_neutral");
 

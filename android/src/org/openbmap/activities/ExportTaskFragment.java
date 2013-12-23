@@ -32,6 +32,7 @@ import org.openbmap.soapclient.ServerValidation;
 import org.openbmap.soapclient.ServerValidation.ServerReply;
 import org.openbmap.utils.FileHelper;
 
+import org.openbmap.R;
 import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -213,7 +214,14 @@ public class ExportTaskFragment extends SherlockFragment implements ExportTaskLi
 		// so now it's time to decide whether we start or not..
 		if (allowedVersion == CheckResult.GOOD && sdCardWritable == CheckResult.GOOD && credentialsProvided == CheckResult.GOOD) {
 			looper();
+		} else if (credentialsProvided == CheckResult.BAD) {
+			int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
+			onExportFailed(id, getResources().getString(R.string.user_or_password_missing));
+		} else if(sdCardWritable == CheckResult.BAD) {
+			int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
+			onExportFailed(id, getResources().getString(R.string.warning_sd_not_writable));
 		}
+		
 	}
 
 	/* (non-Javadoc)

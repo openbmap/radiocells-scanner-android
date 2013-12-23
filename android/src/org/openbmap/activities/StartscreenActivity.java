@@ -272,7 +272,9 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * 		session id
 	 */		
 	public final void deleteCommand(final int id) {
-		AlertDialogHelper.newInstance(ID_DELETE_SESSION, R.string.delete, R.string.do_you_want_to_delete_this_session, String.valueOf(id), false).show(getSupportFragmentManager(), "delete");
+		AlertDialogHelper.newInstance(ID_DELETE_SESSION,
+				getResources().getString(R.string.delete), getResources().getString(R.string.do_you_want_to_delete_this_session),
+				String.valueOf(id), false).show(getSupportFragmentManager(), "delete");
 	}
 
 	/**
@@ -318,7 +320,9 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 */
 	@Override
 	public final void deleteAllCommand() {
-		AlertDialogHelper.newInstance(ID_DELETE_ALL, R.string.dialog_delete_all_sessions_title, R.string.dialog_delete_all_sessions_message, null, false).show(getSupportFragmentManager(), "delete_all");
+		AlertDialogHelper.newInstance(ID_DELETE_ALL, 
+				getResources().getString(R.string.dialog_delete_all_sessions_title), getResources().getString(R.string.dialog_delete_all_sessions_message),
+				null, false).show(getSupportFragmentManager(), "delete_all");
 	}
 
 	public final void deleteAllConfirmed() {
@@ -547,14 +551,16 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
 			if (failedExports > 0) {
 				// at least one export failed
-				AlertDialogHelper.newInstance(ID_EXPORT_FAILED, R.string.export_error_title, R.string.export_error, String.valueOf(id), true).show(getSupportFragmentManager(), "failed");
+				AlertDialogHelper.newInstance(ID_EXPORT_FAILED, getResources().getString(R.string.export_error_title), getResources().getString(R.string.export_error),
+						String.valueOf(id), true).show(getSupportFragmentManager(), "failed");
 			} else {
 				// if everything is ok, offer to delete
 				String candidates = "";
 				for (int one : pendingExports){
 					candidates += one + ";";
 				}
-				AlertDialogHelper.newInstance(ID_DELETE_PROCESSED, R.string.delete, R.string.do_you_want_to_delete_processed_sessions, candidates, false).show(getSupportFragmentManager(), "failed");
+				AlertDialogHelper.newInstance(ID_DELETE_PROCESSED, getResources().getString(R.string.delete), getResources().getString(R.string.do_you_want_to_delete_processed_sessions),
+						candidates, false).show(getSupportFragmentManager(), "failed");
 			}
 
 			pendingExports.clear();
@@ -593,7 +599,9 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
 			if (failedExports > 0) {
 				// at least one export failed
-				AlertDialogHelper.newInstance(ID_EXPORT_FAILED, R.string.export_error_title, R.string.export_error, String.valueOf(id), true).show(getSupportFragmentManager(), "failed");
+				AlertDialogHelper.newInstance(ID_EXPORT_FAILED, 
+						getResources().getString(R.string.export_error_title), getResources().getString(R.string.export_error),
+						String.valueOf(id), true).show(getSupportFragmentManager(), "failed");
 			} 
 
 			pendingExports.clear();
@@ -621,7 +629,10 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		releaseWifiLock();
 		hideExportDialog();
 
-		AlertDialogHelper.newInstance(ID_EXPORT_FAILED, R.string.export_error_title, R.string.export_error, String.valueOf(id), true).show(getSupportFragmentManager(), "failed");
+		String errorText = (error == null || error.length() == 0) ? getResources().getString(R.string.export_error) : error;
+		AlertDialogHelper.newInstance(ID_EXPORT_FAILED,
+				getResources().getString(R.string.export_error_title), errorText,
+				String.valueOf(id), true).show(getSupportFragmentManager(), "failed");
 	}
 
 	/**

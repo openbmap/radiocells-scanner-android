@@ -103,8 +103,19 @@ public class StatsActivity extends SherlockFragment {
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
 			
+			// handle strange null values on some 4.4 devices
 			if (intent == null) {
 				Log.wtf(TAG, "Intent is null");
+				return;
+			}
+			
+			if (tvLastCell == null) {
+				Log.wtf(TAG, "tvLastCell is null");
+				return;
+			}
+			
+			if (tvIgnored == null || ivAlert == null || tvFree == null || ivFree == null) {
+				Log.wtf(TAG, "Some controls are null");
 				return;
 			}
 			
