@@ -25,6 +25,9 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 
+/**
+ * View pager, that disables swipe scrolling for map tab
+ */
 public class CustomViewPager extends ViewPager {
 	
 	private static final String TAG = CustomViewPager.class.getSimpleName();

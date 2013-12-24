@@ -25,7 +25,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 
 /**
  * Handles tab pages
- *
  */
 public class ViewPagerAdapter extends FragmentPagerAdapter {
 

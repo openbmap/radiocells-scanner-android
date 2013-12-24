@@ -142,7 +142,6 @@ ActionBar.OnNavigationListener {
 	 */
 	protected static final float CATALOG_REFRESH_DISTANCE = 200;
 
-
 	/**
 	 *  Minimum time (in millis) between automatic catalog refresh
 	 *  Please note: catalog objects are static, thus updates aren't necessary that often

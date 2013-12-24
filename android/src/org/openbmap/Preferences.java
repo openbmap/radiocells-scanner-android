@@ -134,14 +134,14 @@ public final class Preferences {
 	public static final String VAL_DATA_FOLDER = "/org.openbmap";
 	
 	/**
-	 * Default map file name
-	 */
-	public static final String VAL_MAP_FILE = "germany.map";
-	
-	/**
 	 * No map set
 	 */
 	public static final String VAL_MAP_NONE = "none";
+	
+	/**
+	 * Default map file name
+	 */
+	public static final String VAL_MAP_FILE = VAL_MAP_NONE;
 	
 	/**
 	 * Default reference database filename

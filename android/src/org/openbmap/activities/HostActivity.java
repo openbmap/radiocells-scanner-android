@@ -114,7 +114,7 @@ public class HostActivity extends SherlockFragmentActivity {
 	private State mSelectedProvider = State.GPS;
 
 	private ActionBar mActionBar;
-	
+
 	/**
 	 * Receives GPS location updates 
 	 */
@@ -135,17 +135,17 @@ public class HostActivity extends SherlockFragmentActivity {
 				closeActiveSession();
 				// stops background services
 				stopServices();
-				
+
 				HostActivity.this.finish();
 			}
-			
+
 			if (Intent.ACTION_BATTERY_LOW.equals(intent.getAction())) {
 				Log.d(TAG, "ACTION_BATTERY_LOW received");
 				// invalidates active track
 				closeActiveSession();
 				// stops background services
 				stopServices();
-				
+
 				HostActivity.this.finish();
 			}
 		}
@@ -360,7 +360,7 @@ public class HostActivity extends SherlockFragmentActivity {
 				closeActiveSession();
 				stopNotification();
 				stopServices();
-				
+
 				Intent intent = new Intent(this, StartscreenActivity.class);
 				intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 				startActivity(intent);
@@ -794,14 +794,18 @@ public class HostActivity extends SherlockFragmentActivity {
 		};
 
 		mPager.setOnPageChangeListener(ViewPagerListener);
-		// Locate the adapter class called CustomViewPagerAdapter.java
+		
 		CustomViewPagerAdapter viewpageradapter = new CustomViewPagerAdapter(fm);
-		// Set the View Pager Adapter into ViewPager
+		if (!prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE).equals(Preferences.VAL_MAP_NONE)) {
+			viewpageradapter.enableMaps();
+		} else {
+		
+		}
 		mPager.setAdapter(viewpageradapter);
-
+		
+		
 		// Capture tab button clicks
 		ActionBar.TabListener tabListener = new ActionBar.TabListener() {
-
 			@Override
 			public void onTabSelected(Tab tab, FragmentTransaction ft) {
 				// Pass the position on tab click to ViewPager
@@ -819,20 +823,24 @@ public class HostActivity extends SherlockFragmentActivity {
 			}
 		};
 
-	
-			tab = mActionBar.newTab().setText(R.string.overview).setTabListener(tabListener);
-			getSupportActionBar().addTab(tab);
+		// Create tabs
+		tab = mActionBar.newTab().setText(R.string.overview).setTabListener(tabListener);
+		getSupportActionBar().addTab(tab);
 
-			tab = mActionBar.newTab().setText(R.string.wifis).setTabListener(tabListener);
-			getSupportActionBar().addTab(tab);
+		tab = mActionBar.newTab().setText(R.string.wifis).setTabListener(tabListener);
+		getSupportActionBar().addTab(tab);
 
-			tab = mActionBar.newTab().setText(R.string.cells).setTabListener(tabListener);
-			getSupportActionBar().addTab(tab);
+		tab = mActionBar.newTab().setText(R.string.cells).setTabListener(tabListener);
+		getSupportActionBar().addTab(tab);
 
+		if (!prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE).equals(Preferences.VAL_MAP_NONE)) {
+			// add map tab only if map has been selected
 			tab = mActionBar.newTab().setText(R.string.map).setTabListener(tabListener);
 			getSupportActionBar().addTab(tab);
-		
 
+		} else {
+			Log.i(TAG, "Won't create map tab: no map selected!");
+		}
 	}
 
 	/**

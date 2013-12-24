@@ -18,19 +18,24 @@
 
 package org.openbmap.activities;
 
-
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
 /**
  * Handles tab pages
- *
  */
 public class CustomViewPagerAdapter extends FragmentPagerAdapter {
 
-	// Declare the number of ViewPager pages
-	final int PAGE_COUNT = 4;
+	/**
+	 * Number of ViewPager pages
+	 */
+	int pageCount = 3;
+	
+	/**
+	 * Are maps enabled?
+	 */
+	private boolean	mMapsEnabled;
 
 	public CustomViewPagerAdapter(FragmentManager fm) {
 		super(fm);
@@ -39,27 +44,34 @@ public class CustomViewPagerAdapter extends FragmentPagerAdapter {
 	@Override
 	public Fragment getItem(int arg0) {
 		switch (arg0) {
-
-		case 0:
-			StatsActivity stats = new StatsActivity();
-			return stats;
-		case 1:
-			WifiListContainer wifis = new WifiListContainer();
-			return wifis;
-		case 2:
-			CellsListContainer cells = new CellsListContainer();
-			return cells;
-		case 3:
-			MapViewActivity map = new MapViewActivity();
-			return map;
+			case 0:
+				StatsActivity stats = new StatsActivity();
+				return stats;
+			case 1:
+				WifiListContainer wifis = new WifiListContainer();
+				return wifis;
+			case 2:
+				CellsListContainer cells = new CellsListContainer();
+				return cells;
+			case 3:
+				if (mMapsEnabled) {
+					 MapViewActivity map = new MapViewActivity();
+                     return map;
+				}
 		}
 		return null;
 	}
 
 	@Override
 	public int getCount() {
-		// TODO Auto-generated method stub
-		return PAGE_COUNT;
+		return pageCount;
 	}
 
+	/**
+	 * 
+	 */
+	public void enableMaps() {
+		pageCount +=1;
+		mMapsEnabled = true;
+	}
 }
