@@ -292,6 +292,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
 	private SQLiteDatabase mDataBase; 
+
 	public DatabaseHelper(final Context context) {
 		super(context, DB_NAME, null, RadioBeacon.DATABASE_VERSION);
 	}
@@ -341,26 +342,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public final void onUpgrade(final SQLiteDatabase db, final int oldVersion, final int newVersion) {
 		Log.i(TAG, "Updating database scheme from " + oldVersion + " to " + newVersion);
 
-		if (oldVersion == 1) {
+		if (oldVersion <= 1) {
 			// add wifi position view 
 			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_WIFIS_EXTENDED);
 			db.execSQL(SQL_CREATE_VIEW_WIFI_POSITIONS);
 		} 
 
-		if (oldVersion == 2) {
+		if (oldVersion <= 2) {
 			// add asu fields
 			db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_STRENGTHASU + " INTEGER DEFAULT 0");
 		}
 
-		if (oldVersion == 3) {
+		if (oldVersion <= 3) {
 			// add cell position view
 			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_CELLS_EXTENDED);
 			db.execSQL(SQL_CREATE_VIEW_CELL_POSITIONS);
 		}
 
-		if (oldVersion == 4) {
+		if (oldVersion <= 4) {
 			// add known wifi column (replacement for is_new_wifi)
-			db.execSQL("ALTER TABLE " + Schema.TBL_WIFIS + " ADD COLUMN " + Schema.COL_KNOWN_WIFI + " INTEGER DEFAULT 0");
+			try {
+				db.execSQL("ALTER TABLE " + Schema.TBL_WIFIS + " ADD COLUMN " + Schema.COL_KNOWN_WIFI + " INTEGER DEFAULT 0");
+			}
+			catch (SQLException e) {
+				Log.i(TAG, "Nothing to do: is_known column already exists");
+			}
+
 			try {
 				db.execSQL("UPDATE " + Schema.TBL_WIFIS + " SET " + Schema.COL_KNOWN_WIFI + " = 1 WHERE is_new_wifi = 0");
 			} catch (SQLException e) {
@@ -370,7 +377,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			db.execSQL(SQL_CREATE_VIEW_WIFI_POSITIONS);
 		}
 
-		if (oldVersion == 5) {
+		if (oldVersion <= 5) {
 			// F-Droid 0.7.7 second release
 			// on some clients column from version 2 wasn't added
 			try {
@@ -378,16 +385,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			} catch (SQLException e) {
 				Log.i(TAG, "Nothing to do: asu column already exists");
 			}
-			
+
 			try {
 				db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_CELLS_EXTENDED);
 				db.execSQL(SQL_CREATE_VIEW_CELL_POSITIONS);
 			} catch (SQLException e) {
-				Log.w(TAG, "Couldn't create cell position view: maybe we're yet missing some other migrations");
+				Log.w(TAG, "Couldn't create cell position view: maybe we've got some more pending migrations");
 			}
 		}
 
-		if (oldVersion == 6) {
+		if (oldVersion <= 6) {
 			// add UTRAN radio network controller and UTRAN cid
 			try {
 				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_UTRAN_RNC + " INTEGER DEFAULT -1");
@@ -395,13 +402,54 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			} catch (SQLException e) {
 				Log.i(TAG, "Nothing to do: utran columns already exist");
 			}
-			
+
 			try {
 				db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_CELLS_EXTENDED);
 				db.execSQL(SQL_CREATE_VIEW_CELL_POSITIONS);
 			} catch (SQLException e) {
-				Log.w(TAG, "Couldn't create cell position view: maybe we're yet missing some other migrations");
+				Log.w(TAG, "Couldn't create cell position view: maybe we've got some more pending migrations");
 			}
+		}
+
+		if (oldVersion <= 7) {
+			// fix broken migrations, see http://code.google.com/p/openbmap/issues/detail?id=55
+			// basically all migration since 4 are repeated, error ignored
+			
+			// repeat migration 4
+			try {
+				db.execSQL("ALTER TABLE " + Schema.TBL_WIFIS + " ADD COLUMN " + Schema.COL_KNOWN_WIFI + " INTEGER DEFAULT 0");
+			}
+			catch (SQLException e) {
+				Log.i(TAG, "Nothing to do: is_known column already exists");
+			}
+	
+			try {
+				db.execSQL("UPDATE " + Schema.TBL_WIFIS + " SET " + Schema.COL_KNOWN_WIFI + " = 1 WHERE is_new_wifi = 0");
+			} catch (SQLException e) {
+				Log.w(TAG, "Can't find is_new_wifi column. Skipping update");
+			}
+			
+			// repeat migration 5
+			try {
+				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_STRENGTHASU + " INTEGER DEFAULT 0");
+			} catch (SQLException e) {
+				Log.i(TAG, "Nothing to do: asu column already exists");
+			}
+			
+			// repeat migration 6
+			try {
+				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_UTRAN_RNC + " INTEGER DEFAULT -1");
+				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_ACTUAL_CELLID + " INTEGER DEFAULT -1");
+			} catch (SQLException e) {
+				Log.i(TAG, "Nothing to do: utran columns already exist");
+			}
+			
+			// recreate views
+			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_WIFIS_EXTENDED);
+			db.execSQL(SQL_CREATE_VIEW_WIFI_POSITIONS);
+			
+			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_CELLS_EXTENDED);
+			db.execSQL(SQL_CREATE_VIEW_CELL_POSITIONS);
 		}
 	}
 

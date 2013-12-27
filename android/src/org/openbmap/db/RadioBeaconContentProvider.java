@@ -28,6 +28,7 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.util.Log;
@@ -143,10 +144,12 @@ public class RadioBeaconContentProvider extends ContentProvider {
 
 	@Override
 	public final boolean onCreate() {
-		//Log.d(TAG, "OnCreate@RadioBeaconContentprovider called");
 		mDbHelper = new DatabaseHelper(getContext());
+		SQLiteDatabase db = mDbHelper.getWritableDatabase();
+		Log.i(TAG, "Current database version: " + db.getVersion());
+		
 		// Enable foreign key constraints (per connection)
-		mDbHelper.getWritableDatabase().execSQL("PRAGMA foreign_keys = ON"); 
+		db.execSQL("PRAGMA foreign_keys = ON"); 
 		return true;
 	}
 

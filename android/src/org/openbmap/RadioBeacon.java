@@ -196,7 +196,7 @@ public final class RadioBeacon {
 	/**
 	 * Database scheme version
 	 */
-	public static final int DATABASE_VERSION = 7;
+	public static final int DATABASE_VERSION = 8;
 
 	/**
 	 * Private dummy constructor
