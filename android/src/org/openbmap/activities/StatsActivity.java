@@ -216,7 +216,7 @@ public class StatsActivity extends SherlockFragment {
 		// setup broadcast filters
 		registerReceiver();	
 	}
-
+	
 	@Override
 	public final void onResume() {
 		super.onResume();
@@ -250,8 +250,9 @@ public class StatsActivity extends SherlockFragment {
 		View view = inflater.inflate(R.layout.stats, container, false);
 		// setup UI controls
 		initUi(view);
+		
+		refreshObjectCount();
 		return view;
-
 	}
 
 	/**
