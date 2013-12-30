@@ -93,14 +93,14 @@ public class TabManager implements TabHost.OnTabChangeListener {
 		// from a previously saved state. If so, deactivate it, because our
 		// initial state is that a tab isn't shown.
 		info.fragment = mActivity.getSupportFragmentManager().findFragmentByTag(tag);
-				if (info.fragment != null && !info.fragment.isDetached()) {
-					FragmentTransaction ft = mActivity.getSupportFragmentManager().beginTransaction();
-					ft.detach(info.fragment);
-					ft.commit();
-				}
+		if (info.fragment != null && !info.fragment.isDetached()) {
+			FragmentTransaction ft = mActivity.getSupportFragmentManager().beginTransaction();
+			ft.detach(info.fragment);
+			ft.commit();
+		}
 
-				mTabs.put(tag, info);
-				mTabHost.addTab(tabSpec);
+		mTabs.put(tag, info);
+		mTabHost.addTab(tabSpec);
 	}
 
 	@Override

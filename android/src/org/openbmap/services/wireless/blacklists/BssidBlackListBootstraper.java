@@ -210,6 +210,9 @@ public final class BssidBlackListBootstraper {
 		{"Huawei Technologies Co., Ltd","E8:CD:2D"},
 		{"Huawei Technologies Co., Ltd","F4:55:9C"},
 
+		// GoPro
+		{"GoPro", "D8:96:85"},
+		
 		// Longcheer - mobile 3G boxes, e.g. XSBoxGo
 		{"Longcheer Technology (Singapore) Pte Ltd", "00:23:B1"},
 		

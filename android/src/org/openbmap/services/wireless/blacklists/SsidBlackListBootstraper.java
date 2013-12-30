@@ -119,6 +119,7 @@ public final class SsidBlackListBootstraper {
 		{"default", "VirginMobile"},
 		{"default", "VTA Free Wi-Fi"},
 		{"default", "webOS Network"},
+		{"GoPro cams", "goprohero3"},
 		{"empty ssid (not really hidden, just not broadcasting..)", ""},
 
 		// some ssids from our friends at https://github.com/dougt/MozStumbler
