@@ -35,7 +35,7 @@ public class CustomViewPagerAdapter extends FragmentPagerAdapter {
 	/**
 	 * Are maps enabled?
 	 */
-	private boolean	mMapsEnabled;
+	private boolean	mMapsEnabled = false;
 
 	public CustomViewPagerAdapter(FragmentManager fm) {
 		super(fm);

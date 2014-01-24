@@ -90,7 +90,7 @@ public class GpxLoggerService extends AbstractService {
 		public void onReceive(final Context context, final Intent intent) {
 			Log.d(TAG, "Received intent " + intent.getAction());
 			// handling gps broadcasts
-			if (RadioBeacon.INTENT_BROADCAST_POSITION.equals(intent.getAction())) {
+			if (RadioBeacon.INTENT_POSITION_UPDATE.equals(intent.getAction())) {
 				if (!mIsTracking) {
 					return;
 				}
@@ -135,7 +135,7 @@ public class GpxLoggerService extends AbstractService {
 	private void registerReceiver() {
 		IntentFilter filter = new IntentFilter();
 		// Register our gps broadcast mReceiver
-		filter.addAction(RadioBeacon.INTENT_BROADCAST_POSITION);
+		filter.addAction(RadioBeacon.INTENT_POSITION_UPDATE);
 		registerReceiver(mReceiver, filter);
 	}
 
@@ -243,6 +243,9 @@ public class GpxLoggerService extends AbstractService {
 			case RadioBeacon.MSG_STOP_TRACKING:
 				Log.d(TAG, "Wireless logger received MSG_STOP_TRACKING signal");
 				stopTracking();
+				
+				// before manager stopped the service
+				GpxLoggerService.this.stopSelf();
 				break;
 			default:
 				Log.d(TAG, "Unrecognized message received: " + msg.what);

@@ -45,7 +45,13 @@ public final class RadioBeacon {
 	/**
 	 * Intent to broadcast new GPS position
 	 */
-	public static final String INTENT_BROADCAST_POSITION = RadioBeacon.PACKAGE_NAME + ".intent.BROADCAST_GPS";
+	public static final String INTENT_POSITION_UPDATE = RadioBeacon.PACKAGE_NAME + ".intent.POSITION_UPDATE";
+	
+	/**
+	 * Intent to broadcast new GPS position
+	 */
+	public static final String INTENT_POSITION_SAT_INFO = RadioBeacon.PACKAGE_NAME + ".intent.POSITION_SAT_INFO";
+		
 	
 	/**
 	 * Intent signalling new session has been saved

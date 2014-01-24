@@ -19,7 +19,11 @@
 package org.openbmap.services.position.providers;
 
 import android.location.Location;
+import android.os.Bundle;
 
 public interface LocationChangeListener {
 	void onLocationChange(Location loc);
+
+	void onStatusChanged(String provider, int status, Bundle extras);
+	public void onSatInfo(int satCount);
 }

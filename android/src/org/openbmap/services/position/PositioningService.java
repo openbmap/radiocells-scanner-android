@@ -14,7 +14,7 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.openbmap.services.position;
 
@@ -22,6 +22,7 @@ import org.openbmap.RadioBeacon;
 import org.openbmap.services.AbstractService;
 import org.openbmap.services.position.providers.GpsProvider;
 import org.openbmap.services.position.providers.LocationChangeListener;
+import org.openbmap.services.position.providers.LocationProvider;
 
 import android.content.Intent;
 import android.location.Location;
@@ -175,7 +176,7 @@ public class PositioningService extends AbstractService implements LocationChang
 						Log.w(TAG, "No provider selected, using GPS as default");
 						provider = State.GPS;
 					}
-					
+
 					Log.i(TAG, "Received request to start provider " + providerString + "(" + provider.toString() + ")");
 					startTracking(provider);
 				} catch (Exception e) {
@@ -185,6 +186,9 @@ public class PositioningService extends AbstractService implements LocationChang
 			case RadioBeacon.MSG_STOP_TRACKING:
 				Log.d(TAG, "GPS logger received MSG_STOP_TRACKING signal");
 				stopTracking();
+				
+				// before manager stopped the service
+				PositioningService.this.stopSelf();
 				break;
 			default:
 				Log.d(TAG, "Unrecognized message received: " + msg.what);
@@ -219,7 +223,7 @@ public class PositioningService extends AbstractService implements LocationChang
 				mLastTimestamp = System.currentTimeMillis(); // save the time of this fix
 
 				// broadcast GPS location, so wireless logger can use it
-				Intent intent = new Intent(RadioBeacon.INTENT_BROADCAST_POSITION);
+				Intent intent = new Intent(RadioBeacon.INTENT_POSITION_UPDATE);
 				Bundle bundle = new Bundle();
 				bundle.putParcelable("android.location.Location", location);
 				intent.putExtras(bundle);
@@ -230,6 +234,51 @@ public class PositioningService extends AbstractService implements LocationChang
 				mLastLocation = location;
 			}
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.services.position.providers.LocationChangeListener#onStatusChanged(java.lang.String, int, android.os.Bundle)
+	 */
+	@Override
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+		switch (status) {
+			// Don't do anything for status AVAILABLE, as this event occurs frequently,
+			// changing the graphics cause flickering .
+			case android.location.LocationProvider.OUT_OF_SERVICE:
+				Intent i1 = new Intent(RadioBeacon.INTENT_POSITION_SAT_INFO);
+				Bundle b1 = new Bundle();
+				b1.putString("STATUS", "OUT_OF_SERVICE");
+				b1.putInt("SAT_COUNT", -1);
+				i1.putExtras(b1);
+				sendBroadcast(i1);
+
+				break;
+			case android.location.LocationProvider.TEMPORARILY_UNAVAILABLE:
+				Intent i2 = new Intent(RadioBeacon.INTENT_POSITION_SAT_INFO);
+				Bundle b2 = new Bundle();
+				b2.putString("STATUS", "TEMPORARILY_UNAVAILABLE");
+				b2.putInt("SAT_COUNT", -1);
+				i2.putExtras(b2);
+				sendBroadcast(i2);
+				
+				break;
+			default:
+				break;
+		}	
+
+	}
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.services.position.providers.LocationChangeListener#onStatusChanged(int)
+	 */
+	@Override
+	public void onSatInfo(int satCount) {
+		Intent i = new Intent(RadioBeacon.INTENT_POSITION_SAT_INFO);
+		Bundle b = new Bundle();
+		b.putString("STATUS", "UPDATE");
+		b.putInt("SAT_COUNT", satCount);
+		i.putExtras(b);
+		sendBroadcast(i);	
 	}
 
 }

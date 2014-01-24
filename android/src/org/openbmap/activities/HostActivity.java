@@ -262,7 +262,6 @@ public class HostActivity extends SherlockFragmentActivity {
 		super.onResume();
 
 		setupBroadcastReceiver();
-
 		setupSession();
 
 		/* TODO: sort out, what is needed here
@@ -270,7 +269,7 @@ public class HostActivity extends SherlockFragmentActivity {
 		 * prefs.getBoolean(OSMTracker.Preferences.KEY_GPS_CHECKSTARTUP, OSMTracker.Preferences.VAL_GPS_CHECKSTARTUP)) { checkGPSProvider(); }
 		 */
 		// Register GPS status update for upper controls
-		((GpsStatusRecord) findViewById(R.id.gpsStatus)).requestLocationUpdates(true);
+		//((GpsStatusRecord) findViewById(R.id.gpsStatus)).requestLocationUpdates(true);
 
 		startServices();
 		requestPosition(mSelectedProvider);
@@ -280,8 +279,6 @@ public class HostActivity extends SherlockFragmentActivity {
 	@Override
 	protected final void onPause() {
 
-		// When paused, stop updating GPS signal strength in action bar.
-		((GpsStatusRecord) findViewById(R.id.gpsStatus)).requestLocationUpdates(false);
 		updateSessionStats();
 		super.onPause();
 	}
@@ -301,9 +298,10 @@ public class HostActivity extends SherlockFragmentActivity {
 		updateSessionStats();
 		unregisterReceiver();
 
-		if (positionServiceManager != null) { positionServiceManager.unbind();};
-		if (wirelessServiceManager != null) { wirelessServiceManager.unbind();}
-		if (gpxLoggerServiceManager != null) { gpxLoggerServiceManager.unbind();};
+		// was unbind only before
+		if (positionServiceManager != null) { positionServiceManager.unbindAndStop();};
+		if (wirelessServiceManager != null) { wirelessServiceManager.unbindAndStop();}
+		if (gpxLoggerServiceManager != null) { gpxLoggerServiceManager.unbindAndStop();};
 
 		stopNotification();
 		super.onDestroy();
@@ -382,20 +380,6 @@ public class HostActivity extends SherlockFragmentActivity {
 			active.setNumberOfCells(mDataHelper.countCells(active.getId()));
 			mDataHelper.storeSession(active, false);
 		}	
-	}
-
-	/**
-	 * Called when GPS is enabled.
-	 */
-	public void onGpsEnabled() {
-
-	}
-
-	/**
-	 * Called when GPS is disabled.
-	 */
-	public final void onGpsDisabled() {
-
 	}
 
 	/**
@@ -710,7 +694,8 @@ public class HostActivity extends SherlockFragmentActivity {
 		// Service status is ignored, stop message is send regardless of whether started or not
 		try {
 			positionServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
-			positionServiceManager.unbindAndStop();
+			// deactivated: let's call this from the service itself
+			// positionServiceManager.unbindAndStop();
 		} catch (Exception e) {
 			Log.w(TAG, "Failed to stop gpsPositionServiceManager. Is service runnign?" /*+ e.getMessage()*/);
 			//e.printStackTrace();
@@ -718,7 +703,8 @@ public class HostActivity extends SherlockFragmentActivity {
 
 		try {
 			wirelessServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
-			wirelessServiceManager.unbindAndStop();
+			// deactivated: let's call this from the service itself
+			// wirelessServiceManager.unbindAndStop();
 		} catch (Exception e) {
 			Log.w(TAG, "Failed to stop wirelessServiceManager. Is service running?" /*+ e.getMessage()*/);
 			//e.printStackTrace();
@@ -726,7 +712,8 @@ public class HostActivity extends SherlockFragmentActivity {
 
 		try {
 			gpxLoggerServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
-			gpxLoggerServiceManager.unbindAndStop();
+			// deactivated: let's call this from the service itself
+			// gpxLoggerServiceManager.unbindAndStop();
 		} catch (Exception e) {
 			Log.w(TAG, "Failed to stop gpxLoggerServiceManager. Is service running?" /*+ e.getMessage()*/);
 			//e.printStackTrace();
@@ -794,16 +781,15 @@ public class HostActivity extends SherlockFragmentActivity {
 		};
 
 		mPager.setOnPageChangeListener(ViewPagerListener);
-		
+
 		CustomViewPagerAdapter viewpageradapter = new CustomViewPagerAdapter(fm);
 		if (!prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE).equals(Preferences.VAL_MAP_NONE)) {
 			viewpageradapter.enableMaps();
 		} else {
-		
+
 		}
 		mPager.setAdapter(viewpageradapter);
-		
-		
+
 		// Capture tab button clicks
 		ActionBar.TabListener tabListener = new ActionBar.TabListener() {
 			@Override

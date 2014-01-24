@@ -280,7 +280,7 @@ ActionBar.OnNavigationListener {
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
 			// handling GPS broadcasts
-			if (RadioBeacon.INTENT_BROADCAST_POSITION.equals(intent.getAction())) {
+			if (RadioBeacon.INTENT_POSITION_UPDATE.equals(intent.getAction())) {
 				Location location = intent.getExtras().getParcelable("android.location.Location");
 
 				if (mapView == null) {
@@ -536,7 +536,7 @@ ActionBar.OnNavigationListener {
 
 	private void registerReceiver() {
 		IntentFilter filter = new IntentFilter();
-		filter.addAction(RadioBeacon.INTENT_BROADCAST_POSITION);
+		filter.addAction(RadioBeacon.INTENT_POSITION_UPDATE);
 		getSherlockActivity().registerReceiver(mReceiver, filter);  
 	}
 

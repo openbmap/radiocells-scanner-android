@@ -36,8 +36,6 @@ public abstract class LocationProviderImpl implements LocationProvider {
 	protected LocationService locationService;
 	
 	protected PositioningService serviceContext;
-	
-	private Context mContext;
 
 	private boolean mIsRunning = false;
 	
@@ -45,14 +43,12 @@ public abstract class LocationProviderImpl implements LocationProvider {
 	
 	public LocationProviderImpl(final Context ctx) {
 		this(ctx, LocationServiceFactory.getLocationService());
-		this.mContext = ctx;
 	}
 	
 	public LocationProviderImpl(final Context ctx, final LocationService locationService) {
 		mLocation = new Location("dummy");
 		mLocation.setProvider(getProviderName());
 		mLocation.setAccuracy(-1);
-		this.mContext = ctx;
 		locationService.registerProvider(this);
 	}
 	

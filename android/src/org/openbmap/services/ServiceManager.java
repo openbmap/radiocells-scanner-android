@@ -124,7 +124,6 @@ public class ServiceManager {
 		mActivityHandler = activityHandler;
 
 		bindAndStart();
-
 	}
 
 	public final void bindAndStart() {
@@ -133,8 +132,8 @@ public class ServiceManager {
 	}
 
 	public final void unbindAndStop() {
+		doStopService();
 		doUnbindService();
-		doStopService();	
 	}
 
 	/**
