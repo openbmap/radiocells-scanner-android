@@ -55,15 +55,17 @@ try:
     for file in os.listdir('.'):
         if fnmatch.fnmatch(file, '*.xml'):
             print file
-            file_is_krank = False
             
             with open(file, 'rt') as f:
                 try:
                     tree = ElementTree.parse(f)
                 except ElementTree.ParseError:
                     print "---> Krank file found: ", file
-                    file_is_krank = True
                     f.close()
+                    src = ("."+sep+file)
+                    dest = ("."+sep+"krank"+sep+file)
+                    shutil.move(src, dest)
+                    continue
                     
             # find out which kind of lat/lon bug we have (caused by export version, hence exportver is important)
             # Radiobeacon 00.6.xx: lat/lon swapped
@@ -132,12 +134,10 @@ try:
             
             # move file after run
             src = ("."+sep+file)
-            if file_is_krank:
-                dest = ("."+sep+"krank"+sep+file)
-            else:
-                dest = ("."+sep+"processed"+sep+file)
+            dest = ("."+sep+"processed"+sep+file)
             shutil.move(src, dest)
-              
+            con.commit()
+            
 except lite.Error, e:
     
     print "Error %s:" % e.args[0]
