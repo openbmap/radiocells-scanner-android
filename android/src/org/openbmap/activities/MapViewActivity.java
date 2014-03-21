@@ -73,7 +73,6 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
-import android.widget.Spinner;
 import android.widget.ToggleButton;
 
 import com.actionbarsherlock.app.ActionBar;
@@ -846,11 +845,14 @@ ActionBar.OnNavigationListener {
 			}
 		}  
 
+		/*
+		 * 
 		// if we have just loaded on point, set map center
 		if (points.size() == 1) {
 			mapView.getModel().mapViewPosition.setCenter((LatLong) points.get(0));
 		}
-
+		 */
+		
 		// enable next refresh
 		mRefreshSessionPending = false;
 		Log.d(TAG, "Drawed catalog objects");

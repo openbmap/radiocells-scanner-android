@@ -36,6 +36,7 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 
 import android.os.AsyncTask;
+import android.util.Base64;
 import android.util.Log;
 
 /**
@@ -133,7 +134,7 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 		Log.i(TAG, "Uploading " + params[0]);
 		mFile = params[0];
 
-		Boolean httpResponseGood = upload(mFile);
+		Boolean httpResponseGood = scheduleUpload(mFile);
 
 		// perform additional checks if needed
 		if (mValidateServerSide && httpResponseGood && !fileActuallyExists(mFile)) {
@@ -208,7 +209,7 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 	 * @param file File to upload (full path).
 	 * @return true on success, false on error
 	 */
-	private boolean upload(final String file) {
+	private boolean scheduleUpload(final String file) {
 		boolean success = performUpload(file);
 
 		// simple resume upload mechanism on failed upload
@@ -247,8 +248,15 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 
 		HttpPost httppost = new HttpPost(mServer);
 		try {
+			
+			String authorizationString = "Basic " + Base64.encodeToString(
+				        (mUser + ":" + mPassword).getBytes(),
+				        Base64.NO_WRAP);
+			httppost.setHeader("Authorization", authorizationString);
+			
 			MultipartEntity entity = new MultipartEntity();
 
+			// TODO we don't need passwords for the new service
 			entity.addPart(LOGIN_FIELD, new StringBody(mUser)); 
 			entity.addPart(PASSWORD_FIELD, new StringBody(mPassword));
 			entity.addPart("file", new FileBody(new File(file), "text/xml"));

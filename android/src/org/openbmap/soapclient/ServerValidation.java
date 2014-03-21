@@ -58,7 +58,6 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 	 */
 	private static final int	CONNECTION_TIMEOUT	= 10000;
 
-	
 	/**
 	 * Especially after wifi sleep / wifi repair, it takes a couple of seconds before
 	 * device goes into connecting state

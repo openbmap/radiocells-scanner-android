@@ -293,15 +293,15 @@ public class HostActivity extends SherlockFragmentActivity {
 
 	@Override
 	protected final void onDestroy() {
-		Log.d(TAG, "OnDestroy called");
+		Log.d(TAG, "onDestroy called");
 
 		updateSessionStats();
 		unregisterReceiver();
 
-		// was unbind only before
-		if (positionServiceManager != null) { positionServiceManager.unbindAndStop();};
-		if (wirelessServiceManager != null) { wirelessServiceManager.unbindAndStop();}
-		if (gpxLoggerServiceManager != null) { gpxLoggerServiceManager.unbindAndStop();};
+		// change from unbind to unbindAndStop caused problems, when screen was locked
+		if (positionServiceManager != null) { positionServiceManager.unbind();};
+		if (wirelessServiceManager != null) { wirelessServiceManager.unbind();}
+		if (gpxLoggerServiceManager != null) { gpxLoggerServiceManager.unbind();};
 
 		stopNotification();
 		super.onDestroy();
@@ -554,6 +554,9 @@ public class HostActivity extends SherlockFragmentActivity {
 		}
 	}
 
+	/**
+	 * Setups receiver for STOP_TRACKING and ACTION_BATTERY_LOW messages
+	 */
 	private void setupBroadcastReceiver() {
 		IntentFilter filter = new IntentFilter();
 		//filter.addAction(RadioBeacon.INTENT_START_TRACKING);
@@ -682,7 +685,7 @@ public class HostActivity extends SherlockFragmentActivity {
 			}
 			gpxLoggerServiceManager.bindAndStart();
 		} else {
-			Log.i(TAG, "gpxLoggerServiceManager has not been started. Optionally activate logger service in settings.");
+			Log.i(TAG, "gpxLoggerServiceManager has not been started. GPX logging is disabled in settings!");
 		}
 	}
 

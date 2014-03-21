@@ -19,7 +19,6 @@
 package org.openbmap.activities;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 
 import org.mapsforge.core.model.BoundingBox;
@@ -43,7 +42,6 @@ import org.openbmap.heatmap.HeatLatLong;
 import org.openbmap.heatmap.HeatmapBuilder;
 import org.openbmap.heatmap.HeatmapBuilder.HeatmapBuilderListener;
 import org.openbmap.utils.MapUtils;
-import org.openbmap.utils.MediaScanner;
 
 import android.annotation.SuppressLint;
 import android.content.SharedPreferences;

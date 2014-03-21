@@ -337,7 +337,6 @@ public class WirelessLoggerService extends AbstractService {
 		registerWifiManager();
 
 		initBlacklists();
-
 	}
 
 	/**

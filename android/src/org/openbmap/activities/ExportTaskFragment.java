@@ -214,14 +214,21 @@ public class ExportTaskFragment extends SherlockFragment implements ExportTaskLi
 		// so now it's time to decide whether we start or not..
 		if (allowedVersion == CheckResult.GOOD && sdCardWritable == CheckResult.GOOD && credentialsProvided == CheckResult.GOOD) {
 			looper();
+		}
+		else if(allowedVersion == CheckResult.BAD) {
+			int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
+			onExportFailed(id, getResources().getString(R.string.warning_client_version_not_checked));
 		} else if (credentialsProvided == CheckResult.BAD) {
 			int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
 			onExportFailed(id, getResources().getString(R.string.user_or_password_missing));
 		} else if(sdCardWritable == CheckResult.BAD) {
 			int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
 			onExportFailed(id, getResources().getString(R.string.warning_sd_not_writable));
+		} else {
+			int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
+			onExportFailed(id, "Unknown error");
 		}
-		
+
 	}
 
 	/* (non-Javadoc)
@@ -239,7 +246,8 @@ public class ExportTaskFragment extends SherlockFragment implements ExportTaskLi
 	@Override
 	public void onServerBad(String text) {
 		allowedVersion = CheckResult.BAD;
-		stageLocalChecks();
+		// skip local checks, server can't be reached anyways
+		stageFinalCheck();
 	}
 
 	/* (non-Javadoc)
