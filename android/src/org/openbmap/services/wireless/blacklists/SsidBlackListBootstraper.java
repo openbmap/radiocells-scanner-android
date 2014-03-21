@@ -126,17 +126,32 @@ public final class SsidBlackListBootstraper {
 		{"default", "ac_transit_wifi_bus"},
 		{"default", "AmtrakConnect"},
 		{"default", "amtrak_"},
+		{"Arriva Nederland on-train Wifi (Netherlands)", "arriva"}, 
+		{"Capital Bus on-bus WiFi (Taiwan)", "CapitalBus"}, 
+		{"Ceske drahy (Czech railways)", "CDWiFi"},
+		{"CSAD Plzen","csadplzen_bus"},
+		{"Egged transportation services (Israel)", "egged.co.il"}, 
+		{"Empresa municipal de transportes de Madrid","EMT-Madrid"}, 
+		{"GB Tours transportation services (Israel)", "gb-tours.com"},
 		{"default", "GBUS"},
-		{"default", "gogoinflight"}, 
+		{"Gogo in-flight WiFi", "gogoinflight"}, 
+		{"ISRAEL-RAILWAYS","ISRAEL-RAILWAYS"},
+		{"Koleje Slaskie transportation services (Poland)", "Hot-Spot-KS"},
+		{"Hungarian State Railways onboard hotspot on InterCity trains (Hungary)", "MAVSTART-WiFi"}, 
+		{"Omnibus transportation services (Israel)", "Omni-WiFi"},
+		{"Qbuzz on-bus WiFi (Netherlands)", "QbuzzWIFI"},
 		{"default", "SF Shuttle Wireless"},
 		{"default", "ShuttleWiFi"},
-		{"default",  "Southwest WiFi"}, // Southwest Airlines in-flight WiFi
+		{"Southwest Airlines in-flight WiFi",  "Southwest WiFi"},
 		{"default", "SST-PR-1"}, // Sears Home Service van hotspot?!
-		{"default", "wifi_rail"}, // BART
-		{"default", "egged.co.il"}, // Egged transportation services (Israel)
-		{"default", "gb-tours.com"}, // GB Tours transportation services (Israel)
-		{"default", "ISRAEL-RAILWAYS"},
-		{"default", "Omni-WiFi"}, // Omnibus transportation services (Israel)
+
+		{"Taipei City on-bus WiFi (Taiwan)", "TPE-Free Bus"},
+		{"Taiwan High Speed Rail on-train WiFi", "THSR-VeeTIME"},
+		{"Nederlandse Spoorwegen on-train WiFi by T-Mobile (Netherlands)", "tmobile"},
+		{"Triangle Transit on-bus WiFi","TriangleTransitWiFi_"}, 
+		{"VR on-train WiFi (Finland)", "VR-junaverkko"},
+
+		{"BART", "wifi_rail"}
 	};
 
 	private static final String[][] SUFFIXES = {
