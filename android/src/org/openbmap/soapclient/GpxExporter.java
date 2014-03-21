@@ -26,8 +26,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import org.apache.commons.lang3.StringEscapeUtils;
+import java.util.TimeZone;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.openbmap.db.DatabaseHelper;
 import org.openbmap.db.Schema;
 
@@ -326,6 +327,7 @@ public class GpxExporter {
 			// for gpx files we need data in ISO 8601 format (e.g. 2011-12-31T23:59:59Z)
 			// as opposed to openbmap database format YYYYMMDDHHMMSS
 			final Date converted = INTERNAL_DATE_FORMAT.parse(String.valueOf(raw));
+			GPX_DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
 			return (GPX_DATE_FORMAT.format(converted));
 		} catch (ParseException e) {
 			// should never happen
