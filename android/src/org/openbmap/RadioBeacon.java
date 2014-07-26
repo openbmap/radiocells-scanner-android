@@ -127,6 +127,26 @@ public final class RadioBeacon {
 	public static final String MSG_KEY = "msg";
 	
 	/**
+	 * Extra data key: Operator name
+	 */
+	public static final String MSG_OPERATOR = "operator";
+	
+	/**
+	 * Extra data key: Cell id
+	 */
+	public static final String MSG_CELL_ID = "cellid";
+	
+	/**
+	 * Extra data key: network technology
+	 */
+	public static final String MSG_TECHNOLOGY = "network_type";
+	
+	/**
+	 * Extra data key: signal strength
+	 */
+	public static final String MSG_STRENGTH = "strength";
+
+	/**
 	 * Extra data key: ssid
 	 */
 	public static final String MSG_SSID = "ssid";

@@ -722,12 +722,12 @@ public class DataHelper {
 
 	/**
 	 * Counts session's number of cells.
-	 * @param id
+	 * @param session
 	 * @return number of wifis
 	 */
-	public final int countCells(final long id) {
+	public final int countCells(final long session) {
 		Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
-				RadioBeaconContentProvider.CONTENT_URI_CELL, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), id),
+				RadioBeaconContentProvider.CONTENT_URI_CELL, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
 				new String[]{Schema.COL_ID}, null, null, null);
 		int count = ca.getCount();
 		ca.close();

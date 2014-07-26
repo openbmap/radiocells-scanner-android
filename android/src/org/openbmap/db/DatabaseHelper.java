@@ -344,23 +344,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 		if (oldVersion <= 1) {
 			// add wifi position view 
+			Log.i(TAG, "Migrate to db version 2");
 			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_WIFIS_EXTENDED);
 			db.execSQL(SQL_CREATE_VIEW_WIFI_POSITIONS);
 		} 
 
 		if (oldVersion <= 2) {
 			// add asu fields
+			Log.i(TAG, "Migrate to db version 3");	
 			db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_STRENGTHASU + " INTEGER DEFAULT 0");
 		}
 
 		if (oldVersion <= 3) {
 			// add cell position view
+			Log.i(TAG, "Migrate to db version 4");	
 			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_CELLS_EXTENDED);
 			db.execSQL(SQL_CREATE_VIEW_CELL_POSITIONS);
 		}
 
 		if (oldVersion <= 4) {
 			// add known wifi column (replacement for is_new_wifi)
+			Log.i(TAG, "Migrate to db version 5");	
 			try {
 				db.execSQL("ALTER TABLE " + Schema.TBL_WIFIS + " ADD COLUMN " + Schema.COL_KNOWN_WIFI + " INTEGER DEFAULT 0");
 			}
@@ -380,6 +384,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		if (oldVersion <= 5) {
 			// F-Droid 0.7.7 second release
 			// on some clients column from version 2 wasn't added
+			Log.i(TAG, "Migrate to db version 6");	
 			try {
 				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_STRENGTHASU + " INTEGER DEFAULT 0");
 			} catch (SQLException e) {
@@ -396,6 +401,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 		if (oldVersion <= 6) {
 			// add UTRAN radio network controller and UTRAN cid
+			Log.i(TAG, "Migrate to db version 7");	
 			try {
 				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_UTRAN_RNC + " INTEGER DEFAULT -1");
 				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_ACTUAL_CELLID + " INTEGER DEFAULT -1");
@@ -415,6 +421,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			// fix broken migrations, see http://code.google.com/p/openbmap/issues/detail?id=55
 			// basically all migration since 4 are repeated, error ignored
 			
+			Log.i(TAG, "Migrate to db version 8");	
 			// repeat migration 4
 			try {
 				db.execSQL("ALTER TABLE " + Schema.TBL_WIFIS + " ADD COLUMN " + Schema.COL_KNOWN_WIFI + " INTEGER DEFAULT 0");

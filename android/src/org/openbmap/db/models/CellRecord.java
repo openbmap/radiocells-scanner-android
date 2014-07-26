@@ -357,8 +357,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	 * @return 
 	 */
 	@SuppressLint("InlinedApi")
-	@Deprecated
-	public static Map<Integer, String> NETWORKTYPE_MAP() {
+	public static Map<Integer, String> TECHNOLOGY_MAP() {
 		Map<Integer, String> result = new HashMap<Integer, String>();
 		result.put(TelephonyManager.NETWORK_TYPE_UNKNOWN, "NA");
 		// GPRS shall be mapped to "GSM"

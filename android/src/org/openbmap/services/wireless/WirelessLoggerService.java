@@ -673,8 +673,8 @@ public class WirelessLoggerService extends AbstractService {
 	 */
 	private void broadcastWifiInfos(final WifiRecord recent) {
 		Intent intent = new Intent(RadioBeacon.INTENT_NEW_WIFI);
-		intent.putExtra(RadioBeacon.MSG_KEY, recent.getLevel() + " dBm");
 		intent.putExtra(RadioBeacon.MSG_SSID, recent.getSsid());
+		intent.putExtra(RadioBeacon.MSG_STRENGTH, recent.getLevel());
 		sendBroadcast(intent);
 	}
 
@@ -1068,10 +1068,18 @@ public class WirelessLoggerService extends AbstractService {
 	 */
 	private void broadcastCellInfos(final CellRecord recent) {
 		Intent intent = new Intent(RadioBeacon.INTENT_NEW_CELL);
+		/*
 		intent.putExtra(RadioBeacon.MSG_KEY, recent.getOperatorName() 
 				+ " " + recent.getLogicalCellId()
 				+ " " + CellRecord.NETWORKTYPE_MAP().get(recent.getNetworkType())
 				+ " " + recent.getStrengthdBm() + "dBm");
+		*/
+		
+		intent.putExtra(RadioBeacon.MSG_OPERATOR, recent.getOperatorName());
+		intent.putExtra(RadioBeacon.MSG_CELL_ID, recent.getLogicalCellId());
+		intent.putExtra(RadioBeacon.MSG_TECHNOLOGY, CellRecord.TECHNOLOGY_MAP().get(recent.getNetworkType()));
+		intent.putExtra(RadioBeacon.MSG_STRENGTH, recent.getStrengthdBm());
+		
 		sendBroadcast(intent);
 	}
 

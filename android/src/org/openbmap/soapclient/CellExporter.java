@@ -535,7 +535,7 @@ public class CellExporter {
 			s.append(strengthDbm);
 			s.append("\"");
 			s.append(" act=\"");
-			s.append(CellRecord.NETWORKTYPE_MAP().get(type));
+			s.append(CellRecord.TECHNOLOGY_MAP().get(type));
 			s.append("\"");
 			s.append(" rxlev=\"");
 			s.append(strengthAsu);
@@ -569,7 +569,7 @@ public class CellExporter {
 			s.append(strengthAsu);
 			s.append("\"");
 			s.append(" act=\"");
-			s.append(CellRecord.NETWORKTYPE_MAP().get(type));
+			s.append(CellRecord.TECHNOLOGY_MAP().get(type));
 			s.append("\"");
 			s.append("/>");
 		}

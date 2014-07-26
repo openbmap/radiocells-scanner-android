@@ -155,9 +155,6 @@ public final class SsidBlackListBootstraper {
 	};
 
 	private static final String[][] SUFFIXES = {
-		{"default", " ASUS"},
-		{"default", "-ASUS"},
-		{"default", "_ASUS"},
 		{"default", "MacBook"},
 		{"default", "MacBook Pro"},
 		{"default", "MiFi"},

@@ -17,6 +17,7 @@ package org.openbmap.utils;
 
 import java.io.File;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.mapsforge.core.graphics.Bitmap;
 import org.mapsforge.core.graphics.Paint;
 import org.mapsforge.core.graphics.Style;
@@ -31,6 +32,7 @@ import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.layer.renderer.TileRendererLayer;
 import org.mapsforge.map.model.MapViewPosition;
 import org.mapsforge.map.rendertheme.InternalRenderTheme;
+import org.mapsforge.core.model.Point;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
@@ -41,6 +43,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.view.View;
 import android.view.View.MeasureSpec;
+import android.widget.Toast;
 
 /**
  * Utility functions that can be used across different mapsforge based activities
@@ -122,9 +125,13 @@ public final class MapUtils {
 	}
 
 	public static Layer createTileRendererLayer(TileCache tileCache, MapViewPosition mapViewPosition, File mapFile) {
-		TileRendererLayer tileRendererLayer = new TileRendererLayer(tileCache, mapViewPosition,
-				AndroidGraphicFactory.INSTANCE);
+		//TileRendererLayer tileRendererLayer = new TileRendererLayer(tileCache, mapViewPosition, AndroidGraphicFactory.INSTANCE);
+		TileRendererLayer tileRendererLayer = new TileRendererLayer (tileCache,
+                mapViewPosition, false, AndroidGraphicFactory.INSTANCE);
+
 		tileRendererLayer.setMapFile(mapFile);
+		
+		
 		tileRendererLayer.setXmlRenderTheme(InternalRenderTheme.OSMARENDER);
 		tileRendererLayer.setTextScale(1.5f);
 		return tileRendererLayer;
