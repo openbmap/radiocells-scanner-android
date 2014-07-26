@@ -19,15 +19,12 @@
 package org.openbmap.activities;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 
 import org.mapsforge.core.model.BoundingBox;
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
 import org.mapsforge.map.android.view.MapView;
-import org.mapsforge.map.layer.LayerManager;
-import org.mapsforge.map.layer.Layers;
 import org.mapsforge.map.layer.cache.TileCache;
 import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.model.common.Observer;
@@ -42,7 +39,6 @@ import org.openbmap.heatmap.HeatLatLong;
 import org.openbmap.heatmap.HeatmapBuilder;
 import org.openbmap.heatmap.HeatmapBuilder.HeatmapBuilderListener;
 import org.openbmap.utils.MapUtils;
-import org.openbmap.utils.MediaScanner;
 
 import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
@@ -105,13 +101,16 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 	private Observer mapObserver;
 
-	private byte	lastZoom;
+	/**
+	 * Current zoom level
+	 */
+	private byte currentZoom;
 
 	private LatLong	target;
 
 	private boolean	updatePending;
 
-	private Marker	heatmapLayer;
+	private Marker heatmapLayer;
 
 	private byte initialZoom;
 
@@ -149,17 +148,36 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 			getActivity().getSupportLoaderManager().initLoader(0, null, this);
 		}
 	}
+	
+	@Override
+	public void onResume() {
+		// register for zoom changes
+		this.mapObserver = new Observer() {
+			@Override
+			public void onChange() {
 
-	@Override 
-	public final void onPause() {
-		releaseMap();
-		super.onPause();
+				byte zoom = mapView.getModel().mapViewPosition.getZoomLevel();
+				if (zoom != currentZoom) {
+					// update overlays on zoom level changed
+					Log.i(TAG, "New zoom level " + zoom + ", reloading map objects");
+					// cancel pending heat-maps
+					if (builder != null) {
+						builder.cancel(true);
+					}
+
+					clearLayer();
+					proceedAfterHeatmapCompleted();
+					currentZoom = zoom;
+				}
+			}
+		};
+		this.mapView.getModel().mapViewPosition.addObserver(mapObserver);
 	}
 
 	@Override
-	public final void onDestroy() {
-		releaseMap();
-		super.onDestroy();
+	public void onPause(){
+		mapView.getModel().mapViewPosition.removeObserver(mapObserver);
+		super.onPause();
 	}
 
 	@Override
@@ -239,7 +257,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 			BoundingBox bbox = MapPositionUtil.getBoundingBox(
 					mapView.getModel().mapViewPosition.getMapPosition(),
-					mapView.getDimension());
+					mapView.getDimension(), mapView.getModel().displayModel.getTileSize());
 
 			target = mapView.getModel().mapViewPosition.getCenter();
 			initialZoom = mapView.getModel().mapViewPosition.getZoomLevel();
@@ -249,7 +267,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 			builder = new HeatmapBuilder(
 					CellDetailsMap.this, mapView.getWidth(), mapView.getHeight(), bbox,
-					mapView.getModel().mapViewPosition.getZoomLevel(), RADIUS).execute(points);
+					mapView.getModel().mapViewPosition.getZoomLevel(), mapView.getModel().displayModel.getTileSize(), RADIUS).execute(points);
 		} else {
 			Log.i(TAG, "Another heat-map is currently generated. Skipped");
 		}
@@ -277,27 +295,13 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 		//saveHeatmapToFile(backbuffer);
 	}
 	/** 
-	 * Error or aborted
+	 * Callback function when heatmap generation has failed
 	 */
 	@Override
 	public final void onHeatmapFailed() {
 		updatePending = false;
 	}
 
-	/**
-	 * Sets map-related object to null to enable garbage collection.
-	 */
-	private void releaseMap() {
-		Log.i(TAG, "Releasing map components");
-
-		if (mapObserver != null) {
-			mapObserver = null;
-		}
-
-		if (mapView != null) {
-			mapView.destroy();
-		}
-	}
 	/* (non-Javadoc)
 	 * @see android.support.v4.app.LoaderManager.LoaderCallbacks#onLoaderReset(android.support.v4.content.Loader)
 	 */
@@ -346,7 +350,6 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 				this.tileCache,
 				this.mapView.getModel().mapViewPosition,
 				getMapFile()));
-
 		
 		// register for layout finalization - we need this to get width and height
 		ViewTreeObserver vto = mapView.getViewTreeObserver();
@@ -369,15 +372,15 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 			}
 		});
 
-		// register for zoom changes
+		// Register for zoom changes
 		this.mapObserver = new Observer() {
 			@Override
 			public void onChange() {
 
-				byte zoom = mapView.getModel().mapViewPosition.getZoomLevel();
-				if (zoom != lastZoom) {
+				byte newZoom = mapView.getModel().mapViewPosition.getZoomLevel();
+				if (newZoom != currentZoom) {
 					// update overlays on zoom level changed
-					Log.i(TAG, "New zoom level " + zoom + ", reloading map objects");
+					Log.i(TAG, "New zoom level " + newZoom + ", reloading map objects");
 					// cancel pending heat-maps
 					if (builder != null) {
 						builder.cancel(true);
@@ -385,7 +388,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 					clearLayer();
 					proceedAfterHeatmapCompleted();
-					lastZoom = zoom;
+					currentZoom = newZoom;
 				}
 			}
 		};
@@ -394,12 +397,12 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 		this.mapView.setClickable(true);
 		this.mapView.getMapScaleBar().setVisible(true);
 
-		LayerManager layerManager = this.mapView.getLayerManager();
-		Layers layers = layerManager.getLayers();
-
-		// remove all layers including base layer
-		//layers.clear();
-
+		/*
+			Layers layers = layerManager.getLayers();
+			// remove all layers including base layer
+			layers.clear();
+		 */
+		
 		this.mapView.getModel().mapViewPosition.setZoomLevel((byte) 16);
 
 	}

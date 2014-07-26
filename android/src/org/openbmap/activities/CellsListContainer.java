@@ -222,7 +222,7 @@ public class CellsListContainer extends SherlockListFragment implements LoaderMa
 		public boolean setViewValue(final View view, final Cursor cursor, final int columnIndex) {
 			if (columnIndex == cursor.getColumnIndex(Schema.COL_NETWORKTYPE)) { 
 				int result = cursor.getInt(columnIndex);
-				((TextView) view).setText(CellRecord.NETWORKTYPE_MAP().get(result));
+				((TextView) view).setText(CellRecord.TECHNOLOGY_MAP().get(result));
 				return true;
 			}
 			return false;

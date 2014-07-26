@@ -54,6 +54,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.Tab;
@@ -141,6 +142,8 @@ public class HostActivity extends SherlockFragmentActivity {
 
 			if (Intent.ACTION_BATTERY_LOW.equals(intent.getAction())) {
 				Log.d(TAG, "ACTION_BATTERY_LOW received");
+				Toast.makeText(context, getString(R.string.battery_warning), Toast.LENGTH_LONG).show();
+				updateSessionStats();
 				// invalidates active track
 				closeActiveSession();
 				// stops background services
@@ -269,7 +272,7 @@ public class HostActivity extends SherlockFragmentActivity {
 		 * prefs.getBoolean(OSMTracker.Preferences.KEY_GPS_CHECKSTARTUP, OSMTracker.Preferences.VAL_GPS_CHECKSTARTUP)) { checkGPSProvider(); }
 		 */
 		// Register GPS status update for upper controls
-		//((GpsStatusRecord) findViewById(R.id.gpsStatus)).requestLocationUpdates(true);
+		//((StatusBar) findViewById(R.id.gpsStatus)).requestLocationUpdates(true);
 
 		startServices();
 		requestPosition(mSelectedProvider);
@@ -447,7 +450,7 @@ public class HostActivity extends SherlockFragmentActivity {
 			positionServiceManager.sendAsync(msgGpsUp);
 
 			// update recording indicator
-			//((GpsStatusRecord) findViewById(R.id.gpsStatus)).manageRecordingIndicator(true);
+			//((StatusBar) findViewById(R.id.gpsStatus)).manageRecordingIndicator(true);
 
 			updateUI();	
 			mSelectedProvider = provider;
@@ -581,7 +584,7 @@ public class HostActivity extends SherlockFragmentActivity {
 				mDataHelper.storeSession(toPause, true);
 			}
 
-			((GpsStatusRecord) findViewById(R.id.gpsStatus)).manageRecordingIndicator(false); 
+			((StatusBar) findViewById(R.id.gpsStatus)).manageRecordingIndicator(false); 
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
@@ -658,7 +661,7 @@ public class HostActivity extends SherlockFragmentActivity {
 	private void closeActiveSession() {
 		mDataHelper.invalidateActiveSessions();
 		// update recording indicator
-		// ((GpsStatusRecord) findViewById(R.id.gpsStatus)).manageRecordingIndicator(false);
+		// ((StatusBar) findViewById(R.id.gpsStatus)).manageRecordingIndicator(false);
 	}
 
 	/**

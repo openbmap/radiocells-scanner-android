@@ -68,15 +68,15 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
-import android.widget.ToggleButton;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragment;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 
 /**
  * Activity for displaying session's GPX track and wifis
@@ -88,7 +88,7 @@ OnGpxLoadedListener,
 ActionBar.OnNavigationListener {
 
 	private static final String TAG = MapViewActivity.class.getSimpleName();
-	
+
 	/**
 	 * Layers (Session layer + catalog layer, session layer only)
 	 */
@@ -175,21 +175,6 @@ ActionBar.OnNavigationListener {
 	 */
 	private MapView mapView;
 
-	/**
-	 * When checked map view will automatically focus current location
-	 */
-	private static ToggleButton btnSnapToLocation;
-
-	/**
-	 * Zoom button
-	 */
-	private ImageButton btnZoom;
-
-	/**
-	 * Un-zoom button
-	 */
-	private ImageButton btnUnzoom;
-
 	//[end]
 
 	// [start] Map styles
@@ -220,6 +205,8 @@ ActionBar.OnNavigationListener {
 	//[end]
 
 	// [start] Dynamic map variables
+	
+	private boolean snapToLocation = true;
 	/**
 	 * Used for persisting zoom and position settings onPause / onDestroy
 	 */
@@ -286,9 +273,9 @@ ActionBar.OnNavigationListener {
 					Log.wtf(TAG, "Map view is null");
 					return;
 				}
-				
+
 				// if btnSnapToLocation is checked, move map
-				if (btnSnapToLocation.isChecked()) {
+				if (snapToLocation) {
 					LatLong currentPos = new LatLong(location.getLatitude(), location.getLongitude());
 					mapView.getModel().mapViewPosition.setCenter(currentPos);
 				}
@@ -339,7 +326,8 @@ ActionBar.OnNavigationListener {
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		setHasOptionsMenu(true);
+		
 		// get shared preferences
 		prefs = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity());
 
@@ -441,7 +429,7 @@ ActionBar.OnNavigationListener {
 					lastZoom = zoom;
 				}
 
-				if (!btnSnapToLocation.isChecked()) {
+				if (!snapToLocation) {
 					// Free-move mode
 					LatLong tmp = mapView.getModel().mapViewPosition.getCenter();
 					Location position = new Location("DUMMY");
@@ -470,69 +458,32 @@ ActionBar.OnNavigationListener {
 	 * @param view 
 	 */
 	private void initUi(View view) {
-		/*
-		Context context = getSherlockActivity().getSupportActionBar().getThemedContext();
-		layerList = ArrayAdapter.createFromResource(getSherlockActivity(),
-				R.array.layers, android.R.layout.simple_spinner_item);
-
-		layerList.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
-
-		getSherlockActivity().getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-		getSherlockActivity().getSupportActionBar().setListNavigationCallbacks(layerList, this);
-		*/
-		
-		/*      
-		btnLayerSelection = (Spinner) view.findViewById(R.id.mapview_layers_selection);
-		btnLayerSelection.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-			public void onItemSelected(final AdapterView<?> parent, final View view, final int pos, final long id) {
-				Location mapCenter = new Location("DUMMY");
-				mapCenter.setLatitude(mapView.getModel().mapViewPosition.getCenter().latitude);
-				mapCenter.setLongitude(mapView.getModel().mapViewPosition.getCenter().longitude);
-				refreshSessionOverlays(mapCenter);
-
-				if (catalogLayerSelected()) {
-					refreshCatalogOverlay(mapCenter);
-				} else {
-					clearCatalogLayer();
-				}
-			}
-			public void onNothingSelected(final AdapterView<?> parent) {
-			}
-		});
-
-		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getSherlockActivity(),
-				R.array.layers, android.R.layout.simple_spinner_item);
-		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		btnLayerSelection.setAdapter(adapter);
-		 */
-		btnSnapToLocation = (ToggleButton) view.findViewById(R.id.mapview_tb_snap_to_location);
-		btnZoom = (ImageButton) view.findViewById(R.id.btnZoom);  
-		btnZoom.setOnClickListener(new OnClickListener() { 
-			@Override
-			public void onClick(final View v) {
-				byte zoom  = mapView.getModel().mapViewPosition.getZoomLevel();
-				if (zoom < mapView.getModel().mapViewPosition.getZoomLevelMax()) {
-					mapView.getModel().mapViewPosition.setZoomLevel((byte) (zoom + 1));
-				}
-			}
-		});
-
-		btnUnzoom = (ImageButton) view.findViewById(R.id.btnUnzoom);
-		btnUnzoom.setOnClickListener(new OnClickListener() { 
-			@Override
-			public void onClick(final View v) {
-				byte zoom  = mapView.getModel().mapViewPosition.getZoomLevel();
-				if (zoom > mapView.getModel().mapViewPosition.getZoomLevelMin()) {
-					mapView.getModel().mapViewPosition.setZoomLevel((byte) (zoom - 1));
-				}
-			}
-		});
 		paintCatalogFill = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_WIFI_CATALOG_FILL, 120, 150, 120), 2, Style.FILL);
 		paintCatalogStroke = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_WIFI_CATALOG_STROKE, 120, 150, 120), 2, Style.STROKE);
 		paintActiveSessionFill = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_SESSION_FILL, 0, 0, 255), 2, Style.FILL);
 		paintOtherSessionFill = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_OTHER_SESSIONS_FILL, 255, 0, 255), 2, Style.FILL);
 	}
 
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+	    super.onCreateOptionsMenu(menu, inflater);
+	    inflater.inflate(R.menu.map_menu, menu);
+	    menu.findItem(R.id.menu_snaptoLocation).setChecked(snapToLocation);
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    // Handle item selection
+	    switch (item.getItemId()) {
+	        case R.id.menu_snaptoLocation:
+	            item.setChecked(!item.isChecked());
+	            snapToLocation = item.isChecked();
+	            return true;
+	        default:
+	            return super.onOptionsItemSelected(item);
+	    }
+	}
+	
 	private void registerReceiver() {
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(RadioBeacon.INTENT_POSITION_UPDATE);
@@ -592,18 +543,20 @@ ActionBar.OnNavigationListener {
 			this.mapView.getLayerManager().getLayers().remove(layer);
 		}
 		sessionObjects.clear();
-		
+
 	}
 
 	/**
 	 * Clears catalog layer objects
 	 */
 	private void clearCatalogLayer() {
-		for (Iterator<Layer> iterator = catalogObjects.iterator(); iterator.hasNext();) {
-			Layer layer = (Layer) iterator.next();
-			this.mapView.getLayerManager().getLayers().remove(layer);
+		synchronized (catalogObjects) {
+			for (Iterator<Layer> iterator = catalogObjects.iterator(); iterator.hasNext();) {
+				Layer layer = (Layer) iterator.next();
+				this.mapView.getLayerManager().getLayers().remove(layer);
+			}
+			catalogObjects.clear();
 		}
-		catalogObjects.clear();
 	}
 
 	/**
@@ -632,7 +585,7 @@ ActionBar.OnNavigationListener {
 
 		BoundingBox bbox = MapPositionUtil.getBoundingBox(
 				mapView.getModel().mapViewPosition.getMapPosition(),
-				mapView.getDimension());
+				mapView.getDimension(), mapView.getModel().displayModel.getTileSize());
 
 		double minLatitude = bbox.minLatitude;
 		double maxLatitude = bbox.maxLatitude;
@@ -665,8 +618,8 @@ ActionBar.OnNavigationListener {
 
 		// redraw
 		for (LatLong point : points) {
-			 Circle circle = new Circle(point, CIRCLE_WIFI_CATALOG_WIDTH, paintCatalogFill, paintCatalogStroke);
-				catalogObjects.add(circle);
+			Circle circle = new Circle(point, CIRCLE_WIFI_CATALOG_WIDTH, paintCatalogFill, paintCatalogStroke);
+			catalogObjects.add(circle);
 		}
 
 		/**
@@ -689,7 +642,7 @@ ActionBar.OnNavigationListener {
 				layers.add(insertAfter + i, catalogObjects.get(i));
 			}  
 		}
-		
+
 		// enable next refresh
 		mRefreshCatalogPending = false;
 		Log.d(TAG, "Drawed catalog objects");
@@ -738,7 +691,7 @@ ActionBar.OnNavigationListener {
 	private void proceedAfterSessionObjectsLoaded(final WifiRecord highlight) {
 		BoundingBox bbox = MapPositionUtil.getBoundingBox(
 				mapView.getModel().mapViewPosition.getMapPosition(),
-				mapView.getDimension());
+				mapView.getDimension(), mapView.getModel().displayModel.getTileSize());
 
 		if (highlight == null) {
 
@@ -804,7 +757,7 @@ ActionBar.OnNavigationListener {
 				sessionObjects.add(circle);
 			}
 		}
-		
+
 
 		/**
 		 * Draw stack (z-order):
@@ -829,17 +782,17 @@ ActionBar.OnNavigationListener {
 				// no map + no catalog objects
 				insertAfter = 0;
 			}
-			
+
 			if (insertAfter > layers.size() + 1) {
 				Log.w(TAG, "Index out of bounds, resetting to list end");
 				insertAfter = layers.size();
 			}
-			
+
 			if (insertAfter == -1) {
 				Log.w(TAG, "Index out of bounds, resetting to 0");
 				insertAfter = 0;
 			}
-			
+
 			for (int i = 0; i < sessionObjects.size(); i++) {
 				layers.add(insertAfter + i, sessionObjects.get(i));	
 			}
@@ -852,7 +805,7 @@ ActionBar.OnNavigationListener {
 			mapView.getModel().mapViewPosition.setCenter((LatLong) points.get(0));
 		}
 		 */
-		
+
 		// enable next refresh
 		mRefreshSessionPending = false;
 		Log.d(TAG, "Drawed catalog objects");
@@ -886,7 +839,7 @@ ActionBar.OnNavigationListener {
 	private void proceedAfterGpxObjectsLoaded() {
 		BoundingBox bbox = MapPositionUtil.getBoundingBox(
 				mapView.getModel().mapViewPosition.getMapPosition(),
-				mapView.getDimension());
+				mapView.getDimension(), mapView.getModel().displayModel.getTileSize());
 		GpxMapObjectsLoader task = new GpxMapObjectsLoader(getSherlockActivity(), this);
 		// query with some extra space
 		task.execute(mSessionId, bbox.minLatitude - 0.01, bbox.maxLatitude + 0.01, bbox.minLongitude - 0.15, bbox.maxLatitude + 0.15);
@@ -908,7 +861,7 @@ ActionBar.OnNavigationListener {
 
 		gpxObjects = new Polyline(MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(Color.BLACK), STROKE_GPX_WIDTH,
 				Style.STROKE), AndroidGraphicFactory.INSTANCE);
-		
+
 		for (LatLong point : points) {
 			gpxObjects.getLatLongs().add(point);	
 		}
@@ -942,7 +895,7 @@ ActionBar.OnNavigationListener {
 		if (location == null) {
 			return;
 		}
-		
+
 		// ensure that previous refresh has been finished
 		if (mRefreshDirectionPending) {
 			return;
@@ -1034,7 +987,7 @@ ActionBar.OnNavigationListener {
 	 */
 	private void releaseMap() {
 		Log.i(TAG, "Releasing map components");
-		
+
 
 		// release zoom / move observer for gc
 		this.mapObserver = null;

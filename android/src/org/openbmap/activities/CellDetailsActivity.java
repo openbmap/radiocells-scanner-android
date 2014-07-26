@@ -149,7 +149,7 @@ public class CellDetailsActivity  extends FragmentActivity {
 			tvMcc.setText(cell.getMcc());
 			tvMnc.setText(cell.getMnc());
 			tvLac.setText(String.valueOf(cell.getLac()));
-			tvNetworkType.setText(CellRecord.NETWORKTYPE_MAP().get(cell.getNetworkType()));
+			tvNetworkType.setText(CellRecord.TECHNOLOGY_MAP().get(cell.getNetworkType()));
 			tvOperator.setText(cell.getOperatorName());
 			tvStrength.setText(String.valueOf(cell.getStrengthdBm()));
 			tvPsc.setText(String.valueOf(cell.getPsc()));

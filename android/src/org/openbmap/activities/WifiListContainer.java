@@ -36,11 +36,11 @@ import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter.ViewBinder;
 import android.util.Log;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
+//import android.view.ContextMenu;
+//import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
-import android.view.MenuItem;
+//import android.view.MenuInflater;
+//import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -48,6 +48,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.actionbarsherlock.app.SherlockListFragment;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 
 /**
  * Parent activity for hosting wifi list
@@ -63,9 +66,14 @@ public class WifiListContainer extends SherlockListFragment implements LoaderMan
 	private static final int WIFI_LOADER_ID	= 1;
 
 	/**
-	 * By default, show newest wifi first
+	 * By default, sort by wifi ssid
 	 */
-	private static final String	DEFAULT_SORT_ORDER	= Schema.COL_TIMESTAMP + " DESC";
+	private static final String	DEFAULT_SORT_COLUMN	= Schema.COL_TIMESTAMP ;
+	
+	/**
+	 * Default sort order
+	 */
+	private static final String DEFAULT_SORT_ORDER = " ASC";
 
 	/**
 	 * Be careful:
@@ -93,8 +101,14 @@ public class WifiListContainer extends SherlockListFragment implements LoaderMan
 	/** 
 	 * Sort order for loader
 	 */
+	private String mSortColumn = DEFAULT_SORT_COLUMN;
+
+	/** 
+	 * Sort order for loader
+	 */
 	private String mSortOrder = DEFAULT_SORT_ORDER;
 
+	
 	/**
 	 * Session id
 	 */
@@ -115,7 +129,8 @@ public class WifiListContainer extends SherlockListFragment implements LoaderMan
 	@Override
 	public final void onActivityCreated(final Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-
+		setHasOptionsMenu(true);
+		
 		mHheader = (View) getLayoutInflater(savedInstanceState).inflate(R.layout.wifilistheader, null);
 		this.getListView().addHeaderView(mHheader);
 		registerForContextMenu(mHheader);
@@ -138,7 +153,8 @@ public class WifiListContainer extends SherlockListFragment implements LoaderMan
 		sortButton.setNeutralImage(getResources().getDrawable(R.drawable.ic_action_unsorted));
 		sortButton.setNegativeImage(getResources().getDrawable(R.drawable.ic_action_down));
 		sortButton.setOnClickListener(new View.OnClickListener() {	
-			// Runs when the user touches the button
+			
+			// Sort button: handler for user clicks
 			@Override
 			public void onClick(final View v) {
 				int state = sortButton.getState();
@@ -146,18 +162,15 @@ public class WifiListContainer extends SherlockListFragment implements LoaderMan
 				try	{	
 					switch(state) {
 						case 0: 
-							mSortOrder = Schema.COL_SSID + " DESC";
-							resetFilters();
+							mSortOrder = " DESC";
 							reload();
 							break;
 						case 1: 
 							mSortOrder = DEFAULT_SORT_ORDER;
-							resetFilters();
 							reload();
 							break;
 						case 2:
-							mSortOrder = Schema.COL_SSID + " ASC";				
-							resetFilters();
+							mSortOrder = " ASC";				
 							reload();
 							break;
 						default:
@@ -203,6 +216,11 @@ public class WifiListContainer extends SherlockListFragment implements LoaderMan
 		super.onDestroy();
 	}
 
+	public void onCreateOptionsMenu (Menu menu, MenuInflater inflater){
+		inflater.inflate(R.menu.wifilist_context, menu);
+	}
+	
+	/*
 	@Override
 	public final void onCreateContextMenu(final ContextMenu menu, final View v, final ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, v, menuInfo);
@@ -213,37 +231,43 @@ public class WifiListContainer extends SherlockListFragment implements LoaderMan
 		MenuInflater inflater = getActivity().getMenuInflater();
 		inflater.inflate(menuId, menu);
 	}
-
+	*/
+	
 	@Override
-	public final boolean onContextItemSelected(final MenuItem item) {
+	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case R.id.menu_sort_timestamp:
-				mSortOrder = DEFAULT_SORT_ORDER;
+				mSortColumn = DEFAULT_SORT_COLUMN;
+				mSortOrder = " DESC";
 				sortButton.setState(1);
 				resetFilters();
 				reload();
 				return true;
 			case R.id.menu_sort_ssid:
-				mSortOrder = Schema.COL_SSID + " DESC";
+				mSortColumn = Schema.COL_SSID;
+				mSortOrder = " ASC";
 				sortButton.setState(1);
 				resetFilters();
 				reload();
 				return true;
 			case R.id.menu_display_only_new:
-				mSortOrder = Schema.COL_SSID + " DESC";
+				mSortColumn = Schema.COL_SSID;
+				mSortOrder = " ASC";
 				sortButton.setState(1);
 				//setFilters(Schema.COL_IS_NEW_WIFI + " = ?", new String[]{"1"});
 				setFilters(Schema.COL_KNOWN_WIFI + " = ?", new String[]{"0"});
 				reload();
 				return true;
 			case R.id.menu_display_free:
-				mSortOrder = Schema.COL_SSID + " DESC";
+				mSortColumn = Schema.COL_SSID;
+				mSortOrder = " ASC";
 				sortButton.setState(1);
 				setFilters(Schema.COL_CAPABILITIES + " = ?", new String[]{"\"[ESS]\""});
 				reload();
 				return true;
 			case R.id.menu_display_all:
-				mSortOrder = Schema.COL_SSID + " DESC";
+				mSortColumn = Schema.COL_SSID;
+				mSortOrder = " ASC";
 				sortButton.setState(1);
 				resetFilters();
 				reload();
@@ -251,9 +275,9 @@ public class WifiListContainer extends SherlockListFragment implements LoaderMan
 			default:
 				break;
 		}
-		return super.onContextItemSelected(item);
+		return super.onOptionsItemSelected(item);
 	}
-
+	
 	/**
 	 * User has clicked on wifi record.
 	 * @param lv listview; this
@@ -293,7 +317,7 @@ public class WifiListContainer extends SherlockListFragment implements LoaderMan
 		mCursorLoader = new CursorLoader(
 				getActivity().getBaseContext(), ContentUris.withAppendedId(Uri.withAppendedPath(
 						RadioBeaconContentProvider.CONTENT_URI_WIFI, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), mSession),
-						projection, mSelection, mSelectionArgs, mSortOrder);
+						projection, mSelection, mSelectionArgs, mSortColumn + mSortOrder);
 
 		return mCursorLoader;
 	}
@@ -370,5 +394,4 @@ public class WifiListContainer extends SherlockListFragment implements LoaderMan
 			return false;
 		}
 	}
-
 }

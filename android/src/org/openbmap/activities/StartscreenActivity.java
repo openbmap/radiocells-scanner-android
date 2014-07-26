@@ -147,7 +147,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		if (mTaskFragment == null) {
 			Log.i(TAG, "Task fragment not found. Creating..");
 			mTaskFragment = new ExportTaskFragment();
-			fm.beginTransaction().add(mTaskFragment, "task").commit();
+			fm.beginTransaction().add(mTaskFragment, "task").commitAllowingStateLoss();
 
 			initExportDialog(true);
 		} else {
