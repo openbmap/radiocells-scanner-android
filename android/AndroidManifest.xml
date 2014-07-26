@@ -19,6 +19,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
+        android:name="org.openbmap.RadiobeaconApplication"
         android:allowBackup="true"
         android:icon="@drawable/radiobeacon"
         android:label="@string/app_name"
@@ -34,7 +35,8 @@
             <meta-data
                 android:name="android.support.UI_OPTIONS"
                 android:value="splitActionBarWhenNarrow" />
-            <intent-filter>
+
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -99,6 +101,7 @@
         </service>
         <service android:name="org.openbmap.services.wireless.WirelessLoggerService" >
         </service>
+
         <provider
             android:name=".db.RadioBeaconContentProvider"
             android:authorities="org.openbmap.provider"

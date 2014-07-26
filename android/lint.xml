@@ -3,4 +3,7 @@
     <issue id="HardcodedText">
         <ignore path="res/layout/celldetails.xml" />
     </issue>
+    <issue id="SmallSp">
+        <ignore path="res/layout/stats.xml" />
+    </issue>
 </lint>
