@@ -66,8 +66,7 @@
 		threshold, logging will be skipped
 	</string>
 	<string name="prefs_display_always_on">Screen always on</string>
-	<string name="prefs_display_always_on_summary">Screen will stay on while tracking. Disable to save
-		battery
+	<string name="prefs_display_always_on_summary">Screen will stay on while tracking. Disable to save battery
 	</string>
 	<string name="prefs_gps_provider">GPS Provider</string>
 	<string name="prefs_gps_provider_summary">Selected GPS source</string>
@@ -122,9 +121,26 @@
 	<string name="ssid">SSID</string>
 	<string name="level">Level</string>
 	<string name="turnOnGpsQuestion">GPS is switched off! Would you like to activate GPS
-		now?
-	</string>
-	<string name="networkTypeCaption">Network Type</string>
+		now?</string>
+	<string name="na">N/A</string>
+	<string name="gsm">GSM</string>
+	<string name="edge">EDGE</string>
+	<string name="umts">UMTS</string>
+	<string name="cdma">CDMA</string>
+	<string name="edvo_0">EDVO0</string>
+	<string name="edvo_a">EDVOA</string>
+	<string name="onexrtt">1xRTT</string>
+	<string name="hsdpa">HSDPA</string>
+	<string name="hsupa">HSUPA</string>
+	<string name="hspa">HSPA</string>
+	<string name="iden">IDEN</string>
+
+	<string name="edvo_b">EDVOB</string>
+	<string name="lte">LTE</string>
+	<string name="ehrpd">eHRPD</string>
+	<string name="hspa_p">HSPA+</string>
+
+	<string name="networkTypeCaption">Technology</string>
 	<string name="cellIdCaption">Cell ID</string>
 	<string name="baseIdCaption">Base ID</string>
 	<string name="operatorCaption">Operator</string>
@@ -160,9 +176,11 @@
 	<string name="error_dowload_error">Error: Download failed. Maybe connection was
 		interrupted?
 	</string>
-	<string name="warning_outdated_client">Your client version is too old.\nPlease update!</string>
+	<string name="warning_outdated_client">Your client version is too old.\nPlease update!
+	</string>
 	<string name="warning_no_server_connection">Couldn\'t contact server. Are you online?</string>
-	<string name="warning_client_version_not_checked">Couldn\'t contact server. Either you\'re offline or the server is down!</string>
+	<string name="warning_client_version_not_checked">Couldn\'t contact server. Either you\'re offline or
+		the server is down!</string>
 	<string name="warning_session_closed">Can\'t resume! Session has already been uploaded.
 	</string>
 	<string name="warning_already_uploaded">Won\'t upload session. Has already been uploaded!
@@ -183,8 +201,9 @@
 	<string name="tap_hotspot_to_see_details">Tap wifi to see details</string>
 	<string name="start_tracking">Start tracking</string>
 	<string name="stop_tracking">Stop tracking</string>
+	<string name="battery_warning">Battery low: Stopping track</string>
 	<string name="version">Version:</string>
-	
+
 	<string name="warning">Warning!</string>
 	<string name="hint_notification">Tap here to display main screen</string>
 	<string name="notification">RadioBeacon is tracking (#{0})</string>
@@ -233,7 +252,8 @@
 	<string name="please_stay_patient">Please stay patient..</string>
 	<string name="export_error_title">Export error!</string>
 	<string name="export_error">Try again later. If problem persists, please file a
-		bug at\nhttp://code.google.com/p/openbmap/issues/list</string>
+		bug at\nhttp://code.google.com/p/openbmap/issues/list
+	</string>
 	<string name="location_blacklist_saved">Location blacklist saved!</string>
 	<string name="error_writing_location_blacklist">Error writing location blacklist</string>
 
@@ -261,9 +281,11 @@
 	<string name="system_id">System Id</string>
 	<string name="lcid">LCID</string>
 	<string name="rnc">RNC</string>
-	
-	<string name="dialog_found_pending_uploads_title">Found several sessions, which haven\'t been uploaded yet</string>
-	<string name="dialog_found_pending_uploads_message">Would you like to upload all pending sessions now?</string>
+
+	<string name="dialog_found_pending_uploads_title">Found several sessions, which haven\'t been
+		uploaded yet</string>
+	<string name="dialog_found_pending_uploads_message">Would you like to upload all pending sessions now?
+	</string>
 	<string name="dialog_delete_all_sessions_title">Delete ALL sessions?</string>
 	<string name="dialog_delete_all_sessions_message">Do you really want to delete all sessions?</string>
 </resources>

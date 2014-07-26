@@ -14,7 +14,7 @@
     <item
         android:id="@+id/menu_stoptracking"
         android:icon="@drawable/ic_action_save"
-        android:showAsAction="always|withText"
+        android:showAsAction="always"
         android:title="@string/stop_tracking">
     </item>
 
