@@ -43,8 +43,9 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 	private Bitmap mBackbuffer;
 	private int mWidth;
 	private int mHeight;
+	private int mTileSize;
 	private float radius;
-
+	
 	private BoundingBox	mBbox;
 	private byte mZoom;
 
@@ -60,12 +61,13 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 		void onHeatmapFailed();
 	}
 
-	public HeatmapBuilder(final HeatmapBuilderListener listener, final int width, final int height, final BoundingBox bbox, final byte zoom, final float radius) {
+	public HeatmapBuilder(final HeatmapBuilderListener listener, final int width, final int height, final BoundingBox bbox, final byte zoom, final int tilesize, final float radius) {
 		this.mListener = listener;
 		this.mBbox = bbox;
 		this.mBackbuffer = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 		this.mZoom = zoom;
 		this.mCanvas = new Canvas(mBackbuffer);
+		this.mTileSize = tilesize;
 		Paint p = new Paint();
 		p.setStyle(Paint.Style.FILL);
 
@@ -96,11 +98,11 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 			
 			if (heat.longitude >= mBbox.minLongitude && heat.longitude <= mBbox.maxLongitude
 					&& heat.latitude >= mBbox.minLatitude && heat.latitude <= mBbox.maxLatitude) {
-				float leftBorder = (float) MercatorProjection.longitudeToPixelX(mBbox.minLongitude, mZoom);
-				float topBorder = (float) MercatorProjection.latitudeToPixelY(mBbox.maxLatitude, mZoom);
+				float leftBorder = (float) MercatorProjection.longitudeToPixelX(mBbox.minLongitude, mZoom, mTileSize);
+				float topBorder = (float) MercatorProjection.latitudeToPixelY(mBbox.maxLatitude, mZoom, mTileSize);
 				
-				float x = (float) (MercatorProjection.longitudeToPixelX(heat.longitude, mZoom) - leftBorder);
-				float y = (float) (MercatorProjection.latitudeToPixelY(heat.latitude, mZoom) - topBorder);
+				float x = (float) (MercatorProjection.longitudeToPixelX(heat.longitude, mZoom, mTileSize) - leftBorder);
+				float y = (float) (MercatorProjection.latitudeToPixelY(heat.latitude, mZoom, mTileSize) - topBorder);
 				
 				// Log.i(TAG, "X:" + x + " Y:" + y);
 				addPoint(x, y, heat.getIntensity());
