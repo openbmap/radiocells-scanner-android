@@ -176,8 +176,7 @@
 	<string name="error_dowload_error">Error: Download failed. Maybe connection was
 		interrupted?
 	</string>
-	<string name="warning_outdated_client">Your client version is too old.\nPlease update!
-	</string>
+	<string name="warning_outdated_client">Your client version is too old.\nPlease update!</string>
 	<string name="warning_no_server_connection">Couldn\'t contact server. Are you online?</string>
 	<string name="warning_client_version_not_checked">Couldn\'t contact server. Either you\'re offline or
 		the server is down!</string>
@@ -288,4 +287,6 @@
 	</string>
 	<string name="dialog_delete_all_sessions_title">Delete ALL sessions?</string>
 	<string name="dialog_delete_all_sessions_message">Do you really want to delete all sessions?</string>
+	<string name="chart_library">Chart library: GraphView</string>
+	<string name="chart_library_license">GNU Lesser General Public License (LGPL)</string>
 </resources>

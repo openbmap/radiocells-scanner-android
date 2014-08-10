@@ -118,7 +118,19 @@
             android:layout_height="wrap_content"
             android:text="@string/map_data_license"
             android:textAppearance="?android:attr/textAppearanceSmall" />
+		<TextView
+            android:id="@+id/credits_library"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/chart_library"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
+        <TextView
+            android:id="@+id/credits_chart_library_license"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/chart_library_license"
+            android:textAppearance="?android:attr/textAppearanceSmall" />	
         <TextView
             android:id="@+id/credits_other_credits"
             android:layout_width="wrap_content"

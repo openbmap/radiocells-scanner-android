@@ -169,9 +169,10 @@ public class HostActivity extends SherlockFragmentActivity {
 			switch (msg.what) {
 				case RadioBeacon.MSG_SERVICE_READY:
 					// start tracking immediately after service is ready 
+					Log.d(TAG, "Positioning Service ready. Requesting position updates");
 					if (mActivity != null) {
 						HostActivity tab =  mActivity.get();
-						tab.requestPosition(State.GPS);
+						tab.requestPositionUpdates(State.GPS);
 						tab.startNotification();
 					}
 					break;
@@ -197,9 +198,10 @@ public class HostActivity extends SherlockFragmentActivity {
 			switch (msg.what) {
 				case RadioBeacon.MSG_SERVICE_READY:
 					// start tracking immediately after service is ready 
+					Log.d(TAG, "WirelessLogger Service ready. Requesting wireless updates");
 					if (mActivity != null) {
 						HostActivity tab =  mActivity.get();
-						tab.requestWirelessTracking();
+						tab.requestWirelessUpdates();
 					}
 				default:
 					super.handleMessage(msg);
@@ -237,6 +239,8 @@ public class HostActivity extends SherlockFragmentActivity {
 	public final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		Log.d(TAG, "Creating HostActivity");
+
 		mDataHelper = new DataHelper(this);
 
 		// get shared preferences
@@ -254,15 +258,13 @@ public class HostActivity extends SherlockFragmentActivity {
 
 		// TODO: show warning if wifi is not enabled
 		// TODO: show warning if GSM is not enabled
-
-		// setup GPS and wireless logger services
-		startServices();
 	}
 
 	@Override
 	protected final void onResume() {
-		Log.d(TAG, "onResume called");
 		super.onResume();
+
+		Log.d(TAG, "Resuming HostActivity");
 
 		setupBroadcastReceiver();
 		setupSession();
@@ -274,21 +276,25 @@ public class HostActivity extends SherlockFragmentActivity {
 		// Register GPS status update for upper controls
 		//((StatusBar) findViewById(R.id.gpsStatus)).requestLocationUpdates(true);
 
+		// setup GPS and wireless logger services
 		startServices();
-		requestPosition(mSelectedProvider);
+		
+		// explicitly request updates, automatic resume isn't working smoothly 
+		requestPositionUpdates(mSelectedProvider);
+		requestWirelessUpdates();
 		startNotification();
 	}
 
 	@Override
 	protected final void onPause() {
-
+		Log.d(TAG, "Pausing HostActivity");
 		updateSessionStats();
 		super.onPause();
 	}
 
 	@Override
 	protected final void onStop() {
-		Log.d(TAG, "onStop called");
+		Log.d(TAG, "Stopping HostActivity");
 		// TODO: if receivers are unregistered on stop, there is no way to start/stop services via receivers from outside
 		unregisterReceiver();
 		super.onStop();
@@ -296,7 +302,7 @@ public class HostActivity extends SherlockFragmentActivity {
 
 	@Override
 	protected final void onDestroy() {
-		Log.d(TAG, "onDestroy called");
+		Log.d(TAG, "Destroying HostActivity");
 
 		updateSessionStats();
 		unregisterReceiver();
@@ -424,9 +430,9 @@ public class HostActivity extends SherlockFragmentActivity {
 	 * @param gps 
 	 * @return false on error, otherwise true
 	 */
-	public final boolean requestPosition(final State provider) {
+	public final boolean requestPositionUpdates(final State provider) {
 		// TODO check whether services have already been connected (i.e. received MSG_SERVICE_READY signal)
-		Log.d(TAG, "Trying to retrieve active session from database and start tracking");
+		Log.d(TAG, "Requesting position updates");
 		try {
 			if (positionServiceManager == null) {
 				Log.w(TAG, "gpsPositionServiceManager is null. No message will be sent");
@@ -472,9 +478,9 @@ public class HostActivity extends SherlockFragmentActivity {
 	 * Starts wireless tracking.
 	 * @return false on error, otherwise true
 	 */
-	public final boolean requestWirelessTracking() {
-
+	public final boolean requestWirelessUpdates() {
 		// TODO check whether services have already been connected (i.e. received MSG_SERVICE_READY signal)
+		Log.d(TAG, "Requesting wireless updates");
 		try {
 			if (wirelessServiceManager == null) {
 				Log.w(TAG, "wirelessServiceManager is null. No message will be sent");
@@ -518,7 +524,7 @@ public class HostActivity extends SherlockFragmentActivity {
 	 */
 	public final boolean requestGpxTracking() {
 		// TODO check whether services have already been connected (i.e. received MSG_SERVICE_READY signal)
-		Log.d(TAG, "Trying to retrieve active session from database and start tracking");
+		Log.d(TAG, "Requesting gpx tracking");
 		try {
 			if (positionServiceManager == null) {
 				Log.w(TAG, "gpsPositionServiceManager is null. No message will be sent");
@@ -668,9 +674,9 @@ public class HostActivity extends SherlockFragmentActivity {
 	 * Setups services. Any running services will be restart.
 	 */
 	private void startServices() {
-
 		stopServices();
-
+		
+		Log.d(TAG, "Starting Services");
 		if (positionServiceManager == null) {
 			positionServiceManager = new ServiceManager(this, PositioningService.class, new GpsLocationHandler(this));
 		}
@@ -696,6 +702,7 @@ public class HostActivity extends SherlockFragmentActivity {
 	 * Stops GPS und wireless logger services.
 	 */
 	private void stopServices() {
+		Log.d(TAG, "Stopping Services");
 		// Brute force: specific ServiceManager can be null, if service hasn't been started
 		// Service status is ignored, stop message is send regardless of whether started or not
 		try {

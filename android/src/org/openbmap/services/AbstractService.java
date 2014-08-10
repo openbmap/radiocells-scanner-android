@@ -107,7 +107,7 @@ public abstract class AbstractService extends Service {
 	public void onDestroy() {
 		onStopService();
 		super.onDestroy();
-		Log.i(TAG, "Service Stopped.");
+		Log.i(TAG, "Service stopped");
 	}    
 
 	protected final void send(final Message msg) {

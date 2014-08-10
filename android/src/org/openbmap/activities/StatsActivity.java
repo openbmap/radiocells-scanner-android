@@ -20,7 +20,6 @@ package org.openbmap.activities;
 
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
-import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.Session;
 
 import android.annotation.SuppressLint;
@@ -477,8 +476,8 @@ public class StatsActivity extends SherlockFragment {
 		String deltaCellString = String.format(getString(R.string.time_since_last_cell_update), getTimeSinceLastUpdate(mLastCellUpdate));
 		String deltaWifiString = String.format(getString(R.string.time_since_last_wifi_update), getTimeSinceLastUpdate(mLastWifiUpdate));
 
-		Log.i(TAG, deltaCellString);
-		Log.i(TAG, deltaWifiString);
+		Log.v(TAG, deltaCellString);
+		Log.v(TAG, deltaWifiString);
 	}
 
 	/**

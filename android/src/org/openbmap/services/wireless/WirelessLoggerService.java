@@ -520,6 +520,7 @@ public class WirelessLoggerService extends AbstractService {
 
 	@Override
 	public final void onDestroy() {
+		Log.d(TAG, "Destroying WirelessLoggerService");
 		if (mIsTracking) {
 			// If we're currently tracking, save user data.
 			stopTracking();
@@ -1085,6 +1086,7 @@ public class WirelessLoggerService extends AbstractService {
 
 	@Override
 	public final void onStartService() {
+		Log.d(TAG,"Starting WirelessLoggerService");
 		registerReceivers();
 
 		// Set mCellSavedAt and mWifiSavedAt to default values (Lat 0, Lon 0)
@@ -1095,9 +1097,8 @@ public class WirelessLoggerService extends AbstractService {
 
 	@Override
 	public final void onStopService() {
-		Log.d(TAG, "OnStopService called");
+		Log.d(TAG, "Stopping WirelessLoggerService");
 		unregisterReceivers();
-
 	}
 
 	/**

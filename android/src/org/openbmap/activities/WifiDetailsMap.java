@@ -25,8 +25,6 @@ import org.mapsforge.core.model.BoundingBox;
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
 import org.mapsforge.map.android.view.MapView;
-import org.mapsforge.map.layer.LayerManager;
-import org.mapsforge.map.layer.Layers;
 import org.mapsforge.map.layer.cache.TileCache;
 import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.model.common.Observer;
@@ -336,6 +334,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 	@Override
 	public void onResume() {
+		super.onResume();
 		// register for zoom changes
 		this.mapObserver = new Observer() {
 			@Override

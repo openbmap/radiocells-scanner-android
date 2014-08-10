@@ -262,8 +262,9 @@ public final class Preferences {
 	
 	/**
 	 * URL, which is called to check whether this client version is up-to-date
+	 * old address: "http://www.openbmap.org/current_version.xml";
 	 */
-	public static final String	VERSION_CHECK_URL = "http://www.openbmap.org/current_version.xml";
+	public static final String	VERSION_CHECK_URL = "http://radiocells.org/uploads/version.xml";
 	
 	/**
 	 * Private dummy constructor

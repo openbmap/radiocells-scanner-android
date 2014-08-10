@@ -151,6 +151,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	
 	@Override
 	public void onResume() {
+		super.onResume();
 		// register for zoom changes
 		this.mapObserver = new Observer() {
 			@Override

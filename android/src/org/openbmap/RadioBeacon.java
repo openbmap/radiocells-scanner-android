@@ -203,7 +203,7 @@ public final class RadioBeacon {
      * 			- If you change client version, check whether you need to adjust current_version.xml on server and {@link VERSION_COMPATIBILITY} 
      * 			- Also consider updating android:versionCode="x+1" android:versionName="XYZ" in AndroidManifest.xml (e.g. for automatic F-Droid updates)
 	 */
-	public static final String SW_VERSION = "0.7.9";
+	public static final String SW_VERSION = "0.8.0";
 	
 	/**
 	 * {@link ServerValidation} compares server version against VERSION_COMPATIBILITY to check whether client is outdated.
@@ -217,7 +217,7 @@ public final class RadioBeacon {
 	 * 
 	
 	 */
-	public static final String VERSION_COMPATIBILITY = "00.7.00";
+	public static final String VERSION_COMPATIBILITY = "00.8.00";
 
 	/**
 	 * Database scheme version
