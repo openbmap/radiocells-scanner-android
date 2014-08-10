@@ -56,22 +56,30 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	/**
 	 * OpenBmap cell upload address
 	 */
-	private static final String CELL_WEBSERVICE = "http://openBmap.org/upload/upl.php5";
+	private static final String CELL_WEBSERVICE = "http://radiocells.org/uploads/cells";
 	
 	/**
 	 * Cell target folder, always add trailing slash!
+	 * Folder was used to determine, whether file upload was successful
 	 */
-	private static final String CELL_TARGET_FOLDER = "http://openBmap.org/upload/maps/";
+	private static final String CELL_TARGET_FOLDER = "http://openbmap.org/upload/maps/";
 
 	/**
 	 * OpenBmap wifi upload address
 	 */
-	private static final String WIFI_WEBSERVICE = "http://www.openbmap.org/upload_wifi/upl.php5";
+	//private static final String WIFI_WEBSERVICE = "http://www.openbmap.org/upload_wifi/upl.php5";
+	private static final String WIFI_WEBSERVICE = "http://radiocells.org/uploads/wifis";
 	
 	/**
 	 * Wifi target folder, always add trailing slash!
+	* Folder was used to determine, whether file upload was successful
 	 */
 	private static final String WIFI_TARGET_FOLDER = "http://www.openbmap.org/upload_wifi/maps/";
+
+	/**
+	 * Checks, whether the file has actually made it to the server by sending a GET request
+	 */
+	private static final boolean VALIDATE_UPLOAD = false;
 
 	private Context mAppContext;
 
@@ -224,10 +232,10 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 					publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.uploading_cells) + "(Files: " + String.valueOf(cellFiles.size() -i) +")" , 0);
 					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 						// enforce parallel execution on HONEYCOMB
-						new FileUploader(this, mUser, mPassword, CELL_WEBSERVICE, true, CELL_TARGET_FOLDER).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, cellFiles.get(i));
+						new FileUploader(this, mUser, mPassword, CELL_WEBSERVICE, VALIDATE_UPLOAD, CELL_TARGET_FOLDER).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, cellFiles.get(i));
 						mActiveUploads += 1;
 					} else {
-						new FileUploader(this, mUser, mPassword, CELL_WEBSERVICE, true, CELL_TARGET_FOLDER).execute(cellFiles.get(i));
+						new FileUploader(this, mUser, mPassword, CELL_WEBSERVICE, VALIDATE_UPLOAD, CELL_TARGET_FOLDER).execute(cellFiles.get(i));
 						mActiveUploads += 1;
 					}
 				}		
@@ -255,10 +263,10 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 					publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.uploading_wifis) + "(Files: " + String.valueOf(wifiFiles.size() -i ) + ")", 50);
 					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 						// enforce parallel execution on HONEYCOMB
-						new FileUploader(this, mUser, mPassword, WIFI_WEBSERVICE, true, WIFI_TARGET_FOLDER).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, wifiFiles.get(i));
+						new FileUploader(this, mUser, mPassword, WIFI_WEBSERVICE, VALIDATE_UPLOAD, WIFI_TARGET_FOLDER).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, wifiFiles.get(i));
 						mActiveUploads += 1;
 					} else {
-						new FileUploader(this, mUser, mPassword, WIFI_WEBSERVICE, true, WIFI_TARGET_FOLDER).execute(wifiFiles.get(i));
+						new FileUploader(this, mUser, mPassword, WIFI_WEBSERVICE, VALIDATE_UPLOAD, WIFI_TARGET_FOLDER).execute(wifiFiles.get(i));
 						mActiveUploads += 1;
 					}	
 				}

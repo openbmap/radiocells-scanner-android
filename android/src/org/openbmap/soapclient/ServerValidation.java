@@ -71,12 +71,6 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 	 */
 	private static final int	WAIT_FOR_CONNECTED	= 5;
 	
-	/**
-	 * URL for determine online status
-	 */
-	private static final String	ONLINE_CHECK_URL	= "http://www.openbmap.org/current_version.xml";
-
-	
 	public enum ServerAnswer {
 		OK,
 		OUTDATED,
@@ -143,6 +137,7 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 				}
 			};
 
+			Log.i(TAG, "Verifying client version at" + Preferences.VERSION_CHECK_URL);
 			// version file is opened as stream, thus preventing immediate timeout issues
 			URL url = new URL(Preferences.VERSION_CHECK_URL);
 			InputStream stream = url.openStream();
@@ -258,7 +253,7 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 	private boolean isOnline() {
 		// try to connect openbmap.org
 		try {
-			URL url = new URL(ONLINE_CHECK_URL);
+			URL url = new URL(Preferences.VERSION_CHECK_URL);
 			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 			connection.setRequestProperty("Connection", "close");
 			connection.setConnectTimeout(CONNECTION_TIMEOUT);

@@ -63,11 +63,16 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 	private static final String	PASSWORD_FIELD	= "openBmap_passwd";
 
 	/**
+	 * Field for multipart message: file
+	 */
+	private static final String FILE_FIELD = "file";
+
+	
+	/**
 	 * Retry upload how many times on failed upload
 	 * 0 means no retry
 	 */
-	private static final int MAX_RETRIES	= 2;
-
+	private static final int MAX_RETRIES = 2;
 
 	/**
 	 * Used for callbacks.
@@ -259,7 +264,7 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 			// TODO we don't need passwords for the new service
 			entity.addPart(LOGIN_FIELD, new StringBody(mUser)); 
 			entity.addPart(PASSWORD_FIELD, new StringBody(mPassword));
-			entity.addPart("file", new FileBody(new File(file), "text/xml"));
+			entity.addPart(FILE_FIELD, new FileBody(new File(file), "text/xml"));
 
 			httppost.setEntity(entity);
 			HttpResponse response = httpclient.execute(httppost);

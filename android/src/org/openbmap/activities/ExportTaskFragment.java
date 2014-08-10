@@ -186,7 +186,7 @@ public class ExportTaskFragment extends SherlockFragment implements ExportTaskLi
 	 */
 	private void stageVersionCheck() {
 		if (allowedVersion == CheckResult.UNKNOWN) {
-			// will call stageLocalChecks() upon completion
+			// will call onServerCheckGood()/onServerCheckBad() upon completion
 			new ServerValidation(getSherlockActivity(), this).execute(RadioBeacon.VERSION_COMPATIBILITY);
 		} else if (allowedVersion == CheckResult.GOOD) {
 			stageLocalChecks();
@@ -216,6 +216,11 @@ public class ExportTaskFragment extends SherlockFragment implements ExportTaskLi
 			looper();
 		}
 		else if(allowedVersion == CheckResult.BAD) {
+			// version is outdated
+			int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
+			onExportFailed(id, getResources().getString(R.string.warning_outdated_client));
+		} else if(allowedVersion == CheckResult.UNKNOWN) {
+			// couldn't check version
 			int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
 			onExportFailed(id, getResources().getString(R.string.warning_client_version_not_checked));
 		} else if (credentialsProvided == CheckResult.BAD) {
@@ -245,6 +250,7 @@ public class ExportTaskFragment extends SherlockFragment implements ExportTaskLi
 	 */
 	@Override
 	public void onServerBad(String text) {
+		Log.e(TAG, text);
 		allowedVersion = CheckResult.BAD;
 		// skip local checks, server can't be reached anyways
 		stageFinalCheck();
@@ -255,8 +261,10 @@ public class ExportTaskFragment extends SherlockFragment implements ExportTaskLi
 	 */
 	@Override
 	public void onServerCheckFailed() {
-		allowedVersion = CheckResult.BAD;
-		stageLocalChecks();
+		allowedVersion = CheckResult.UNKNOWN;
+		//stageLocalChecks();
+		// skip local checks, server can't be reached anyways
+		stageFinalCheck();
 	}
 
 	/**
