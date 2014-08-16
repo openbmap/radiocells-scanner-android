@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.DatabaseHelper;
@@ -44,25 +45,22 @@ public class WifiExporter  {
 	private static final String TAG = WifiExporter.class.getSimpleName();
 
 	/**
-	 * Initial size wifi StringBuffer
-	 */
-	private static final int WIFI_XML_DEFAULT_LENGTH = 220;
-
-	/**
-	 * Initial size position StringBuffer
-	 */
-	private static final int POS_XML_DEFAULT_LENGTH	= 170;
-
-	/**
 	 * Cursor windows size, to prevent running out of mem on to large cursor
 	 */
-	private static final int CURSOR_SIZE	= 2000;
+	private static final int CURSOR_SIZE	= 3000;
 
 	/**
-	 * XML header.
+	 * XML templates
 	 */
 	private static final String XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>";
 
+	private static final String LOG_XML = "\n<logfile manufacturer=\"%s\" model=\"%s\" revision=\"%s\" swid=\"%s\" swver=\"%s\" exportver=\"%s\">";
+	
+	private static final String SCAN_XML = "\n<scan time=\"%s\">";
+
+	private static final String POSITION_XML = "\n\t<gps time=\"%s\" lng=\"%s\" lat=\"%s\" alt=\"%s\" hdg=\"%s\" spe=\"%s\" accuracy=\"%s\" type=\"%s\" />";
+
+	private static final String WIFI_XML = "\n\t\t<wifiap bssid=\"%s\" md5essid=\"%s\"%s capa=\"%s\" ss=\"%s\" ntiu=\"%s\"/>";
 
 	/**
 	 * XML template closing logfile
@@ -78,7 +76,7 @@ public class WifiExporter  {
 	/**
 	 * Entries per log file
 	 */
-	private static final int WIFIS_PER_FILE	= 100;
+	private static final int WIFIS_PER_FILE	= 1000;
 
 
 	private Context mContext;
@@ -207,6 +205,7 @@ public class WifiExporter  {
 			+ " LIMIT " + CURSOR_SIZE
 			+ " OFFSET ?";
 
+	private static final Pattern REGEX_PATTERN = Pattern.compile("^\\p{ASCII}*$"); // "[^\\p{ASCII}]+"
 	/**
 	 * Default constructor
 	 * @param context	Activities' context
@@ -379,7 +378,8 @@ public class WifiExporter  {
 						cursor.getDouble(colReqAlt),
 						cursor.getDouble(colReqHead),
 						cursor.getDouble(colReqSpeed),
-						cursor.getDouble(colReqAcc));
+						cursor.getDouble(colReqAcc),
+						"begin");
 
 				final String currentEnd = positionToXml(
 						cursor.getLong(colLastTimestamp),
@@ -388,7 +388,8 @@ public class WifiExporter  {
 						cursor.getDouble(colLastAlt) ,
 						cursor.getDouble(colLastHead),
 						cursor.getDouble(colLastSpeed),
-						cursor.getDouble(colLastAcc));
+						cursor.getDouble(colLastAcc),
+						"end");
 
 				if (i == 0) {
 					// Write first scan and gps tag at the beginning
@@ -455,11 +456,7 @@ public class WifiExporter  {
 	 * @return
 	 */
 	private static String scanToXml(final long timestamp) {
-		StringBuilder s = new StringBuilder(32);
-		s.append("\n<scan time=\"");
-		s.append(timestamp);
-		s.append("\" >");
-		return s.toString();
+		return String.format(SCAN_XML, timestamp);
 	}
 
 	/**
@@ -469,30 +466,10 @@ public class WifiExporter  {
 	 * @param revision
 	 * @param swid
 	 * @param swVersion
-	 * @return
+	 * @return log tag
 	 */
 	private static String logToXml(final String manufacturer, final String model, final String revision, final String swid, final String swVersion, final String exportVersion) {
-		final StringBuffer s = new StringBuffer(130);
-		s.append("\n<logfile manufacturer=\"");
-		s.append(manufacturer);
-		s.append("\"");
-		s.append(" model=\"");
-		s.append(model);
-		s.append("\"");
-		s.append(" revision=\"");
-		s.append(revision);
-		s.append("\"");
-		s.append(" swid=\"");
-		s.append(swid);
-		s.append("\"");
-		s.append(" swver=\"");
-		s.append(swVersion);
-		s.append("\"");
-		s.append(" exportver=\"");
-		s.append(exportVersion);
-		s.append("\"");
-		s.append(" >");
-		return s.toString();
+		return String.format(LOG_XML, manufacturer, model, revision, swid, swVersion, exportVersion);
 	}
 
 	/**
@@ -504,34 +481,12 @@ public class WifiExporter  {
 	 * @param head
 	 * @param speed
 	 * @param acc
+	 * @param type 
 	 * @return position tag
 	 */
 	private static String positionToXml(final long reqTime, final double lng, final double lat,
-			final double alt, final double head, final double speed, final double acc) {
-		final StringBuffer s = new StringBuffer(POS_XML_DEFAULT_LENGTH);
-		s.append("\n\t<gps time=\"");
-		s.append(reqTime);
-		s.append("\"");
-		s.append(" lng=\"");
-		s.append(lng);
-		s.append("\"");
-		s.append(" lat=\"");
-		s.append(lat);
-		s.append("\"");
-		s.append(" alt=\"");
-		s.append(alt);
-		s.append("\"");
-		s.append(" hdg=\"");
-		s.append(head);
-		s.append("\"");
-		s.append(" spe=\"");
-		s.append(speed);
-		s.append("\"");
-		s.append(" accuracy=\"");
-		s.append(acc);
-		s.append("\"");
-		s.append(" />");
-		return s.toString();
+			final double alt, final double head, final double speed, final double acc, String type) {
+		return String.format(POSITION_XML, reqTime, lng, lat, alt, head, speed, acc, type);
 	}
 
 	/**
@@ -545,30 +500,16 @@ public class WifiExporter  {
 	 * @return
 	 */
 	private static String wifiToXml(final String bssid, final String md5essid, final String ssid, final String capa, final String level, final String freq, final boolean anonymise) {
-		final StringBuffer s = new StringBuffer(WIFI_XML_DEFAULT_LENGTH);
-		s.append("\n\t\t<wifiap bssid=\"");
-		s.append(bssid);
-		s.append("\"");
-		s.append(" md5essid=\"");
-		s.append(md5essid);
-		s.append("\"");
-		if (!anonymise) {
-			s.append(" ssid=\"");
-			s.append(ssid);
-			s.append("\"");
-		}
-		s.append(" capa=\"");
-		s.append(capa);
-		s.append("\"");
-		s.append(" ss=\"");
-		s.append(level);
-		s.append("\"");
-		s.append(" ntiu=\"");
-		s.append(freq);
-		s.append("\"");
-		s.append("/>");
 
-		return s.toString();
+		String ssidXmlOrNothing = "";
+		// add only if user has chosen to send ssid and ssid is pure ASCII
+		if (!anonymise && REGEX_PATTERN.matcher(ssid).matches()) {
+			ssidXmlOrNothing = String.format(" ssid=\"%s\"", ssid);
+		} else if (!anonymise && !REGEX_PATTERN.matcher(ssid).matches()) {
+			Log.i(TAG, "Skipping no ascii ssid " + ssid);
+		}
+
+		return String.format(WIFI_XML, bssid, md5essid, ssidXmlOrNothing, capa, level, freq);
 	}
 
 	/**
@@ -596,7 +537,7 @@ public class WifiExporter  {
 		 */
 
 		/**
-		 * Option 2: generate by first timestamp in file
+		 * 		 * Option 2: generate by first timestamp in file
 		 */
 		return "V1_log" + timestamp + "-wifi.xml";
 	}

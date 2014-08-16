@@ -46,23 +46,25 @@ public class CellExporter {
 	/**
 	 * Initial size wifi StringBuffer
 	 */
-	private static final int CELL_XML_DEFAULT_LENGTH	= 220;
-
-	/**
-	 * Initial size position StringBuffer
-	 */
-	private static final int POS_XML_DEFAULT_LENGTH	= 170;
+	private static final int CELL_XML_DEFAULT_LENGTH = 220;
 
 	/**
 	 * Cursor windows size, to prevent running out of mem on to large cursor
 	 */
-	private static final int CURSOR_SIZE = 2000;
+	private static final int CURSOR_SIZE = 3000;
 
 	/**
-	 * XML header.
+	 * XML templates
 	 */
 	private static final String XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>";
 
+	private static final String LOG_XML = "\n<logfile manufacturer=\"%s\" model=\"%s\" revision=\"%s\" swid=\"%s\" swver=\"%s\" exportver=\"%s\">";
+	
+	private static final String SCAN_XML = "\n<scan time=\"%s\">";
+
+	private static final String POSITION_XML = "\n\t<gps time=\"%s\" lng=\"%s\" lat=\"%s\" alt=\"%s\" hdg=\"%s\" spe=\"%s\" accuracy=\"%s\" type=\"%s\" />";
+
+	
 	/**
 	 * XML template closing logfile
 	 */
@@ -76,7 +78,7 @@ public class CellExporter {
 	/**
 	 * Entries per log file
 	 */
-	private static final int CELLS_PER_FILE	= 100;
+	private static final int CELLS_PER_FILE	= 1000;
 
 
 	private Context mContext;
@@ -418,7 +420,8 @@ public class CellExporter {
 						cursor.getDouble(mColReqAlt),
 						cursor.getDouble(mColReqHead),
 						cursor.getDouble(mColReqSpeed),
-						cursor.getDouble(mColReqAcc));
+						cursor.getDouble(mColReqAcc),
+						"begin");
 
 				final String currentEnd = positionToXml(
 						cursor.getLong(mColLastTimestamp),
@@ -427,7 +430,8 @@ public class CellExporter {
 						cursor.getDouble(mColLastAlt) ,
 						cursor.getDouble(mColLastHead),
 						cursor.getDouble(mColLastSpeed),
-						cursor.getDouble(mColLastAcc));
+						cursor.getDouble(mColLastAcc),
+						"end");
 
 				if (i == 0) {
 					// Write first scan and gps tag at the beginning
@@ -490,22 +494,22 @@ public class CellExporter {
 		}
 	}
 
-/**
- * Generates cell xml
- * @param isServing
- * @param isNeighbour
- * @param mcc
- * @param mnc
- * @param lac
- * @param logicalId	logical cell id (lcid)
- * @param actualId	actual cell id (cid), may equal logicalId on GSM networks
- * @param rnc		radio network controller id
- * @param strengthDbm
- * @param strengthAsu
- * @param type
- * @param psc
- * @return
- */
+	/**
+	 * Generates cell xml
+	 * @param isServing
+	 * @param isNeighbour
+	 * @param mcc
+	 * @param mnc
+	 * @param lac
+	 * @param logicalId	logical cell id (lcid)
+	 * @param actualId	actual cell id (cid), may equal logicalId on GSM networks
+	 * @param rnc		radio network controller id
+	 * @param strengthDbm
+	 * @param strengthAsu
+	 * @param type
+	 * @param psc
+	 * @return
+	 */
 	private static String cellToXML(final int isServing, final int isNeighbour,
 			final String mcc, final String mnc, final String lac, final String logicalId, final String actualId, final String rnc, final String strengthDbm, final String strengthAsu, final int type, final String psc) {
 		final StringBuffer s = new StringBuffer(CELL_XML_DEFAULT_LENGTH);
@@ -583,11 +587,7 @@ public class CellExporter {
 	 * @return
 	 */
 	private static String scanToXml(final long timestamp) {
-		StringBuilder s = new StringBuilder(32);
-		s.append("\n<scan time=\"");
-		s.append(timestamp);
-		s.append("\" >");
-		return s.toString();
+		return String.format(SCAN_XML, timestamp);
 	}
 
 	/**
@@ -597,31 +597,10 @@ public class CellExporter {
 	 * @param revision
 	 * @param swid
 	 * @param swVersion
-	 * @param mExportVersion2 
-	 * @return
+	 * @return log tag
 	 */
 	private static String logToXml(final String manufacturer, final String model, final String revision, final String swid, final String swVersion, final String exportVersion) {
-		final StringBuffer s = new StringBuffer(130);
-		s.append("\n<logfile manufacturer=\"");
-		s.append(manufacturer);
-		s.append("\"");
-		s.append(" model=\"");
-		s.append(model);
-		s.append("\"");
-		s.append(" revision=\"");
-		s.append(revision);
-		s.append("\"");
-		s.append(" swid=\"");
-		s.append(swid);
-		s.append("\"");
-		s.append(" swver=\"");
-		s.append(swVersion);
-		s.append("\"");
-		s.append(" exportver=\"");
-		s.append(exportVersion);
-		s.append("\"");
-		s.append(" >");
-		return s.toString();
+		return String.format(LOG_XML, manufacturer, model, revision, swid, swVersion, exportVersion);
 	}
 
 	/**
@@ -633,34 +612,12 @@ public class CellExporter {
 	 * @param head
 	 * @param speed
 	 * @param acc
+	 * @param type 
 	 * @return position tag
 	 */
 	private static String positionToXml(final long reqTime, final double lng, final double lat,
-			final double alt, final double head, final double speed, final double acc) {
-		final StringBuffer s = new StringBuffer(POS_XML_DEFAULT_LENGTH);
-		s.append("\n\t<gps time=\"");
-		s.append(reqTime);
-		s.append("\"");
-		s.append(" lng=\"");
-		s.append(lng);
-		s.append("\"");
-		s.append(" lat=\"");
-		s.append(lat);
-		s.append("\"");
-		s.append(" alt=\"");
-		s.append(alt);
-		s.append("\"");
-		s.append(" hdg=\"");
-		s.append(head);
-		s.append("\"");
-		s.append(" spe=\"");
-		s.append(speed);
-		s.append("\"");
-		s.append(" accuracy=\"");
-		s.append(acc);
-		s.append("\"");
-		s.append(" />");
-		return s.toString();
+			final double alt, final double head, final double speed, final double acc, String type) {
+		return String.format(POSITION_XML, reqTime, lng, lat, alt, head, speed, acc, type);
 	}
 
 	/**
