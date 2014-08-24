@@ -217,7 +217,7 @@ public final class RadioBeacon {
 	 * 
 	
 	 */
-	public static final String VERSION_COMPATIBILITY = "00.8.00";
+	public static final String VERSION_COMPATIBILITY = "00.7.00";
 
 	/**
 	 * Database scheme version

@@ -134,6 +134,7 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 	 * @param params filenames 
 	 * @return true on success, false if at least one file upload failed
 	 */
+	@Deprecated
 	@Override
 	protected final Boolean doInBackground(final String... params) {
 		Log.i(TAG, "Uploading " + params[0]);
@@ -273,9 +274,8 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 			if (reply == 200) {
 				Log.i(TAG, "Uploaded " + file + ": Server reply " + reply);
 			} else {
-				Log.w(TAG, "Uploaded " + file + ": Server reply " + reply);
+				Log.w(TAG, "Error while uploading" + file + ": Server reply " + reply);
 			}
-
 			// everything is ok if we receive HTTP 200
 			// TODO: redirects (301, 302) are NOT handled here 
 			// thus if something changes on the server side we're dead here
