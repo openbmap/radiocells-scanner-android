@@ -40,7 +40,9 @@ import org.openbmap.services.wireless.blacklists.LocationBlackList;
 import org.openbmap.services.wireless.blacklists.SsidBlackList;
 import org.openbmap.utils.LatLongHelper;
 
+import android.R.bool;
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -61,6 +63,15 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
+import android.telephony.CellIdentityCdma;
+import android.telephony.CellIdentityGsm;
+import android.telephony.CellIdentityLte;
+import android.telephony.CellIdentityWcdma;
+import android.telephony.CellInfo;
+import android.telephony.CellInfoCdma;
+import android.telephony.CellInfoGsm;
+import android.telephony.CellInfoLte;
+import android.telephony.CellInfoWcdma;
 import android.telephony.CellLocation;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.PhoneStateListener;
@@ -167,7 +178,7 @@ public class WirelessLoggerService extends AbstractService {
 	 * Wifi scan is asynchronous. pendingWifiScanResults ensures that only one scan is mIsRunning
 	 */
 	private boolean pendingWifiScanResults = false;
-	
+
 	/**
 	 * Wifi scan result callback
 	 */
@@ -227,10 +238,6 @@ public class WirelessLoggerService extends AbstractService {
 	 * Wifi catalog database (used for checking if new wifi)
 	 */
 	private SQLiteDatabase	mRefDb;
-
-	// Can TelephonyManager.getAllCellInfo be used on this phone?
-	private boolean	mNewApiSupported;
-
 
 	/**
 	 * Receives location updates as well as wifi scan result updates
@@ -376,8 +383,6 @@ public class WirelessLoggerService extends AbstractService {
 	 */
 	private void registerPhoneStateManager() {
 		mTelephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
-		mNewApiSupported = isNewApiSupported();
-
 		mPhoneListener = new PhoneStateListener() {
 			@Override
 			public void onSignalStrengthsChanged(final SignalStrength signalStrength) {
@@ -403,11 +408,6 @@ public class WirelessLoggerService extends AbstractService {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-			}
-
-			@Override
-			public void onCellLocationChanged(final CellLocation location) {
-
 			}
 
 			@Override
@@ -611,7 +611,7 @@ public class WirelessLoggerService extends AbstractService {
 									} else {
 										Log.v(TAG, "Wifi not ssid blocked");
 									}
-									
+
 									// skipSpecific = false;
 									if (!skipThis) {
 										Log.i(TAG, "Serializing wifi");
@@ -635,7 +635,7 @@ public class WirelessLoggerService extends AbstractService {
 											Log.i(TAG, "Found free wifi, broadcasting");
 											broadcastFree(r.SSID);
 										}
-										
+
 									}
 								}
 								Log.i(TAG, "Saving wifis");
@@ -724,7 +724,7 @@ public class WirelessLoggerService extends AbstractService {
 		intent.putExtra(RadioBeacon.MSG_SSID, ssid);
 		sendBroadcast(intent);
 	}
-	
+
 	/**
 	 * Processes cell related information and saves them to database
 	 * @param location
@@ -732,6 +732,7 @@ public class WirelessLoggerService extends AbstractService {
 	 * 		Name of the position provider (e.g. gps)
 	 * @return true if at least one cell has been saved
 	 */
+	@SuppressLint("NewApi")
 	private boolean performCellsUpdate(final Location location, final String providerName) {
 		// Is cell tracking disabled?
 		if (!prefs.getBoolean(Preferences.KEY_SAVE_CELLS, Preferences.VAL_SAVE_CELLS)) {
@@ -762,48 +763,55 @@ public class WirelessLoggerService extends AbstractService {
 		//if (mNewApiSupported) {
 		//}
 
-		/* 
-		 * Determine, whether we are on GSM or CDMA network.
-		 * Decision is based on voice-call technology used (i.e. getPhoneType instead of getNetworkType)
-		 */
-		GsmCellLocation gsmLocation = new GsmCellLocation();
-		CdmaCellLocation cdmaLocation = new CdmaCellLocation();
+		Boolean newApiSupported = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2);
 
-		if (mTelephonyManager.getPhoneType() != TelephonyManager.PHONE_TYPE_CDMA) {
-			gsmLocation = (GsmCellLocation) mTelephonyManager.getCellLocation();	
-		} else if (mTelephonyManager.getPhoneType() == TelephonyManager.PHONE_TYPE_CDMA) {
-			cdmaLocation = (CdmaCellLocation) mTelephonyManager.getCellLocation();
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+			newApiSupported = isNewApiSupported();
+			Log.v(TAG, "Collecting cell infos (New API > 18)");
+			if (newApiSupported) {
+				List<CellInfo> cellInfoList = mTelephonyManager.getAllCellInfo();
+				Log.v(TAG, "Found " + cellInfoList.size() + " cells");
+				for (CellInfo info : cellInfoList) {
+					CellRecord cell = processCellInfo(info, pos);
+					if (cell != null) {
+						cells.add(cell);
+					}
+					broadcastCellInfos(cell);
+					broadcastCellUpdate();
+				}
+			}
 		}
 
-		// Either CDMA OR GSM must be available ..
-		// 		1) check for null values (typically airplane mode)
-		//		2) check for valid cell / base station id
-		if (!(isValidGsmLocation(gsmLocation) || isValidCdmaLocation(cdmaLocation))) {
-			Log.e(TAG, "Neither CDMA nor GSM network.. Skipping cells update");
-			return false;
+		if (!newApiSupported || Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
+			// in theory we could use getAllCellInfos even in 17
+			// but wcdma support is lacking on 17
+			Log.v(TAG, "Collecting cell infos (API <= 17)");
+			CellLocation cellLocation = mTelephonyManager.getCellLocation();
+
+			if (cellLocation instanceof GsmCellLocation || cellLocation instanceof CdmaCellLocation) {
+
+				CellRecord serving = processServingCellLocation(cellLocation, pos);
+				if (serving != null) {
+					cells.add(serving);
+				}
+
+				ArrayList<CellRecord> neigbors = processNeighbors(serving, pos);
+				cells.addAll(neigbors);
+
+				broadcastCellInfos(serving);
+				broadcastCellUpdate();
+			}
 		}
-
-		CellRecord serving = processServing(gsmLocation, cdmaLocation, pos);
-		if (serving != null) {
-			cells.add(serving);
-		}
-
-		ArrayList<CellRecord> neigbors = processNeighbors(serving, pos);
-		cells.addAll(neigbors);
-
 
 		// now persist list of cell records in database
 		// Caution: So far we set end position = begin position
 		mDataHelper.storeCellsScanResults(cells, pos, pos);
 
-
-		broadcastCellInfos(serving);
-		broadcastCellUpdate();
 		return (cells.size() > 0);
 	}
 
 	/**
-	 * Checks if new cell info api is supported (i.e. TelephonyManager.getAllCellInfo())
+	 * Checks if new cell info api is supported (i.e. TelephonyManager.getAllCellInfo() returning not null values)
 	 * @return true if new api is supported by phone
 	 */
 	@SuppressLint("NewApi")
@@ -820,108 +828,330 @@ public class WirelessLoggerService extends AbstractService {
 	}
 
 	/**
-	 * Returns a cell record with serving cell
-	 * @param cdmaLocation 
-	 * @param gsmLocation 
-	 * @param cellPos 
-	 * @return serving cell record
+	 * Create a {@link CellRecord} for the serving cell by parsing {@link CellLocation}
+	 * @param cell {@link CellLocation} 
+	 * @param position {@link PositionRecord} Current position
+	 * @return Serialized cell record
 	 */
 	@SuppressLint("NewApi")
-	private CellRecord processServing(final GsmCellLocation gsmLocation, final CdmaCellLocation cdmaLocation, final PositionRecord cellPos) {
-		/*
-		 * In case of GSM network set GSM specific values
-		 * Assume GSM network if gsm location and cell id are available
-		 */
-		if (isValidGsmLocation(gsmLocation)) {	
-			Log.i(TAG, "Assuming gsm (assumption based on cell-id" + gsmLocation.getCid() + ")");
-			CellRecord serving = new CellRecord(mSessionId);
-			serving.setIsCdma(false);
-
-			// generic cell info
-			serving.setNetworkType(mTelephonyManager.getNetworkType());
-			// TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
-			serving.setOpenBmapTimestamp(cellPos.getOpenBmapTimestamp());
-			serving.setBeginPosition(cellPos);
-			// so far we set end position = begin position 
-			serving.setEndPosition(cellPos);
-			serving.setIsServing(true);
-			serving.setIsNeighbor(false);
-
-			// GSM specific
-			serving.setLogicalCellId(gsmLocation.getCid());
-			
-			// add UTRAN ids, if needed
-			if (gsmLocation.getCid() > 0xFFFFFF) {
-				serving.setUtranRnc(gsmLocation.getCid() >> 16);
-				serving.setActualCid(gsmLocation.getCid() & 0xFFFF);
-			} else {
-				serving.setActualCid(gsmLocation.getCid());
-			}
-
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-				// at least for Nexus 4, even HSDPA networks broadcast psc
-				serving.setPsc(gsmLocation.getPsc());
-			}
-
-			String operator = mTelephonyManager.getNetworkOperator();
-			serving.setOperator(operator);
-			// getNetworkOperator() may return empty string, probably due to dropped connection
-			if (operator.length() > 3) {
-				serving.setMcc(operator.substring(0, 3));
-				serving.setMnc(operator.substring(3));
-			} else {
-				Log.e(TAG, "Couldn't determine network operator, skipping cell");
-				return null;
-			}
-			serving.setOperatorName(mTelephonyManager.getNetworkOperatorName());
-
-			serving.setLac(gsmLocation.getLac());
-			serving.setStrengthdBm(gsmStrengthDbm);
-			serving.setStrengthAsu(gsmStrengthAsu);
-
-			return serving;
-		} else if (isValidCdmaLocation(cdmaLocation)) {
-			/* 
-			 * In case of CDMA network set CDMA specific values
-			 * Assume CDMA network, if cdma location and basestation, network and system id are available
+	private CellRecord processServingCellLocation(final CellLocation cell, final PositionRecord position) {
+		if (cell instanceof GsmCellLocation) {
+			/*
+			 * In case of GSM network set GSM specific values
 			 */
-			Log.i(TAG, "Assuming cdma for cell " + cdmaLocation.getBaseStationId());
-			CellRecord serving = new CellRecord(mSessionId);
-			serving.setIsCdma(true);
+			GsmCellLocation gsmLocation = (GsmCellLocation) cell;
 
-			// generic cell info
-			serving.setNetworkType(mTelephonyManager.getNetworkType());
-			// TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
-			serving.setOpenBmapTimestamp(cellPos.getOpenBmapTimestamp());
-			serving.setBeginPosition(cellPos);
-			// so far we set end position = begin position 
-			serving.setEndPosition(cellPos);
-			serving.setIsServing(true);
-			serving.setIsNeighbor(false);
+			if (isValidGsmCell(gsmLocation)) {	
+				Log.i(TAG, "Assuming gsm (assumption based on cell-id" + gsmLocation.getCid() + ")");
+				CellRecord serving = new CellRecord(mSessionId);
+				serving.setIsCdma(false);
 
-			// getNetworkOperator can be unreliable in CDMA networks, thus be careful
-			// {@link http://developer.android.com/reference/android/telephony/TelephonyManager.html#getNetworkOperator()}
-			String operator = mTelephonyManager.getNetworkOperator();
-			serving.setOperator(operator);
-			if (operator.length() > 3) {
-				serving.setMcc(operator.substring(0, 3));
-				serving.setMnc(operator.substring(3));
-			} else {
-				Log.i(TAG, "Couldn't determine network operator, this might happen in CDMA network");
-				serving.setMcc("");
-				serving.setMnc("");
-			}	
-			serving.setOperatorName(mTelephonyManager.getNetworkOperatorName());
+				// generic cell info
+				serving.setNetworkType(mTelephonyManager.getNetworkType());
+				// TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
+				serving.setOpenBmapTimestamp(position.getOpenBmapTimestamp());
+				serving.setBeginPosition(position);
+				// so far we set end position = begin position 
+				serving.setEndPosition(position);
+				serving.setIsServing(true);
+				serving.setIsNeighbor(false);
 
-			// CDMA specific
-			serving.setBaseId(String.valueOf(cdmaLocation.getBaseStationId()));
-			serving.setNetworkId(String.valueOf(cdmaLocation.getNetworkId()));
-			serving.setSystemId(String.valueOf(cdmaLocation.getSystemId()));
+				// GSM specific
+				serving.setLogicalCellId(gsmLocation.getCid());
 
-			serving.setStrengthdBm(cdmaStrengthDbm);
-			return serving;
+				// add UTRAN ids, if needed
+				if (gsmLocation.getCid() > 0xFFFFFF) {
+					serving.setUtranRnc(gsmLocation.getCid() >> 16);
+					serving.setActualCid(gsmLocation.getCid() & 0xFFFF);
+				} else {
+					serving.setActualCid(gsmLocation.getCid());
+				}
+
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+					// at least for Nexus 4, even HSDPA networks broadcast psc
+					serving.setPsc(gsmLocation.getPsc());
+				}
+
+				String operator = mTelephonyManager.getNetworkOperator();
+				// getNetworkOperator() may return empty string, probably due to dropped connection
+				if (operator != null && operator.length() > 3) {
+					serving.setOperator(operator);
+					serving.setMcc(operator.substring(0, 3));
+					serving.setMnc(operator.substring(3));
+				} else {
+					Log.e(TAG, "Error retrieving network operator, skipping cell");
+					return null;
+				}
+				
+				String networkOperatorName = mTelephonyManager.getNetworkOperatorName();
+				if (networkOperatorName != null) {
+					serving.setOperatorName(networkOperatorName);
+				} else {
+					Log.e(TAG, "Error retrieving network operator's name, skipping cell");
+					return null;
+				}
+
+				serving.setLac(gsmLocation.getLac());
+				serving.setStrengthdBm(gsmStrengthDbm);
+				serving.setStrengthAsu(gsmStrengthAsu);
+
+				return serving;
+			}
+		} else if (cell instanceof CdmaCellLocation) { 
+			CdmaCellLocation cdmaLocation = (CdmaCellLocation) cell;
+			if (isValidCdmaCell(cdmaLocation)) {
+				/* 
+				 * In case of CDMA network set CDMA specific values
+				 * Assume CDMA network, if cdma location and basestation, network and system id are available
+				 */
+				Log.i(TAG, "Assuming cdma for cell " + cdmaLocation.getBaseStationId());
+				CellRecord serving = new CellRecord(mSessionId);
+				serving.setIsCdma(true);
+
+				// generic cell info
+				serving.setNetworkType(mTelephonyManager.getNetworkType());
+				// TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
+				serving.setOpenBmapTimestamp(position.getOpenBmapTimestamp());
+				serving.setBeginPosition(position);
+				// so far we set end position = begin position 
+				serving.setEndPosition(position);
+				serving.setIsServing(true);
+				serving.setIsNeighbor(false);
+
+				// getNetworkOperator can be unreliable in CDMA networks, thus be careful
+				// {@link http://developer.android.com/reference/android/telephony/TelephonyManager.html#getNetworkOperator()}
+				String operator = mTelephonyManager.getNetworkOperator();
+				if (operator.length() > 3) {
+					serving.setOperator(operator);
+					serving.setMcc(operator.substring(0, 3));
+					serving.setMnc(operator.substring(3));
+				} else {
+					Log.i(TAG, "Error retrieving network operator, this might happen in CDMA network");
+					serving.setMcc("");
+					serving.setMnc("");
+				}	
+				
+				String networkOperatorName = mTelephonyManager.getNetworkOperatorName();
+				if (networkOperatorName != null) {
+					serving.setOperatorName(mTelephonyManager.getNetworkOperatorName());
+				} else {
+					Log.i(TAG, "Error retrieving network operator's name, this might happen in CDMA network");
+					serving.setOperatorName("");
+				}
+				
+				// CDMA specific
+				serving.setBaseId(String.valueOf(cdmaLocation.getBaseStationId()));
+				serving.setNetworkId(String.valueOf(cdmaLocation.getNetworkId()));
+				serving.setSystemId(String.valueOf(cdmaLocation.getSystemId()));
+
+				serving.setStrengthdBm(cdmaStrengthDbm);
+				return serving;
+			}
 		}
+		return null; 
+	}
 
+	/**
+	 * Create a {@link CellRecord} by parsing {@link CellInfo}
+	 * @param cell {@linkplain CellInfo}
+	 * @param position {@linkplain PositionRecord Current position}
+	 * @return {@link CellRecord}
+	 */
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+	private CellRecord processCellInfo(final CellInfo cell, final PositionRecord position) {
+		if (cell instanceof CellInfoGsm) {
+			/*
+			 * In case of GSM network set GSM specific values
+			 */
+			CellIdentityGsm gsmIdentity = ((CellInfoGsm) cell).getCellIdentity();
+
+			if (isValidGsmCell(gsmIdentity)) {	
+				Log.i(TAG, "Processing gsm cell " + gsmIdentity.getCid());
+				CellRecord result = new CellRecord(mSessionId);
+				result.setIsCdma(false);
+
+				// generic cell info
+				result.setNetworkType(mTelephonyManager.getNetworkType());
+				// TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
+				result.setOpenBmapTimestamp(position.getOpenBmapTimestamp());
+				result.setBeginPosition(position);
+				// so far we set end position = begin position 
+				result.setEndPosition(position);
+				result.setIsServing(true);
+
+				result.setIsNeighbor(!cell.isRegistered());
+
+				// GSM specific
+				result.setLogicalCellId(gsmIdentity.getCid());
+
+				// add UTRAN ids, if needed
+				if (gsmIdentity.getCid() > 0xFFFFFF) {
+					result.setUtranRnc(gsmIdentity.getCid() >> 16);
+					result.setActualCid(gsmIdentity.getCid() & 0xFFFF);
+				} else {
+					result.setActualCid(gsmIdentity.getCid());
+				}
+
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+					// at least for Nexus 4, even HSDPA networks broadcast psc
+					result.setPsc(gsmIdentity.getPsc());
+				}
+
+				String operator = mTelephonyManager.getNetworkOperator();
+				result.setOperator(operator);
+				// getNetworkOperator() may return empty string, probably due to dropped connection
+				if (operator.length() > 3) {
+					result.setMcc(operator.substring(0, 3));
+					result.setMnc(operator.substring(3));
+				} else {
+					Log.e(TAG, "Couldn't determine network operator, skipping cell");
+					return null;
+				}
+				result.setOperatorName(mTelephonyManager.getNetworkOperatorName());
+
+				result.setLac(gsmIdentity.getLac());
+				result.setStrengthdBm(((CellInfoGsm) cell).getCellSignalStrength().getDbm());
+				result.setStrengthAsu(((CellInfoGsm) cell).getCellSignalStrength().getAsuLevel());
+
+				return result;
+			}
+		} else if (cell instanceof CellInfoWcdma) {
+			CellIdentityWcdma wcdmaIdentity = ((CellInfoWcdma)cell).getCellIdentity();
+			if (isValidWcdmaCell(wcdmaIdentity)) {	
+				Log.i(TAG, "Processing wcdma cell " + wcdmaIdentity.getCid());
+				CellRecord result = new CellRecord(mSessionId);
+				result.setIsCdma(false);
+
+				// generic cell info
+				result.setNetworkType(mTelephonyManager.getNetworkType());
+				// TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
+				result.setOpenBmapTimestamp(position.getOpenBmapTimestamp());
+				result.setBeginPosition(position);
+				// so far we set end position = begin position 
+				result.setEndPosition(position);
+				result.setIsServing(true);
+
+				result.setIsNeighbor(!cell.isRegistered());
+
+				result.setLogicalCellId(wcdmaIdentity.getCid());
+
+				// add UTRAN ids, if needed
+				if (wcdmaIdentity.getCid() > 0xFFFFFF) {
+					result.setUtranRnc(wcdmaIdentity.getCid() >> 16);
+					result.setActualCid(wcdmaIdentity.getCid() & 0xFFFF);
+				} else {
+					result.setActualCid(wcdmaIdentity.getCid());
+				}
+
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+					// at least for Nexus 4, even HSDPA networks broadcast psc
+					result.setPsc(wcdmaIdentity.getPsc());
+				}
+
+				String operator = mTelephonyManager.getNetworkOperator();
+				result.setOperator(operator);
+				// getNetworkOperator() may return empty string, probably due to dropped connection
+				if (operator.length() > 3) {
+					result.setMcc(operator.substring(0, 3));
+					result.setMnc(operator.substring(3));
+				} else {
+					Log.e(TAG, "Couldn't determine network operator, skipping cell");
+					return null;
+				}
+				result.setOperatorName(mTelephonyManager.getNetworkOperatorName());
+
+				result.setLac(wcdmaIdentity.getLac());
+				result.setStrengthdBm(((CellInfoWcdma) cell).getCellSignalStrength().getDbm());
+				result.setStrengthAsu(((CellInfoWcdma) cell).getCellSignalStrength().getAsuLevel());
+
+				return result;
+			}	
+		} else if (cell instanceof CellInfoCdma) { 
+			CellIdentityCdma cdmaIdentity = ((CellInfoCdma) cell).getCellIdentity();
+			if (isValidCdmaCell(cdmaIdentity)) {
+				/* 
+				 * In case of CDMA network set CDMA specific values
+				 * Assume CDMA network, if cdma location and basestation, network and system id are available
+				 */
+				Log.i(TAG, "Processing cdma cell " + cdmaIdentity.getBasestationId());
+				CellRecord result = new CellRecord(mSessionId);
+				result.setIsCdma(true);
+
+				// generic cell info
+				result.setNetworkType(mTelephonyManager.getNetworkType());
+				// TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
+				result.setOpenBmapTimestamp(position.getOpenBmapTimestamp());
+				result.setBeginPosition(position);
+				// so far we set end position = begin position 
+				result.setEndPosition(position);
+				result.setIsServing(true);
+				result.setIsNeighbor(false);
+
+				// getNetworkOperator can be unreliable in CDMA networks, thus be careful
+				// {@link http://developer.android.com/reference/android/telephony/TelephonyManager.html#getNetworkOperator()}
+				String operator = mTelephonyManager.getNetworkOperator();
+				result.setOperator(operator);
+				if (operator.length() > 3) {
+					result.setMcc(operator.substring(0, 3));
+					result.setMnc(operator.substring(3));
+				} else {
+					Log.i(TAG, "Couldn't determine network operator, this might happen in CDMA network");
+					result.setMcc("");
+					result.setMnc("");
+				}	
+				result.setOperatorName(mTelephonyManager.getNetworkOperatorName());
+
+				// CDMA specific
+				result.setBaseId(String.valueOf(cdmaIdentity.getBasestationId()));
+				result.setNetworkId(String.valueOf(cdmaIdentity.getNetworkId()));
+				result.setSystemId(String.valueOf(cdmaIdentity.getSystemId()));
+
+				result.setStrengthdBm(((CellInfoCdma) cell).getCellSignalStrength().getCdmaDbm());
+				result.setStrengthAsu(((CellInfoCdma) cell).getCellSignalStrength().getAsuLevel());
+				return result;
+			} else if (cell instanceof CellInfoLte) {
+				CellIdentityLte lteIdentity = ((CellInfoLte) cell).getCellIdentity();
+				if (isValidLteCell(lteIdentity)) {
+					Log.i(TAG, "Processing LTE cell " + lteIdentity.getCi());
+					CellRecord result = new CellRecord(mSessionId);
+					result.setIsCdma(false);
+
+					// generic cell info
+					result.setNetworkType(mTelephonyManager.getNetworkType());
+					// TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
+					result.setOpenBmapTimestamp(position.getOpenBmapTimestamp());
+					result.setBeginPosition(position);
+					// so far we set end position = begin position 
+					result.setEndPosition(position);
+					result.setIsServing(true);
+
+					result.setIsNeighbor(!cell.isRegistered());
+					result.setLogicalCellId(lteIdentity.getCi());
+					
+					// add physical id
+					result.setActualCid(lteIdentity.getPci());
+					
+					result.setLac(lteIdentity.getTac());
+					
+					String operator = mTelephonyManager.getNetworkOperator();
+					result.setOperator(operator);
+					// getNetworkOperator() may return empty string, probably due to dropped connection
+					if (operator.length() > 3) {
+						result.setMcc(operator.substring(0, 3));
+						result.setMnc(operator.substring(3));
+					} else {
+						Log.e(TAG, "Couldn't determine network operator, skipping cell");
+						return null;
+					}
+					result.setOperatorName(mTelephonyManager.getNetworkOperatorName());
+
+					//result.setLac(wcdmaIdentity.getLac());
+					result.setStrengthdBm(((CellInfoLte) cell).getCellSignalStrength().getDbm());
+					result.setStrengthAsu(((CellInfoLte) cell).getCellSignalStrength().getAsuLevel());
+					return result;
+				}		
+			}
+		}
 		return null; 
 	}
 
@@ -930,118 +1160,184 @@ public class WirelessLoggerService extends AbstractService {
 	 * Please note:
 	 * 		1) Not all cell phones deliver neighboring cells (e.g. Samsung Galaxy)
 	 * 		2) If in 3G mode, most devices won't deliver cell ids
-	 * @param serving 
+	 * @param serving {@link CellRecord} 
 	 * 		Serving cell, used to complete missing api information for neighbor cells (mcc, mnc, ..)
-	 * @param cellPos 
+	 * @param cellPos {@link PositionRecord}
 	 * 		Current position
 	 * @return list of neigboring cell records
 	 */
-	private ArrayList<CellRecord> processNeighbors(final CellRecord serving, final PositionRecord cellPos) {
+	private ArrayList<CellRecord> processNeighbors(final CellRecord serving, final PositionRecord cellPos) {		
 		ArrayList<CellRecord> neighbors = new ArrayList<CellRecord>();
 
 		ArrayList<NeighboringCellInfo> neighboringCellInfos = (ArrayList<NeighboringCellInfo>) mTelephonyManager.getNeighboringCellInfo();
+
+		if (serving == null) {
+			Log.e(TAG, "Can't process neighbor cells: we need a serving cell first");
+			return neighbors;
+		}
+
+		if (neighboringCellInfos == null) {
+			Log.i(TAG, "Neigbor cell list null. Maybe not supported by your phone..");
+			return neighbors;
+		}
+
 		// TODO: neighbor cell information in 3G mode is unreliable: lots of n/a in data.. Skip neighbor cell logging when in 3G mode or try to autocomplete missing data
-		if (neighboringCellInfos != null) {
+		for (NeighboringCellInfo ci : neighboringCellInfos) {
+			boolean skip = !isValidNeigbor(ci);
+			if (!skip) {
+				// add neigboring cells		
+				CellRecord neighbor = new CellRecord(mSessionId);
+				// TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
+				neighbor.setOpenBmapTimestamp(cellPos.getOpenBmapTimestamp());
+				neighbor.setBeginPosition(cellPos);
+				// so far we set end position = begin position 
+				neighbor.setEndPosition(cellPos);
+				neighbor.setIsServing(false);
+				neighbor.setIsNeighbor(true);
 
-			for (NeighboringCellInfo ci : neighboringCellInfos) {
-				boolean skip = !isValidNeigbor(ci);
-				if (!skip) {
-					// add neigboring cells		
-					CellRecord neighbor = new CellRecord(mSessionId);
-					// TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
-					neighbor.setOpenBmapTimestamp(cellPos.getOpenBmapTimestamp());
-					neighbor.setBeginPosition(cellPos);
-					// so far we set end position = begin position 
-					neighbor.setEndPosition(cellPos);
-					neighbor.setIsServing(false);
-					neighbor.setIsNeighbor(true);
+				/*
+				 * TelephonyManager doesn't provide all data for NEIGHBOURING cells:
+				 * MCC, MNC, Operator and Operator name are missing.
+				 * Thus, use data from last SERVING cell.
+				 * 
+				 * In typical cases this won't cause any problems, nevertheless problems can occur 
+				 * 	- near country border, where NEIGHBOURING cell can have a different MCC, MNC or Operator
+				 *   - ... ?
+				 */
 
-					/*
-					 * TelephonyManager doesn't provide all data for NEIGHBOURING cells:
-					 * MCC, MNC, Operator and Operator name are missing.
-					 * Thus, use data from last SERVING cell.
-					 * 
-					 * In typical cases this won't cause any problems, nevertheless problems can occur 
-					 * 	- near country border, where NEIGHBOURING cell can have a different MCC, MNC or Operator
-					 *   - ... ?
-					 */
+				neighbor.setMnc(serving.getMnc());
+				neighbor.setMcc(serving.getMcc());
+				neighbor.setOperator(serving.getOperator());
+				neighbor.setOperatorName(serving.getOperatorName());
 
-					neighbor.setMnc(serving.getMnc());
-					neighbor.setMcc(serving.getMcc());
-					neighbor.setOperator(serving.getOperator());
-					neighbor.setOperatorName(serving.getOperatorName());
+				int networkType = ci.getNetworkType();
+				neighbor.setNetworkType(networkType);
 
-					int networkType = ci.getNetworkType();
-					neighbor.setNetworkType(networkType);
+				if (networkType == TelephonyManager.NETWORK_TYPE_GPRS || networkType ==  TelephonyManager.NETWORK_TYPE_EDGE) {
+					// GSM cell
+					neighbor.setIsCdma(false);
 
-					if (networkType == TelephonyManager.NETWORK_TYPE_GPRS || networkType ==  TelephonyManager.NETWORK_TYPE_EDGE) {
-						// GSM cell
-						neighbor.setIsCdma(false);
+					neighbor.setLogicalCellId(ci.getCid());
+					neighbor.setLac(ci.getLac());
+					neighbor.setStrengthdBm(-113 + 2 * ci.getRssi());
+					neighbor.setStrengthAsu(ci.getRssi());
 
-						neighbor.setLogicalCellId(ci.getCid());
-						neighbor.setLac(ci.getLac());
-						neighbor.setStrengthdBm(-113 + 2 * ci.getRssi());
-						neighbor.setStrengthAsu(ci.getRssi());
+				} else if (networkType == TelephonyManager.NETWORK_TYPE_UMTS || networkType ==  TelephonyManager.NETWORK_TYPE_HSDPA
+						|| networkType == TelephonyManager.NETWORK_TYPE_HSUPA || networkType == TelephonyManager.NETWORK_TYPE_HSPA) {
+					// UMTS cell
+					neighbor.setIsCdma(false);					
+					neighbor.setPsc(ci.getPsc());
 
-					} else if (networkType == TelephonyManager.NETWORK_TYPE_UMTS || networkType ==  TelephonyManager.NETWORK_TYPE_HSDPA
-							|| networkType == TelephonyManager.NETWORK_TYPE_HSUPA || networkType == TelephonyManager.NETWORK_TYPE_HSPA) {
-						// UMTS cell
-						neighbor.setIsCdma(false);					
-						neighbor.setPsc(ci.getPsc());
+					neighbor.setStrengthdBm(ci.getRssi());
 
-						neighbor.setStrengthdBm(ci.getRssi());
-
-						// There are several approaches on calculating ASU strength in UMTS:
-						// 1) Wikipedia: ASU = dBm + 116
-						// 	  @see http://en.wikipedia.org/wiki/Mobile_phone_signal#ASU
-						// 2) Android way: ASU = (dbm + 113) / 2
-						//	  @see TelephonyManager.getAllCellInfo.getCellStrength.getAsu() TelephonyManager.getAllCellInfo.getCellStrength.getDbm() 
-						// 	  @see http://developer.android.com/reference/android/telephony/NeighboringCellInfo.html#getRssi()
-						int asu = (int) Math.round((ci.getRssi() + 113.0)/2.0);
-						neighbor.setStrengthAsu(asu);
-					} else if (networkType == TelephonyManager.NETWORK_TYPE_CDMA) {
-						// TODO what's the strength in cdma mode? API unclear
-						neighbor.setIsCdma(true);
-					}
-
-					// not available for neighboring cells
-					//cell.setMcc(mcc);
-					//cell.setMnc(mnc);
-					//cell.setOperator(operator);
-					//cell.setOperatorName(operatorName);
-
-					neighbors.add(neighbor);
+					// There are several approaches on calculating ASU strength in UMTS:
+					// 1) Wikipedia: ASU = dBm + 116
+					// 	  @see http://en.wikipedia.org/wiki/Mobile_phone_signal#ASU
+					// 2) Android way: ASU = (dbm + 113) / 2
+					//	  @see TelephonyManager.getAllCellInfo.getCellStrength.getAsu() TelephonyManager.getAllCellInfo.getCellStrength.getDbm() 
+					// 	  @see http://developer.android.com/reference/android/telephony/NeighboringCellInfo.html#getRssi()
+					int asu = (int) Math.round((ci.getRssi() + 113.0)/2.0);
+					neighbor.setStrengthAsu(asu);
+				} else if (networkType == TelephonyManager.NETWORK_TYPE_CDMA) {
+					// TODO what's the strength in cdma mode? API unclear
+					neighbor.setIsCdma(true);
 				}
+
+				// not available for neighboring cells
+				//cell.setMcc(mcc);
+				//cell.setMnc(mnc);
+				//cell.setOperator(operator);
+				//cell.setOperatorName(operatorName);
+
+				neighbors.add(neighbor);
 			}
 		}
+
 		return neighbors;
 	}
 
 	/**
-	 * A valid gsm location must have cell id != -1
+	 * A valid gsm cell must have cell id != -1
 	 * Note: cells with cid > max value 0xffff are accepted (typically UMTS cells. We handle them separately
-	 * @param gsmLocation
-	 * @return
+	 * @param gsmLocation {@link GsmCellLocation}
+	 * @return true if valid gsm cell
 	 */
-	private boolean isValidGsmLocation(final GsmCellLocation gsmLocation) {
+	private boolean isValidGsmCell(final GsmCellLocation gsmLocation) {
 		if (gsmLocation == null) {
 			return false;
 		}
-
-		return gsmLocation.getCid() != -1;
+		Integer cid = gsmLocation.getCid();
+		return (cid > 0 && cid != Integer.MAX_VALUE);
 	}
 
 	/**
-	 * A valid cdma location must have basestation id, network id and system id set
-	 * @param cdmaLocation
-	 * @return
+	 * A valid gsm cell must have cell id != -1
+	 * Note: cells with cid > max value 0xffff are accepted (typically UMTS cells. We handle them separately
+	 * @param gsmIdentity {@link CellIdentityGsm}
+	 * @return true if valid gsm cell
 	 */
-	private boolean isValidCdmaLocation(final CdmaCellLocation cdmaLocation) {
-		if (cdmaLocation == null) {
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+	private boolean isValidGsmCell(final CellIdentityGsm gsmIdentity) {
+		if (gsmIdentity == null) {
 			return false;
 		}
 
-		return (cdmaLocation.getBaseStationId() != -1) && (cdmaLocation.getNetworkId() != -1) && (cdmaLocation.getSystemId() != -1);
+		Integer cid = gsmIdentity.getCid();
+		return (cid > 0 && cid != Integer.MAX_VALUE);
+	}
+
+	/**
+	 * A valid cdma cell must have basestation id, network id and system id set
+	 * @param cdmaLocation {@link CdmaCellLocation}
+	 * @return true if valid cdma id
+	 */
+	private boolean isValidCdmaCell(final CdmaCellLocation cdmaLocation) {
+		if (cdmaLocation == null) {
+			return false;
+		}
+		return ((cdmaLocation.getBaseStationId() != -1) && (cdmaLocation.getNetworkId() != -1) && (cdmaLocation.getSystemId() != -1));
+	}
+
+	/**
+	 * A valid wcdma cell must have cell id set
+	 * @param cdmaLocation {@link CdmaCellLocation}
+	 * @return true if valid cdma id
+	 */
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+	private boolean isValidWcdmaCell(final CellIdentityWcdma wcdmaInfo) {
+		if (wcdmaInfo == null) {
+			return false;
+		}
+		Integer cid = wcdmaInfo.getCid();
+		return ((cid > -1) && (cid < Integer.MAX_VALUE));
+	}
+
+	/**
+	 * A valid LTE cell must have cell id set
+	 * @param cdmaLocation {@link CdmaCellLocation}
+	 * @return true if valid cdma id
+	 */
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+	private boolean isValidLteCell(final CellIdentityLte lteInfo) {
+		if (lteInfo == null) {
+			return false;
+		}
+		Integer cid = lteInfo.getCi();
+		return ((cid > -1) && (cid < Integer.MAX_VALUE));
+	}
+
+
+	/**
+	 * A valid cdma location must have basestation id, network id and system id set
+	 * @param cdmaIdentity {@link CellInfoCdma}
+	 * @return true if valid cdma id
+	 */
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+	private boolean isValidCdmaCell(final CellIdentityCdma cdmaIdentity) {
+		if (cdmaIdentity == null) {
+			return false;
+		}
+		return ((cdmaIdentity.getBasestationId() != -1) && (cdmaIdentity.getNetworkId() != -1) && (cdmaIdentity.getSystemId() != -1));
 	}
 
 	/**
@@ -1068,19 +1364,24 @@ public class WirelessLoggerService extends AbstractService {
 	 * @param recent
 	 */
 	private void broadcastCellInfos(final CellRecord recent) {
+		if (recent == null) {
+			Log.e(TAG, "Broadcasting error: cell record was null");
+			return;
+		}
+
 		Intent intent = new Intent(RadioBeacon.INTENT_NEW_CELL);
 		/*
 		intent.putExtra(RadioBeacon.MSG_KEY, recent.getOperatorName() 
 				+ " " + recent.getLogicalCellId()
 				+ " " + CellRecord.NETWORKTYPE_MAP().get(recent.getNetworkType())
 				+ " " + recent.getStrengthdBm() + "dBm");
-		*/
-		
+		 */
+
 		intent.putExtra(RadioBeacon.MSG_OPERATOR, recent.getOperatorName());
 		intent.putExtra(RadioBeacon.MSG_CELL_ID, recent.getLogicalCellId());
 		intent.putExtra(RadioBeacon.MSG_TECHNOLOGY, CellRecord.TECHNOLOGY_MAP().get(recent.getNetworkType()));
 		intent.putExtra(RadioBeacon.MSG_STRENGTH, recent.getStrengthdBm());
-		
+
 		sendBroadcast(intent);
 	}
 
@@ -1166,7 +1467,7 @@ public class WirelessLoggerService extends AbstractService {
 			case RadioBeacon.MSG_STOP_TRACKING:
 				Log.d(TAG, "Wireless logger received MSG_STOP_TRACKING signal");
 				stopTracking();
-				
+
 				// before manager stopped the service
 				WirelessLoggerService.this.stopSelf();
 				break;
