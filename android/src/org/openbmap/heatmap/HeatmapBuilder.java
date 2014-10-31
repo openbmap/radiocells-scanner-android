@@ -43,9 +43,10 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 	private Bitmap mBackbuffer;
 	private int mWidth;
 	private int mHeight;
+	private float mScaleFactor;
 	private int mTileSize;
-	private float radius;
-	
+	private float mRadius;
+
 	private BoundingBox	mBbox;
 	private byte mZoom;
 
@@ -54,20 +55,22 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 	 */
 	private HeatmapBuilderListener mListener;
 
-
-
 	public interface HeatmapBuilderListener {
 		void onHeatmapCompleted(Bitmap backbuffer);
 		void onHeatmapFailed();
 	}
 
-	public HeatmapBuilder(final HeatmapBuilderListener listener, final int width, final int height, final BoundingBox bbox, final byte zoom, final int tilesize, final float radius) {
+	public HeatmapBuilder(final HeatmapBuilderListener listener, final int width, final int height,
+			final BoundingBox bbox, final byte zoom, final float scaleFactor,
+				final int tilesize, final float radius) {
 		this.mListener = listener;
 		this.mBbox = bbox;
 		this.mBackbuffer = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 		this.mZoom = zoom;
 		this.mCanvas = new Canvas(mBackbuffer);
+		this.mScaleFactor = scaleFactor;
 		this.mTileSize = tilesize;
+		
 		Paint p = new Paint();
 		p.setStyle(Paint.Style.FILL);
 
@@ -77,7 +80,7 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 		this.mHeight = height;
 		this.mCanvas.drawRect(0, 0, width, height, p);
 
-		this.radius = radius;
+		this.mRadius = radius;
 	}
 
 	/**
@@ -93,17 +96,17 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 
 		@SuppressWarnings("unchecked")
 		ArrayList<HeatLatLong> heatLatLongs = ((ArrayList<HeatLatLong>) params[0]);
-		
+
 		for (HeatLatLong heat : heatLatLongs) {
-			
+
 			if (heat.longitude >= mBbox.minLongitude && heat.longitude <= mBbox.maxLongitude
 					&& heat.latitude >= mBbox.minLatitude && heat.latitude <= mBbox.maxLatitude) {
-				float leftBorder = (float) MercatorProjection.longitudeToPixelX(mBbox.minLongitude, mZoom, mTileSize);
-				float topBorder = (float) MercatorProjection.latitudeToPixelY(mBbox.maxLatitude, mZoom, mTileSize);
-				
-				float x = (float) (MercatorProjection.longitudeToPixelX(heat.longitude, mZoom, mTileSize) - leftBorder);
-				float y = (float) (MercatorProjection.latitudeToPixelY(heat.latitude, mZoom, mTileSize) - topBorder);
-				
+				float leftBorder = (float) MercatorProjection.longitudeToPixelX(mBbox.minLongitude, MercatorProjection.getMapSize(mZoom, mTileSize)); 
+				float topBorder = (float) MercatorProjection.latitudeToPixelY(mBbox.maxLatitude, MercatorProjection.getMapSize(mZoom, mTileSize));
+
+				float x = (float) (MercatorProjection.longitudeToPixelX(heat.longitude, MercatorProjection.getMapSize(mZoom, mTileSize)) - leftBorder);
+				float y = (float) (MercatorProjection.latitudeToPixelY(heat.latitude, MercatorProjection.getMapSize(mZoom, mTileSize)) - topBorder);
+
 				// Log.i(TAG, "X:" + x + " Y:" + y);
 				addPoint(x, y, heat.getIntensity());
 
@@ -113,7 +116,7 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 				}
 			}
 		}
-		
+
 		colorize(0, 0);
 
 		return !isCancelled();
@@ -137,12 +140,12 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 
 
 	private void addPoint(final float x, final float y, final int times) {
-		RadialGradient g = new RadialGradient(x, y, radius, Color.argb(Math.max(10 * times, 255), 0, 0, 0), Color.TRANSPARENT, TileMode.CLAMP);
+		RadialGradient g = new RadialGradient(x, y, mRadius, Color.argb(Math.max(10 * times, 255), 0, 0, 0), Color.TRANSPARENT, TileMode.CLAMP);
 
 		Paint gp = new Paint();
 		gp.setShader(g);
 
-		mCanvas.drawCircle(x, y, radius, gp);
+		mCanvas.drawCircle(x, y, mRadius, gp);
 	}
 
 	private void colorize(final float x, final float y) {

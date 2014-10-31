@@ -26,10 +26,10 @@ import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.Session;
 import org.openbmap.soapclient.ExportSessionTask.ExportTaskListener;
-import org.openbmap.utils.AlertDialogHelper;
+import org.openbmap.utils.AlertDialogUtils;
 import org.openbmap.utils.OnAlertClickInterface;
 import org.openbmap.utils.TabManager;
-import org.openbmap.utils.TempFileHelper;
+import org.openbmap.utils.TempFileUtils;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -272,7 +272,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * 		session id
 	 */		
 	public final void deleteCommand(final int id) {
-		AlertDialogHelper.newInstance(ID_DELETE_SESSION,
+		AlertDialogUtils.newInstance(ID_DELETE_SESSION,
 				getResources().getString(R.string.delete), getResources().getString(R.string.do_you_want_to_delete_this_session),
 				String.valueOf(id), false).show(getSupportFragmentManager(), "delete");
 	}
@@ -307,7 +307,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
 		if (!skipDelete) {
 			// delete all temp files (.xml)
-			TempFileHelper.cleanTempFiles(this);
+			TempFileUtils.cleanTempFiles(this);
 		}
 
 		// force UI list update
@@ -320,7 +320,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 */
 	@Override
 	public final void deleteAllCommand() {
-		AlertDialogHelper.newInstance(ID_DELETE_ALL, 
+		AlertDialogUtils.newInstance(ID_DELETE_ALL, 
 				getResources().getString(R.string.dialog_delete_all_sessions_title), getResources().getString(R.string.dialog_delete_all_sessions_message),
 				null, false).show(getSupportFragmentManager(), "delete_all");
 	}
@@ -551,7 +551,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
 			if (failedExports > 0) {
 				// at least one export failed
-				AlertDialogHelper.newInstance(ID_EXPORT_FAILED, getResources().getString(R.string.export_error_title), getResources().getString(R.string.export_error),
+				AlertDialogUtils.newInstance(ID_EXPORT_FAILED, getResources().getString(R.string.export_error_title), getResources().getString(R.string.export_error),
 						String.valueOf(id), true).show(getSupportFragmentManager(), "failed");
 			} else {
 				// if everything is ok, offer to delete
@@ -559,7 +559,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 				for (int one : pendingExports){
 					candidates += one + ";";
 				}
-				AlertDialogHelper.newInstance(ID_DELETE_PROCESSED, getResources().getString(R.string.delete), getResources().getString(R.string.do_you_want_to_delete_processed_sessions),
+				AlertDialogUtils.newInstance(ID_DELETE_PROCESSED, getResources().getString(R.string.delete), getResources().getString(R.string.do_you_want_to_delete_processed_sessions),
 						candidates, false).show(getSupportFragmentManager(), "failed");
 			}
 
@@ -599,7 +599,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
 			if (failedExports > 0) {
 				// at least one export failed
-				AlertDialogHelper.newInstance(ID_EXPORT_FAILED, 
+				AlertDialogUtils.newInstance(ID_EXPORT_FAILED, 
 						getResources().getString(R.string.export_error_title), getResources().getString(R.string.export_error),
 						String.valueOf(id), true).show(getSupportFragmentManager(), "failed");
 			} 
@@ -630,7 +630,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		hideExportDialog();
 
 		String errorText = (error == null || error.length() == 0) ? getResources().getString(R.string.export_error) : error;
-		AlertDialogHelper.newInstance(ID_EXPORT_FAILED,
+		AlertDialogUtils.newInstance(ID_EXPORT_FAILED,
 				getResources().getString(R.string.export_error_title), errorText,
 				String.valueOf(id), true).show(getSupportFragmentManager(), "failed");
 	}

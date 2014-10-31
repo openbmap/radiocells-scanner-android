@@ -24,7 +24,7 @@ import android.view.WindowManager;
 /**
  * Helper class for keeping screen on
  */
-public final class ActivityHelper {
+public final class ActivityUtils {
 
 	public static void setKeepScreenOn(final Activity activity, final boolean keepScreenOn) {
 	    // WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
@@ -40,7 +40,7 @@ public final class ActivityHelper {
 	/**
 	 * Private dummy constructor
 	 */
-	private ActivityHelper() {
+	private ActivityUtils() {
 	
 	}
 	

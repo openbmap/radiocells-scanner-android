@@ -17,7 +17,6 @@ package org.openbmap.utils;
 
 import java.io.File;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.mapsforge.core.graphics.Bitmap;
 import org.mapsforge.core.graphics.Paint;
 import org.mapsforge.core.graphics.Style;
@@ -32,18 +31,19 @@ import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.layer.renderer.TileRendererLayer;
 import org.mapsforge.map.model.MapViewPosition;
 import org.mapsforge.map.rendertheme.InternalRenderTheme;
-import org.mapsforge.core.model.Point;
+import org.openbmap.Preferences;
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.view.View.MeasureSpec;
-import android.widget.Toast;
 
 /**
  * Utility functions that can be used across different mapsforge based activities
@@ -60,23 +60,6 @@ public final class MapUtils {
 		if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			// Show the Up button in the action bar.
 			a.getActionBar().setDisplayHomeAsUpEnabled(true);
-		}
-	}
-
-	/**
-	 * Compatibility method
-	 * 
-	 * @param view
-	 *            the view to set the background on
-	 * @param background
-	 *            the background
-	 */
-	@SuppressLint("NewApi")
-	public static void setBackground(View view, Drawable background) {
-		if (android.os.Build.VERSION.SDK_INT >= 16) {
-			view.setBackground(background);
-		} else {
-			view.setBackgroundDrawable(background);
 		}
 	}
 
@@ -127,7 +110,7 @@ public final class MapUtils {
 	public static Layer createTileRendererLayer(TileCache tileCache, MapViewPosition mapViewPosition, File mapFile) {
 		//TileRendererLayer tileRendererLayer = new TileRendererLayer(tileCache, mapViewPosition, AndroidGraphicFactory.INSTANCE);
 		TileRendererLayer tileRendererLayer = new TileRendererLayer (tileCache,
-                mapViewPosition, false, AndroidGraphicFactory.INSTANCE);
+                mapViewPosition, false, true, AndroidGraphicFactory.INSTANCE);
 
 		tileRendererLayer.setMapFile(mapFile);
 		
@@ -147,6 +130,26 @@ public final class MapUtils {
 		return AndroidGraphicFactory.convertToBitmap(drawable);
 	}
 
+	/**
+	 * Checks whether a valid map file has been selected
+	 * @param context
+	 * @return true, if map file is not none
+	 */
+	public static Boolean isMapSelected(Context context) {
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+		return (!prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE).equals(Preferences.VAL_MAP_NONE));
+	}
+	
+	public static File getMapFile(final Context context) {
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+		final File mapFile = new File(
+				Environment.getExternalStorageDirectory().getPath()
+				+ prefs.getString(Preferences.KEY_MAP_FOLDER, Preferences.VAL_MAP_FOLDER), 
+				prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE));
+
+		return mapFile;
+	}
+	
 	private MapUtils() {
 		throw new IllegalStateException();
 	}

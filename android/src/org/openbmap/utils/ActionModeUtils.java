@@ -24,7 +24,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 
-public class ActionModeHelper implements ActionMode.Callback, AdapterView.OnItemLongClickListener {
+public class ActionModeUtils implements ActionMode.Callback, AdapterView.OnItemLongClickListener {
 	
 	public interface LongClickCallback {
 		 boolean onItemLongClick(int item, int position, int id);
@@ -36,7 +36,7 @@ public class ActionModeHelper implements ActionMode.Callback, AdapterView.OnItem
 	private LongClickCallback handler;
 	private int menuId;
 
-	public ActionModeHelper(final SherlockFragmentActivity fragmentActivity, final int menuId, final LongClickCallback handler, final ListView modeView) {
+	public ActionModeUtils(final SherlockFragmentActivity fragmentActivity, final int menuId, final LongClickCallback handler, final ListView modeView) {
 		this.host = fragmentActivity;
 		this.handler = handler;
 		this.modeView = modeView;

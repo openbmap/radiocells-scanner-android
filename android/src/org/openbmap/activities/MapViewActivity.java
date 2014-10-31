@@ -45,9 +45,9 @@ import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.Schema;
 import org.openbmap.db.models.WifiRecord;
+import org.openbmap.utils.GeometryUtils;
 import org.openbmap.utils.GpxMapObjectsLoader;
 import org.openbmap.utils.GpxMapObjectsLoader.OnGpxLoadedListener;
-import org.openbmap.utils.LatLongHelper;
 import org.openbmap.utils.MapUtils;
 import org.openbmap.utils.SessionLatLong;
 import org.openbmap.utils.SessionMapObjectsLoader;
@@ -71,6 +71,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragment;
@@ -281,12 +282,13 @@ ActionBar.OnNavigationListener {
 				}
 
 				// update layers
-				if (LatLongHelper.isValidLocation(location)) {
+				if (GeometryUtils.isValidLocation(location)) {
 					/*
 					 * Update layers if necessary, but only if
 					 * 1.) current zoom level >= 12 (otherwise single points not visible, huge performance impact)
 					 * 2.) layer items haven't been refreshed for a while AND user has moved a bit
 					 */
+				
 					if ((mapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && (sessionLayerOutdated(location))) { 
 						refreshSessionLayer(location);
 					}
@@ -398,7 +400,7 @@ ActionBar.OnNavigationListener {
 		this.mapView.setClickable(true);
 		this.mapView.getMapScaleBar().setVisible(true);
 		this.tileCache = createTileCache();
-
+		
 		// on first start zoom is set to very low value, so users won't see anything
 		// zoom to moderate zoomlevel..
 		if (this.mapView.getModel().mapViewPosition.getZoomLevel() < (byte) 10) {
@@ -407,15 +409,19 @@ ActionBar.OnNavigationListener {
 
 		LayerManager layerManager = this.mapView.getLayerManager();
 		Layers layers = layerManager.getLayers();
-
-		// remove all layers including base layer
-		layers.clear();
-
-		layers.add(MapUtils.createTileRendererLayer(
+		
+		if (MapUtils.isMapSelected(this.getActivity())) {
+			// remove all layers including base layer
+			layers.clear();
+			layers.add(MapUtils.createTileRendererLayer(
 				this.tileCache,
 				this.mapView.getModel().mapViewPosition,
 				getMapFile()));
-
+		} else {
+			this.mapView.getModel().displayModel.setBackgroundColor(0xffffffff);
+			Toast.makeText(this.getSherlockActivity(), R.string.no_map_file_selected, Toast.LENGTH_LONG).show();
+		}
+		
 		this.mapObserver = new Observer() {
 			@Override
 			public void onChange() {
@@ -859,7 +865,7 @@ ActionBar.OnNavigationListener {
 			}
 		}
 
-		gpxObjects = new Polyline(MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(Color.BLACK), STROKE_GPX_WIDTH,
+		gpxObjects = new Polyline(MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(Color.GREEN), STROKE_GPX_WIDTH,
 				Style.STROKE), AndroidGraphicFactory.INSTANCE);
 
 		for (LatLong point : points) {
@@ -948,19 +954,12 @@ ActionBar.OnNavigationListener {
 		return true; //(getSherlockActivity().getSupportActionBar().getSelectedNavigationIndex() == LayersDisplayed.ALL.ordinal());
 	}
 
-
-
 	/**
 	 * Opens selected map file
 	 * @return a map file
 	 */
 	protected final File getMapFile() {
-		File mapFile = new File(
-				Environment.getExternalStorageDirectory().getPath()
-				+ prefs.getString(Preferences.KEY_MAP_FOLDER, Preferences.VAL_MAP_FOLDER),
-				prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE));
-
-		return mapFile;
+		return MapUtils.getMapFile(getActivity());
 	}
 
 	protected final void addLayers(final LayerManager layerManager, final TileCache tileCache, final MapViewPosition mapViewPosition) {
@@ -987,8 +986,11 @@ ActionBar.OnNavigationListener {
 	 */
 	private void releaseMap() {
 		Log.i(TAG, "Releasing map components");
-
-
+		
+		if (this.tileCache != null) {
+			this.tileCache.destroy();
+		}
+		
 		// release zoom / move observer for gc
 		this.mapObserver = null;
 
@@ -998,15 +1000,6 @@ ActionBar.OnNavigationListener {
 			this.preferencesFacade.save();
 			this.mapView.destroy();
 		}
-	}
-
-	static Paint createPaint(final int color, final int strokeWidth, final Style style) {
-		Paint paint = AndroidGraphicFactory.INSTANCE.createPaint();
-		paint.setColor(color);
-		paint.setStrokeWidth(strokeWidth);
-		paint.setStyle(style);
-
-		return paint;
 	}
 
 	/* (non-Javadoc)

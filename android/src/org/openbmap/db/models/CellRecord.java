@@ -246,7 +246,10 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	}
 	
 	/**
-	 * For GSM networks equals cell id; for UMTS and other UTRAN networks this is the actual cell id (as opposed to lcid)
+	 * On GSM networks equals cell id;
+	 * On UMTS and other UTRAN networks this is the actual cell id (as opposed to lcid)
+	 * On LTE this is the physical cell id
+	 * 
 	 * @param actualCellId
 	 */
 	public final void setActualCid(final int actualCellId) {
@@ -270,7 +273,11 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 
 	/**
 	 * Sets location area code
-	 * @param lac gsm gsm location area code, -1 if unknown, 0xffff max legal value
+	 * @param lac 
+	 * 		On GSM networks this is set to location area code
+	 *		On LTE networks this is set to TAC (tracking area)
+	 *  	-1 if unknown,
+	 *		0xffff max legal value
 	 */
 	public final void setLac(final int lac) {
 		this.mLac = lac;

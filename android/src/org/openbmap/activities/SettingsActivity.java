@@ -31,7 +31,7 @@ import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.utils.CurrentLocationHelper;
 import org.openbmap.utils.CurrentLocationHelper.LocationResult;
-import org.openbmap.utils.FileHelper;
+import org.openbmap.utils.FileUtils;
 import org.openbmap.utils.LegacyDownloader;
 import org.openbmap.utils.LegacyDownloader.LegacyDownloadListener;
 import org.openbmap.utils.MediaScanner;
@@ -791,7 +791,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 		Log.i(TAG, file + " stored in temp folder. Moving to " + destination.getAbsolutePath());
 
 		try {
-			FileHelper.moveFile(source, destination);
+			FileUtils.moveFile(source, destination);
 		}
 		catch (IOException e) {
 			Log.e(TAG, "I/O error while moving file");

@@ -30,7 +30,7 @@ import org.openbmap.services.position.GpxLoggerService;
 import org.openbmap.services.position.PositioningService;
 import org.openbmap.services.position.PositioningService.State;
 import org.openbmap.services.wireless.WirelessLoggerService;
-import org.openbmap.utils.ActivityHelper;
+import org.openbmap.utils.ActivityUtils;
 
 import android.app.AlertDialog;
 import android.app.Notification;
@@ -83,26 +83,27 @@ public class HostActivity extends SherlockFragmentActivity {
 	 */
 	private CustomViewPager mPager;
 
-	private Tab tab;
+	private Tab mTab;
 
 	/**
 	 * Keeps the SharedPreferences.
 	 */
-	private SharedPreferences prefs = null;
+	private SharedPreferences mPrefs = null;
+	
 	/**
 	 * Background service collecting cell and wifi infos.
 	 */
-	private ServiceManager wirelessServiceManager;
+	private ServiceManager mWirelessServiceManager;
 
 	/**
 	 * Background gps location service.
 	 */
-	private ServiceManager positionServiceManager;
+	private ServiceManager mPositionServiceManager;
 
 	/**
 	 * Background gps logger server
 	 */
-	private ServiceManager gpxLoggerServiceManager;
+	private ServiceManager mGpxLoggerServiceManager;
 
 	/**
 	 * Database helper used for session handling here.
@@ -244,12 +245,12 @@ public class HostActivity extends SherlockFragmentActivity {
 		mDataHelper = new DataHelper(this);
 
 		// get shared preferences
-		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
 		// UI related stuff
 		setContentView(R.layout.host_activity);
-		boolean keepScreenOn = prefs.getBoolean(Preferences.KEY_KEEP_SCREEN_ON, false);
-		ActivityHelper.setKeepScreenOn(this, keepScreenOn);
+		boolean keepScreenOn = mPrefs.getBoolean(Preferences.KEY_KEEP_SCREEN_ON, false);
+		ActivityUtils.setKeepScreenOn(this, keepScreenOn);
 
 		initUi(savedInstanceState);
 
@@ -278,7 +279,7 @@ public class HostActivity extends SherlockFragmentActivity {
 
 		// setup GPS and wireless logger services
 		startServices();
-		
+
 		// explicitly request updates, automatic resume isn't working smoothly 
 		requestPositionUpdates(mSelectedProvider);
 		requestWirelessUpdates();
@@ -308,9 +309,9 @@ public class HostActivity extends SherlockFragmentActivity {
 		unregisterReceiver();
 
 		// change from unbind to unbindAndStop caused problems, when screen was locked
-		if (positionServiceManager != null) { positionServiceManager.unbind();};
-		if (wirelessServiceManager != null) { wirelessServiceManager.unbind();}
-		if (gpxLoggerServiceManager != null) { gpxLoggerServiceManager.unbind();};
+		if (mPositionServiceManager != null) { mPositionServiceManager.unbind();};
+		if (mWirelessServiceManager != null) { mWirelessServiceManager.unbind();}
+		if (mGpxLoggerServiceManager != null) { mGpxLoggerServiceManager.unbind();};
 
 		stopNotification();
 		super.onDestroy();
@@ -425,6 +426,7 @@ public class HostActivity extends SherlockFragmentActivity {
 		}
 	}
 
+	
 	/**
 	 * Starts broadcasting GPS position.
 	 * @param gps 
@@ -434,7 +436,7 @@ public class HostActivity extends SherlockFragmentActivity {
 		// TODO check whether services have already been connected (i.e. received MSG_SERVICE_READY signal)
 		Log.d(TAG, "Requesting position updates");
 		try {
-			if (positionServiceManager == null) {
+			if (mPositionServiceManager == null) {
 				Log.w(TAG, "gpsPositionServiceManager is null. No message will be sent");
 				return false;
 			}
@@ -453,7 +455,7 @@ public class HostActivity extends SherlockFragmentActivity {
 			msgGpsUp.what = RadioBeacon.MSG_START_TRACKING;
 			msgGpsUp.setData(aProviderBundle);
 
-			positionServiceManager.sendAsync(msgGpsUp);
+			mPositionServiceManager.sendAsync(msgGpsUp);
 
 			// update recording indicator
 			//((StatusBar) findViewById(R.id.gpsStatus)).manageRecordingIndicator(true);
@@ -474,6 +476,7 @@ public class HostActivity extends SherlockFragmentActivity {
 		}
 	}
 
+
 	/**
 	 * Starts wireless tracking.
 	 * @return false on error, otherwise true
@@ -482,7 +485,7 @@ public class HostActivity extends SherlockFragmentActivity {
 		// TODO check whether services have already been connected (i.e. received MSG_SERVICE_READY signal)
 		Log.d(TAG, "Requesting wireless updates");
 		try {
-			if (wirelessServiceManager == null) {
+			if (mWirelessServiceManager == null) {
 				Log.w(TAG, "wirelessServiceManager is null. No message will be sent");
 				return false;
 			}
@@ -501,7 +504,7 @@ public class HostActivity extends SherlockFragmentActivity {
 			msgWirelessUp.what = RadioBeacon.MSG_START_TRACKING;
 			msgWirelessUp.setData(aSessionIdBundle);
 
-			wirelessServiceManager.sendAsync(msgWirelessUp);
+			mWirelessServiceManager.sendAsync(msgWirelessUp);
 
 			updateUI();			
 			return true;
@@ -526,7 +529,7 @@ public class HostActivity extends SherlockFragmentActivity {
 		// TODO check whether services have already been connected (i.e. received MSG_SERVICE_READY signal)
 		Log.d(TAG, "Requesting gpx tracking");
 		try {
-			if (positionServiceManager == null) {
+			if (mPositionServiceManager == null) {
 				Log.w(TAG, "gpsPositionServiceManager is null. No message will be sent");
 				return false;
 			}
@@ -547,7 +550,7 @@ public class HostActivity extends SherlockFragmentActivity {
 			msgGpsUp.what = RadioBeacon.MSG_START_TRACKING;
 			msgGpsUp.setData(aSessionIdBundle);
 
-			positionServiceManager.sendAsync(msgGpsUp);
+			mPositionServiceManager.sendAsync(msgGpsUp);
 
 			return true;
 		} catch (RemoteException e) {
@@ -563,6 +566,7 @@ public class HostActivity extends SherlockFragmentActivity {
 		}
 	}
 
+	
 	/**
 	 * Setups receiver for STOP_TRACKING and ACTION_BATTERY_LOW messages
 	 */
@@ -675,24 +679,24 @@ public class HostActivity extends SherlockFragmentActivity {
 	 */
 	private void startServices() {
 		stopServices();
-		
-		Log.d(TAG, "Starting Services");
-		if (positionServiceManager == null) {
-			positionServiceManager = new ServiceManager(this, PositioningService.class, new GpsLocationHandler(this));
-		}
-		positionServiceManager.bindAndStart();
 
-		if (wirelessServiceManager == null) {
-			wirelessServiceManager = new ServiceManager(this, WirelessLoggerService.class, new WirelessHandler(this));
+		Log.d(TAG, "Starting Services");
+		if (mPositionServiceManager == null) {
+			mPositionServiceManager = new ServiceManager(this, PositioningService.class, new GpsLocationHandler(this));
 		}
-		wirelessServiceManager.bindAndStart();
+		mPositionServiceManager.bindAndStart();
+
+		if (mWirelessServiceManager == null) {
+			mWirelessServiceManager = new ServiceManager(this, WirelessLoggerService.class, new WirelessHandler(this));
+		}
+		mWirelessServiceManager.bindAndStart();
 
 		// Gpx logger service is optional, it's only started when activated in settings
-		if (prefs.getBoolean(Preferences.KEY_GPS_SAVE_COMPLETE_TRACK, Preferences.VAL_GPS_SAVE_COMPLETE_TRACK)) {
-			if (gpxLoggerServiceManager == null) {
-				gpxLoggerServiceManager = new ServiceManager(this, GpxLoggerService.class, new GpxLoggerHandler(this));
+		if (mPrefs.getBoolean(Preferences.KEY_GPS_SAVE_COMPLETE_TRACK, Preferences.VAL_GPS_SAVE_COMPLETE_TRACK)) {
+			if (mGpxLoggerServiceManager == null) {
+				mGpxLoggerServiceManager = new ServiceManager(this, GpxLoggerService.class, new GpxLoggerHandler(this));
 			}
-			gpxLoggerServiceManager.bindAndStart();
+			mGpxLoggerServiceManager.bindAndStart();
 		} else {
 			Log.i(TAG, "gpxLoggerServiceManager has not been started. GPX logging is disabled in settings!");
 		}
@@ -706,7 +710,7 @@ public class HostActivity extends SherlockFragmentActivity {
 		// Brute force: specific ServiceManager can be null, if service hasn't been started
 		// Service status is ignored, stop message is send regardless of whether started or not
 		try {
-			positionServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
+			mPositionServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
 			// deactivated: let's call this from the service itself
 			// positionServiceManager.unbindAndStop();
 		} catch (Exception e) {
@@ -715,7 +719,7 @@ public class HostActivity extends SherlockFragmentActivity {
 		}
 
 		try {
-			wirelessServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
+			mWirelessServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
 			// deactivated: let's call this from the service itself
 			// wirelessServiceManager.unbindAndStop();
 		} catch (Exception e) {
@@ -724,7 +728,7 @@ public class HostActivity extends SherlockFragmentActivity {
 		}
 
 		try {
-			gpxLoggerServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
+			mGpxLoggerServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
 			// deactivated: let's call this from the service itself
 			// gpxLoggerServiceManager.unbindAndStop();
 		} catch (Exception e) {
@@ -796,11 +800,6 @@ public class HostActivity extends SherlockFragmentActivity {
 		mPager.setOnPageChangeListener(ViewPagerListener);
 
 		CustomViewPagerAdapter viewpageradapter = new CustomViewPagerAdapter(fm);
-		if (!prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE).equals(Preferences.VAL_MAP_NONE)) {
-			viewpageradapter.enableMaps();
-		} else {
-
-		}
 		mPager.setAdapter(viewpageradapter);
 
 		// Capture tab button clicks
@@ -823,23 +822,17 @@ public class HostActivity extends SherlockFragmentActivity {
 		};
 
 		// Create tabs
-		tab = mActionBar.newTab().setText(R.string.overview).setTabListener(tabListener);
-		getSupportActionBar().addTab(tab);
+		mTab = mActionBar.newTab().setText(R.string.overview).setTabListener(tabListener);
+		getSupportActionBar().addTab(mTab);
 
-		tab = mActionBar.newTab().setText(R.string.wifis).setTabListener(tabListener);
-		getSupportActionBar().addTab(tab);
+		mTab = mActionBar.newTab().setText(R.string.wifis).setTabListener(tabListener);
+		getSupportActionBar().addTab(mTab);
 
-		tab = mActionBar.newTab().setText(R.string.cells).setTabListener(tabListener);
-		getSupportActionBar().addTab(tab);
+		mTab = mActionBar.newTab().setText(R.string.cells).setTabListener(tabListener);
+		getSupportActionBar().addTab(mTab);
 
-		if (!prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE).equals(Preferences.VAL_MAP_NONE)) {
-			// add map tab only if map has been selected
-			tab = mActionBar.newTab().setText(R.string.map).setTabListener(tabListener);
-			getSupportActionBar().addTab(tab);
-
-		} else {
-			Log.i(TAG, "Won't create map tab: no map selected!");
-		}
+		mTab = mActionBar.newTab().setText(R.string.map).setTabListener(tabListener);
+		getSupportActionBar().addTab(mTab);
 	}
 
 	/**

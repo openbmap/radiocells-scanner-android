@@ -29,10 +29,10 @@ import android.os.Environment;
 /**
  * File helper methods
  */
-public final class FileHelper {
+public final class FileUtils {
 
 	@SuppressWarnings("unused")
-	private static final String TAG = FileHelper.class.getSimpleName();
+	private static final String TAG = FileUtils.class.getSimpleName();
 
 	/**
 	 * Checks whether SD card is currently
@@ -99,7 +99,7 @@ public final class FileHelper {
 	/**
 	 * Private dummy constructor
 	 */
-	private FileHelper() {
+	private FileUtils() {
 
 	}
 

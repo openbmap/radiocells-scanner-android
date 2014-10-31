@@ -48,13 +48,12 @@ public final class RadioBeacon {
 	public static final String INTENT_POSITION_UPDATE = RadioBeacon.PACKAGE_NAME + ".intent.POSITION_UPDATE";
 	
 	/**
-	 * Intent to broadcast new GPS position
+	 * Intent to update GPS status
 	 */
 	public static final String INTENT_POSITION_SAT_INFO = RadioBeacon.PACKAGE_NAME + ".intent.POSITION_SAT_INFO";
-		
 	
 	/**
-	 * Intent signalling new session has been saved
+	 * Intent signaling new session has been saved
 	 */
 	public static final String INTENT_NEW_SESSION = RadioBeacon.PACKAGE_NAME + ".intent.SESSION_SAVED";
 	
@@ -217,7 +216,7 @@ public final class RadioBeacon {
 	 * 
 	
 	 */
-	public static final String VERSION_COMPATIBILITY = "00.7.00";
+	public static final String VERSION_COMPATIBILITY = "00.8.00";
 
 	/**
 	 * Database scheme version

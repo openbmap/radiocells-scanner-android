@@ -30,7 +30,7 @@ import org.openbmap.soapclient.ExportSessionTask;
 import org.openbmap.soapclient.ExportSessionTask.ExportTaskListener;
 import org.openbmap.soapclient.ServerValidation;
 import org.openbmap.soapclient.ServerValidation.ServerReply;
-import org.openbmap.utils.FileHelper;
+import org.openbmap.utils.FileUtils;
 
 import org.openbmap.R;
 import android.app.ProgressDialog;
@@ -151,7 +151,7 @@ public class ExportTaskFragment extends SherlockFragment implements ExportTaskLi
 	 */
 	private boolean isSdCardWritable() {
 		// Is SD card writeable?
-		if (!FileHelper.isSdCardMountedWritable()) {
+		if (!FileUtils.isSdCardMountedWritable()) {
 			Log.e(TAG, "SD card not writable");
 			return false;
 		} else {

@@ -38,7 +38,7 @@ import org.openbmap.services.wireless.blacklists.BssidBlackList;
 import org.openbmap.services.wireless.blacklists.BlacklistReasonType;
 import org.openbmap.services.wireless.blacklists.LocationBlackList;
 import org.openbmap.services.wireless.blacklists.SsidBlackList;
-import org.openbmap.utils.LatLongHelper;
+import org.openbmap.utils.GeometryUtils;
 
 import android.R.bool;
 import android.annotation.SuppressLint;
@@ -574,7 +574,7 @@ public class WirelessLoggerService extends AbstractService {
 							if (scanlist != null) {
 
 								// Common position for all scan result wifis
-								if (!LatLongHelper.isValidLocation(mBeginLocation) || !LatLongHelper.isValidLocation(mMostCurrentLocation)) {
+								if (!GeometryUtils.isValidLocation(mBeginLocation) || !GeometryUtils.isValidLocation(mMostCurrentLocation)) {
 									Log.e(TAG, "Couldn't save wifi result: invalid location");
 									return;
 								}
@@ -741,7 +741,7 @@ public class WirelessLoggerService extends AbstractService {
 		}
 
 		// Do we have gps?
-		if 	(!LatLongHelper.isValidLocation(location)) {
+		if 	(!GeometryUtils.isValidLocation(location)) {
 			Log.e(TAG, "GPS location invalid (null or default value)");
 			return false;
 		}
@@ -998,17 +998,24 @@ public class WirelessLoggerService extends AbstractService {
 				}
 
 				String operator = mTelephonyManager.getNetworkOperator();
-				result.setOperator(operator);
 				// getNetworkOperator() may return empty string, probably due to dropped connection
 				if (operator.length() > 3) {
+					result.setOperator(operator);
 					result.setMcc(operator.substring(0, 3));
 					result.setMnc(operator.substring(3));
 				} else {
 					Log.e(TAG, "Couldn't determine network operator, skipping cell");
 					return null;
 				}
-				result.setOperatorName(mTelephonyManager.getNetworkOperatorName());
-
+		
+				String networkOperatorName = mTelephonyManager.getNetworkOperatorName();
+				if (networkOperatorName != null) {
+					result.setOperatorName(mTelephonyManager.getNetworkOperatorName());
+				} else {
+					Log.e(TAG, "Error retrieving network operator's name, skipping cell");
+					return null;
+				}
+				
 				result.setLac(gsmIdentity.getLac());
 				result.setStrengthdBm(((CellInfoGsm) cell).getCellSignalStrength().getDbm());
 				result.setStrengthAsu(((CellInfoGsm) cell).getCellSignalStrength().getAsuLevel());
@@ -1049,16 +1056,23 @@ public class WirelessLoggerService extends AbstractService {
 				}
 
 				String operator = mTelephonyManager.getNetworkOperator();
-				result.setOperator(operator);
 				// getNetworkOperator() may return empty string, probably due to dropped connection
 				if (operator.length() > 3) {
+					result.setOperator(operator);
 					result.setMcc(operator.substring(0, 3));
 					result.setMnc(operator.substring(3));
 				} else {
 					Log.e(TAG, "Couldn't determine network operator, skipping cell");
 					return null;
 				}
-				result.setOperatorName(mTelephonyManager.getNetworkOperatorName());
+				
+				String networkOperatorName = mTelephonyManager.getNetworkOperatorName();
+				if (networkOperatorName != null) {
+					result.setOperatorName(mTelephonyManager.getNetworkOperatorName());
+				} else {
+					Log.e(TAG, "Error retrieving network operator's name, skipping cell");
+					return null;
+				}
 
 				result.setLac(wcdmaIdentity.getLac());
 				result.setStrengthdBm(((CellInfoWcdma) cell).getCellSignalStrength().getDbm());
@@ -1090,8 +1104,8 @@ public class WirelessLoggerService extends AbstractService {
 				// getNetworkOperator can be unreliable in CDMA networks, thus be careful
 				// {@link http://developer.android.com/reference/android/telephony/TelephonyManager.html#getNetworkOperator()}
 				String operator = mTelephonyManager.getNetworkOperator();
-				result.setOperator(operator);
 				if (operator.length() > 3) {
+					result.setOperator(operator);
 					result.setMcc(operator.substring(0, 3));
 					result.setMnc(operator.substring(3));
 				} else {
@@ -1099,8 +1113,15 @@ public class WirelessLoggerService extends AbstractService {
 					result.setMcc("");
 					result.setMnc("");
 				}	
-				result.setOperatorName(mTelephonyManager.getNetworkOperatorName());
 
+				String networkOperatorName = mTelephonyManager.getNetworkOperatorName();
+				if (networkOperatorName != null) {
+					result.setOperatorName(mTelephonyManager.getNetworkOperatorName());
+				} else {
+					Log.i(TAG, "Error retrieving network operator's name, this might happen in CDMA network");
+					result.setOperatorName("");
+				}
+				
 				// CDMA specific
 				result.setBaseId(String.valueOf(cdmaIdentity.getBasestationId()));
 				result.setNetworkId(String.valueOf(cdmaIdentity.getNetworkId()));
@@ -1128,24 +1149,32 @@ public class WirelessLoggerService extends AbstractService {
 					result.setIsNeighbor(!cell.isRegistered());
 					result.setLogicalCellId(lteIdentity.getCi());
 					
-					// add physical id
-					result.setActualCid(lteIdentity.getPci());
-					
-					result.setLac(lteIdentity.getTac());
+					// set Actual Cid = Logical Cid (as we don't know better at the moment)
+					result.setActualCid(result.getLogicalCellId());
 					
 					String operator = mTelephonyManager.getNetworkOperator();
-					result.setOperator(operator);
 					// getNetworkOperator() may return empty string, probably due to dropped connection
 					if (operator.length() > 3) {
+						result.setOperator(operator);
 						result.setMcc(operator.substring(0, 3));
 						result.setMnc(operator.substring(3));
 					} else {
 						Log.e(TAG, "Couldn't determine network operator, skipping cell");
 						return null;
 					}
-					result.setOperatorName(mTelephonyManager.getNetworkOperatorName());
+					
+					String networkOperatorName = mTelephonyManager.getNetworkOperatorName();
+					if (networkOperatorName != null) {
+						result.setOperatorName(mTelephonyManager.getNetworkOperatorName());
+					} else {
+						Log.e(TAG, "Error retrieving network operator's name, skipping cell");
+						return null;
+					}
 
-					//result.setLac(wcdmaIdentity.getLac());
+					// LTE specific
+					result.setLac(lteIdentity.getTac());
+					result.setPsc(lteIdentity.getPci());
+					
 					result.setStrengthdBm(((CellInfoLte) cell).getCellSignalStrength().getDbm());
 					result.setStrengthAsu(((CellInfoLte) cell).getCellSignalStrength().getAsuLevel());
 					return result;

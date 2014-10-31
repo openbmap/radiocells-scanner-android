@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-import org.openbmap.utils.LatLongHelper;
+import org.openbmap.utils.GeometryUtils;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -167,7 +167,7 @@ public class LocationBlackList {
 						}
 					} else if (eventType == XmlPullParser.END_TAG) {
 						if (LOCATION_TAG.equals(xpp.getName())) {
-							if (LatLongHelper.isValidLocation(loc, false)) {
+							if (GeometryUtils.isValidLocation(loc, false)) {
 								mLocations.add(new DeadArea(loc, radius));
 							} else {
 								Log.e(TAG, "Invalid location");

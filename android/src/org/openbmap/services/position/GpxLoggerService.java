@@ -210,7 +210,7 @@ public class GpxLoggerService extends AbstractService {
 	}
 
 	/**
-	 * Stops wireless Logging
+	 * Stops gpx Logging
 	 */
 	private void stopTracking() {
 		Log.d(TAG, "Stop tracking on session " + mSessionId);
@@ -233,7 +233,7 @@ public class GpxLoggerService extends AbstractService {
 	public final void onReceiveMessage(final Message msg) {
 		switch(msg.what) {
 			case RadioBeacon.MSG_START_TRACKING: 
-				Log.d(TAG, "Wireless logger received MSG_START_TRACKING signal");
+				Log.d(TAG, "GPX logger received MSG_START_TRACKING signal");
 
 				Bundle aBundle = msg.getData();
 				int sessionId = aBundle.getInt(RadioBeacon.MSG_KEY, RadioBeacon.SESSION_NOT_TRACKING); 
@@ -241,7 +241,7 @@ public class GpxLoggerService extends AbstractService {
 				startTracking(sessionId);
 				break;
 			case RadioBeacon.MSG_STOP_TRACKING:
-				Log.d(TAG, "Wireless logger received MSG_STOP_TRACKING signal");
+				Log.d(TAG, "GPX logger received MSG_STOP_TRACKING signal");
 				stopTracking();
 				
 				// before manager stopped the service

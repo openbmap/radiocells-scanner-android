@@ -28,8 +28,8 @@ import org.openbmap.db.DataHelper;
 import org.openbmap.db.RadioBeaconContentProvider;
 import org.openbmap.db.Schema;
 import org.openbmap.db.models.Session;
-import org.openbmap.utils.ActionModeHelper;
-import org.openbmap.utils.ActionModeHelper.LongClickCallback;
+import org.openbmap.utils.ActionModeUtils;
+import org.openbmap.utils.ActionModeUtils.LongClickCallback;
 import org.openbmap.utils.OnAlertClickInterface;
 
 import android.app.AlertDialog;
@@ -69,9 +69,9 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	/**
 	 * Dialog id
 	 */
-	private static final int	ID_MULTIPLE_UPLOADS	= 1;
+	private static final int ID_MULTIPLE_UPLOADS	= 1;
 
-	private SimpleCursorAdapter	adapter;
+	private SimpleCursorAdapter	mAdapter;
 
 	private boolean mAdapterUpdatePending = true;
 
@@ -148,9 +148,9 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 				R.id.sessionlistfragment_no_cells,
 				R.id.sessionlistfragment_no_wifis};
 
-		adapter = new SimpleCursorAdapter(getActivity().getBaseContext(),
+		mAdapter = new SimpleCursorAdapter(getActivity().getBaseContext(),
 				R.layout.sessionlistfragment, null, from, to, 0);
-		adapter.setViewBinder(new SessionViewBinder());
+		mAdapter.setViewBinder(new SessionViewBinder());
 
 		// Trying to add a Header View.
 		View header = (View) getLayoutInflater(savedInstanceState).inflate(
@@ -158,7 +158,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		this.getListView().addHeaderView(header);
 
 		// setup data adapters
-		setListAdapter(adapter);
+		setListAdapter(mAdapter);
 		getActivity().getSupportLoaderManager().initLoader(0, null, this);
 
 		// register for change notifications
@@ -171,7 +171,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 
 		getListView().setLongClickable(true);
 		getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-		getListView().setOnItemLongClickListener(new ActionModeHelper(
+		getListView().setOnItemLongClickListener(new ActionModeUtils(
 				(SherlockFragmentActivity) this.getSherlockActivity(), R.menu.session_context, this,
 				getListView()));
 	}
@@ -244,14 +244,14 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 
 	@Override
 	public final void onLoadFinished(final Loader<Cursor> arg0, final Cursor cursor) {
-		adapter.swapCursor(cursor);
+		mAdapter.swapCursor(cursor);
 		mAdapterUpdatePending = false;
 	}
 
 	@Override
 	public final void onLoaderReset(final Loader<Cursor> arg0) {
 		Log.d(TAG, "onLoadReset called");
-		adapter.swapCursor(null);
+		mAdapter.swapCursor(null);
 	}
 
 	/**

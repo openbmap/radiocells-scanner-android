@@ -174,7 +174,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 		// Select which data type to insert
 		switch (uriMatcher.match(uri)) {
 			case Schema.URI_CODE_CELLS:
-				return insertCell(uri, values);
+				return insertCellMeasurement(uri, values);
 			case Schema.URI_CODE_WIFIS:
 				return insertWifiMeasurement(uri, values);
 			case Schema.URI_CODE_POSITIONS:
@@ -189,10 +189,11 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	}
 
 	/**
+	 * Inserts a cell measurement
 	 * @param baseUri
 	 * @param values
 	 */
-	private Uri insertCell(final Uri baseUri, final ContentValues values) {
+	private Uri insertCellMeasurement(final Uri baseUri, final ContentValues values) {
 		if (values.containsKey(Schema.COL_BEGIN_POSITION_ID)
 				&& values.containsKey(Schema.COL_TIMESTAMP)) {
 			long rowId = mDbHelper.getWritableDatabase().insert(Schema.TBL_CELLS, null, values);
@@ -208,6 +209,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	}
 
 	/**
+	 * Inserts a wifi measurement
 	 * @param baseUri
 	 * @param values
 	 * @return 
@@ -227,6 +229,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	}
 
 	/**
+	 * Inserts a position
 	 * @param baseUri
 	 * @param values
 	 * @return 
@@ -249,6 +252,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	}
 
 	/**
+	 * Inserts a log record
 	 * @param baseUri
 	 * @param values
 	 * @return 
@@ -268,6 +272,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	}
 
 	/**
+	 * Inserts a session record
 	 * @param baseUri
 	 * @param values
 	 * @return 
@@ -431,6 +436,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	}
 
 	/**
+	 * Performs a raw SQL query
 	 * @param rawQuery
 	 *   SQL statement
 	 * @param notifyUri

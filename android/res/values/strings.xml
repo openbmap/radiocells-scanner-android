@@ -289,4 +289,5 @@
 	<string name="dialog_delete_all_sessions_message">Do you really want to delete all sessions?</string>
 	<string name="chart_library">Chart library: GraphView</string>
 	<string name="chart_library_license">GNU Lesser General Public License (LGPL)</string>
+	<string name="no_map_file_selected">No map file selected!</string>
 </resources>

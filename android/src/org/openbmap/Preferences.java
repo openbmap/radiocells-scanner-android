@@ -206,7 +206,7 @@ public final class Preferences {
 	public static final boolean VAL_GPS_CHECKSTARTUP = true;
 	
 	/**
-	 * Get GPS position as often as possible by default
+	 * GPS update frequence in seconds, 0 = update position as often as possible by default
 	 */
 	public static final String VAL_GPS_LOGGING_INTERVAL = "0";
 	

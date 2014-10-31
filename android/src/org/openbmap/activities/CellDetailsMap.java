@@ -60,6 +60,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+import android.widget.Toast;
 
 /**
  * Fragment for displaying cell detail information
@@ -71,7 +72,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	/**
 	 * Radius heat-map circles
 	 */
-	private static final float RADIUS	= 50f;
+	private static final float RADIUS = 50f;
 
 	private CellRecord mCell;
 
@@ -79,7 +80,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	/**
 	 * MapView
 	 */
-	private MapView mapView;
+	private MapView mMapView;
 
 	//[end]
 
@@ -87,7 +88,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	/**
 	 * Baselayer cache
 	 */
-	private TileCache tileCache;
+	private TileCache mTileCache;
 
 	//[end]
 
@@ -95,24 +96,24 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 	private ArrayList<HeatLatLong> points = new ArrayList<HeatLatLong>();
 
-	private boolean	pointsLoaded  = false;
+	private boolean	mPointsLoaded  = false;
 
-	private boolean	layoutInflated = false;
+	private boolean	mLayoutInflated = false;
 
-	private Observer mapObserver;
+	private Observer mMapObserver;
 
 	/**
 	 * Current zoom level
 	 */
-	private byte currentZoom;
+	private byte mCurrentZoom;
 
-	private LatLong	target;
+	private LatLong	mTarget;
 
-	private boolean	updatePending;
+	private boolean	mUpdatePending;
 
-	private Marker heatmapLayer;
+	private Marker mHeatmapLayer;
 
-	private byte initialZoom;
+	private byte mZoomAtTrigger;
 
 	private AsyncTask<Object, Integer, Boolean>	builder;
 
@@ -120,14 +121,9 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 
 	@Override
-	public final void onCreate(final Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-	}
-	
-	@Override
 	public final View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.celldetailsmap, container, false);	
-		this.mapView = (MapView) view.findViewById(R.id.map);
+		this.mMapView = (MapView) view.findViewById(R.id.map);
 
 		return view;
 	}
@@ -147,38 +143,6 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 		} else {
 			getActivity().getSupportLoaderManager().initLoader(0, null, this);
 		}
-	}
-	
-	@Override
-	public void onResume() {
-		super.onResume();
-		// register for zoom changes
-		this.mapObserver = new Observer() {
-			@Override
-			public void onChange() {
-
-				byte zoom = mapView.getModel().mapViewPosition.getZoomLevel();
-				if (zoom != currentZoom) {
-					// update overlays on zoom level changed
-					Log.i(TAG, "New zoom level " + zoom + ", reloading map objects");
-					// cancel pending heat-maps
-					if (builder != null) {
-						builder.cancel(true);
-					}
-
-					clearLayer();
-					proceedAfterHeatmapCompleted();
-					currentZoom = zoom;
-				}
-			}
-		};
-		this.mapView.getModel().mapViewPosition.addObserver(mapObserver);
-	}
-
-	@Override
-	public void onPause(){
-		mapView.getModel().mapViewPosition.removeObserver(mapObserver);
-		super.onPause();
 	}
 
 	@Override
@@ -237,9 +201,9 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 			}
 
 			if (points.size() > 0) {
-				mapView.getModel().mapViewPosition.setCenter(points.get(points.size()-1));
+				mMapView.getModel().mapViewPosition.setCenter(points.get(points.size()-1));
 			}
-			pointsLoaded  = true;
+			mPointsLoaded  = true;
 			proceedAfterHeatmapCompleted();
 
 			// update host activity
@@ -251,24 +215,25 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	 * 
 	 */
 	private void proceedAfterHeatmapCompleted() {
-		if (pointsLoaded  && layoutInflated && !updatePending) {
-			updatePending = true;
+		if (mPointsLoaded  && mLayoutInflated && !mUpdatePending) {
+			mUpdatePending = true;
 
 			clearLayer();
 
 			BoundingBox bbox = MapPositionUtil.getBoundingBox(
-					mapView.getModel().mapViewPosition.getMapPosition(),
-					mapView.getDimension(), mapView.getModel().displayModel.getTileSize());
+					mMapView.getModel().mapViewPosition.getMapPosition(),
+					mMapView.getDimension(), mMapView.getModel().displayModel.getTileSize());
 
-			target = mapView.getModel().mapViewPosition.getCenter();
-			initialZoom = mapView.getModel().mapViewPosition.getZoomLevel();
+			mTarget = mMapView.getModel().mapViewPosition.getCenter();
+			mZoomAtTrigger = mMapView.getModel().mapViewPosition.getZoomLevel();
 
-			heatmapLayer = new Marker(target, null, 0, 0);
-			mapView.getLayerManager().getLayers().add(heatmapLayer);
+			mHeatmapLayer = new Marker(mTarget, null, 0, 0);
+			mMapView.getLayerManager().getLayers().add(mHeatmapLayer);
 
 			builder = new HeatmapBuilder(
-					CellDetailsMap.this, mapView.getWidth(), mapView.getHeight(), bbox,
-					mapView.getModel().mapViewPosition.getZoomLevel(), mapView.getModel().displayModel.getTileSize(), RADIUS).execute(points);
+					CellDetailsMap.this, mMapView.getWidth(), mMapView.getHeight(), bbox,
+					mMapView.getModel().mapViewPosition.getZoomLevel(), mMapView.getModel().displayModel.getScaleFactor(),
+					mMapView.getModel().displayModel.getTileSize(), RADIUS).execute(points);
 		} else {
 			Log.i(TAG, "Another heat-map is currently generated. Skipped");
 		}
@@ -279,10 +244,9 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	 */
 	@Override
 	public final void onHeatmapCompleted(final Bitmap backbuffer) {
-		updatePending = false;
-
 		// zoom level has changed in the mean time - regenerate
-		if (mapView.getModel().mapViewPosition.getZoomLevel() != initialZoom) {
+		if (mMapView.getModel().mapViewPosition.getZoomLevel() != mZoomAtTrigger) {
+			mUpdatePending = false;
 			Log.i(TAG, "Zoom level has changed - have to re-generate heat-map");
 			clearLayer();
 			proceedAfterHeatmapCompleted();
@@ -291,16 +255,21 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 		BitmapDrawable drawable = new BitmapDrawable(backbuffer);
 		org.mapsforge.core.graphics.Bitmap mfBitmap = AndroidGraphicFactory.convertToBitmap(drawable);
-		heatmapLayer.setBitmap(mfBitmap);
-
+		if (mHeatmapLayer != null && mfBitmap != null) {
+			mHeatmapLayer.setBitmap(mfBitmap);
+		} else {
+			Log.w(TAG, "Skipped heatmap draw: either layer or bitmap is null");
+		}
+		mUpdatePending = false;
 		//saveHeatmapToFile(backbuffer);
+
 	}
 	/** 
 	 * Callback function when heatmap generation has failed
 	 */
 	@Override
 	public final void onHeatmapFailed() {
-		updatePending = false;
+		mUpdatePending = false;
 	}
 
 	/* (non-Javadoc)
@@ -311,18 +280,17 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 	}
 
-
 	/**
 	 * Removes heatmap layer (if any)
 	 */
 	private void clearLayer() {
-		if (heatmapLayer == null) {
+		if (mHeatmapLayer == null) {
 			return;
 		}
 
-		if (mapView.getLayerManager().getLayers().indexOf(heatmapLayer) != -1) {
-			mapView.getLayerManager().getLayers().remove(heatmapLayer);
-			heatmapLayer = null;
+		if (mMapView.getLayerManager().getLayers().indexOf(mHeatmapLayer) != -1) {
+			mMapView.getLayerManager().getLayers().remove(mHeatmapLayer);
+			mHeatmapLayer = null;
 		}
 	}
 
@@ -331,13 +299,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	 * @return a map file
 	 */
 	protected final File getMapFile() {
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-		File mapFile = new File(
-				Environment.getExternalStorageDirectory().getPath()
-				+ prefs.getString(Preferences.KEY_MAP_FOLDER, Preferences.VAL_MAP_FOLDER), 
-				prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE));
-
-		return mapFile;
+		return MapUtils.getMapFile(getActivity());
 	}
 
 	/**
@@ -345,25 +307,32 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	 */
 	@SuppressLint("NewApi")
 	private void initMap() {
-		this.tileCache = createTileCache();
+		this.mTileCache = createTileCache();
 
-		mapView.getLayerManager().getLayers().add(MapUtils.createTileRendererLayer(
-				this.tileCache,
-				this.mapView.getModel().mapViewPosition,
-				getMapFile()));
-		
+		if (MapUtils.isMapSelected(this.getActivity())) {
+			// remove all layers including base layer
+			mMapView.getLayerManager().getLayers().add(MapUtils.createTileRendererLayer(
+					this.mTileCache,
+					this.mMapView.getModel().mapViewPosition,
+					getMapFile()));
+		} else {
+			this.mMapView.getModel().displayModel.setBackgroundColor(0xffffffff);
+			Toast.makeText(this.getActivity(), R.string.no_map_file_selected, Toast.LENGTH_LONG).show();
+		}
+
+
 		// register for layout finalization - we need this to get width and height
-		ViewTreeObserver vto = mapView.getViewTreeObserver();
+		ViewTreeObserver vto = mMapView.getViewTreeObserver();
 		vto.addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
 
 			@SuppressLint("NewApi")
 			@Override
 			public void onGlobalLayout() {
 
-				layoutInflated = true;
+				mLayoutInflated = true;
 				proceedAfterHeatmapCompleted();
 
-				ViewTreeObserver obs = mapView.getViewTreeObserver();
+				ViewTreeObserver obs = mMapView.getViewTreeObserver();
 
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
 					obs.removeOnGlobalLayoutListener(this);
@@ -374,41 +343,45 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 		});
 
 		// Register for zoom changes
-		this.mapObserver = new Observer() {
+		this.mMapObserver = new Observer() {
 			@Override
 			public void onChange() {
 
-				byte newZoom = mapView.getModel().mapViewPosition.getZoomLevel();
-				if (newZoom != currentZoom) {
+				byte newZoom = mMapView.getModel().mapViewPosition.getZoomLevel();
+				if (newZoom != mCurrentZoom) {
 					// update overlays on zoom level changed
 					Log.i(TAG, "New zoom level " + newZoom + ", reloading map objects");
+					Log.i(TAG, "Update" + mUpdatePending);
 					// cancel pending heat-maps
-					if (builder != null) {
-						builder.cancel(true);
-					}
+					//if (builder != null) {
+					//	builder.cancel(true);
+					//}
 
-					clearLayer();
-					proceedAfterHeatmapCompleted();
-					currentZoom = newZoom;
+					// if another update is pending, wait for complete
+					if (!mUpdatePending) {
+						clearLayer();
+						proceedAfterHeatmapCompleted();
+					}
+					mCurrentZoom = newZoom;
 				}
 			}
 		};
-		this.mapView.getModel().mapViewPosition.addObserver(mapObserver);
+		this.mMapView.getModel().mapViewPosition.addObserver(mMapObserver);
 
-		this.mapView.setClickable(true);
-		this.mapView.getMapScaleBar().setVisible(true);
+		this.mMapView.setClickable(true);
+		this.mMapView.getMapScaleBar().setVisible(true);
 
 		/*
 			Layers layers = layerManager.getLayers();
 			// remove all layers including base layer
 			layers.clear();
 		 */
-		
-		this.mapView.getModel().mapViewPosition.setZoomLevel((byte) 16);
 
+		this.mMapView.getModel().mapViewPosition.setZoomLevel((byte) 16);
 	}
+
 	/** 
-	 * Creates a separate tile cache
+	 * Creates a separate map tile cache
 	 * @return
 	 */
 	protected final TileCache createTileCache() {
@@ -437,6 +410,6 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 			e.printStackTrace();
 		}
 	}
-	*/
-	
+	 */
+
 }

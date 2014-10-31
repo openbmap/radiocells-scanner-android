@@ -22,7 +22,6 @@ import org.openbmap.RadioBeacon;
 import org.openbmap.services.AbstractService;
 import org.openbmap.services.position.providers.GpsProvider;
 import org.openbmap.services.position.providers.LocationChangeListener;
-import org.openbmap.services.position.providers.LocationProvider;
 
 import android.content.Intent;
 import android.location.Location;
@@ -38,6 +37,7 @@ public class PositioningService extends AbstractService implements LocationChang
 	private static final String TAG = PositioningService.class.getSimpleName();
 
 	public enum State { OFF, GPS, INERTIAL };
+	
 	private State providerState;
 	/**
 	 * Are we currently tracking ?

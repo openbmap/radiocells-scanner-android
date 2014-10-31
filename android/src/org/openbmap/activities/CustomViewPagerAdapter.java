@@ -30,12 +30,7 @@ public class CustomViewPagerAdapter extends FragmentPagerAdapter {
 	/**
 	 * Number of ViewPager pages
 	 */
-	int pageCount = 3;
-	
-	/**
-	 * Are maps enabled?
-	 */
-	private boolean	mMapsEnabled = false;
+	int pageCount = 4;
 
 	public CustomViewPagerAdapter(FragmentManager fm) {
 		super(fm);
@@ -54,10 +49,8 @@ public class CustomViewPagerAdapter extends FragmentPagerAdapter {
 				CellsListContainer cells = new CellsListContainer();
 				return cells;
 			case 3:
-				if (mMapsEnabled) {
-					 MapViewActivity map = new MapViewActivity();
-                     return map;
-				}
+				MapViewActivity map = new MapViewActivity();
+				return map;
 		}
 		return null;
 	}
@@ -67,11 +60,4 @@ public class CustomViewPagerAdapter extends FragmentPagerAdapter {
 		return pageCount;
 	}
 
-	/**
-	 * 
-	 */
-	public void enableMaps() {
-		pageCount +=1;
-		mMapsEnabled = true;
-	}
 }

@@ -31,7 +31,7 @@ import com.actionbarsherlock.app.SherlockDialogFragment;
  * Helper class Alert Dialogs
  *
  */
-public class AlertDialogHelper extends SherlockDialogFragment{
+public class AlertDialogUtils extends SherlockDialogFragment{
 
 	/**
 	 * Creates a new alert dialog
@@ -42,8 +42,8 @@ public class AlertDialogHelper extends SherlockDialogFragment{
 	 * @param neutralOnly show only neutral button
 	 * @return
 	 */
-	public static AlertDialogHelper newInstance(int id, String title, String message, String args, boolean neutralOnly) {
-		AlertDialogHelper frag = new AlertDialogHelper();
+	public static AlertDialogUtils newInstance(int id, String title, String message, String args, boolean neutralOnly) {
+		AlertDialogUtils frag = new AlertDialogUtils();
 		// Caution: Don't set setRetainInstance(true) explicitly. This will cause the dialog to disappear
 		// see http://stackoverflow.com/questions/11307390/dialogfragment-disappears-on-rotation-despite-setretaininstancetrue
 		//frag.setRetainInstance(true);

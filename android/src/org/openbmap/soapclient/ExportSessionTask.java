@@ -56,9 +56,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	/**
 	 * OpenBmap cell upload address
 	 */
-	private static final String CELL_WEBSERVICE = "http://openBmap.org/upload/upl.php5";
-	// test upload server, not yet ready for prime time
-	//private static final String CELL_WEBSERVICE = "http://radiocells.org/uploads/cells";
+	private static final String CELL_WEBSERVICE = "http://radiocells.org/uploads/cells";
 	
 	/**
 	 * Cell target folder, always add trailing slash!
@@ -69,9 +67,8 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	/**
 	 * OpenBmap wifi upload address
 	 */
-	private static final String WIFI_WEBSERVICE = "http://www.openbmap.org/upload_wifi/upl.php5";
-	// test upload server, not yet ready for prime time
-	//private static final String WIFI_WEBSERVICE = "http://radiocells.org/uploads/wifis";
+	//private static final String WIFI_WEBSERVICE = "http://www.openbmap.org/upload_wifi/upl.php5";
+	private static final String WIFI_WEBSERVICE = "http://radiocells.org/uploads/wifis";
 	
 	/**
 	 * Wifi target folder, always add trailing slash!

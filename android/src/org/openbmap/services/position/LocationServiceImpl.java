@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.openbmap.services.position.providers.LocationProvider;
-import org.openbmap.utils.GeometryToolBox;
+import org.openbmap.utils.GeometryUtils;
 
 import android.location.Location;
 import android.util.Log;
@@ -124,7 +124,7 @@ public class LocationServiceImpl implements LocationService {
 	}
 
 	public final void setRelativeNorth(final float angle) {
-		this.angle = GeometryToolBox.normalizeAngle(angle);
+		this.angle = GeometryUtils.normalizeAngle(angle);
 	}
 
 	public final float getRelativeNorth() {

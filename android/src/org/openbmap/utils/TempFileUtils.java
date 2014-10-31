@@ -32,9 +32,9 @@ import android.util.Log;
 /**
  * Deletes all (temp) log files in data dir
  */
-public final class TempFileHelper {
+public final class TempFileUtils {
 	
-	private static final String TAG = TempFileHelper.class.getSimpleName();
+	private static final String TAG = TempFileUtils.class.getSimpleName();
 
 	/**
 	 * Deletes all temp files (i.e. xml files) in applications root dir.
@@ -69,7 +69,7 @@ public final class TempFileHelper {
 	/**
 	 * Private dummy constructor
 	 */
-	private TempFileHelper() {
+	private TempFileUtils() {
 
 	}
 

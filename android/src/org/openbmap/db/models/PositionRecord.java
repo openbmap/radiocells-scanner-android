@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import org.openbmap.RadioBeacon;
-import org.openbmap.utils.LatLongHelper;
+import org.openbmap.utils.GeometryUtils;
 
 import android.location.Location;
 
@@ -57,7 +57,7 @@ public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 	 * @param mLocation
 	 */
 	public PositionRecord(final Location loc, final int session, final String source) {
-		if (!LatLongHelper.isValidLocation(loc)) {
+		if (!GeometryUtils.isValidLocation(loc)) {
 			throw new IllegalArgumentException("Invalid location " + loc.toString());
 		}
 		setLatitude(loc.getLatitude());
