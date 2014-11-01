@@ -773,7 +773,7 @@ public class HostActivity extends SherlockFragmentActivity {
 	}
 
 	/**
-	 * Configures tabs.
+	 * Configures UI elements.
 	 * @param savedInstanceState 
 	 */
 	private void initUi(Bundle savedInstanceState) {

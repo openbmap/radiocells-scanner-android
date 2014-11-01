@@ -38,14 +38,11 @@ public class RadiobeaconApplication extends Application {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		Log.i(TAG, "Application created");
 		AndroidGraphicFactory.createInstance(this);
-		Log.e(TAG,
-				"Device scale factor "
-						+ Float.toString(DisplayModel.getDeviceScaleFactor()));
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 		float fs = Float.valueOf(preferences.getString(SETTING_SCALE,
 				Float.toString(DisplayModel.getDefaultUserScaleFactor())));
-		Log.e(TAG, "User ScaleFactor " + Float.toString(fs));
 		if (fs != DisplayModel.getDefaultUserScaleFactor()) {
 			DisplayModel.setDefaultUserScaleFactor(fs);
 		}
