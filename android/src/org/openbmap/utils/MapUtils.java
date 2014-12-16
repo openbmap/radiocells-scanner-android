@@ -21,6 +21,7 @@ import org.mapsforge.core.graphics.Bitmap;
 import org.mapsforge.core.graphics.Paint;
 import org.mapsforge.core.graphics.Style;
 import org.mapsforge.core.model.LatLong;
+import org.mapsforge.core.model.Point;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
 import org.mapsforge.map.layer.Layer;
 import org.mapsforge.map.layer.cache.FileSystemTileCache;
@@ -48,6 +49,7 @@ import android.view.View.MeasureSpec;
 /**
  * Utility functions that can be used across different mapsforge based activities
  */
+
 public final class MapUtils {
 	/**
 	 * Compatibility method
@@ -61,6 +63,11 @@ public final class MapUtils {
 			// Show the Up button in the action bar.
 			a.getActionBar().setDisplayHomeAsUpEnabled(true);
 		}
+	}
+
+
+	public static interface onLongPressHandler{
+		void onLongPress(LatLong tapLatLong, Point thisXY, Point tapXY);
 	}
 
 	/**
@@ -105,19 +112,34 @@ public final class MapUtils {
 		File cacheDirectory = c.getDir(id, Context.MODE_PRIVATE);
 		TileCache secondLevelTileCache = new FileSystemTileCache(1024, cacheDirectory, AndroidGraphicFactory.INSTANCE);
 		return new TwoLevelTileCache(firstLevelTileCache, secondLevelTileCache);
-	}
+	};
 
-	public static Layer createTileRendererLayer(TileCache tileCache, MapViewPosition mapViewPosition, File mapFile) {
-		//TileRendererLayer tileRendererLayer = new TileRendererLayer(tileCache, mapViewPosition, AndroidGraphicFactory.INSTANCE);
-		TileRendererLayer tileRendererLayer = new TileRendererLayer (tileCache,
-                mapViewPosition, false, true, AndroidGraphicFactory.INSTANCE);
+	public static Layer createTileRendererLayer(TileCache tileCache, MapViewPosition mapViewPosition, File mapFile, final onLongPressHandler longPressHandler) {
+		if (longPressHandler != null) {
+			// add support for onLongClick events
+			TileRendererLayer tileRendererLayer = new TileRendererLayer (tileCache,
+					mapViewPosition, false, true, AndroidGraphicFactory.INSTANCE) {
+				@Override
+				public boolean onLongPress(LatLong tapLatLong, Point thisXY, Point tapXY) {
+					longPressHandler.onLongPress(tapLatLong, thisXY, tapXY);
+					return true;
+				}
+			};
+			
+			tileRendererLayer.setMapFile(mapFile);
+			tileRendererLayer.setXmlRenderTheme(InternalRenderTheme.OSMARENDER);
+			tileRendererLayer.setTextScale(1.5f);
+			return tileRendererLayer;	
+		} else {
+			// just a plain vanilla layer
+			TileRendererLayer tileRendererLayer = new TileRendererLayer (tileCache,
+					mapViewPosition, false, true, AndroidGraphicFactory.INSTANCE);
 
-		tileRendererLayer.setMapFile(mapFile);
-		
-		
-		tileRendererLayer.setXmlRenderTheme(InternalRenderTheme.OSMARENDER);
-		tileRendererLayer.setTextScale(1.5f);
-		return tileRendererLayer;
+			tileRendererLayer.setMapFile(mapFile);
+			tileRendererLayer.setXmlRenderTheme(InternalRenderTheme.OSMARENDER);
+			tileRendererLayer.setTextScale(1.5f);
+			return tileRendererLayer;
+		}
 	}
 
 	static Bitmap viewToBitmap(Context c, View view) {
@@ -139,7 +161,7 @@ public final class MapUtils {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		return (!prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE).equals(Preferences.VAL_MAP_NONE));
 	}
-	
+
 	public static File getMapFile(final Context context) {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		final File mapFile = new File(
@@ -149,7 +171,7 @@ public final class MapUtils {
 
 		return mapFile;
 	}
-	
+
 	private MapUtils() {
 		throw new IllegalStateException();
 	}

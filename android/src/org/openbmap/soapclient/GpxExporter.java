@@ -29,6 +29,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.openbmap.RadioBeacon;
 import org.openbmap.db.DatabaseHelper;
 import org.openbmap.db.Schema;
 
@@ -66,10 +67,19 @@ public class GpxExporter {
 
 	private static final String	TAG_GPX_CLOSE	= "</gpx>";
 
-	private static final String POSITION_SQL_QUERY = "SELECT " + Schema.COL_LATITUDE + ", " + Schema.COL_LONGITUDE + ", "
+	private static final String TRACKPOINT_SQL_QUERY1 = "SELECT " + Schema.COL_LATITUDE + ", " + Schema.COL_LONGITUDE + ", "
 			+ " " + Schema.COL_ALTITUDE + ", " + Schema.COL_ACCURACY + ", " + Schema.COL_TIMESTAMP + ", " + Schema.COL_BEARING
 			+ ", " + Schema.COL_SPEED + ", " + Schema.COL_SESSION_ID + ", " + Schema.COL_SOURCE + " "
 			+ " FROM " + Schema.TBL_POSITIONS + " WHERE " + Schema.COL_SESSION_ID + " = ?"
+			+ " AND source != '" + RadioBeacon.PROVIDER_USER_DEFINED + "' " 
+			+ " ORDER BY " + Schema.COL_TIMESTAMP + " LIMIT " + CURSOR_SIZE
+			+ " OFFSET ?";
+	
+	private static final String WAYPOINT_SQL_QUERY = "SELECT " + Schema.COL_LATITUDE + ", " + Schema.COL_LONGITUDE + ", "
+			+ " " + Schema.COL_ALTITUDE + ", " + Schema.COL_ACCURACY + ", " + Schema.COL_TIMESTAMP + ", " + Schema.COL_BEARING
+			+ ", " + Schema.COL_SPEED + ", " + Schema.COL_SESSION_ID + ", " + Schema.COL_SOURCE + " "
+			+ " FROM " + Schema.TBL_POSITIONS + " WHERE " + Schema.COL_SESSION_ID + " = ?"
+			+ " AND source = '" + RadioBeacon.PROVIDER_USER_DEFINED + "' " 
 			+ " ORDER BY " + Schema.COL_TIMESTAMP + " LIMIT " + CURSOR_SIZE
 			+ " OFFSET ?";
 
@@ -135,8 +145,9 @@ public class GpxExporter {
 
 		bw.write(XML_HEADER);
 		bw.write(TAG_GPX);
-
-		writeTrackPoints(mSession, trackName, bw);
+		
+		writeWaypoints(mSession, bw);
+		writeTrackpoints(mSession, trackName, bw);
 		bw.flush();
 
 		writeWifis(bw);
@@ -158,10 +169,61 @@ public class GpxExporter {
 	 * @param c Cursor to track points.
 	 * @throws IOException
 	 */
-	private void writeTrackPoints(final int session, final String trackName, final BufferedWriter bw) throws IOException {
+	private void writeWaypoints(final int session, final BufferedWriter bw) throws IOException {
 		Log.i(TAG, "Writing trackpoints");
 
-		Cursor c = mDbHelper.getReadableDatabase().rawQuery(POSITION_SQL_QUERY, new String[]{String.valueOf(mSession), String.valueOf(0)});
+		Cursor c = mDbHelper.getReadableDatabase().rawQuery(WAYPOINT_SQL_QUERY, new String[]{String.valueOf(mSession), String.valueOf(0)});
+
+		final int colLatitude = c.getColumnIndex(Schema.COL_LATITUDE);
+		final int colLongitude = c.getColumnIndex(Schema.COL_LONGITUDE);
+		final int colAltitude = c.getColumnIndex(Schema.COL_ALTITUDE);
+		final int colTimestamp = c.getColumnIndex(Schema.COL_TIMESTAMP);
+
+		long outer = 0;
+		while (!c.isAfterLast()) {
+			c.moveToFirst();
+			//StringBuffer out = new StringBuffer(32 * 1024);
+			while (!c.isAfterLast()) {
+				bw.write("\t\t\t<wpt lat=\"");
+				bw.write(String.valueOf(c.getDouble(colLatitude)));
+				bw.write("\" ");
+				bw.write("lon=\"");
+				bw.write(String.valueOf(c.getDouble(colLongitude)));
+				bw.write("\">");
+				bw.write("<ele>");
+				bw.write(String.valueOf(c.getDouble(colAltitude)));
+				bw.write("</ele>");
+				bw.write("<time>");
+				// time stamp conversion to ISO 8601
+				bw.write(getGpxDate(c.getLong(colTimestamp)));
+				bw.write("</time>");
+				bw.write("</wpt>\n");
+
+				c.moveToNext();
+			}
+			//bw.write(out.toString());
+			//out = null;
+
+			// fetch next CURSOR_SIZE records
+			outer += CURSOR_SIZE;
+			c.close();
+			c = mDbHelper.getReadableDatabase().rawQuery(WAYPOINT_SQL_QUERY, new String[]{String.valueOf(mSession), String.valueOf(outer)});
+		}
+		c.close();
+		System.gc();
+	}
+	
+	/**
+	 * Iterates on track points and write them.
+	 * @param trackName Name of the track (metadata).
+	 * @param bw Writer to the target file.
+	 * @param c Cursor to track points.
+	 * @throws IOException
+	 */
+	private void writeTrackpoints(final int session, final String trackName, final BufferedWriter bw) throws IOException {
+		Log.i(TAG, "Writing trackpoints");
+
+		Cursor c = mDbHelper.getReadableDatabase().rawQuery(TRACKPOINT_SQL_QUERY1, new String[]{String.valueOf(mSession), String.valueOf(0)});
 
 		final int colLatitude = c.getColumnIndex(Schema.COL_LATITUDE);
 		final int colLongitude = c.getColumnIndex(Schema.COL_LONGITUDE);
@@ -202,7 +264,7 @@ public class GpxExporter {
 			// fetch next CURSOR_SIZE records
 			outer += CURSOR_SIZE;
 			c.close();
-			c = mDbHelper.getReadableDatabase().rawQuery(POSITION_SQL_QUERY, new String[]{String.valueOf(mSession), String.valueOf(outer)});
+			c = mDbHelper.getReadableDatabase().rawQuery(TRACKPOINT_SQL_QUERY1, new String[]{String.valueOf(mSession), String.valueOf(outer)});
 		}
 		c.close();
 

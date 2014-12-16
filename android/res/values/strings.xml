@@ -290,4 +290,6 @@
 	<string name="chart_library">Chart library: GraphView</string>
 	<string name="chart_library_license">GNU Lesser General Public License (LGPL)</string>
 	<string name="no_map_file_selected">No map file selected!</string>
+	<string name="saved_waypoint">Saved waypoint</string>
+	<string name="at">" at "</string>
 </resources>

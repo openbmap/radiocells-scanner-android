@@ -166,6 +166,17 @@ public final class RadioBeacon {
 	public static final int SESSION_NOT_TRACKING = 0;
 	
 	/**
+	 * Default provider name
+	 */
+	public static final String PROVIDER_NONE = "NONE";
+	
+	/**
+	 * Provider used for manual gps positioning
+	 */
+	public static final String PROVIDER_USER_DEFINED = "WAYPOINT";
+	
+	
+	/**
 	 * Default bssid blacklist's filename
 	 */
 	public static final String	DEFAULT_BSSID_BLOCK_FILE	= "default_bssid.xml";
@@ -202,7 +213,7 @@ public final class RadioBeacon {
      * 			- If you change client version, check whether you need to adjust current_version.xml on server and {@link VERSION_COMPATIBILITY} 
      * 			- Also consider updating android:versionCode="x+1" android:versionName="XYZ" in AndroidManifest.xml (e.g. for automatic F-Droid updates)
 	 */
-	public static final String SW_VERSION = "0.8.3";
+	public static final String SW_VERSION = "0.8.4";
 	
 	/**
 	 * {@link ServerValidation} compares server version against VERSION_COMPATIBILITY to check whether client is outdated.

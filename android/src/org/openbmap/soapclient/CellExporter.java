@@ -458,6 +458,7 @@ public class CellExporter {
 				 *	Note that for performance reasons all columns except colIsServing and colIsNeigbor
 				 *	are casted to string for performance reasons
 				 */
+				// TODO UMTS/CDMA not properly serialized!!!! Basestation, System and Network Id missing!
 				bw.write(cellToXML(
 						cursor.getInt(mColIsServing),
 						cursor.getInt(mColIsNeigbor),

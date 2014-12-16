@@ -206,7 +206,7 @@ public class WirelessLoggerService extends AbstractService {
 
 	/**
 	 * Database value for missing data
-	 * Cav eat: Old api (CellLocation) reports missing data as -1, whereas new api (getAllCellInfo) reports missing data as Integer.MAX_VALUE
+	 * Cave eat: Old api (CellLocation) reports missing data as -1, whereas new api (getAllCellInfo) reports missing data as Integer.MAX_VALUE
 	 * Regardless which api is used invalid values are saved with INVALID_ID
 	 */
 	private static final int INVALID_VALUE	= -1;

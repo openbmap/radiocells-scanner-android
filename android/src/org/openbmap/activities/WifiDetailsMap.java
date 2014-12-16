@@ -325,7 +325,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 			mapView.getLayerManager().getLayers().add(MapUtils.createTileRendererLayer(
 					this.tileCache,
 					this.mapView.getModel().mapViewPosition,
-					getMapFile()));
+					getMapFile(), null));
 		} else {
 			this.mapView.getModel().displayModel.setBackgroundColor(0xffffffff);
 			Toast.makeText(this.getActivity(), R.string.no_map_file_selected, Toast.LENGTH_LONG).show();

@@ -27,6 +27,7 @@ import org.mapsforge.core.graphics.Paint;
 import org.mapsforge.core.graphics.Style;
 import org.mapsforge.core.model.BoundingBox;
 import org.mapsforge.core.model.LatLong;
+import org.mapsforge.core.model.Point;
 import org.mapsforge.map.android.AndroidPreferences;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
 import org.mapsforge.map.android.view.MapView;
@@ -36,7 +37,6 @@ import org.mapsforge.map.layer.Layers;
 import org.mapsforge.map.layer.cache.TileCache;
 import org.mapsforge.map.layer.overlay.Circle;
 import org.mapsforge.map.layer.overlay.Polyline;
-import org.mapsforge.map.model.MapViewPosition;
 import org.mapsforge.map.model.common.Observer;
 import org.mapsforge.map.util.MapPositionUtil;
 import org.openbmap.Preferences;
@@ -44,11 +44,13 @@ import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.Schema;
+import org.openbmap.db.models.PositionRecord;
 import org.openbmap.db.models.WifiRecord;
 import org.openbmap.utils.GeometryUtils;
 import org.openbmap.utils.GpxMapObjectsLoader;
 import org.openbmap.utils.GpxMapObjectsLoader.OnGpxLoadedListener;
 import org.openbmap.utils.MapUtils;
+import org.openbmap.utils.MapUtils.onLongPressHandler;
 import org.openbmap.utils.SessionLatLong;
 import org.openbmap.utils.SessionMapObjectsLoader;
 import org.openbmap.utils.SessionMapObjectsLoader.OnSessionLoadedListener;
@@ -63,7 +65,6 @@ import android.content.SharedPreferences;
 import android.graphics.Matrix;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -86,7 +87,7 @@ public class MapViewActivity extends SherlockFragment implements
 OnCatalogLoadedListener,
 OnSessionLoadedListener,
 OnGpxLoadedListener,
-ActionBar.OnNavigationListener {
+ActionBar.OnNavigationListener, onLongPressHandler {
 
 	private static final String TAG = MapViewActivity.class.getSimpleName();
 
@@ -177,6 +178,8 @@ ActionBar.OnNavigationListener {
 	private MapView mapView;
 
 	//[end]
+	
+	private DataHelper mDataHelper;
 
 	// [start] Map styles
 	/**
@@ -206,7 +209,7 @@ ActionBar.OnNavigationListener {
 	//[end]
 
 	// [start] Dynamic map variables
-	
+
 	private boolean snapToLocation = true;
 	/**
 	 * Used for persisting zoom and position settings onPause / onDestroy
@@ -288,7 +291,7 @@ ActionBar.OnNavigationListener {
 					 * 1.) current zoom level >= 12 (otherwise single points not visible, huge performance impact)
 					 * 2.) layer items haven't been refreshed for a while AND user has moved a bit
 					 */
-				
+
 					if ((mapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && (sessionLayerOutdated(location))) { 
 						refreshSessionLayer(location);
 					}
@@ -329,7 +332,7 @@ ActionBar.OnNavigationListener {
 	public final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
-		
+
 		// get shared preferences
 		prefs = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity());
 
@@ -373,6 +376,7 @@ ActionBar.OnNavigationListener {
 	@Override
 	public final void onDestroy() {
 		releaseMap();
+		mDataHelper = null;
 		super.onDestroy();
 	}
 
@@ -400,7 +404,7 @@ ActionBar.OnNavigationListener {
 		this.mapView.setClickable(true);
 		this.mapView.getMapScaleBar().setVisible(true);
 		this.tileCache = createTileCache();
-		
+
 		// on first start zoom is set to very low value, so users won't see anything
 		// zoom to moderate zoomlevel..
 		if (this.mapView.getModel().mapViewPosition.getZoomLevel() < (byte) 10) {
@@ -409,19 +413,19 @@ ActionBar.OnNavigationListener {
 
 		LayerManager layerManager = this.mapView.getLayerManager();
 		Layers layers = layerManager.getLayers();
-		
+
 		if (MapUtils.isMapSelected(this.getActivity())) {
 			// remove all layers including base layer
 			layers.clear();
-			layers.add(MapUtils.createTileRendererLayer(
-				this.tileCache,
-				this.mapView.getModel().mapViewPosition,
-				getMapFile()));
+			Layer map = MapUtils.createTileRendererLayer(
+					this.tileCache, this.mapView.getModel().mapViewPosition, getMapFile(), this);
+			layers.add(map);
+
 		} else {
 			this.mapView.getModel().displayModel.setBackgroundColor(0xffffffff);
 			Toast.makeText(this.getSherlockActivity(), R.string.no_map_file_selected, Toast.LENGTH_LONG).show();
 		}
-		
+
 		this.mapObserver = new Observer() {
 			@Override
 			public void onChange() {
@@ -472,24 +476,24 @@ ActionBar.OnNavigationListener {
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-	    super.onCreateOptionsMenu(menu, inflater);
-	    inflater.inflate(R.menu.map_menu, menu);
-	    menu.findItem(R.id.menu_snaptoLocation).setChecked(snapToLocation);
+		super.onCreateOptionsMenu(menu, inflater);
+		inflater.inflate(R.menu.map_menu, menu);
+		menu.findItem(R.id.menu_snaptoLocation).setChecked(snapToLocation);
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-	    // Handle item selection
-	    switch (item.getItemId()) {
-	        case R.id.menu_snaptoLocation:
-	            item.setChecked(!item.isChecked());
-	            snapToLocation = item.isChecked();
-	            return true;
-	        default:
-	            return super.onOptionsItemSelected(item);
-	    }
+		// Handle item selection
+		switch (item.getItemId()) {
+			case R.id.menu_snaptoLocation:
+				item.setChecked(!item.isChecked());
+				snapToLocation = item.isChecked();
+				return true;
+			default:
+				return super.onOptionsItemSelected(item);
+		}
 	}
-	
+
 	private void registerReceiver() {
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(RadioBeacon.INTENT_POSITION_UPDATE);
@@ -962,9 +966,11 @@ ActionBar.OnNavigationListener {
 		return MapUtils.getMapFile(getActivity());
 	}
 
+	/*
 	protected final void addLayers(final LayerManager layerManager, final TileCache tileCache, final MapViewPosition mapViewPosition) {
 		layerManager.getLayers().add(MapUtils.createTileRendererLayer(tileCache, mapViewPosition, getMapFile()));
 	}
+	*/
 
 	/**
 	 * Creates a tile cache for the baselayer
@@ -986,11 +992,11 @@ ActionBar.OnNavigationListener {
 	 */
 	private void releaseMap() {
 		Log.i(TAG, "Releasing map components");
-		
+
 		if (this.tileCache != null) {
 			this.tileCache.destroy();
 		}
-		
+
 		// release zoom / move observer for gc
 		this.mapObserver = null;
 
@@ -1009,6 +1015,30 @@ ActionBar.OnNavigationListener {
 	public boolean onNavigationItemSelected(int itemPosition, long itemId) {
 		refreshAllLayers();
 		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.utils.MapUtils.onLongPressHandler#onLongPress(org.mapsforge.core.model.LatLong, org.mapsforge.core.model.Point, org.mapsforge.core.model.Point)
+	 */
+	@Override
+	public void onLongPress(LatLong tapLatLong, Point thisXY, Point tapXY) {
+		Toast.makeText(this.getActivity(), this.getActivity().getString(R.string.saved_waypoint) + this.getActivity().getString(R.string.at) + "\n" + tapLatLong.toString(), Toast.LENGTH_LONG).show();
+		if (!prefs.getBoolean(Preferences.KEY_GPS_SAVE_COMPLETE_TRACK, Preferences.VAL_GPS_SAVE_COMPLETE_TRACK)) {
+			Log.i(TAG, "Didn't save gpx: saving gpx is disabled.");
+			return;
+		}
+
+		if (mDataHelper == null) {
+			/*
+			 * Setting up database connection
+			 */
+			mDataHelper = new DataHelper(this.getActivity());
+		}
+		
+		PositionRecord pos = new PositionRecord(GeometryUtils.toLocation(tapLatLong), mSessionId, RadioBeacon.PROVIDER_USER_DEFINED, true);
+
+		// so far we set end position = begin position 
+		mDataHelper.storePosition(pos);
 	}
 
 }

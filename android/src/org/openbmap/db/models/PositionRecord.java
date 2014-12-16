@@ -23,6 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import org.mapsforge.core.model.LatLong;
 import org.openbmap.RadioBeacon;
 import org.openbmap.utils.GeometryUtils;
 
@@ -33,10 +34,10 @@ import android.location.Location;
  */
 public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 
-	private double mLatitude;
-	private double mLongitude;
-	private double mAltitude;
-	private double mAccuracy;
+	private double mLatitude = 0.0;
+	private double mLongitude = 0.0;
+	private double mAltitude = 0.0;
+	private double mAccuracy = 0.0;
 	/**
 	 * Timestamp in openbmap format: YYYYMMDDHHMMSS
 	 */
@@ -45,41 +46,61 @@ public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 	/**
 	 * Timestamp in millis
 	 */
-	private long mMillisTimestamp;
+	private long mMillisTimestamp = 0;
 	
-	private double mBearing;
-	private double mSpeed;
-	private int	mSession;
-	private String	mSource;
+	private double mBearing = 0.0;
+	private double mSpeed = 0.0;
+	private int	mSession = RadioBeacon.SESSION_NOT_TRACKING;
+	private String mSource = RadioBeacon.PROVIDER_NONE;
+	private boolean mIsWaypoint = false;
 
 	/**
 	 * Creates position record from Android Location.
 	 * @param mLocation
 	 */
-	public PositionRecord(final Location loc, final int session, final String source) {
-		if (!GeometryUtils.isValidLocation(loc)) {
-			throw new IllegalArgumentException("Invalid location " + loc.toString());
+	public PositionRecord(final Location location, final int session, final String source) {
+		if (!GeometryUtils.isValidLocation(location)) {
+			throw new IllegalArgumentException("Invalid location " + location.toString());
 		}
-		setLatitude(loc.getLatitude());
-		setLongitude(loc.getLongitude());
-		setAltitude(loc.getAltitude());
-		setAccuracy(loc.getAccuracy());
-		setTimestampByMillis(loc.getTime());
-		setBearing(loc.getBearing());
-		setSpeed(loc.getSpeed());
+		setLatitude(location.getLatitude());
+		setLongitude(location.getLongitude());
+		setAltitude(location.getAltitude());
+		setAccuracy(location.getAccuracy());
+		setTimestampByMillis(location.getTime());
+		setBearing(location.getBearing());
+		setSpeed(location.getSpeed());
 		setSession(session);
 		setSource(source);
+		setIsWaypoint(false);
 	}
 
+	public PositionRecord(){
+		
+	}
+	
 	/**
-	 * 
+	 * @param location 
+	 * @param session Session Id
+	 * @param source Provider used
+	 * @param isWaypoint Point is a waypoint
 	 */
-	public PositionRecord() {
-		// set default values
-		setSession(RadioBeacon.SESSION_NOT_TRACKING);
-		setSource("N/A");
+	public PositionRecord(final Location location, final int session, final String source, final boolean isWaypoint) {
+		// don't use strict mode here:_waypoints may lack certain properties!
+		if (!GeometryUtils.isValidLocation(location, false)) {
+			throw new IllegalArgumentException("Invalid location " + location.toString());
+		}
+		setLatitude(location.getLatitude());
+		setLongitude(location.getLongitude());
+		setAltitude(location.getAltitude());
+		setAccuracy(location.getAccuracy());
+		setTimestampByMillis(location.getTime());
+		setBearing(location.getBearing());
+		setSpeed(location.getSpeed());
+		setSession(session);
+		setSource(source);
+		setIsWaypoint(isWaypoint);
 	}
-
+	
 	public final double getLatitude() {
 		return mLatitude;
 	}
@@ -195,6 +216,17 @@ public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 	
 	public final void setSource(final String source) {
 		this.mSource = source;
+	}
+	
+	/**
+	 * @param isWaypoint
+	 */
+	private void setIsWaypoint(boolean isWaypoint) {
+		mIsWaypoint = isWaypoint;
+	}
+	
+	private boolean isWaypoint() {
+		return mIsWaypoint;
 	}
 	
 	public final String toString() {

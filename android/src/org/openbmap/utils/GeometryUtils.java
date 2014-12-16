@@ -19,6 +19,7 @@
 package org.openbmap.utils;
 
 import org.mapsforge.core.model.LatLong;
+import org.openbmap.RadioBeacon;
 
 import android.location.Location;
 import android.util.Log;
@@ -141,10 +142,10 @@ public final class GeometryUtils {
 	 * @return Corresponding Location
 	 */
 	public static Location toLocation(final LatLong latlon) {
-		Location result = new Location("DUMMY");
+		Location result = new Location(RadioBeacon.PROVIDER_NONE);
 		result.setLatitude(latlon.latitude);
 		result.setLongitude(latlon.longitude);
-		if (!isValidLocation(result)) {
+		if (!isValidLocation(result, false)) {
 			throw new IllegalArgumentException("Invalid location");
 		}
 		return result;

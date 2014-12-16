@@ -314,7 +314,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 			mMapView.getLayerManager().getLayers().add(MapUtils.createTileRendererLayer(
 					this.mTileCache,
 					this.mMapView.getModel().mapViewPosition,
-					getMapFile()));
+					getMapFile(), null));
 		} else {
 			this.mMapView.getModel().displayModel.setBackgroundColor(0xffffffff);
 			Toast.makeText(this.getActivity(), R.string.no_map_file_selected, Toast.LENGTH_LONG).show();
