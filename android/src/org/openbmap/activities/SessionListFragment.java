@@ -395,12 +395,12 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 						((OnAlertClickInterface)getTargetFragment()).onAlertNeutralClick(dialogId, args);					
 					}});
 			} else {
-				dialog.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+				dialog.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int whichButton) {
 						((OnAlertClickInterface)getTargetFragment()).onAlertPositiveClick(dialogId, args);
 					}
 				})
-				.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+				.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int whichButton) {
 						((OnAlertClickInterface)getTargetFragment()).onAlertNegativeClick(dialogId, args);
 					}
