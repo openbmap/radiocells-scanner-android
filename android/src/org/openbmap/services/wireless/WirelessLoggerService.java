@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.openbmap.Preferences;
+import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.CellRecord;
@@ -34,15 +35,16 @@ import org.openbmap.db.models.PositionRecord;
 import org.openbmap.db.models.WifiRecord;
 import org.openbmap.db.models.WifiRecord.CatalogStatus;
 import org.openbmap.services.AbstractService;
-import org.openbmap.services.wireless.blacklists.BssidBlackList;
 import org.openbmap.services.wireless.blacklists.BlacklistReasonType;
+import org.openbmap.services.wireless.blacklists.BssidBlackList;
 import org.openbmap.services.wireless.blacklists.LocationBlackList;
 import org.openbmap.services.wireless.blacklists.SsidBlackList;
 import org.openbmap.utils.GeometryUtils;
 
-import android.R.bool;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -110,8 +112,11 @@ public class WirelessLoggerService extends AbstractService {
 	 */
 	protected static final boolean DEMO_MODE = false;
 
-	private PhoneStateListener mPhoneListener;
+	/**
+	 * Phone state listeners to receive cell updates
+	 */
 	private TelephonyManager mTelephonyManager;
+	private PhoneStateListener mPhoneListener;
 
 	/*	
 	 * 	Cells Strength information
@@ -128,6 +133,11 @@ public class WirelessLoggerService extends AbstractService {
 	private int signalStrengthGsm = 0;
 	private boolean signalStrengthIsGsm = false;
 
+	/**
+	 * System notification id.
+	 */
+	private static final int NOTIFICATION_ID = 1234;
+	
 	/*
 	 * last known location
 	 */
@@ -222,17 +232,17 @@ public class WirelessLoggerService extends AbstractService {
 	 * List of blocked ssids, e.g. moving wlans
 	 * Supports wild card like operations: begins with and ends with
 	 */
-	private SsidBlackList	mSsidBlackList;
+	private SsidBlackList mSsidBlackList;
 
 	/**
 	 * List of blocked macs, e.g. moving wlans
 	 */
-	private BssidBlackList	mBssidBlackList;
+	private BssidBlackList mBssidBlackList;
 
 	/**
 	 * List of blocked areas, e.g. home zone
 	 */
-	private LocationBlackList	mLocationBlacklist;
+	private LocationBlackList mLocationBlacklist;
 
 	/**
 	 * Wifi catalog database (used for checking if new wifi)
@@ -314,6 +324,11 @@ public class WirelessLoggerService extends AbstractService {
 	public final void onCreate() {		
 		Log.d(TAG, "WirelessLoggerService created");
 		super.onCreate();
+
+		Notification note = new Notification(R.drawable.icon_greyed_25x25, getString(R.string.notification_caption), System.currentTimeMillis());
+		note.flags |= Notification.FLAG_NO_CLEAR;
+		startForeground(NOTIFICATION_ID, note);
+
 		// get shared preferences
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -477,7 +492,6 @@ public class WirelessLoggerService extends AbstractService {
 			mWifiLock = mWifiManager.createWifiLock(WifiManager.WIFI_MODE_SCAN_ONLY , WIFILOCK_NAME);
 			mWifiLock.acquire();
 		}
-
 	}
 
 	/**
@@ -764,7 +778,6 @@ public class WirelessLoggerService extends AbstractService {
 		//}
 
 		Boolean newApiSupported = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2);
-
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
 			newApiSupported = isNewApiSupported();
 			Log.v(TAG, "Collecting cell infos (New API > 18)");
@@ -882,7 +895,7 @@ public class WirelessLoggerService extends AbstractService {
 					Log.e(TAG, "Error retrieving network operator, skipping cell");
 					return null;
 				}
-				
+
 				String networkOperatorName = mTelephonyManager.getNetworkOperatorName();
 				if (networkOperatorName != null) {
 					serving.setOperatorName(networkOperatorName);
@@ -930,7 +943,7 @@ public class WirelessLoggerService extends AbstractService {
 					serving.setMcc("");
 					serving.setMnc("");
 				}	
-				
+
 				String networkOperatorName = mTelephonyManager.getNetworkOperatorName();
 				if (networkOperatorName != null) {
 					serving.setOperatorName(mTelephonyManager.getNetworkOperatorName());
@@ -938,7 +951,7 @@ public class WirelessLoggerService extends AbstractService {
 					Log.i(TAG, "Error retrieving network operator's name, this might happen in CDMA network");
 					serving.setOperatorName("");
 				}
-				
+
 				// CDMA specific
 				serving.setBaseId(String.valueOf(cdmaLocation.getBaseStationId()));
 				serving.setNetworkId(String.valueOf(cdmaLocation.getNetworkId()));
@@ -1007,7 +1020,7 @@ public class WirelessLoggerService extends AbstractService {
 					Log.e(TAG, "Couldn't determine network operator, skipping cell");
 					return null;
 				}
-		
+
 				String networkOperatorName = mTelephonyManager.getNetworkOperatorName();
 				if (networkOperatorName != null) {
 					result.setOperatorName(mTelephonyManager.getNetworkOperatorName());
@@ -1015,7 +1028,7 @@ public class WirelessLoggerService extends AbstractService {
 					Log.e(TAG, "Error retrieving network operator's name, skipping cell");
 					return null;
 				}
-				
+
 				result.setLac(gsmIdentity.getLac());
 				result.setStrengthdBm(((CellInfoGsm) cell).getCellSignalStrength().getDbm());
 				result.setStrengthAsu(((CellInfoGsm) cell).getCellSignalStrength().getAsuLevel());
@@ -1065,7 +1078,7 @@ public class WirelessLoggerService extends AbstractService {
 					Log.e(TAG, "Couldn't determine network operator, skipping cell");
 					return null;
 				}
-				
+
 				String networkOperatorName = mTelephonyManager.getNetworkOperatorName();
 				if (networkOperatorName != null) {
 					result.setOperatorName(mTelephonyManager.getNetworkOperatorName());
@@ -1121,7 +1134,7 @@ public class WirelessLoggerService extends AbstractService {
 					Log.i(TAG, "Error retrieving network operator's name, this might happen in CDMA network");
 					result.setOperatorName("");
 				}
-				
+
 				// CDMA specific
 				result.setBaseId(String.valueOf(cdmaIdentity.getBasestationId()));
 				result.setNetworkId(String.valueOf(cdmaIdentity.getNetworkId()));
@@ -1148,10 +1161,10 @@ public class WirelessLoggerService extends AbstractService {
 
 					result.setIsNeighbor(!cell.isRegistered());
 					result.setLogicalCellId(lteIdentity.getCi());
-					
+
 					// set Actual Cid = Logical Cid (as we don't know better at the moment)
 					result.setActualCid(result.getLogicalCellId());
-					
+
 					String operator = mTelephonyManager.getNetworkOperator();
 					// getNetworkOperator() may return empty string, probably due to dropped connection
 					if (operator.length() > 3) {
@@ -1162,7 +1175,7 @@ public class WirelessLoggerService extends AbstractService {
 						Log.e(TAG, "Couldn't determine network operator, skipping cell");
 						return null;
 					}
-					
+
 					String networkOperatorName = mTelephonyManager.getNetworkOperatorName();
 					if (networkOperatorName != null) {
 						result.setOperatorName(mTelephonyManager.getNetworkOperatorName());
@@ -1174,7 +1187,7 @@ public class WirelessLoggerService extends AbstractService {
 					// LTE specific
 					result.setLac(lteIdentity.getTac());
 					result.setPsc(lteIdentity.getPci());
-					
+
 					result.setStrengthdBm(((CellInfoLte) cell).getCellSignalStrength().getDbm());
 					result.setStrengthAsu(((CellInfoLte) cell).getCellSignalStrength().getAsuLevel());
 					return result;
@@ -1429,6 +1442,7 @@ public class WirelessLoggerService extends AbstractService {
 	public final void onStopService() {
 		Log.d(TAG, "Stopping WirelessLoggerService");
 		unregisterReceivers();
+		stopForeground(true);
 	}
 
 	/**

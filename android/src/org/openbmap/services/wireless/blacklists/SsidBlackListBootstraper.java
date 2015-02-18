@@ -123,6 +123,11 @@ public final class SsidBlackListBootstraper {
 		{"default", "VTA Free Wi-Fi"},
 		{"default", "webOS Network"},
 		{"GoPro cams", "goprohero3"},
+		
+		// mobile hotspots
+		{"German 1und1 mobile hotspots", "1und1 mobile"},
+		{"xperia tablet", "xperia tablet"},
+		{"xperia tablet", "androidhotspot"},
 		{"empty ssid (not really hidden, just not broadcasting..)", ""},
 
 
