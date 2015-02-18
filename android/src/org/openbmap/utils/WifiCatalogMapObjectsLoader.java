@@ -71,9 +71,9 @@ public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayLi
 	private static final boolean GROUP_WIFIS = true;
 
 	/**
-	 * Keeps the SharedPreferences.
+	 * Applications shared preferences.
 	 */
-	private SharedPreferences prefs = null;
+	private SharedPreferences mPrefs = null;
 
 	/**
 	 * Database containing well-known wifis from openbmap.org.
@@ -84,16 +84,11 @@ public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayLi
 
 	public WifiCatalogMapObjectsLoader(final Context context, final OnCatalogLoadedListener listener) {
 		setOnCatalogLoadedListener(listener);
-		prefs = PreferenceManager.getDefaultSharedPreferences(context);
+		mPrefs = PreferenceManager.getDefaultSharedPreferences(context);
 	}
 
 	public final void setOnCatalogLoadedListener(final OnCatalogLoadedListener listener) {
 		this.mListener = listener;
-	}
-
-	@Override
-	protected final void onPreExecute() {
-
 	}
 
 	// TODO change signature to left, right, top, bottom
@@ -113,14 +108,14 @@ public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayLi
 
 		try {
 			// skipping if no reference database set 
-			if (prefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_WIFI_CATALOG_NONE).equals(Preferences.VAL_WIFI_CATALOG_NONE)) {
+			if (mPrefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_WIFI_CATALOG_NONE).equals(Preferences.VAL_WIFI_CATALOG_NONE)) {
 				return points;
 			}
 
 			// Open catalog database
 			String path = Environment.getExternalStorageDirectory().getPath()
-					+ prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER, Preferences.VAL_WIFI_CATALOG_FOLDER)
-					+ File.separator + prefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_REF_DATABASE);
+					+ mPrefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER, Preferences.VAL_WIFI_CATALOG_FOLDER)
+					+ File.separator + mPrefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_REF_DATABASE);
 			mRefdb = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.OPEN_READONLY);
 
 			Cursor refs = null;

@@ -19,6 +19,7 @@
 package org.openbmap.activities;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -30,6 +31,7 @@ import org.mapsforge.core.model.LatLong;
 import org.mapsforge.core.model.Point;
 import org.mapsforge.map.android.AndroidPreferences;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
+import org.mapsforge.map.android.rendertheme.AssetsRenderTheme;
 import org.mapsforge.map.android.view.MapView;
 import org.mapsforge.map.layer.Layer;
 import org.mapsforge.map.layer.LayerManager;
@@ -38,6 +40,7 @@ import org.mapsforge.map.layer.cache.TileCache;
 import org.mapsforge.map.layer.overlay.Circle;
 import org.mapsforge.map.layer.overlay.Polyline;
 import org.mapsforge.map.model.common.Observer;
+import org.mapsforge.map.rendertheme.XmlRenderTheme;
 import org.mapsforge.map.util.MapPositionUtil;
 import org.openbmap.Preferences;
 import org.openbmap.R;
@@ -418,7 +421,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 			// remove all layers including base layer
 			layers.clear();
 			Layer map = MapUtils.createTileRendererLayer(
-					this.tileCache, this.mapView.getModel().mapViewPosition, getMapFile(), this);
+					this.tileCache, this.mapView.getModel().mapViewPosition, getMapFile(), this, getRenderTheme());
 			layers.add(map);
 
 		} else {
@@ -966,12 +969,19 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 		return MapUtils.getMapFile(getActivity());
 	}
 
-	/*
-	protected final void addLayers(final LayerManager layerManager, final TileCache tileCache, final MapViewPosition mapViewPosition) {
-		layerManager.getLayers().add(MapUtils.createTileRendererLayer(tileCache, mapViewPosition, getMapFile()));
+	/**
+	 * Reads custom render theme from assets
+	 * @return render theme
+	 */
+	protected XmlRenderTheme getRenderTheme() {
+		try {
+			return new AssetsRenderTheme(this.getActivity(), "", "renderthemes/rendertheme-v4.xml");
+		} catch (IOException e) {
+			Log.e(TAG, "Render theme failure " + e.toString());
+		}
+		return null;
 	}
-	*/
-
+	
 	/**
 	 * Creates a tile cache for the baselayer
 	 * @return

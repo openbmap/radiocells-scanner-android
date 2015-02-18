@@ -74,11 +74,6 @@ public class HostActivity extends SherlockFragmentActivity {
 	private static final String	TAG	= HostActivity.class.getSimpleName();
 
 	/**
-	 * System notification id.
-	 */
-	private static final int NOTIFICATION_ID = 0;
-
-	/**
 	 * Tab pager
 	 */
 	private CustomViewPager mPager;
@@ -101,7 +96,7 @@ public class HostActivity extends SherlockFragmentActivity {
 	private ServiceManager mPositionServiceManager;
 
 	/**
-	 * Background gps logger server
+	 * Background gpx logger server
 	 */
 	private ServiceManager mGpxLoggerServiceManager;
 
@@ -171,7 +166,7 @@ public class HostActivity extends SherlockFragmentActivity {
 				case RadioBeacon.MSG_SERVICE_READY:
 					// start tracking immediately after service is ready 
 					Log.d(TAG, "Positioning Service ready. Requesting position updates");
-					if (mActivity != null) {
+					if (mActivity != null) {	
 						HostActivity tab =  mActivity.get();
 						tab.requestPositionUpdates(State.GPS);
 						tab.startNotification();
@@ -283,7 +278,6 @@ public class HostActivity extends SherlockFragmentActivity {
 		// explicitly request updates, automatic resume isn't working smoothly 
 		requestPositionUpdates(mSelectedProvider);
 		requestWirelessUpdates();
-		startNotification();
 	}
 
 	@Override
@@ -735,41 +729,6 @@ public class HostActivity extends SherlockFragmentActivity {
 			Log.w(TAG, "Failed to stop gpxLoggerServiceManager. Is service running?" /*+ e.getMessage()*/);
 			//e.printStackTrace();
 		}
-	}
-
-	/**
-	 * Notifies the user that we're still tracking in background.
-	 */
-	private void startNotification() {
-		int session = mDataHelper.getActiveSessionId();
-
-		if (session == RadioBeacon.SESSION_NOT_TRACKING) {
-			stopNotification();
-			return;
-		}
-
-		NotificationManager nmgr = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-		Notification n = new Notification(R.drawable.icon_greyed_25x25, getString(R.string.notification_caption), System.currentTimeMillis());
-
-		Intent startTrackLogger = new Intent(this, HostActivity.class);
-		//startTrackLogger.putExtra(Schema.COL_SESSION_ID, currentTrackId);
-		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, startTrackLogger, PendingIntent.FLAG_UPDATE_CURRENT);
-		n.flags = Notification.FLAG_ONGOING_EVENT | Notification.FLAG_NO_CLEAR;
-		n.setLatestEventInfo(
-				getApplicationContext(),
-				getString(R.string.notification).replace("{0}", Integer.toString(session)),
-				getString(R.string.hint_notification),
-				contentIntent);
-
-		nmgr.notify(NOTIFICATION_ID, n);
-	}
-
-	/**
-	 * Stops notifying the user that we're tracking in the background.
-	 */
-	private void stopNotification() {
-		NotificationManager nmgr = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-		nmgr.cancel(NOTIFICATION_ID);
 	}
 
 	/**

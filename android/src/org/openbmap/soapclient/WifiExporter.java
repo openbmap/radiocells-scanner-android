@@ -35,6 +35,7 @@ import org.openbmap.utils.XmlSanitizer;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.text.Html;
 import android.util.Log;
 
 /**
@@ -205,7 +206,6 @@ public class WifiExporter  {
 			+ " LIMIT " + CURSOR_SIZE
 			+ " OFFSET ?";
 
-	private static final Pattern REGEX_PATTERN = Pattern.compile("^\\p{ASCII}*$"); // "[^\\p{ASCII}]+"
 	/**
 	 * Default constructor
 	 * @param context	Activities' context
@@ -421,7 +421,9 @@ public class WifiExporter  {
 				bw.write(wifiToXml(
 						cursor.getString(colBssid).replace(":", ""),
 						cursor.getString(colMd5Essid), 
-						XmlSanitizer.sanitize(cursor.getString(colSsid)),
+						// sanitizing moved to wifiToXml function
+						/*XmlSanitizer.sanitize(cursor.getString(colSsid)),*/
+						cursor.getString(colSsid),
 						cursor.getString(colCapa),
 						cursor.getString(colLevel),
 						cursor.getString(colFreq),
@@ -503,15 +505,20 @@ public class WifiExporter  {
 
 		String ssidXmlOrNothing = "";
 		// add only if user has chosen to send ssid and ssid is pure ASCII
-		if (!anonymise && REGEX_PATTERN.matcher(ssid).matches()) {
+		if (!anonymise && XmlSanitizer.isValid(ssid)) {
 			ssidXmlOrNothing = String.format(" ssid=\"%s\"", ssid);
-		} else if (!anonymise && !REGEX_PATTERN.matcher(ssid).matches()) {
+		} else if (!anonymise && !XmlSanitizer.isValid(ssid)) {
 			Log.i(TAG, "Skipping no ascii ssid " + ssid);
 		}
 
 		return String.format(WIFI_XML, bssid, md5essid, ssidXmlOrNothing, capa, level, freq);
 	}
 
+	// http://stackoverflow.com/questions/6502759/how-to-strip-or-escape-html-tags-in-android
+	public static String stripHtml(String html) {
+	    return Html.fromHtml(html).toString();
+	}
+	
 	/**
 	 * Generates filename
 	 * Template for wifi logs:

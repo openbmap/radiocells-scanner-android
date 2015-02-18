@@ -29,7 +29,7 @@ import android.content.Intent;
  *
  * Don't use internally within Radiobeacon!
  */
-public class StartTracking  extends Activity {
+public class StartTracking extends Activity {
 
 	@Override
 	protected final void onResume() {

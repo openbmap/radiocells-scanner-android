@@ -66,6 +66,12 @@ public final class FileUtils {
 		return externalStorageWritable;
 	}
 
+	/**
+	 * Moves file from source to destination
+	 * @param src
+	 * @param dst
+	 * @throws IOException
+	 */
 	public static void moveFile(File src, File dst) throws IOException
 	{
 		copyFile(src, dst);

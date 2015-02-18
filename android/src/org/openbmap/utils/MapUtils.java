@@ -16,6 +16,7 @@ package org.openbmap.utils;
  */
 
 import java.io.File;
+import java.io.IOException;
 
 import org.mapsforge.core.graphics.Bitmap;
 import org.mapsforge.core.graphics.Paint;
@@ -23,6 +24,7 @@ import org.mapsforge.core.graphics.Style;
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.core.model.Point;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
+import org.mapsforge.map.android.rendertheme.AssetsRenderTheme;
 import org.mapsforge.map.layer.Layer;
 import org.mapsforge.map.layer.cache.FileSystemTileCache;
 import org.mapsforge.map.layer.cache.InMemoryTileCache;
@@ -32,6 +34,7 @@ import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.layer.renderer.TileRendererLayer;
 import org.mapsforge.map.model.MapViewPosition;
 import org.mapsforge.map.rendertheme.InternalRenderTheme;
+import org.mapsforge.map.rendertheme.XmlRenderTheme;
 import org.openbmap.Preferences;
 
 import android.annotation.TargetApi;
@@ -43,6 +46,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.view.View.MeasureSpec;
 
@@ -114,8 +118,19 @@ public final class MapUtils {
 		return new TwoLevelTileCache(firstLevelTileCache, secondLevelTileCache);
 	};
 
-	public static Layer createTileRendererLayer(TileCache tileCache, MapViewPosition mapViewPosition, File mapFile, final onLongPressHandler longPressHandler) {
+	/**
+	 * Creates a tile layer, which optionally supports long press actions and custom render themes
+	 * @param tileCache
+	 * @param mapViewPosition
+	 * @param mapFile
+	 * @param longPressHandler
+	 * @param renderTheme
+	 * @return
+	 */
+	public static Layer createTileRendererLayer(TileCache tileCache, MapViewPosition mapViewPosition,
+			File mapFile, final onLongPressHandler longPressHandler, XmlRenderTheme renderTheme) {
 		if (longPressHandler != null) {
+			
 			// add support for onLongClick events
 			TileRendererLayer tileRendererLayer = new TileRendererLayer (tileCache,
 					mapViewPosition, false, true, AndroidGraphicFactory.INSTANCE) {
@@ -125,9 +140,15 @@ public final class MapUtils {
 					return true;
 				}
 			};
-			
+
 			tileRendererLayer.setMapFile(mapFile);
-			tileRendererLayer.setXmlRenderTheme(InternalRenderTheme.OSMARENDER);
+
+			if (renderTheme == null) {
+				tileRendererLayer.setXmlRenderTheme(InternalRenderTheme.OSMARENDER);
+			} else {
+				tileRendererLayer.setXmlRenderTheme(renderTheme);
+			}
+
 			tileRendererLayer.setTextScale(1.5f);
 			return tileRendererLayer;	
 		} else {
@@ -136,7 +157,13 @@ public final class MapUtils {
 					mapViewPosition, false, true, AndroidGraphicFactory.INSTANCE);
 
 			tileRendererLayer.setMapFile(mapFile);
-			tileRendererLayer.setXmlRenderTheme(InternalRenderTheme.OSMARENDER);
+			
+			if (renderTheme == null) {
+				tileRendererLayer.setXmlRenderTheme(InternalRenderTheme.OSMARENDER);
+			} else {
+				tileRendererLayer.setXmlRenderTheme(renderTheme);
+			}
+			
 			tileRendererLayer.setTextScale(1.5f);
 			return tileRendererLayer;
 		}

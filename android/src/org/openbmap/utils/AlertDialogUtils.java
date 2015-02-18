@@ -18,6 +18,8 @@
 
 package org.openbmap.utils;
 
+import org.openbmap.R;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.AlertDialog.Builder;
@@ -78,12 +80,12 @@ public class AlertDialogUtils extends SherlockDialogFragment{
 					((OnAlertClickInterface)getActivity()).onAlertNeutralClick(dialogId, args);					
 				}});
 		} else {
-			dialog.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+			dialog.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int whichButton) {
 					((OnAlertClickInterface)getActivity()).onAlertPositiveClick(dialogId, args);
 				}
 			})
-			.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+			.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int whichButton) {
 					((OnAlertClickInterface)getActivity()).onAlertNegativeClick(dialogId, args);
 				}

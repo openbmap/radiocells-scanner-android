@@ -169,7 +169,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 	}
 
 	/**
-	 * 
+	 * Blocks wifi and cell recording around current position
 	 */
 	private void initHomezoneBlockingControl() {
 		Preference pref = findPreference(org.openbmap.Preferences.KEY_BLOCK_HOMEZONE);
@@ -342,7 +342,6 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 
 	/**
 	 * Populates the download list with links to mapsforge downloads.
-	 * @param rootDir Root folder for MAPS_SUBDIR
 	 */
 	private void initMapDownloadControl() {
 		String[] entries;
@@ -513,7 +512,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 	}
 
 	/**
-	 * Initializes data directory preference.
+	 * Initializes wifi catalog folder preference.
 	 * @return EditTextPreference with data directory.
 	 */
 	private EditTextPreference initWifiCatalogFolderControl() {
@@ -648,7 +647,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 	}
 
 	/**
-	 * Populates the wifi catalog database list preference by scanning catalogFolder.
+	 * Populates the wifi catalog list preference by scanning catalog folder.
 	 * @param catalogFolder Root folder for WIFI_CATALOG_SUBDIR
 	 */
 	private void initActiveWifiCatalogControl(final String catalogFolder) {
@@ -695,7 +694,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 
 	/**
 	 * Changes catalog preference item to given filename.
-	 * Helper method to activate map after successful download
+	 * Helper method to activate wifi catalog following successful download
 	 * @param absoluteFile absolute filename (including path)
 	 */
 	private void activateWifiCatalog(final String absoluteFile) {
@@ -714,7 +713,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 	}
 
 	/**
-	 * 
+	 * Performs VACCUM ANALYZE on database
 	 */
 	private void initCleanDatabaseControl() {
 		Preference pref = findPreference(Preferences.KEY_CLEAN_DATABASE);
@@ -781,13 +780,13 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 	/**
 	 * Moves file to specified folder
 	 * @param file
-	 * @param mapFolder
+	 * @param folder
 	 * @return new file name
 	 */
-	private String moveToFolder(String file, String mapFolder) {
+	private String moveToFolder(String file, String folder) {
 		// file path contains external cache dir, so we have to move..
 		File source = new File(file);
-		File destination = new File(Environment.getExternalStorageDirectory() + mapFolder + File.separator + source.getName());
+		File destination = new File(Environment.getExternalStorageDirectory() + folder + File.separator + source.getName());
 		Log.i(TAG, file + " stored in temp folder. Moving to " + destination.getAbsolutePath());
 
 		try {
@@ -796,11 +795,8 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 		catch (IOException e) {
 			Log.e(TAG, "I/O error while moving file");
 		}
-
 		return  destination.getAbsolutePath();
 	}
-
-	
 
 	// [start] Android 2.2 compatiblity: work-around for the missing download manager
 

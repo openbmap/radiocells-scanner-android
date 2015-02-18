@@ -19,15 +19,18 @@
 package org.openbmap.activities;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import org.mapsforge.core.model.BoundingBox;
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
+import org.mapsforge.map.android.rendertheme.AssetsRenderTheme;
 import org.mapsforge.map.android.view.MapView;
 import org.mapsforge.map.layer.cache.TileCache;
 import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.model.common.Observer;
+import org.mapsforge.map.rendertheme.XmlRenderTheme;
 import org.mapsforge.map.util.MapPositionUtil;
 import org.openbmap.Preferences;
 import org.openbmap.R;
@@ -303,6 +306,19 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	}
 
 	/**
+	 * Reads custom render theme from assets
+	 * @return render theme
+	 */
+	protected XmlRenderTheme getRenderTheme() {
+		try {
+			return new AssetsRenderTheme(this.getActivity(), "", "renderthemes/rendertheme-v4.xml");
+		} catch (IOException e) {
+			Log.e(TAG, "Render theme failure " + e.toString());
+		}
+		return null;
+	}
+	
+	/**
 	 * Initializes map components
 	 */
 	@SuppressLint("NewApi")
@@ -314,7 +330,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 			mMapView.getLayerManager().getLayers().add(MapUtils.createTileRendererLayer(
 					this.mTileCache,
 					this.mMapView.getModel().mapViewPosition,
-					getMapFile(), null));
+					getMapFile(), null, getRenderTheme()));
 		} else {
 			this.mMapView.getModel().displayModel.setBackgroundColor(0xffffffff);
 			Toast.makeText(this.getActivity(), R.string.no_map_file_selected, Toast.LENGTH_LONG).show();

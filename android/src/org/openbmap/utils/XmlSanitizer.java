@@ -22,14 +22,25 @@
  */
 package org.openbmap.utils;
 
+import java.util.regex.Pattern;
+
 /**
  * Replaces critical characters in xml files
  *
  */
 public final class XmlSanitizer {
 	
-	public static String sanitize(final String raw) {
-		return raw.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&apos;");		
+	private static final Pattern PURE_ASCII_STRING = Pattern.compile("^\\p{ASCII}*$"); // "[^\\p{ASCII}]+"
+	
+	/**
+	 * Checks if string contains &, <, >, ", ' or non-ascii characters
+	 * @param raw
+	 * @return
+	 */
+	public static boolean isValid(final String raw){
+		boolean result =  !raw.contains("&") && !raw.contains("<") && !raw.contains(">") && !raw.contains("\"") && !raw.contains("'");
+		result = result && PURE_ASCII_STRING.matcher(raw).matches();
+		return result;
 	}
 	
 	private XmlSanitizer() {
