@@ -53,7 +53,7 @@ public class VerticalLabelView extends View {
 	private TextPaint mTextPaint;
 	private String mText;
 	private int mAscent;
-	private Rect mTextBounds = new Rect();
+	private final Rect mTextBounds = new Rect();
 	
 	public VerticalLabelView(final Context context) {
 		super(context);
@@ -65,16 +65,16 @@ public class VerticalLabelView extends View {
 		Log.d(TAG, "VerticalLabelView(Context mContext, AttributeSet attrs) called");
 		initLabelView();
 
-		TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.VerticalLabelView);
+		final TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.VerticalLabelView);
 
-		CharSequence s = a.getString(R.styleable.VerticalLabelView_text);
+		final CharSequence s = a.getString(R.styleable.VerticalLabelView_text);
 		if (s != null) {
 			setText(s.toString());
 		}
 
 		setTextColor(a.getColor(R.styleable.VerticalLabelView_textColor, DEFAULT_COLOR));
 
-		int textSize = a.getDimensionPixelOffset(R.styleable.VerticalLabelView_textSize, 0);
+		final int textSize = a.getDimensionPixelOffset(R.styleable.VerticalLabelView_textSize, 0);
 		if (textSize > 0) {
 			setTextSize(textSize);
 		}
@@ -122,8 +122,8 @@ public class VerticalLabelView extends View {
 
 	private int measureWidth(final int measureSpec) {
 		int result = 0;
-		int specMode = MeasureSpec.getMode(measureSpec);
-		int specSize = MeasureSpec.getSize(measureSpec);
+		final int specMode = MeasureSpec.getMode(measureSpec);
+		final int specSize = MeasureSpec.getSize(measureSpec);
 
 
 		if (specMode == MeasureSpec.EXACTLY) {
@@ -144,8 +144,8 @@ public class VerticalLabelView extends View {
 
 	private int measureHeight(final int measureSpec) {
 		int result = 0;
-		int specMode = MeasureSpec.getMode(measureSpec);
-		int specSize = MeasureSpec.getSize(measureSpec);
+		final int specMode = MeasureSpec.getMode(measureSpec);
+		final int specSize = MeasureSpec.getSize(measureSpec);
 
 		mAscent = (int) mTextPaint.ascent();
 		if (specMode == MeasureSpec.EXACTLY) {
@@ -169,8 +169,8 @@ public class VerticalLabelView extends View {
 	protected final void onDraw(final Canvas canvas) {
 		super.onDraw(canvas);
 
-		float textHorizontallyCenteredOriginX = getPaddingLeft() + mTextBounds.width() / 2f;
-		float textHorizontallyCenteredOriginY = getPaddingTop() - mAscent;
+		final float textHorizontallyCenteredOriginX = getPaddingLeft() + mTextBounds.width() / 2f;
+		final float textHorizontallyCenteredOriginY = getPaddingTop() - mAscent;
 
 		canvas.translate(textHorizontallyCenteredOriginY, textHorizontallyCenteredOriginX);
 		canvas.rotate(COUNTER_CLOCKWISE);

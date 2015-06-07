@@ -23,6 +23,7 @@
         <item>Greece</item>
         <item>Hungary</item>
         <item>Iceland</item>
+        <item>India</item>
         <item>Ireland</item>
         <item>Isle Of Man</item>
         <item>Italy</item>
@@ -46,9 +47,11 @@
         <item>Serbia</item>
         <item>Slovakia</item>
         <item>Slovenia</item>
+        <item>South Korea</item>
         <item>Spain</item>
         <item>Sweden</item>
         <item>Switzerland</item>
+        <item>Taiwan</item>
         <item>Turkey</item>
         <item>Ukraine</item>
     </string-array>
@@ -74,6 +77,7 @@
         <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/greece.map</item>
         <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/hungary.map</item>
         <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/iceland.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/apac/india.map</item>
         <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/ireland.map</item>
         <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/isle-of-man.map</item>
         <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/italy.map</item>
@@ -97,9 +101,11 @@
         <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/serbia.map</item>
         <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/slovakia.map</item>
         <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/slovenia.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs//maps/apac/south-korea.map</item>
         <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/spain.map</item>
         <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/sweden.map</item>
         <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/switzerland.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs//maps/apac/taiwan.map</item>
         <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/turkey.map</item>
         <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/ukraine.map</item>
     </string-array>

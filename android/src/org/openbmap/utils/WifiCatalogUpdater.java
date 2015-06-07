@@ -80,13 +80,13 @@ public class WifiCatalogUpdater extends AsyncTask<Void, Void, Void> {
 					null);
 
 			// Open catalog database
-			String path = Environment.getExternalStorageDirectory().getPath()
-					+ prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER, Preferences.VAL_WIFI_CATALOG_FOLDER)
-					+ File.separator + prefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_REF_DATABASE);
+			String file = prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER, 
+					mContext.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_SUBDIR)
+					+ File.separator + prefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_WIFI_CATALOG_FILE);
 
 			SQLiteDatabase catalogDb = null;
 			try {
-				catalogDb = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.OPEN_READWRITE);
+				catalogDb = SQLiteDatabase.openDatabase(file, null, SQLiteDatabase.OPEN_READWRITE);
 			}
 			catch (SQLiteException e) {
 				e.printStackTrace();

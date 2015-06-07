@@ -24,9 +24,6 @@ import java.io.FilenameFilter;
 import org.openbmap.Preferences;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.Environment;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 /**
@@ -41,16 +38,11 @@ public final class TempFileUtils {
 	 * @param mContext
 	 */
 	public static void cleanTempFiles(final Context context) {
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-
 		// List each map file
-		File logDir = new File(
-				Environment.getExternalStorageDirectory().getPath()
-				+ prefs.getString(Preferences.KEY_DATA_FOLDER, Preferences.VAL_DATA_FOLDER) + File.separator
-				);
+		final File logDir = new File(context.getExternalFilesDir(null).getAbsolutePath());
 
 		if (logDir.exists() && logDir.canWrite()) {
-			String[] mapFiles = logDir.list(new FilenameFilter() {
+			final String[] mapFiles = logDir.list(new FilenameFilter() {
 				@Override
 				public boolean accept(final File dir, final String filename) {
 					return filename.endsWith(Preferences.LOG_FILE_EXTENSION);
@@ -59,7 +51,7 @@ public final class TempFileUtils {
 
 			int count = 0;
 			for (int i = 0; i < mapFiles.length; i++) {
-				File file = new File(logDir.toString(), mapFiles[i]);
+				final File file = new File(logDir.toString(), mapFiles[i]);
 				count +=  file.delete() ? 1 : 0;
 			}
 			Log.i(TAG, "Deleted " + count + " temp files in " + logDir.toString());

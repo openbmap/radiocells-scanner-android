@@ -88,7 +88,7 @@ public class CellsListContainer extends SherlockListFragment implements LoaderMa
 		super.onActivityCreated(savedInstanceState);
 
 		// Trying to add a Header View.
-		View header = (View) getLayoutInflater(savedInstanceState).inflate(R.layout.celllistheader, null);
+		final View header = (View) getLayoutInflater(savedInstanceState).inflate(R.layout.celllistheader, null);
 		this.getListView().addHeaderView(header);
 
 		// setup data
@@ -97,7 +97,7 @@ public class CellsListContainer extends SherlockListFragment implements LoaderMa
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
 		return inflater.inflate(R.layout.cellslist, container, false);
 	}
 	
@@ -105,17 +105,17 @@ public class CellsListContainer extends SherlockListFragment implements LoaderMa
 	 * 
 	 */
 	private void initData() {
-		DataHelper dataHelper = new DataHelper(getActivity());
+		final DataHelper dataHelper = new DataHelper(getActivity());
 		mSession = dataHelper.getActiveSessionId();
 
-		String[] from = new String[] {
+		final String[] from = new String[] {
 				Schema.COL_ACTUAL_CELLID,
 				Schema.COL_OPERATORNAME,
 				Schema.COL_NETWORKTYPE,
 				"MAX(" + Schema.COL_STRENGTHDBM + ")" 
 		};
 
-		int[] to = new int[] {
+		final int[] to = new int[] {
 				R.id.textViewCellID,
 				R.id.textViewOperator,
 				R.id.textViewNetworkType,
@@ -139,7 +139,7 @@ public class CellsListContainer extends SherlockListFragment implements LoaderMa
 	@Override
 	public final void onListItemClick(final ListView lv, final View iv, final int position, final long id) {
 		if (position != 0) {
-			Intent intent = new Intent();
+			final Intent intent = new Intent();
 			intent.setClass(getActivity(), CellDetailsActivity.class);
 			intent.putExtra(Schema.COL_ID, (int) id);
 			startActivity(intent);
@@ -154,9 +154,9 @@ public class CellsListContainer extends SherlockListFragment implements LoaderMa
 
 	@Override
 	public final Loader<Cursor> onCreateLoader(final int arg0, final Bundle arg1) {
-		DataHelper dataHelper = new DataHelper(getActivity());
+		final DataHelper dataHelper = new DataHelper(getActivity());
 
-		String[] projection = {
+		final String[] projection = {
 				Schema.COL_ID,
 				Schema.COL_ACTUAL_CELLID,
 				Schema.COL_OPERATORNAME,
@@ -164,10 +164,10 @@ public class CellsListContainer extends SherlockListFragment implements LoaderMa
 				"MAX(" + Schema.COL_STRENGTHDBM + ")"
 		};
 
-		int session = dataHelper.getActiveSessionId();
+		final int session = dataHelper.getActiveSessionId();
 
 		// TODO: mSelection and mSelectionArgs are yet ignored
-		CursorLoader cursorLoader = new CursorLoader(getActivity().getBaseContext(), ContentUris.withAppendedId(Uri.withAppendedPath(
+		final CursorLoader cursorLoader = new CursorLoader(getActivity().getBaseContext(), ContentUris.withAppendedId(Uri.withAppendedPath(
 						RadioBeaconContentProvider.CONTENT_URI_CELL, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
 						projection, mSelection, mSelectionArgs, null);
 		return cursorLoader;
@@ -221,7 +221,7 @@ public class CellsListContainer extends SherlockListFragment implements LoaderMa
 		 */
 		public boolean setViewValue(final View view, final Cursor cursor, final int columnIndex) {
 			if (columnIndex == cursor.getColumnIndex(Schema.COL_NETWORKTYPE)) { 
-				int result = cursor.getInt(columnIndex);
+				final int result = cursor.getInt(columnIndex);
 				((TextView) view).setText(CellRecord.TECHNOLOGY_MAP().get(result));
 				return true;
 			}

@@ -80,9 +80,9 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 
 	private String serverVersion = "";
 
-	private Context	mContext;
+	private final Context	mContext;
 	
-	private ServerReply	mListener;
+	private final ServerReply	mListener;
 
 	public ServerValidation(final Context context, final ServerReply listener) {
 		mListener = listener;
@@ -95,7 +95,7 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 	@Override
 	protected Object[] doInBackground(final String... params) {
 		try {
-			Object[]  result = new Object[2];
+			final Object[]  result = new Object[2];
 			result[0] = ServerAnswer.UNKNOWN_ERROR;
 			result[1] = "Uninitialized";
 
@@ -112,8 +112,8 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 				}
 			}
 
-			SAXParserFactory factory = SAXParserFactory.newInstance();
-			DefaultHandler handler = new DefaultHandler() {
+			final SAXParserFactory factory = SAXParserFactory.newInstance();
+			final DefaultHandler handler = new DefaultHandler() {
 
 				private boolean versionElement = false;
 
@@ -139,10 +139,10 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 
 			Log.i(TAG, "Verifying client version at" + Preferences.VERSION_CHECK_URL);
 			// version file is opened as stream, thus preventing immediate timeout issues
-			URL url = new URL(Preferences.VERSION_CHECK_URL);
-			InputStream stream = url.openStream();
+			final URL url = new URL(Preferences.VERSION_CHECK_URL);
+			final InputStream stream = url.openStream();
 
-			SAXParser saxParser = factory.newSAXParser();
+			final SAXParser saxParser = factory.newSAXParser();
 			saxParser.parse(stream, handler);
 			stream.close();
 
@@ -157,14 +157,14 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 				result[1] = "New version available:" + serverVersion;
 				return result;
 			}
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			Log.e(TAG, "Error occured on version check. Are you online?");
-			Object[] noreply = new Object[]{ ServerAnswer.NO_REPLY, "Couldn't contact server"};
+			final Object[] noreply = new Object[]{ ServerAnswer.NO_REPLY, "Couldn't contact server"};
 			return noreply;
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			Log.e(TAG, "Error occured on version check: " + e.getMessage());
 			e.printStackTrace();
-			Object[] generic = new Object[]{ ServerAnswer.UNKNOWN_ERROR, "Error: " + e.getMessage()};
+			final Object[] generic = new Object[]{ ServerAnswer.UNKNOWN_ERROR, "Error: " + e.getMessage()};
 			return generic;
 		}
 	}
@@ -174,8 +174,8 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 
 		if (result.length == 2) {
 			//ServerAnswer version = s.isAllowedVersion(RadioBeacon.SW_VERSION);
-			ServerAnswer version = (ServerAnswer) result[0];
-			String text = (String) result[1];
+			final ServerAnswer version = (ServerAnswer) result[0];
+			final String text = (String) result[1];
 
 			if (version == ServerAnswer.OK) {
 				if (mListener != null) {
@@ -201,7 +201,7 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 	 * 
 	 */
 	private void waitForConnect() {
-		ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+		final ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo networkInfo = null;
 
 		// wait for state change
@@ -213,7 +213,7 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 				}
 				Log.i(TAG, "Network neighter connected nor connecting. Wait 1 sec..");
 				Thread.sleep(1000);
-			} catch (InterruptedException e) {
+			} catch (final InterruptedException e) {
 				// ignore
 			}
 		}
@@ -234,7 +234,7 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 				Log.i(TAG, "Connection not yet ready. Waiting 1 sec..");
 				try {
 					Thread.sleep(1000);         
-				} catch (InterruptedException e) {
+				} catch (final InterruptedException e) {
 					// ignore
 				}
 			}
@@ -253,8 +253,8 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 	private boolean isOnline() {
 		// try to connect openbmap.org
 		try {
-			URL url = new URL(Preferences.VERSION_CHECK_URL);
-			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+			final URL url = new URL(Preferences.VERSION_CHECK_URL);
+			final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 			connection.setRequestProperty("Connection", "close");
 			connection.setConnectTimeout(CONNECTION_TIMEOUT);
 			connection.connect();
@@ -264,7 +264,7 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 			} else {
 				Log.w(TAG, "Http ping failed (return code != 200). Trying to setup connection");
 			}
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			Log.w(TAG, "Http ping failed (no response). Trying to setup connection ..");
 		}
 		return false;

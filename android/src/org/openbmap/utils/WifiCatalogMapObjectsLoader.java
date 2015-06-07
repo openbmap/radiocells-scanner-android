@@ -81,9 +81,11 @@ public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayLi
 	private SQLiteDatabase mRefdb;
 
 	private OnCatalogLoadedListener mListener;
+	private final Context mContext;
 
 	public WifiCatalogMapObjectsLoader(final Context context, final OnCatalogLoadedListener listener) {
 		setOnCatalogLoadedListener(listener);
+		mContext = context;
 		mPrefs = PreferenceManager.getDefaultSharedPreferences(context);
 	}
 
@@ -104,7 +106,7 @@ public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayLi
 	@Override
 	protected final ArrayList<LatLong> doInBackground(final Object... args) {         
 
-		ArrayList<LatLong> points = new ArrayList<LatLong>();
+		final ArrayList<LatLong> points = new ArrayList<LatLong>();
 
 		try {
 			// skipping if no reference database set 
@@ -113,10 +115,10 @@ public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayLi
 			}
 
 			// Open catalog database
-			String path = Environment.getExternalStorageDirectory().getPath()
-					+ mPrefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER, Preferences.VAL_WIFI_CATALOG_FOLDER)
-					+ File.separator + mPrefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_REF_DATABASE);
-			mRefdb = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.OPEN_READONLY);
+			final String file = mPrefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
+					mContext.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_SUBDIR)
+					+ File.separator + mPrefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_WIFI_CATALOG_FILE);
+			mRefdb = SQLiteDatabase.openDatabase(file, null, SQLiteDatabase.OPEN_READONLY);
 
 			Cursor refs = null;
 			if (!GROUP_WIFIS) {
@@ -145,17 +147,17 @@ public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayLi
 			}
 
 			int i = 0;
-			int latCol = refs.getColumnIndex("grouped_lat");
-			int lonCol = refs.getColumnIndex("grouped_lon");
+			final int latCol = refs.getColumnIndex("grouped_lat");
+			final int lonCol = refs.getColumnIndex("grouped_lon");
 			while (refs.moveToNext() && i < MAX_REFS) {
 				points.add(new LatLong(refs.getDouble(latCol), refs.getDouble(lonCol)));
 				i++;
 			}
 			/*Log.i(TAG, i + " reference wifis received in bounding box" 
 					+ "[lat min " + (Double) args[MIN_LAT_COL] + " lat max " + (Double) args[MAX_LAT_COL] + " , lon min " + (Double) args[MIN_LON_COL] + " lon max " + (Double) args[MAX_LON_COL] +"]");*/
-		} catch (SQLiteException e) {
+		} catch (final SQLiteException e) {
 			Log.e(TAG, "Sql exception occured: " + e.toString());
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 		} finally {
 			if (mRefdb != null) {

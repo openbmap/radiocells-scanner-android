@@ -18,21 +18,25 @@
 
 package org.openbmap.activities;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
 import org.mapsforge.core.model.BoundingBox;
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
+import org.mapsforge.map.android.graphics.AndroidResourceBitmap;
 import org.mapsforge.map.android.rendertheme.AssetsRenderTheme;
+import org.mapsforge.map.android.util.AndroidUtil;
 import org.mapsforge.map.android.view.MapView;
+import org.mapsforge.map.layer.Layer;
 import org.mapsforge.map.layer.cache.TileCache;
+import org.mapsforge.map.layer.download.TileDownloadLayer;
+import org.mapsforge.map.layer.download.tilesource.OnlineTileSource;
 import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.model.common.Observer;
+import org.mapsforge.map.reader.MapFile;
 import org.mapsforge.map.rendertheme.XmlRenderTheme;
 import org.mapsforge.map.util.MapPositionUtil;
-import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
@@ -45,15 +49,12 @@ import org.openbmap.heatmap.HeatmapBuilder.HeatmapBuilderListener;
 import org.openbmap.utils.MapUtils;
 
 import android.annotation.SuppressLint;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -84,7 +85,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	/**
 	 * MapView
 	 */
-	private MapView mapView;
+	private MapView mMapView;
 
 	//[end]
 
@@ -92,13 +93,18 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	/**
 	 * Baselayer cache
 	 */
-	private TileCache tileCache;
+	private TileCache mTileCache;
 
+	/**
+	 * Online tile layer, used when no offline map available
+	 */
+	private static TileDownloadLayer mapDownloadLayer = null;
+	
 	//[end]
 
 	// [start] Dynamic map variables
 
-	private ArrayList<HeatLatLong> points = new ArrayList<HeatLatLong>();
+	private final ArrayList<HeatLatLong> points = new ArrayList<HeatLatLong>();
 
 	private boolean	pointsLoaded  = false;
 
@@ -131,17 +137,17 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 	@Override
 	public final View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.wifidetailsmap, container, false);	
-		this.mapView = (MapView) view.findViewById(R.id.map);
+		final View view = inflater.inflate(R.layout.wifidetailsmap, container, false);	
+		this.mMapView = (MapView) view.findViewById(R.id.map);
 		return view;
 	}
 
 	@Override
 	public final void onActivityCreated(final Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);	
-
+		
 		initMap();
-
+		
 		mWifi = ((WifiDetailsActivity) getActivity()).getWifi();
 
 		if (savedInstanceState != null) {
@@ -156,12 +162,17 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	@Override
 	public void onResume() {
 		super.onResume();
+
+		if (mapDownloadLayer != null) {
+			mapDownloadLayer.onResume();
+		}
+		
 		// register for zoom changes
 		this.mapObserver = new Observer() {
 			@Override
 			public void onChange() {
 
-				byte zoom = mapView.getModel().mapViewPosition.getZoomLevel();
+				final byte zoom = mMapView.getModel().mapViewPosition.getZoomLevel();
 				if (zoom != currentZoom) {
 					// update overlays on zoom level changed
 					Log.i(TAG, "New zoom level " + zoom + ", reloading map objects");
@@ -177,27 +188,40 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 				}
 			}
 		};
-		this.mapView.getModel().mapViewPosition.addObserver(mapObserver);
+		this.mMapView.getModel().mapViewPosition.addObserver(mapObserver);
+	}
+
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		this.mTileCache.destroy();
+		this.mMapView.getModel().mapViewPosition.destroy();
+		this.mMapView.destroy();
+		AndroidResourceBitmap.clearResourceBitmaps();
 	}
 
 	@Override
 	public void onPause(){
-		mapView.getModel().mapViewPosition.removeObserver(mapObserver);
+		mMapView.getModel().mapViewPosition.removeObserver(mapObserver);
+		if ((mapDownloadLayer != null)) {
+			mapDownloadLayer.onResume();
+		}	
 		super.onPause();
 	}
 
 	@Override
 	public final Loader<Cursor> onCreateLoader(final int arg0, final Bundle arg1) {
 		// set query params: bssid and session id
-		String[] args = {"-1", String.valueOf(RadioBeacon.SESSION_NOT_TRACKING)};
+		final String[] args = {"-1", String.valueOf(RadioBeacon.SESSION_NOT_TRACKING)};
 		if (mWifi != null) {
 			args[0] = mWifi.getBssid();	
 		}
-		DataHelper dbHelper = new DataHelper(this.getActivity());
+		final DataHelper dbHelper = new DataHelper(this.getActivity());
 		args[1] = String.valueOf(dbHelper.getActiveSessionId());
 
-		String[] projection = { Schema.COL_ID, Schema.COL_SSID, Schema.COL_LEVEL,  "begin_" + Schema.COL_LATITUDE, "begin_" + Schema.COL_LONGITUDE};
-		CursorLoader cursorLoader =
+		final String[] projection = { Schema.COL_ID, Schema.COL_SSID, Schema.COL_LEVEL,  "begin_" + Schema.COL_LATITUDE, "begin_" + Schema.COL_LONGITUDE};
+		final CursorLoader cursorLoader =
 				new CursorLoader(getActivity().getBaseContext(),  RadioBeaconContentProvider.CONTENT_URI_WIFI_EXTENDED,
 						projection, Schema.COL_BSSID + " = ? AND " + Schema.COL_SESSION_ID + " = ?", args, Schema.COL_LEVEL + " ASC");
 		return cursorLoader;
@@ -207,18 +231,18 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	public final void onLoadFinished(final Loader<Cursor> loader, final Cursor cursor) {
 		if (cursor != null && cursor.getCount() > 0) {
 
-			int colLat = cursor.getColumnIndex("begin_" + Schema.COL_LATITUDE);
-			int colLon = cursor.getColumnIndex("begin_" + Schema.COL_LONGITUDE);
-			int colLevel = cursor.getColumnIndex(Schema.COL_LEVEL);
+			final int colLat = cursor.getColumnIndex("begin_" + Schema.COL_LATITUDE);
+			final int colLon = cursor.getColumnIndex("begin_" + Schema.COL_LONGITUDE);
+			final int colLevel = cursor.getColumnIndex(Schema.COL_LEVEL);
 
 			while (cursor.moveToNext()) {
 				//int intensity = (int) (cursor.getInt(colLevel) / -10);
-				int intensity = cursor.getInt(colLevel) / -50;
+				final int intensity = cursor.getInt(colLevel) / -50;
 				points.add(new HeatLatLong(cursor.getDouble(colLat), cursor.getDouble(colLon), intensity));
 			}
 
 			if (points.size() > 0) {
-				mapView.getModel().mapViewPosition.setCenter(points.get(points.size()-1));
+				mMapView.getModel().mapViewPosition.setCenter(points.get(points.size()-1));
 			}
 			pointsLoaded  = true;
 			proceedAfterHeatmapCompleted();
@@ -234,19 +258,19 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 			clearLayer();
 
-			BoundingBox bbox = MapPositionUtil.getBoundingBox(
-					mapView.getModel().mapViewPosition.getMapPosition(),
-					mapView.getDimension(), mapView.getModel().displayModel.getTileSize());
+			final BoundingBox bbox = MapPositionUtil.getBoundingBox(
+					mMapView.getModel().mapViewPosition.getMapPosition(),
+					mMapView.getDimension(), mMapView.getModel().displayModel.getTileSize());
 
-			target = mapView.getModel().mapViewPosition.getCenter();
-			zoomAtTrigger = mapView.getModel().mapViewPosition.getZoomLevel();
+			target = mMapView.getModel().mapViewPosition.getCenter();
+			zoomAtTrigger = mMapView.getModel().mapViewPosition.getZoomLevel();
 
 			heatmapLayer = new Marker(target, null, 0, 0);
-			mapView.getLayerManager().getLayers().add(heatmapLayer);
+			mMapView.getLayerManager().getLayers().add(heatmapLayer);
 
 			builder = new HeatmapBuilder(
-					WifiDetailsMap.this, mapView.getWidth(), mapView.getHeight(), bbox,
-					mapView.getModel().mapViewPosition.getZoomLevel(), mapView.getModel().displayModel.getScaleFactor(), mapView.getModel().displayModel.getTileSize(), RADIUS).execute(points);
+					WifiDetailsMap.this, mMapView.getWidth(), mMapView.getHeight(), bbox,
+					mMapView.getModel().mapViewPosition.getZoomLevel(), mMapView.getModel().displayModel.getScaleFactor(), mMapView.getModel().displayModel.getTileSize(), RADIUS).execute(points);
 		} else {
 			Log.i(TAG, "Another heat-map is currently generated. Skipped");
 		}
@@ -258,7 +282,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	@Override
 	public final void onHeatmapCompleted(final Bitmap backbuffer) {
 		// zoom level has changed in the mean time - regenerate
-		if (mapView.getModel().mapViewPosition.getZoomLevel() != zoomAtTrigger) {
+		if (mMapView.getModel().mapViewPosition.getZoomLevel() != zoomAtTrigger) {
 			updatePending = false;
 			Log.i(TAG, "Zoom level has changed - have to re-generate heat-map");
 			clearLayer();
@@ -266,8 +290,8 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 			return;
 		}
 
-		BitmapDrawable drawable = new BitmapDrawable(backbuffer);
-		org.mapsforge.core.graphics.Bitmap mfBitmap = AndroidGraphicFactory.convertToBitmap(drawable);
+		final BitmapDrawable drawable = new BitmapDrawable(backbuffer);
+		final org.mapsforge.core.graphics.Bitmap mfBitmap = AndroidGraphicFactory.convertToBitmap(drawable);
 		if (heatmapLayer != null && mfBitmap != null) {
 			heatmapLayer.setBitmap(mfBitmap);
 		} else {
@@ -302,8 +326,8 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 			return;
 		}
 
-		if (mapView.getLayerManager().getLayers().indexOf(heatmapLayer) != -1) {
-			mapView.getLayerManager().getLayers().remove(heatmapLayer);
+		if (mMapView.getLayerManager().getLayers().indexOf(heatmapLayer) != -1) {
+			mMapView.getLayerManager().getLayers().remove(heatmapLayer);
 			heatmapLayer = null;
 		}
 	}
@@ -312,7 +336,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	 * Opens selected map file
 	 * @return a map file
 	 */
-	protected final File getMapFile() {
+	protected final MapFile getMapFile() {
 		return MapUtils.getMapFile(getActivity());
 	}
 
@@ -323,32 +347,48 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	protected XmlRenderTheme getRenderTheme() {
 		try {
 			return new AssetsRenderTheme(this.getActivity(), "", "renderthemes/rendertheme-v4.xml");
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			Log.e(TAG, "Render theme failure " + e.toString());
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Initializes map components
 	 */
 	@SuppressLint("NewApi")
 	private void initMap() {
-		this.tileCache = createTileCache();
+		this.mTileCache = createTileCache();
 
 		if (MapUtils.isMapSelected(this.getActivity())) {
-			// remove all layers including base layer
-			mapView.getLayerManager().getLayers().add(MapUtils.createTileRendererLayer(
-					this.tileCache,
-					this.mapView.getModel().mapViewPosition,
-					getMapFile(), null, getRenderTheme()));
+			final Layer offlineLayer = MapUtils.createTileRendererLayer(
+					this.mTileCache, this.mMapView.getModel().mapViewPosition, getMapFile(), null, getRenderTheme());
+			if (offlineLayer != null) this.mMapView.getLayerManager().getLayers().add(offlineLayer);
 		} else {
-			this.mapView.getModel().displayModel.setBackgroundColor(0xffffffff);
-			Toast.makeText(this.getActivity(), R.string.no_map_file_selected, Toast.LENGTH_LONG).show();
+			//this.mMapView.getModel().displayModel.setBackgroundColor(0xffffffff);
+			Toast.makeText(this.getActivity(), R.string.info_using_online_map, Toast.LENGTH_LONG).show();
+
+			final OnlineTileSource onlineTileSource = new OnlineTileSource(new String[]{
+					"otile1.mqcdn.com", "otile2.mqcdn.com", "otile3.mqcdn.com", "otile4.mqcdn.com"}, 80);
+			onlineTileSource.setName("MapQuest")
+			.setAlpha(false)
+			.setBaseUrl("/tiles/1.0.0/map/")
+			.setExtension("png")
+			.setParallelRequestsLimit(8)
+			.setProtocol("http")
+			.setTileSize(256)
+			.setZoomLevelMax((byte) 18)
+			.setZoomLevelMin((byte) 0);
+
+			mapDownloadLayer = new TileDownloadLayer(mTileCache,
+					mMapView.getModel().mapViewPosition, onlineTileSource,
+					AndroidGraphicFactory.INSTANCE);
+			mMapView.getLayerManager().getLayers().add(mapDownloadLayer);
+			mapDownloadLayer.onResume();
 		}
 
 		// register for layout finalization - we need this to get width and height
-		ViewTreeObserver vto = mapView.getViewTreeObserver();
+		final ViewTreeObserver vto = mMapView.getViewTreeObserver();
 		vto.addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
 
 			@SuppressLint("NewApi")
@@ -358,7 +398,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 				layoutInflated = true;
 				proceedAfterHeatmapCompleted();
 
-				ViewTreeObserver obs = mapView.getViewTreeObserver();
+				final ViewTreeObserver obs = mMapView.getViewTreeObserver();
 
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
 					obs.removeOnGlobalLayoutListener(this);
@@ -373,7 +413,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 			@Override
 			public void onChange() {
 
-				byte newZoom = mapView.getModel().mapViewPosition.getZoomLevel();
+				final byte newZoom = mMapView.getModel().mapViewPosition.getZoomLevel();
 				if (newZoom != currentZoom) {
 					// update overlays on zoom level changed
 					Log.i(TAG, "New zoom level " + newZoom + ", reloading map objects");
@@ -392,10 +432,10 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 				}
 			}
 		};
-		this.mapView.getModel().mapViewPosition.addObserver(mapObserver);
+		this.mMapView.getModel().mapViewPosition.addObserver(mapObserver);
 
-		this.mapView.setClickable(true);
-		this.mapView.getMapScaleBar().setVisible(true);
+		this.mMapView.setClickable(true);
+		this.mMapView.getMapScaleBar().setVisible(true);
 
 		/*
 			Layers layers = layerManager.getLayers();
@@ -403,7 +443,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 			layers.clear();
 		 */
 
-		this.mapView.getModel().mapViewPosition.setZoomLevel((byte) 16);
+		this.mMapView.getModel().mapViewPosition.setZoomLevel((byte) 16);
 
 	}
 
@@ -412,7 +452,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	 * @return
 	 */
 	protected final TileCache createTileCache() {
-		return MapUtils.createExternalStorageTileCache(getActivity(), getClass().getSimpleName());
+		return AndroidUtil.createTileCache(this.getActivity(), "mapcache", mMapView.getModel().displayModel.getTileSize(), 1f, this.mMapView.getModel().frameBufferModel.getOverdrawFactor());
 	}
 
 	/**

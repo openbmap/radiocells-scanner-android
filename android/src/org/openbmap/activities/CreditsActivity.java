@@ -49,8 +49,8 @@ public class CreditsActivity extends Activity {
 	}
 
 	public final String readBuildInfo() {
-		InputStream buildInStream = getResources().openRawResource(R.raw.build);
-	    ByteArrayOutputStream buildOutStream = new ByteArrayOutputStream();
+		final InputStream buildInStream = getResources().openRawResource(R.raw.build);
+	    final ByteArrayOutputStream buildOutStream = new ByteArrayOutputStream();
 	
 	    int i;
 	 
@@ -62,7 +62,7 @@ public class CreditsActivity extends Activity {
 	        }
 	 
 	        buildInStream.close();
-	    } catch (IOException e) {
+	    } catch (final IOException e) {
 	        e.printStackTrace();
 	    }
 	 

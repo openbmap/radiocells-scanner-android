@@ -19,12 +19,11 @@
 package org.openbmap.soapclient;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
-import org.openbmap.soapclient.FileUploader.UploadTaskListener;
+import org.openbmap.soapclient.FileUploader.FileUploadListener;
 import org.openbmap.utils.MediaScanner;
 import org.openbmap.utils.WifiCatalogUpdater;
 
@@ -36,16 +35,16 @@ import android.util.Log;
 import android.widget.Toast;
 
 /**
- * Manages export and upload process
+ * Manages export and upload processes
  */
-public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implements UploadTaskListener {
+public class UploadTask extends AsyncTask<Void, Object, Boolean> implements FileUploadListener {
 
-	private static final String TAG = ExportSessionTask.class.getSimpleName();
+	private static final String TAG = UploadTask.class.getSimpleName();
 
 	/**
 	 * Max. number of parallel uploads
 	 */
-	private int	MAX_THREADS = 5;
+	private final int MAX_THREADS = 5;
 
 	/**
 	 * Wait for how many milliseconds for upload to be completed
@@ -86,22 +85,22 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	/**
 	 * Session Id to export
 	 */
-	private int mSession;
+	private final int mSession;
 
 	/**
 	 * Message in case of an error
 	 */
-	private String errorMsg = null;
+	private final String errorMsg = null;
 
 	/**
 	 * Used for callbacks.
 	 */
-	private ExportTaskListener mListener;
+	private final UploadTaskListener mListener;
 
 	/**
 	 * Directory where xmls files are stored
 	 */
-	private String	mTargetPath;
+	private final String	mTargetPath;
 
 	/*
 	 *  Openbmap credentials : openbmap username
@@ -128,18 +127,6 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	private boolean	mAnonymiseSsid = false;
 
 	/**
-	 * Create GPX file after upload?
-	 */
-	private boolean	mExportGpx = false;
-
-	private String	mGpxFile;
-
-	/**
-	 * Folder for GPX tracks
-	 */
-	private String	mGpxFolder;
-
-	/**
 	 * Skip upload?
 	 */
 	private boolean	mSkipUpload;
@@ -164,11 +151,11 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	 */
 	private ArrayList<String>	mUploadedFiles;
 
-	public interface ExportTaskListener {
-		void onProgressUpdate(Object... values);
-		void onExportCompleted(final int id);
+	public interface UploadTaskListener {
+		void onUploadProgressUpdate(Object... values);
+		void onUploadCompleted(final int id);
 		void onDryRunCompleted(final int id);
-		void onExportFailed(final int id, final String error);
+		void onUploadFailed(final int id, final String error);
 	}
 
 	//http://stackoverflow.com/questions/9573855/second-instance-of-activity-after-orientation-change
@@ -181,7 +168,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	 * @param user
 	 * @param password
 	 */
-	public ExportSessionTask(final Context context, final ExportTaskListener listener, final int session,
+	public UploadTask(final Context context, final UploadTaskListener listener, final int session,
 			final String targetPath, final String user, final String password, final boolean anonymiseSsid) {
 		// EXPERIMENTAL: use ApplicationContext here !!!
 		this.mAppContext = context.getApplicationContext();
@@ -226,7 +213,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 						Log.i(TAG, "Maximum number of upload threads reached. Waiting..");
 						try {
 							Thread.sleep(50);
-						} catch (InterruptedException e) {
+						} catch (final InterruptedException e) {
 						}
 					}
 					publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.uploading_cells) + "(Files: " + String.valueOf(cellFiles.size() -i) +")" , 0);
@@ -257,7 +244,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 						Log.i(TAG, "Maximum number of upload threads reached. Waiting..");
 						try {
 							Thread.sleep(50);
-						} catch (InterruptedException e) {
+						} catch (final InterruptedException e) {
 						}
 					}
 					publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.uploading_wifis) + "(Files: " + String.valueOf(wifiFiles.size() -i ) + ")", 50);
@@ -277,12 +264,12 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 
 		if (!getSkipUpload()) {
 			// wait max 30s for all upload tasks to finish
-			long startGrace = System.currentTimeMillis(); 
+			final long startGrace = System.currentTimeMillis(); 
 			while (mActiveUploads > 0 ) {
 				Log.i(TAG, "Waiting for uploads to complete. (Active " + String.valueOf(mActiveUploads) + ")");
 				try {
 					Thread.sleep(50);
-				} catch (InterruptedException e) {
+				} catch (final InterruptedException e) {
 				}
 				if (System.currentTimeMillis() - startGrace > GRACE_TIME) {
 					Log.i(TAG, "Timeout reached");
@@ -304,7 +291,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 				// delete only successfully uploaded files
 				Log.i(TAG, "Deleting uploaded files");
 				for (int i = 0; i < mUploadedFiles.size(); i++) {
-					File temp = new File(mUploadedFiles.get(i));
+					final File temp = new File(mUploadedFiles.get(i));
 					if (!temp.delete()) {
 						Log.e(TAG, "Error deleting " + mUploadedFiles.get(i));
 					}	
@@ -318,22 +305,6 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 		cellFiles = null;
 		mUploadedFiles = null;
 		System.gc();
-
-		if (mExportGpx) {
-			Log.i(TAG, "Exporting gpx");
-			publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.exporting_gpx), 75);
-
-			GpxExporter gpx = new GpxExporter(mAppContext, mSession);
-
-			File target = new File(mGpxFolder, mGpxFile);
-			try {
-				gpx.doExport(mGpxFile, target);
-			} catch (IOException e) {
-				Log.e(TAG, "Can't write gpx file " + mGpxFolder + File.separator + mGpxFile);
-			}
-		} else {
-			Log.i(TAG, "GPX export skipped");
-		}
 
 		if (mUpdateWifiCatalog) {
 			Log.i(TAG, "Updating wifi catalog");
@@ -352,7 +323,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	@Override
 	protected final void onProgressUpdate(final Object... values) {
 		if (mListener != null) {
-			mListener.onProgressUpdate(values);
+			mListener.onUploadProgressUpdate(values);
 		}
 	}
 
@@ -378,12 +349,12 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 
 		if (success && !mSkipUpload) {
 			if (mListener != null) {
-				mListener.onExportCompleted(mSession);
+				mListener.onUploadCompleted(mSession);
 			}
 			return;
 		} else {
 			if (mListener != null) {
-				mListener.onExportFailed(mSession, errorMsg);
+				mListener.onUploadFailed(mSession, errorMsg);
 			}
 			return;
 		}
@@ -411,22 +382,6 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	 */
 	public final void setExportWifis(final boolean exportWifis) {
 		mExportWifis = exportWifis;
-	}
-
-	/**
-	 * Enables or disables gpx export
-	 * @param exportGpx
-	 */
-	public final void setExportGpx(final boolean exportGpx) {
-		mExportGpx = exportGpx;
-	}
-
-	public final void setGpxFilename(final String gpxFilename) {
-		this.mGpxFile = gpxFilename;
-	}
-
-	public final void setGpxPath(final String gpxPath) {
-		this.mGpxFolder = gpxPath;
 	}
 
 	public final Boolean getSkipUpload() {
@@ -467,14 +422,14 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	/**
 	 * @param sessionActivity
 	 */
-	public void setContext(Context context) {
+	public void setContext(final Context context) {
 		mAppContext = context;
 	}
 
 	/**
 	 * @param b
 	 */
-	public void setUpdateWifiCatalog(boolean updateCatalog) {
+	public void setUpdateWifiCatalog(final boolean updateCatalog) {
 		mUpdateWifiCatalog = updateCatalog;
 	}
 

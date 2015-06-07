@@ -18,12 +18,21 @@
 
 package org.openbmap.db;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.openbmap.Preferences;
 import org.openbmap.RadioBeacon;
+import org.openbmap.utils.FileUtils;
+import org.openbmap.utils.MediaScanner;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 /**
@@ -291,10 +300,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+  ")";
 
 
-	private SQLiteDatabase mDataBase; 
+	private SQLiteDatabase mDataBase;
+
+	private final Context mContext; 
 
 	public DatabaseHelper(final Context context) {
 		super(context, DB_NAME, null, RadioBeacon.DATABASE_VERSION);
+		Log.i(TAG, "Database scheme version " + RadioBeacon.DATABASE_VERSION);
+		mContext = context;
 	}
 
 	@Override
@@ -368,13 +381,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			try {
 				db.execSQL("ALTER TABLE " + Schema.TBL_WIFIS + " ADD COLUMN " + Schema.COL_KNOWN_WIFI + " INTEGER DEFAULT 0");
 			}
-			catch (SQLException e) {
+			catch (final SQLException e) {
 				Log.i(TAG, "Nothing to do: is_known column already exists");
 			}
 
 			try {
 				db.execSQL("UPDATE " + Schema.TBL_WIFIS + " SET " + Schema.COL_KNOWN_WIFI + " = 1 WHERE is_new_wifi = 0");
-			} catch (SQLException e) {
+			} catch (final SQLException e) {
 				Log.w(TAG, "Can't find is_new_wifi column. Skipping update");
 			}
 			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_WIFIS_EXTENDED);
@@ -387,14 +400,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			Log.i(TAG, "Migrate to db version 6");	
 			try {
 				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_STRENGTHASU + " INTEGER DEFAULT 0");
-			} catch (SQLException e) {
+			} catch (final SQLException e) {
 				Log.i(TAG, "Nothing to do: asu column already exists");
 			}
 
 			try {
 				db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_CELLS_EXTENDED);
 				db.execSQL(SQL_CREATE_VIEW_CELL_POSITIONS);
-			} catch (SQLException e) {
+			} catch (final SQLException e) {
 				Log.w(TAG, "Couldn't create cell position view: maybe we've got some more pending migrations");
 			}
 		}
@@ -405,14 +418,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			try {
 				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_UTRAN_RNC + " INTEGER DEFAULT -1");
 				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_ACTUAL_CELLID + " INTEGER DEFAULT -1");
-			} catch (SQLException e) {
+			} catch (final SQLException e) {
 				Log.i(TAG, "Nothing to do: utran columns already exist");
 			}
 
 			try {
 				db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_CELLS_EXTENDED);
 				db.execSQL(SQL_CREATE_VIEW_CELL_POSITIONS);
-			} catch (SQLException e) {
+			} catch (final SQLException e) {
 				Log.w(TAG, "Couldn't create cell position view: maybe we've got some more pending migrations");
 			}
 		}
@@ -426,20 +439,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			try {
 				db.execSQL("ALTER TABLE " + Schema.TBL_WIFIS + " ADD COLUMN " + Schema.COL_KNOWN_WIFI + " INTEGER DEFAULT 0");
 			}
-			catch (SQLException e) {
+			catch (final SQLException e) {
 				Log.i(TAG, "Nothing to do: is_known column already exists");
 			}
 	
 			try {
 				db.execSQL("UPDATE " + Schema.TBL_WIFIS + " SET " + Schema.COL_KNOWN_WIFI + " = 1 WHERE is_new_wifi = 0");
-			} catch (SQLException e) {
+			} catch (final SQLException e) {
 				Log.w(TAG, "Can't find is_new_wifi column. Skipping update");
 			}
 			
 			// repeat migration 5
 			try {
 				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_STRENGTHASU + " INTEGER DEFAULT 0");
-			} catch (SQLException e) {
+			} catch (final SQLException e) {
 				Log.i(TAG, "Nothing to do: asu column already exists");
 			}
 			
@@ -447,7 +460,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			try {
 				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_UTRAN_RNC + " INTEGER DEFAULT -1");
 				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_ACTUAL_CELLID + " INTEGER DEFAULT -1");
-			} catch (SQLException e) {
+			} catch (final SQLException e) {
 				Log.i(TAG, "Nothing to do: utran columns already exist");
 			}
 			
@@ -457,6 +470,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			
 			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_CELLS_EXTENDED);
 			db.execSQL(SQL_CREATE_VIEW_CELL_POSITIONS);
+		}
+		
+		if (oldVersion <= 9) {
+			moveFilesToAndroidDefaultFolders();
 		}
 	}
 
@@ -469,5 +486,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 		super.close();
 	}
+	
+	/**
+	 * Moves maps, gpx tracks and wifi database catalogs from Preferences.KEY_DATA_FOLDER to /sdcard/Android/data/org.openbmap
+	 * Thus, when uninstalling Radiobeacon they get automatically cleaned up
+	 */
+	private void moveFilesToAndroidDefaultFolders() {
+		Log.d(TAG, "Resetting Radiobeacon folders to Android standard");
+		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+		final String currentFolder = prefs.getString("data.dir", "/org.openbmap");
+		
+		final File from = new File(Environment.getExternalStorageDirectory() + File.separator + currentFolder + File.separator);
+		final File to = new File(mContext.getExternalFilesDir(null).getAbsolutePath());
+		try {
+			FileUtils.moveFolder(from, to);
+		} catch (final IOException e) {
+			Log.e(TAG, "Moving directory failed" + e.getMessage());
+		}
+		// force reindex
+		new MediaScanner(mContext, to);
+
+		final SharedPreferences.Editor prefEditor = prefs.edit();
+		prefEditor.putString(Preferences.KEY_MAP_FOLDER, mContext.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.MAPS_SUBDIR); //**syntax error on tokens**
+		prefEditor.putString(Preferences.KEY_WIFI_CATALOG_FOLDER, mContext.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_SUBDIR);
+		prefEditor.commit();
+			    
+	}
+
 
 }

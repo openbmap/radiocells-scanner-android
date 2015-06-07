@@ -17,10 +17,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 History
 
 0.8.5
+    - Use online map provider, if no offline map is available
+    - Move data folder from userspace to Android/data (thanks agilob)
     - Map can now render various OSM mobile infrastructure (mast, antenna, communications_tower) 
-    - Long press on map saves waypoint in gpx (reminder function)
-    - Reworked SSID escaping
+    - Long press on map saves waypoint in gpx (for later analysis)
+    - Fixed SSID escaping
     - Fixed various UI dialogs (thanks franxisco1988)
+    - Wireless Logging Service started in foreground mode to prevent crash on long running sessions (issue #70, thanks Michael)
+    - Removed BSSID blacklist (now handled server side)
+    - Added folder selection dialogs
+    - Added maps for India, South Korea, Taiwan
     
 0.8.4
     - Added waypoint support (long tap on map)

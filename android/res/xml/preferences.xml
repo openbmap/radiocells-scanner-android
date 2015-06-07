@@ -106,19 +106,13 @@
         </CheckBoxPreference>
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/prefs_folder_settings" >
-        <EditTextPreference
-            android:defaultValue="/org.openbmap"
-            android:dialogMessage="@string/prefs_data_dir_hint"
-            android:key="data.dir"
-            android:summary=""
-            android:title="@string/prefs_data_dir" />
-        <EditTextPreference
+        <Preference
             android:defaultValue="/org.openbmap/maps"
             android:dialogTitle="@string/prefs_map_folder"
             android:key="data.folder_map"
             android:summary="@string/prefs_data_map_folder_summary"
             android:title="@string/prefs_map_folder" />
-        <EditTextPreference
+        <Preference
             android:defaultValue="/org.openbmap/databases"
             android:dialogTitle="@string/prefs_wifi_catalog_folder"
             android:key="data.folder_catalog"

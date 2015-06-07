@@ -40,8 +40,8 @@ public class ServiceManager {
 
 	private static final String TAG = ServiceManager.class.getSimpleName();
 
-	private Class<? extends AbstractService> mServiceClass;
-	private Context mActivity;
+	private final Class<? extends AbstractService> mServiceClass;
+	private final Context mActivity;
 	/*
 	 * Signals whether service is bound.
 	 * Be careful: This doesn't mean that service already has been created yet.
@@ -70,7 +70,7 @@ public class ServiceManager {
 		@Override
 		public void handleMessage(final Message msg) {
 			Log.d(TAG, "Service Manager received message " + msg.toString());
-			ServiceManager manager = mWeakRef.get();
+			final ServiceManager manager = mWeakRef.get();
 			if (manager.mActivityHandler != null) {
 				Log.i(TAG, "Incoming message from service. Passing to handler: " + msg);
 				manager.mActivityHandler.handleMessage(msg);
@@ -78,7 +78,7 @@ public class ServiceManager {
 		}
 	}
 
-	private ServiceConnection mConnection = new ServiceConnection() {
+	private final ServiceConnection mConnection = new ServiceConnection() {
 
 		/*
 		 * (non-Javadoc)
@@ -89,17 +89,17 @@ public class ServiceManager {
 			Log.i(TAG, "Attached " + className.toShortString());
 			try {
 				// register at service
-				Message serviceMsg = Message.obtain(null, AbstractService.MSG_REGISTER_CLIENT);
+				final Message serviceMsg = Message.obtain(null, AbstractService.MSG_REGISTER_CLIENT);
 				serviceMsg.replyTo = mActivityMessenger;
 				mService.send(serviceMsg);
 				
 				// inform activity that service is ready
-				Message activityMsg = new Message(); 
+				final Message activityMsg = new Message(); 
 				activityMsg.what = RadioBeacon.MSG_SERVICE_READY;		
 				mActivityMessenger.send(activityMsg);
 				
 				mIsServiceReady = true;
-			} catch (RemoteException e) {
+			} catch (final RemoteException e) {
 				// In this case the service has crashed before we could even do anything with it
 				mIsServiceReady = false;
 				e.printStackTrace();
@@ -144,9 +144,9 @@ public class ServiceManager {
 	}
 
 	public final boolean isRunning() {
-		ActivityManager manager = (ActivityManager) mActivity.getSystemService(Context.ACTIVITY_SERVICE);
+		final ActivityManager manager = (ActivityManager) mActivity.getSystemService(Context.ACTIVITY_SERVICE);
 
-		for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+		for (final RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
 			if (mServiceClass.getName().equals(service.service.getClassName())) {
 				return true;
 			}
@@ -183,10 +183,10 @@ public class ServiceManager {
 		// If we have received the service, and hence registered with it, then now is the time to unregister.
 		if (mService != null) {
 			try {
-				Message msg = Message.obtain(null, AbstractService.MSG_UNREGISTER_CLIENT);
+				final Message msg = Message.obtain(null, AbstractService.MSG_UNREGISTER_CLIENT);
 				msg.replyTo = mActivityMessenger;
 				mService.send(msg);
-			} catch (RemoteException e) {
+			} catch (final RemoteException e) {
 				e.printStackTrace();
 			}
 		}
@@ -195,7 +195,7 @@ public class ServiceManager {
 			try {
 				Log.i(TAG, "Unbindung service connection");
 				mActivity.unbindService(mConnection);
-			} catch (IllegalArgumentException e) {
+			} catch (final IllegalArgumentException e) {
 				Log.w(TAG, "Service wasn't registered, thus unbinding failed");
 			}
 			

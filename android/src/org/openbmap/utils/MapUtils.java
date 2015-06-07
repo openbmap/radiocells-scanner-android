@@ -24,7 +24,6 @@ import org.mapsforge.core.graphics.Style;
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.core.model.Point;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
-import org.mapsforge.map.android.rendertheme.AssetsRenderTheme;
 import org.mapsforge.map.layer.Layer;
 import org.mapsforge.map.layer.cache.FileSystemTileCache;
 import org.mapsforge.map.layer.cache.InMemoryTileCache;
@@ -33,6 +32,8 @@ import org.mapsforge.map.layer.cache.TwoLevelTileCache;
 import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.layer.renderer.TileRendererLayer;
 import org.mapsforge.map.model.MapViewPosition;
+import org.mapsforge.map.reader.MapDataStore;
+import org.mapsforge.map.reader.MapFile;
 import org.mapsforge.map.rendertheme.InternalRenderTheme;
 import org.mapsforge.map.rendertheme.XmlRenderTheme;
 import org.openbmap.Preferences;
@@ -44,7 +45,6 @@ import android.content.SharedPreferences;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
@@ -55,6 +55,8 @@ import android.view.View.MeasureSpec;
  */
 
 public final class MapUtils {
+	private static final String TAG = MapUtils.class.getSimpleName();
+
 	/**
 	 * Compatibility method
 	 * 
@@ -62,7 +64,7 @@ public final class MapUtils {
 	 *            the current activity
 	 */
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-	public static void enableHome(Activity a) {
+	public static void enableHome(final Activity a) {
 		if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			// Show the Up button in the action bar.
 			a.getActionBar().setDisplayHomeAsUpEnabled(true);
@@ -81,25 +83,26 @@ public final class MapUtils {
 	 *            name for the directory
 	 * @return a new cache created on the external storage
 	 */
+	@Deprecated
 	public static TileCache createExternalStorageTileCache(final Context c, final String id) {
-		TileCache firstLevelTileCache = new InMemoryTileCache(32);
-		String cacheDirectoryName = c.getExternalCacheDir().getAbsolutePath() + File.separator + id;
-		File cacheDirectory = new File(cacheDirectoryName);
+		final TileCache firstLevelTileCache = new InMemoryTileCache(32);
+		final String cacheDirectoryName = c.getExternalCacheDir().getAbsolutePath() + File.separator + id;
+		final File cacheDirectory = new File(cacheDirectoryName);
 		if (!cacheDirectory.exists()) {
 			cacheDirectory.mkdir();
 		}
-		TileCache secondLevelTileCache = new FileSystemTileCache(1024, cacheDirectory, AndroidGraphicFactory.INSTANCE);
+		final TileCache secondLevelTileCache = new FileSystemTileCache(1024, cacheDirectory, AndroidGraphicFactory.INSTANCE);
 		return new TwoLevelTileCache(firstLevelTileCache, secondLevelTileCache);
 	}
 
-	static Marker createMarker(Context c, int resourceIdentifier, LatLong latLong) {
-		Drawable drawable = c.getResources().getDrawable(resourceIdentifier);
-		Bitmap bitmap = AndroidGraphicFactory.convertToBitmap(drawable);
+	static Marker createMarker(final Context c, final int resourceIdentifier, final LatLong latLong) {
+		final Drawable drawable = c.getResources().getDrawable(resourceIdentifier);
+		final Bitmap bitmap = AndroidGraphicFactory.convertToBitmap(drawable);
 		return new Marker(latLong, bitmap, 0, -bitmap.getHeight() / 2);
 	}
 
-	public static Paint createPaint(int color, int strokeWidth, Style style) {
-		Paint paint = AndroidGraphicFactory.INSTANCE.createPaint();
+	public static Paint createPaint(final int color, final int strokeWidth, final Style style) {
+		final Paint paint = AndroidGraphicFactory.INSTANCE.createPaint();
 		paint.setColor(color);
 		paint.setStrokeWidth(strokeWidth);
 		paint.setStyle(style);
@@ -111,12 +114,12 @@ public final class MapUtils {
 	 *            the Android context
 	 * @return a new cache
 	 */
-	static TileCache createTileCache(Context c, String id) {
+	/*static TileCache createTileCache(Context c, String id) {
 		TileCache firstLevelTileCache = new InMemoryTileCache(32);
 		File cacheDirectory = c.getDir(id, Context.MODE_PRIVATE);
 		TileCache secondLevelTileCache = new FileSystemTileCache(1024, cacheDirectory, AndroidGraphicFactory.INSTANCE);
 		return new TwoLevelTileCache(firstLevelTileCache, secondLevelTileCache);
-	};
+	};*/
 
 	/**
 	 * Creates a tile layer, which optionally supports long press actions and custom render themes
@@ -127,21 +130,23 @@ public final class MapUtils {
 	 * @param renderTheme
 	 * @return
 	 */
-	public static Layer createTileRendererLayer(TileCache tileCache, MapViewPosition mapViewPosition,
-			File mapFile, final onLongPressHandler longPressHandler, XmlRenderTheme renderTheme) {
-		if (longPressHandler != null) {
-			
+	public static Layer createTileRendererLayer(final TileCache tileCache, final MapViewPosition mapViewPosition,
+			final MapFile mapFile, final onLongPressHandler longPressHandler, final XmlRenderTheme renderTheme) {
+		
+		if (mapFile == null) {
+			return null;
+		}
+		
+		if (longPressHandler != null) {	
 			// add support for onLongClick events
-			TileRendererLayer tileRendererLayer = new TileRendererLayer (tileCache,
+			final TileRendererLayer tileRendererLayer = new TileRendererLayer (tileCache, (MapDataStore) mapFile,
 					mapViewPosition, false, true, AndroidGraphicFactory.INSTANCE) {
 				@Override
-				public boolean onLongPress(LatLong tapLatLong, Point thisXY, Point tapXY) {
+				public boolean onLongPress(final LatLong tapLatLong, final Point thisXY, final Point tapXY) {
 					longPressHandler.onLongPress(tapLatLong, thisXY, tapXY);
 					return true;
 				}
 			};
-
-			tileRendererLayer.setMapFile(mapFile);
 
 			if (renderTheme == null) {
 				tileRendererLayer.setXmlRenderTheme(InternalRenderTheme.OSMARENDER);
@@ -153,10 +158,10 @@ public final class MapUtils {
 			return tileRendererLayer;	
 		} else {
 			// just a plain vanilla layer
-			TileRendererLayer tileRendererLayer = new TileRendererLayer (tileCache,
+			final TileRendererLayer tileRendererLayer = new TileRendererLayer (tileCache, (MapDataStore) mapFile,
 					mapViewPosition, false, true, AndroidGraphicFactory.INSTANCE);
 
-			tileRendererLayer.setMapFile(mapFile);
+			//tileRendererLayer.setMapFile(mapFile);
 			
 			if (renderTheme == null) {
 				tileRendererLayer.setXmlRenderTheme(InternalRenderTheme.OSMARENDER);
@@ -169,11 +174,11 @@ public final class MapUtils {
 		}
 	}
 
-	static Bitmap viewToBitmap(Context c, View view) {
+	static Bitmap viewToBitmap(final Context c, final View view) {
 		view.measure(MeasureSpec.getSize(view.getMeasuredWidth()), MeasureSpec.getSize(view.getMeasuredHeight()));
 		view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
 		view.setDrawingCacheEnabled(true);
-		Drawable drawable = new BitmapDrawable(c.getResources(), android.graphics.Bitmap.createBitmap(view
+		final Drawable drawable = new BitmapDrawable(c.getResources(), android.graphics.Bitmap.createBitmap(view
 				.getDrawingCache()));
 		view.setDrawingCacheEnabled(false);
 		return AndroidGraphicFactory.convertToBitmap(drawable);
@@ -184,19 +189,29 @@ public final class MapUtils {
 	 * @param context
 	 * @return true, if map file is not none
 	 */
-	public static Boolean isMapSelected(Context context) {
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+	public static Boolean isMapSelected(final Context context) {
+		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		return (!prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE).equals(Preferences.VAL_MAP_NONE));
 	}
 
-	public static File getMapFile(final Context context) {
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		final File mapFile = new File(
-				Environment.getExternalStorageDirectory().getPath()
-				+ prefs.getString(Preferences.KEY_MAP_FOLDER, Preferences.VAL_MAP_FOLDER), 
+	/**
+	 * Opens map file
+	 * @param context
+	 * @return
+	 * @throws IOException 
+	 */
+	public static MapFile getMapFile(final Context context) {
+		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+		File file = new File(prefs.getString(Preferences.KEY_MAP_FOLDER,
+				context.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.MAPS_SUBDIR), 
 				prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE));
-
-		return mapFile;
+		
+		if (file.exists()) {
+			return new MapFile(file);
+		} else { 
+			Log.e(TAG, "Map file doesn't exist");
+			return null;
+		}
 	}
 
 	private MapUtils() {

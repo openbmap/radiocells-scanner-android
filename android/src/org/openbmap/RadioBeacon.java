@@ -175,17 +175,6 @@ public final class RadioBeacon {
 	 */
 	public static final String PROVIDER_USER_DEFINED = "WAYPOINT";
 	
-	
-	/**
-	 * Default bssid blacklist's filename
-	 */
-	public static final String	DEFAULT_BSSID_BLOCK_FILE	= "default_bssid.xml";
-
-	/**
-	 * User-defined bssid blacklist's filename
-	 */
-	public static final String	CUSTOM_BSSID_BLOCK_FILE	= "custom_bssid.xml";
-
 	/**
 	 * Default ssid blacklist's filename
 	 */
@@ -213,7 +202,7 @@ public final class RadioBeacon {
      * 			- If you change client version, check whether you need to adjust current_version.xml on server and {@link VERSION_COMPATIBILITY} 
      * 			- Also consider updating android:versionCode="x+1" android:versionName="XYZ" in AndroidManifest.xml (e.g. for automatic F-Droid updates)
 	 */
-	public static final String SW_VERSION = "0.8.4";
+	public static final String SW_VERSION = "0.8.5";
 	
 	/**
 	 * {@link ServerValidation} compares server version against VERSION_COMPATIBILITY to check whether client is outdated.
@@ -232,7 +221,7 @@ public final class RadioBeacon {
 	/**
 	 * Database scheme version
 	 */
-	public static final int DATABASE_VERSION = 8;
+	public static final int DATABASE_VERSION = 10;
 
 	/**
 	 * Private dummy constructor

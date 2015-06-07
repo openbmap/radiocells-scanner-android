@@ -53,7 +53,7 @@ public class TabManager implements TabHost.OnTabChangeListener {
 		private final Bundle args;
 		private Fragment fragment;
 
-		TabInfo(String _tag, Class<?> _class, Bundle _args) {
+		TabInfo(final String _tag, final Class<?> _class, final Bundle _args) {
 			tag = _tag;
 			clss = _class;
 			args = _args;
@@ -63,38 +63,38 @@ public class TabManager implements TabHost.OnTabChangeListener {
 	static class DummyTabFactory implements TabHost.TabContentFactory {
 		private final Context mContext;
 
-		public DummyTabFactory(Context context) {
+		public DummyTabFactory(final Context context) {
 			mContext = context;
 		}
 
 		@Override
-		public View createTabContent(String tag) {
-			View v = new View(mContext);
+		public View createTabContent(final String tag) {
+			final View v = new View(mContext);
 			v.setMinimumWidth(0);
 			v.setMinimumHeight(0);
 			return v;
 		}
 	}
 
-	public TabManager(FragmentActivity activity, TabHost tabHost, int containerId) {
+	public TabManager(final FragmentActivity activity, final TabHost tabHost, final int containerId) {
 		mActivity = activity;
 		mTabHost = tabHost;
 		mContainerId = containerId;
 		mTabHost.setOnTabChangedListener(this);
 	}
 
-	public void addTab(TabHost.TabSpec tabSpec, Class<?> clss, Bundle args) {
+	public void addTab(final TabHost.TabSpec tabSpec, final Class<?> clss, final Bundle args) {
 		tabSpec.setContent(new DummyTabFactory(mActivity));
-		String tag = tabSpec.getTag();
+		final String tag = tabSpec.getTag();
 
-		TabInfo info = new TabInfo(tag, clss, args);
+		final TabInfo info = new TabInfo(tag, clss, args);
 
 		// Check to see if we already have a fragment for this tab, probably
 		// from a previously saved state. If so, deactivate it, because our
 		// initial state is that a tab isn't shown.
 		info.fragment = mActivity.getSupportFragmentManager().findFragmentByTag(tag);
 		if (info.fragment != null && !info.fragment.isDetached()) {
-			FragmentTransaction ft = mActivity.getSupportFragmentManager().beginTransaction();
+			final FragmentTransaction ft = mActivity.getSupportFragmentManager().beginTransaction();
 			ft.detach(info.fragment);
 			ft.commit();
 		}
@@ -104,10 +104,10 @@ public class TabManager implements TabHost.OnTabChangeListener {
 	}
 
 	@Override
-	public void onTabChanged(String tabId) {
-		TabInfo newTab = mTabs.get(tabId);
+	public void onTabChanged(final String tabId) {
+		final TabInfo newTab = mTabs.get(tabId);
 		if (mLastTab != newTab) {
-			FragmentTransaction ft = mActivity.getSupportFragmentManager().beginTransaction();
+			final FragmentTransaction ft = mActivity.getSupportFragmentManager().beginTransaction();
 			if (mLastTab != null) {
 				if (mLastTab.fragment != null) {
 					ft.detach(mLastTab.fragment);

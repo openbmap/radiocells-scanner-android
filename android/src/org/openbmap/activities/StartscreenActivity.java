@@ -18,14 +18,18 @@
 
 package org.openbmap.activities;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.Session;
-import org.openbmap.soapclient.ExportSessionTask.ExportTaskListener;
+import org.openbmap.soapclient.ExportGpxTask.ExportGpxTaskListener;
+import org.openbmap.soapclient.UploadTask.UploadTaskListener;
 import org.openbmap.utils.AlertDialogUtils;
 import org.openbmap.utils.OnAlertClickInterface;
 import org.openbmap.utils.TabManager;
@@ -52,8 +56,13 @@ import com.actionbarsherlock.view.MenuItem;
  * Parent screen for hosting main screen
  */
 public class StartscreenActivity extends SherlockFragmentActivity
-implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, ExportTaskListener
-{
+implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, UploadTaskListener, ExportGpxTaskListener {
+
+	/**
+	 * 
+	 */
+	private static final String UPLOAD_TASK = "upload_task";
+	private static final String EXPORT_GPX_TASK = "export_gpx_task";
 
 	private static final String TAG = StartscreenActivity.class.getSimpleName();
 
@@ -89,21 +98,31 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	private WifiLock wifiLock;
 
 	/**
-	 * Persistent fragment saving export task across activity re-creation
+	 * Persistent fragment saving upload task across activity re-creation
 	 */
-	private ExportTaskFragment mTaskFragment;
+	private UploadTaskFragment mUploadTaskFragment;
+
+	/**
+	 * Persistent fragment saving export gpx task across activity re-creation
+	 */
+	private ExportGpxTaskFragment mExportGpxTaskFragment;
 
 	private FragmentManager	fm;
 
 	/**
-	 * Dialog indicating export progress
+	 * Dialog indicating upload progress
 	 */
-	private ProgressDialog exportProgress;
+	private ProgressDialog mUploadProgress;
+
+	/**
+	 * Dialog indicating export gpx progress
+	 */
+	private ProgressDialog mExportGpxProgress;
 
 	/**
 	 * List of all pending exports
 	 */
-	private ArrayList<Integer> pendingExports = new ArrayList<Integer>();
+	private final ArrayList<Integer> pendingExports = new ArrayList<Integer>();
 
 	/**
 	 * Counts successfully exported sessions
@@ -122,43 +141,57 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		// setup data connections
 		mDataHelper = new DataHelper(this);
 
-		Bundle b = getIntent().getExtras();
+		final Bundle b = getIntent().getExtras();
 		if (b != null) {
 			if (b.getString("command") != null && b.getString("command").equals("upload_all")) {
-				exportAllCommand();
+				uploadAllCommand();
 			}
 		}
 
 		initUi(savedInstanceState);
 
-		initPersistantFragment();
+		initPersistantFragments();
 	}
 
 	/**
 	 * Creates a persistent fragment for keeping export status.
 	 * If fragment has been created before, no new fragment is created
+	 * i.e. the Fragment is non-null, then it is currently being
+	 * retained across a configuration change.
 	 */
-	private void initPersistantFragment() {
+	private void initPersistantFragments() {
 		fm = getSupportFragmentManager();
-		mTaskFragment = (ExportTaskFragment) fm.findFragmentByTag("task");
+		mUploadTaskFragment = (UploadTaskFragment) fm.findFragmentByTag(UPLOAD_TASK);
+		mExportGpxTaskFragment = (ExportGpxTaskFragment) fm.findFragmentByTag(EXPORT_GPX_TASK);
 
-		// If the Fragment is non-null, then it is currently being
-		// retained across a configuration change.
-		if (mTaskFragment == null) {
-			Log.i(TAG, "Task fragment not found. Creating..");
-			mTaskFragment = new ExportTaskFragment();
-			fm.beginTransaction().add(mTaskFragment, "task").commitAllowingStateLoss();
+		if (mUploadTaskFragment == null) {
+			Log.d(TAG, "Task fragment not found. Creating..");
+			mUploadTaskFragment = new UploadTaskFragment();
+			fm.beginTransaction().add(mUploadTaskFragment, UPLOAD_TASK).commitAllowingStateLoss();
 
-			initExportDialog(true);
+			initUploadTaskDialog(true);
 		} else {
-			Log.i(TAG, "Recycling task fragment");
-			initExportDialog(false);
-			showExportDialog();
+			Log.d(TAG, "Showing existing upload task fragment");
+			initUploadTaskDialog(false);
+			showUploadTaskDialog();
+		}
+
+
+		if (mExportGpxTaskFragment == null) {
+			Log.d(TAG, "Task fragment not found. Creating..");
+			mExportGpxTaskFragment = new ExportGpxTaskFragment();
+			fm.beginTransaction().add(mExportGpxTaskFragment, EXPORT_GPX_TASK).commitAllowingStateLoss();
+
+			initExportGpxTaskDialog(true);
+		} else {
+			Log.d(TAG, "Showing existings export gpx task fragment");
+			initExportGpxTaskDialog(false);
+			showExportGpxTaskDialog();
 		}
 	}
 
 	@Override
-	protected void onSaveInstanceState(Bundle outState) {
+	protected void onSaveInstanceState(final Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putString("tab", mTabHost.getCurrentTabTag());
 	}
@@ -176,14 +209,12 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	@Override
 	public final void onPause() {
 		releaseWifiLock();
-
 		super.onPause();
 	}
 
 	@Override
 	public final void onDestroy() {
 		releaseWifiLock();
-
 		super.onDestroy();
 	}
 
@@ -200,32 +231,32 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
 	/* 
 	 * Resumes existing session
+	 * @param session session to resume
 	 */
 	@Override
-	public final void resumeCommand(final int id) {
+	public final void resumeCommand(final int session) {
 		final Intent resumeSession = new Intent(this, HostActivity.class);
-		resumeSession.putExtra("_id", id);
-
+		resumeSession.putExtra("_id", session);
 		startActivity(resumeSession);
 	}
 
 	/**
-	 * Exports session
+	 * Uploads session
 	 * Once exported, {@link onExportCompleted} is called
-	 * @param id
+	 * @param session
 	 * 		session id
 	 */
-	public final void exportCommand(final int id) {
+	public final void uploadCommand(final int session) {
 		acquireWifiLock();
 		pendingExports.clear();
 		completedExports = 0;
 		failedExports = 0;
 
-		pendingExports.add(id);
-		mTaskFragment.add(id);
-		mTaskFragment.prepareStart();
+		pendingExports.add(session);
+		mUploadTaskFragment.add(session);
+		mUploadTaskFragment.execute();
 
-		showExportDialog();
+		showUploadTaskDialog();
 
 		updateUI();
 	}
@@ -234,23 +265,39 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * Exports all sessions, which haven't been uploaded yet
 	 */
 	@Override
-	public void exportAllCommand() {
+	public void uploadAllCommand() {
 		acquireWifiLock();
 		pendingExports.clear();
 		completedExports = 0;
 		failedExports = 0;
 
-		ArrayList<Integer> sessions = mDataHelper.getSessionList();
-		for (int id : sessions) {
+		final ArrayList<Integer> sessions = mDataHelper.getSessionList();
+		for (final int id : sessions) {
 			if (!hasBeenUploaded(id)) {
 				Log.i(TAG, "Adding " + id + " to export task list");
-				mTaskFragment.add(id);
+				mUploadTaskFragment.add(id);
 				pendingExports.add(id);
 			}
 		}
-		mTaskFragment.prepareStart();
+		mUploadTaskFragment.execute();
 
-		showExportDialog();
+		showUploadTaskDialog();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.activities.SessionListFragment.SessionFragementListener#exportGpxCommand(int)
+	 */
+	@Override
+	public void exportGpxCommand(final int id) {
+		Log.i(TAG, "Exporting gpx");
+
+		final String path = this.getExternalFilesDir(null).getAbsolutePath();
+
+		final SimpleDateFormat date = new SimpleDateFormat("yyyyMMddhhmmss", Locale.US);
+		final String filename = date.format(new Date(System.currentTimeMillis())) + "(" + String.valueOf(id) + ")" + ".gpx";
+
+		showExportGpxTaskDialog();
+		mExportGpxTaskFragment.execute(id, path, filename);
 	}
 
 	/* 
@@ -260,7 +307,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	public final void stopCommand(final int id) {
 		mDataHelper.invalidateActiveSessions();
 		// Signalling host activity to stop services
-		Intent intent = new Intent(RadioBeacon.INTENT_STOP_TRACKING);
+		final Intent intent = new Intent(RadioBeacon.INTENT_STOP_TRACKING);
 		sendBroadcast(intent);
 
 		updateUI();
@@ -280,8 +327,8 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	/**
 	 * Deletes all session from pending list
 	 */
-	public final void deleteBatchCommand(ArrayList<Integer> ids) {
-		for (int id : ids) {
+	public final void deleteBatchCommand(final ArrayList<Integer> ids) {
+		for (final int id : ids) {
 			deleteConfirmed(id);
 		}
 	}
@@ -298,12 +345,12 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		Log.i(TAG, "Deleting session " + id);
 
 		// Signalling service stop request
-		Intent intent = new Intent(RadioBeacon.INTENT_STOP_TRACKING);
+		final Intent intent = new Intent(RadioBeacon.INTENT_STOP_TRACKING);
 		sendBroadcast(intent);
 
 		mDataHelper.deleteSession(id);
 
-		boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_SKIP_DELETE, Preferences.VAL_SKIP_DELETE);
+		final boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_SKIP_DELETE, Preferences.VAL_SKIP_DELETE);
 
 		if (!skipDelete) {
 			// delete all temp files (.xml)
@@ -327,7 +374,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
 	public final void deleteAllConfirmed() {
 		// Signalling service stop request
-		Intent intent = new Intent(RadioBeacon.INTENT_STOP_TRACKING);
+		final Intent intent = new Intent(RadioBeacon.INTENT_STOP_TRACKING);
 		sendBroadcast(intent);
 
 		mDataHelper.deleteAllSession();
@@ -344,9 +391,9 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
 		// Force update on list fragements' adapters.
 		// TODO check if we really need this
-		Intent intent1 = new Intent(RadioBeacon.INTENT_WIFI_UPDATE);
+		final Intent intent1 = new Intent(RadioBeacon.INTENT_WIFI_UPDATE);
 		sendBroadcast(intent1);
-		Intent intent2 = new Intent(RadioBeacon.INTENT_CELL_UPDATE);
+		final Intent intent2 = new Intent(RadioBeacon.INTENT_CELL_UPDATE);
 		sendBroadcast(intent2);
 	}
 
@@ -357,15 +404,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 */
 	@Override
 	public final boolean onCreateOptionsMenu(final Menu menu) {
-		MenuInflater inflater = getSupportMenuInflater();
-
-		/**
-    	yet missing
-        menu.add("Upload all")
-         	.setIcon(R.drawable.ic_action_upload)
-            .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
-		 */
-
+		final MenuInflater inflater = getSupportMenuInflater();
 		inflater.inflate(R.menu.main_menu, menu);
 		return true;
 	}
@@ -398,7 +437,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	@Override
 	public final void reloadListFragment() {
 		Log.i(TAG, "Refreshing session list fragment");
-		SessionListFragment sessionFrag = (SessionListFragment) getSupportFragmentManager().findFragmentByTag("session");
+		final SessionListFragment sessionFrag = (SessionListFragment) getSupportFragmentManager().findFragmentByTag("session");
 
 		if (sessionFrag != null) {
 			// TODO check if this is really necessary. Adapter should be able to handle updates automatically
@@ -412,8 +451,8 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * @return true if session has been uploaded or doesn't exist
 	 */
 	private boolean hasBeenUploaded(final int Id) {
-		DataHelper dataHelper = new DataHelper(this);
-		Session session = dataHelper.loadSession(Id);
+		final DataHelper dataHelper = new DataHelper(this);
+		final Session session = dataHelper.loadSession(Id);
 
 		if (session != null) {
 			return session.hasBeenExported();
@@ -427,7 +466,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 */
 	private void repairWifiConnection() {
 		Log.i(TAG, "Reparing wifi connection");
-		WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+		final WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
 		wifiManager.setWifiEnabled(false);
 		wifiManager.setWifiEnabled(true);
 	}
@@ -436,7 +475,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * Inits Ui controls
 	 * @param savedInstanceState 
 	 */
-	private void initUi(Bundle savedInstanceState) {
+	private void initUi(final Bundle savedInstanceState) {
 		setContentView(R.layout.startscreen);
 
 		getSupportActionBar().setTitle(R.string.title);
@@ -465,20 +504,20 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * @see org.openbmap.utils.OnAlertClickInterface#onAlertPositiveClick(int)
 	 */
 	@Override
-	public void onAlertPositiveClick(int alertId, String args) {
+	public void onAlertPositiveClick(final int alertId, final String args) {
 		if (alertId == ID_DELETE_ALL) {
-			int id = (args != null ? Integer.valueOf(args) : RadioBeacon.SESSION_NOT_TRACKING);
+			final int id = (args != null ? Integer.valueOf(args) : RadioBeacon.SESSION_NOT_TRACKING);
 			stopCommand(id);
 			deleteAllConfirmed();
 		} else if (alertId == ID_DELETE_SESSION) {
-			int id = (args != null ? Integer.valueOf(args) : RadioBeacon.SESSION_NOT_TRACKING);
+			final int id = (args != null ? Integer.valueOf(args) : RadioBeacon.SESSION_NOT_TRACKING);
 			stopCommand(id);
 			deleteConfirmed(id);
 		} else if (alertId == ID_DELETE_PROCESSED) {
-			String candidates = (args != null ? String.valueOf(args) : "");
+			final String candidates = (args != null ? String.valueOf(args) : "");
 
-			ArrayList<Integer> list = new ArrayList<Integer>();
-			for (String s : candidates.split("\\s*;\\s*")) {
+			final ArrayList<Integer> list = new ArrayList<Integer>();
+			for (final String s : candidates.split("\\s*;\\s*")) {
 				list.add(Integer.valueOf(s));
 			}
 
@@ -490,7 +529,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * @see org.openbmap.utils.OnAlertClickInterface#onAlertNegativeClick(int)
 	 */
 	@Override
-	public void onAlertNegativeClick(int alertId, String args) {
+	public void onAlertNegativeClick(final int alertId, final String args) {
 		if (alertId == ID_DELETE_ALL) {
 			return;
 		} else if (alertId == ID_DELETE_SESSION) {
@@ -502,7 +541,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * @see org.openbmap.utils.OnAlertClickInterface#onAlertNeutralClick(int, java.lang.String)
 	 */
 	@Override
-	public void onAlertNeutralClick(int alertId, String args) {
+	public void onAlertNeutralClick(final int alertId, final String args) {
 		// TODO Auto-generated method stub
 
 	}
@@ -511,23 +550,22 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * @see org.openbmap.soapclient.ExportSessionTask.ExportTaskListener#onProgressUpdate(java.lang.Object[])
 	 */
 	@Override
-	public void onProgressUpdate(Object... values) {
-		//Log.v(TAG, "Updating dialog");
-		if (exportProgress != null) {
-			exportProgress.setTitle((CharSequence) values[0]);
-			exportProgress.setMessage((CharSequence) values[1]);	
-			exportProgress.setProgress((Integer) values[2]);
+	public void onUploadProgressUpdate(final Object... values) {
+		if (mUploadProgress != null) {
+			mUploadProgress.setTitle((CharSequence) values[0]);
+			mUploadProgress.setMessage((CharSequence) values[1]);	
+			mUploadProgress.setProgress((Integer) values[2]);
 		}
-		mTaskFragment.retainProgress((String) values[0], (String) values[1], (Integer) values[2]);
+		mUploadTaskFragment.retainProgress((String) values[0], (String) values[1], (Integer) values[2]);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.openbmap.soapclient.ExportSessionTask.ExportTaskListener#onExportCompleted(int)
 	 */
 	@Override
-	public void onExportCompleted(final int id) {
+	public void onUploadCompleted(final int id) {
 		// mark as exported
-		Session session = mDataHelper.loadSession(id);
+		final Session session = mDataHelper.loadSession(id);
 		session.hasBeenExported(true);
 		session.isActive(false);
 		mDataHelper.storeSession(session, false);
@@ -542,7 +580,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 			pendingExports.clear();
 			completedExports = 0;
 
-			hideExportDialog();
+			hideUploadTaskDialog();
 			releaseWifiLock();
 
 			deleteCommand(id);
@@ -556,7 +594,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 			} else {
 				// if everything is ok, offer to delete
 				String candidates = "";
-				for (int one : pendingExports){
+				for (final int one : pendingExports){
 					candidates += one + ";";
 				}
 				AlertDialogUtils.newInstance(ID_DELETE_PROCESSED, getResources().getString(R.string.delete), getResources().getString(R.string.do_you_want_to_delete_processed_sessions),
@@ -567,14 +605,14 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 			completedExports = 0;
 			failedExports = 0;
 
-			hideExportDialog();
+			hideUploadTaskDialog();
 			releaseWifiLock();
 
 			// TODO move to onAlertNegative with ID_DELETE_PROCESSED
 			reloadListFragment();
 		} else {
 			// we've got more exports
-			showExportDialog();
+			showUploadTaskDialog();
 		}
 	}
 
@@ -591,7 +629,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 			pendingExports.clear();
 			completedExports = 0;
 
-			hideExportDialog();
+			hideUploadTaskDialog();
 			releaseWifiLock();
 
 		} else if (pendingExports.size() == completedExports + failedExports) {
@@ -608,13 +646,13 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 			completedExports = 0;
 			failedExports = 0;
 
-			hideExportDialog();
+			hideUploadTaskDialog();
 			releaseWifiLock();
 
 			reloadListFragment();
 		} else {
 			// we've got more exports
-			showExportDialog();
+			showUploadTaskDialog();
 		}
 	}
 
@@ -622,14 +660,14 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * @see org.openbmap.soapclient.ExportSessionTask.ExportTaskListener#onExportFailed(java.lang.String)
 	 */
 	@Override
-	public void onExportFailed(int id, String error) {
+	public void onUploadFailed(final int id, final String error) {
 		Log.e(TAG, "Export session " + id + " failed");
 
 		failedExports += 1;
 		releaseWifiLock();
-		hideExportDialog();
+		hideUploadTaskDialog();
 
-		String errorText = (error == null || error.length() == 0) ? getResources().getString(R.string.export_error) : error;
+		final String errorText = (error == null || error.length() == 0) ? getResources().getString(R.string.export_error) : error;
 		AlertDialogUtils.newInstance(ID_EXPORT_FAILED,
 				getResources().getString(R.string.export_error_title), errorText,
 				String.valueOf(id), true).show(getSupportFragmentManager(), "failed");
@@ -641,40 +679,84 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * @param new 
 	 * 
 	 */
-	private void initExportDialog(boolean newDialog) {
+	private void initUploadTaskDialog(final boolean newDialog) {
 		if (newDialog) {
-			exportProgress = new ProgressDialog(this);
-			exportProgress.setCancelable(false);
-			exportProgress.setIndeterminate(true);
+			mUploadProgress = new ProgressDialog(this);
+			mUploadProgress.setCancelable(false);
+			mUploadProgress.setIndeterminate(true);
 
-			String defaultTitle = getResources().getString(R.string.preparing_export);
-			String defaultMessage = getResources().getString(R.string.please_stay_patient);
-			exportProgress.setTitle(defaultTitle);
-			exportProgress.setMessage(defaultMessage);
+			final String defaultTitle = getResources().getString(R.string.preparing_export);
+			final String defaultMessage = getResources().getString(R.string.please_stay_patient);
+			mUploadProgress.setTitle(defaultTitle);
+			mUploadProgress.setMessage(defaultMessage);
 
-			mTaskFragment.retainProgress(defaultTitle, defaultMessage, (int) exportProgress.getProgress());	
+			mUploadTaskFragment.retainProgress(defaultTitle, defaultMessage, (int) mUploadProgress.getProgress());	
 		} else {
-			exportProgress = new ProgressDialog(this);
-			exportProgress.setCancelable(false);
-			exportProgress.setIndeterminate(true);
+			mUploadProgress = new ProgressDialog(this);
+			mUploadProgress.setCancelable(false);
+			mUploadProgress.setIndeterminate(true);
 
-			mTaskFragment.restoreProgress(exportProgress);
+			mUploadTaskFragment.restoreProgress(mUploadProgress);
 		}
 	}
 
 	/**
-	 * Opens existing export dialog, if any
+	 * Creates or restores a progress dialogs
+	 * This dialog is not shown until calling showExportDialog() explicitly
+	 * @param new 
+	 * 
 	 */
-	private void showExportDialog() {
-		if (exportProgress == null) {
+	private void initExportGpxTaskDialog(final boolean newDialog) {
+		if (newDialog) {
+			mExportGpxProgress = new ProgressDialog(this);
+			mExportGpxProgress.setCancelable(false);
+			mExportGpxProgress.setIndeterminate(true);
+
+			final String defaultTitle = getResources().getString(R.string.exporting_gpx);
+			final String defaultMessage = getResources().getString(R.string.please_stay_patient);
+			mExportGpxProgress.setTitle(defaultTitle);
+			mExportGpxProgress.setMessage(defaultMessage);
+
+			mUploadTaskFragment.retainProgress(defaultTitle, defaultMessage, (int) mExportGpxProgress.getProgress());	
+		} else {
+			mExportGpxProgress = new ProgressDialog(this);
+			mExportGpxProgress.setCancelable(false);
+			mExportGpxProgress.setIndeterminate(true);
+
+			mExportGpxTaskFragment.restoreProgress(mExportGpxProgress);
+		}
+	}
+
+	/**
+	 * Opens upload dialog, if any
+	 */
+	private void showUploadTaskDialog() {
+		if (mUploadProgress == null) {
 			throw new IllegalArgumentException("Export progress dialog must not be null");
 		}
 
-		if (mTaskFragment.isExecuting()) {
-			mTaskFragment.restoreProgress(exportProgress);
+		if (mUploadTaskFragment.isExecuting()) {
+			mUploadTaskFragment.restoreProgress(mUploadProgress);
 
-			if (!exportProgress.isShowing()) {
-				exportProgress.show();
+			if (!mUploadProgress.isShowing()) {
+				mUploadProgress.show();
+			}
+		}
+	}
+
+	/**
+	 * Opens export gpx dialog, if any
+	 */
+	private void showExportGpxTaskDialog() {
+		if (mExportGpxProgress == null) {
+			throw new IllegalArgumentException("Export progress dialog must not be null");
+		}
+
+		if (mExportGpxTaskFragment.isExecuting()) {
+			mExportGpxTaskFragment.restoreProgress(mExportGpxProgress);
+
+			if (!mExportGpxProgress.isShowing()) {
+				mExportGpxProgress.show();
 			}
 		}
 	}
@@ -682,9 +764,9 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	/**
 	 * Closes export dialog
 	 */
-	private void hideExportDialog() {
-		if (exportProgress != null) {
-			exportProgress.cancel();
+	private void hideUploadTaskDialog() {
+		if (mUploadProgress != null) {
+			mUploadProgress.cancel();
 		}
 	}
 
@@ -693,7 +775,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 */
 	private void createWifiLock() {
 		// create wifi lock (will be acquired for version check/upload)
-		WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+		final WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
 		if (wifiManager != null) {
 			wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL, WIFILOCK_NAME);
 		} else {
@@ -723,5 +805,36 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		if (wifiLock != null && wifiLock.isHeld()) {
 			wifiLock.release();
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.soapclient.ExportGpxTask.ExportGpxTaskListener#onExportGpxCompleted(int)
+	 */
+	@Override
+	public void onExportGpxCompleted(final int id) {
+		Log.i(TAG, "GPX export completed");
+	}
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.soapclient.ExportGpxTask.ExportGpxTaskListener#onExportGpxFailed(int, java.lang.String)
+	 */
+	@Override
+	public void onExportGpxFailed(final int id, final String error) {
+		Log.e(TAG, "GPX export failed: " + error);
+		Toast.makeText(this, R.string.gpx_export_failed, Toast.LENGTH_LONG).show();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.openbmap.soapclient.ExportGpxTask.ExportGpxTaskListener#onExportGpxProgressUpdate(java.lang.Object[])
+	 */
+	@Override
+	public void onExportGpxProgressUpdate(final Object[] values) {
+		if (mExportGpxProgress != null) {
+			mExportGpxProgress.setTitle((CharSequence) values[0]);
+			mExportGpxProgress.setMessage((CharSequence) values[1]);	
+			mExportGpxProgress.setProgress((Integer) values[2]);
+		}
+		mExportGpxTaskFragment.retainProgress((String) values[0], (String) values[1], (Integer) values[2]);
+		
 	}
 }

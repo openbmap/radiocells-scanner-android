@@ -108,14 +108,14 @@ public class StatsActivity extends SherlockFragment {
 	 * Fades ignore messages after certain time
 	 */
 	private Runnable mFadeIgnoreTask;
-	private Handler mFadeIgnoreHandler = new Handler();
+	private final Handler mFadeIgnoreHandler = new Handler();
 
 	private Runnable mFadeFreeTask;
-	private Handler mFadeFreeHandler = new Handler();
+	private final Handler mFadeFreeHandler = new Handler();
 	/**
 	 * Update certain infos at periodic intervals
 	 */
-	private Handler mRefreshHandler = new Handler();
+	private final Handler mRefreshHandler = new Handler();
 	private Runnable mPeriodicRefreshTask;
 
 	private String currentOperator;
@@ -126,7 +126,7 @@ public class StatsActivity extends SherlockFragment {
 	/**
 	 * Receives cell / wifi news
 	 */
-	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+	private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
 
 		@SuppressLint("DefaultLocale")
 		@Override
@@ -267,8 +267,8 @@ public class StatsActivity extends SherlockFragment {
 
 			} else
 				if (RadioBeacon.INTENT_NEW_WIFI.equals(intent.getAction())) {
-					String wifiDescription = intent.getStringExtra(RadioBeacon.MSG_SSID);
-					int wifiStrength = intent.getIntExtra(RadioBeacon.MSG_STRENGTH, -1);
+					final String wifiDescription = intent.getStringExtra(RadioBeacon.MSG_SSID);
+					final int wifiStrength = intent.getIntExtra(RadioBeacon.MSG_STRENGTH, -1);
 					if (wifiDescription != null ) {
 						tvWifiDescription.setText(wifiDescription);
 					} else {
@@ -281,7 +281,7 @@ public class StatsActivity extends SherlockFragment {
 
 				} else
 					if (RadioBeacon.INTENT_NEW_SESSION.equals(intent.getAction())) {
-						String id = intent.getStringExtra(RadioBeacon.MSG_KEY);
+						final String id = intent.getStringExtra(RadioBeacon.MSG_KEY);
 						// tbd
 					} else
 						if (RadioBeacon.INTENT_WIFI_BLACKLISTED.equals(intent.getAction())) {
@@ -290,7 +290,7 @@ public class StatsActivity extends SherlockFragment {
 							// 10 seconds
 							mFadeIgnoreHandler.removeCallbacks(mFadeIgnoreTask);
 
-							String reason = intent.getStringExtra(RadioBeacon.MSG_KEY);
+							final String reason = intent.getStringExtra(RadioBeacon.MSG_KEY);
 							String ssid = intent.getStringExtra(RadioBeacon.MSG_SSID);
 							String bssid = intent.getStringExtra(RadioBeacon.MSG_BSSID);
 
@@ -320,7 +320,7 @@ public class StatsActivity extends SherlockFragment {
 						} else
 							if (RadioBeacon.INTENT_WIFI_FREE.equals(intent.getAction())) {
 								mFadeFreeHandler.removeCallbacks(mFadeFreeTask);
-								String ssid = intent.getStringExtra(RadioBeacon.MSG_SSID);
+								final String ssid = intent.getStringExtra(RadioBeacon.MSG_SSID);
 								if (ssid != null) {
 									tvFree.setText(getResources().getString(R.string.free_wifi) + "\n" + ssid);
 								}
@@ -392,8 +392,8 @@ public class StatsActivity extends SherlockFragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.stats, container, false);
+	public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
+		final View view = inflater.inflate(R.layout.stats, container, false);
 		// setup UI controls
 		initUi(view);
 
@@ -403,7 +403,7 @@ public class StatsActivity extends SherlockFragment {
 	/**
 	 * Init UI contols
 	 */
-	private void initUi(View view) {
+	private void initUi(final View view) {
 		tvCellDescription = (TextView) view.findViewById(R.id.stats_cell_description);
 		tvCellStrength = (TextView) view.findViewById(R.id.stats_cell_strength);
 
@@ -440,7 +440,7 @@ public class StatsActivity extends SherlockFragment {
 		graphView.setViewPort(2, 60000);
 		graphView.setScrollable(true);
 
-		LinearLayout layout = (LinearLayout) view.findViewById(R.id.graph2);
+		final LinearLayout layout = (LinearLayout) view.findViewById(R.id.graph2);
 		layout.addView(graphView);
 	}
 
@@ -448,7 +448,7 @@ public class StatsActivity extends SherlockFragment {
 	 * Registers broadcast receivers.
 	 */
 	private void registerReceiver() {
-		IntentFilter filter = new IntentFilter();
+		final IntentFilter filter = new IntentFilter();
 		filter.addAction(RadioBeacon.INTENT_NEW_WIFI);
 		filter.addAction(RadioBeacon.INTENT_NEW_CELL);
 		filter.addAction(RadioBeacon.INTENT_SESSION_UPDATE);
@@ -463,7 +463,7 @@ public class StatsActivity extends SherlockFragment {
 	private void unregisterReceiver() {
 		try {
 			getSherlockActivity().unregisterReceiver(mReceiver);
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			// do nothing here {@see
 			// http://stackoverflow.com/questions/2682043/how-to-check-if-receiver-is-registered-in-android}
 		}
@@ -473,8 +473,8 @@ public class StatsActivity extends SherlockFragment {
 	 * Displays time since last cell/wifi update
 	 */
 	private void updateTimeSinceUpdate() {
-		String deltaCellString = String.format(getString(R.string.time_since_last_cell_update), getTimeSinceLastUpdate(mLastCellUpdate));
-		String deltaWifiString = String.format(getString(R.string.time_since_last_wifi_update), getTimeSinceLastUpdate(mLastWifiUpdate));
+		final String deltaCellString = String.format(getString(R.string.time_since_last_cell_update), getTimeSinceLastUpdate(mLastCellUpdate));
+		final String deltaWifiString = String.format(getString(R.string.time_since_last_wifi_update), getTimeSinceLastUpdate(mLastWifiUpdate));
 
 		Log.v(TAG, deltaCellString);
 		Log.v(TAG, deltaWifiString);
@@ -503,7 +503,7 @@ public class StatsActivity extends SherlockFragment {
 	 * 
 	 * @return
 	 */
-	private String getTimeSinceLastUpdate(long base) {
+	private String getTimeSinceLastUpdate(final long base) {
 		String deltaString = "";
 
 		// no previous updates
@@ -511,7 +511,7 @@ public class StatsActivity extends SherlockFragment {
 			return deltaString;
 		}
 
-		long delta = (System.currentTimeMillis() - base);
+		final long delta = (System.currentTimeMillis() - base);
 
 		if (delta < 60000) {
 			deltaString = String.valueOf(delta / 1000) + getString(R.string.seconds);

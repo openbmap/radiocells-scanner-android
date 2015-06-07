@@ -18,25 +18,20 @@
 
 package org.openbmap.activities;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 import java.util.Vector;
 
 import org.openbmap.Preferences;
+import org.openbmap.R;
 import org.openbmap.RadioBeacon;
-import org.openbmap.soapclient.ExportSessionTask;
-import org.openbmap.soapclient.ExportSessionTask.ExportTaskListener;
 import org.openbmap.soapclient.ServerValidation;
 import org.openbmap.soapclient.ServerValidation.ServerReply;
+import org.openbmap.soapclient.UploadTask;
+import org.openbmap.soapclient.UploadTask.UploadTaskListener;
 import org.openbmap.utils.FileUtils;
 
-import org.openbmap.R;
 import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -45,17 +40,17 @@ import com.actionbarsherlock.app.SherlockFragment;
 /**
  *  Fragment manages export background tasks and retains itself across configuration changes.
  */
-public class ExportTaskFragment extends SherlockFragment implements ExportTaskListener, ServerReply {
+public class UploadTaskFragment extends SherlockFragment implements UploadTaskListener, ServerReply {
 
-	private static final String TAG = ExportTaskFragment.class.getSimpleName();
+	private static final String TAG = UploadTaskFragment.class.getSimpleName();
 
 	private enum CheckResult {UNKNOWN, BAD, GOOD};
 	private CheckResult sdCardWritable = CheckResult.UNKNOWN;
 	private CheckResult credentialsProvided = CheckResult.UNKNOWN;
 	private CheckResult allowedVersion = CheckResult.UNKNOWN;
 
-	private Vector<Integer> toExport = new Vector<Integer>();
-	private ExportSessionTask mExportTask;
+	private final Vector<Integer> toExport = new Vector<Integer>();
+	private UploadTask mExportTask;
 
 	private String mTitle;
 	private String mMessage;
@@ -67,7 +62,7 @@ public class ExportTaskFragment extends SherlockFragment implements ExportTaskLi
 	 * Fragment is first created.
 	 */
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
+	public void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		// Retain this fragment across configuration changes.
@@ -79,14 +74,14 @@ public class ExportTaskFragment extends SherlockFragment implements ExportTaskLi
 		return toExport.size();
 	}
 
-	public void add(int id) {
+	public void add(final int id) {
 		toExport.add(id);
 	}
 
 	/**
 	 * Starts export after all checks have been passed
 	 */
-	public void prepareStart() {
+	public void execute() {
 		mIsExecuting = true;
 		stageVersionCheck();
 	}
@@ -110,28 +105,25 @@ public class ExportTaskFragment extends SherlockFragment implements ExportTaskLi
 	}
 
 	/**
+	 * Does the actual work
 	 * @param session
-	 * @param targetPath
 	 */
 
-	private void process(int session) {
+	private void process(final int session) {
 
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-		String user = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getString(Preferences.KEY_CREDENTIALS_USER, null);
-		String password = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
-		String targetPath = Environment.getExternalStorageDirectory().getPath()
-				+ PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getString(Preferences.KEY_DATA_FOLDER, Preferences.VAL_DATA_FOLDER) + File.separator;
-		boolean exportGpx = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getBoolean(Preferences.KEY_GPS_SAVE_COMPLETE_TRACK, false);
-		boolean skipUpload = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getBoolean(Preferences.KEY_SKIP_UPLOAD, Preferences.VAL_SKIP_UPLOAD);
-		boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getBoolean(Preferences.KEY_SKIP_DELETE, Preferences.VAL_SKIP_DELETE);
-		boolean anonymiseSsid = prefs.getBoolean(Preferences.KEY_ANONYMISE_SSID, Preferences.VAL_ANONYMISE_SSID); 
+		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+		final String user = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getString(Preferences.KEY_CREDENTIALS_USER, null);
+		final String password = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
+		final String targetPath = getActivity().getExternalFilesDir(null).getAbsolutePath();
+		final boolean skipUpload = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getBoolean(Preferences.KEY_SKIP_UPLOAD, Preferences.VAL_SKIP_UPLOAD);
+		final boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getBoolean(Preferences.KEY_SKIP_DELETE, Preferences.VAL_SKIP_DELETE);
+		final boolean anonymiseSsid = prefs.getBoolean(Preferences.KEY_ANONYMISE_SSID, Preferences.VAL_ANONYMISE_SSID); 
 
-		mExportTask = new ExportSessionTask(getSherlockActivity(), this, session,
+		mExportTask = new UploadTask(getSherlockActivity(), this, session,
 				targetPath, user, password, anonymiseSsid);
 
 		mExportTask.setExportCells(true);
 		mExportTask.setExportWifis(true);
-		mExportTask.setExportGpx(exportGpx);
 		// currently deactivated to prevent crashes
 		mExportTask.setUpdateWifiCatalog(false);
 
@@ -139,25 +131,7 @@ public class ExportTaskFragment extends SherlockFragment implements ExportTaskLi
 		mExportTask.setSkipUpload(skipUpload);
 		mExportTask.setSkipDelete(skipDelete);
 
-		SimpleDateFormat date = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
-		mExportTask.setGpxPath(targetPath);
-		mExportTask.setGpxFilename(date.format(new Date(System.currentTimeMillis())) + ".gpx");
 		mExportTask.execute((Void[]) null);
-	}
-
-	/**
-	 * Checks whether SD card is writable
-	 * @return true if writable
-	 */
-	private boolean isSdCardWritable() {
-		// Is SD card writeable?
-		if (!FileUtils.isSdCardMountedWritable()) {
-			Log.e(TAG, "SD card not writable");
-			return false;
-		} else {
-			Log.i(TAG, "Good: SD card writable");
-			return true;
-		}
 	}
 
 	/**
@@ -169,8 +143,8 @@ public class ExportTaskFragment extends SherlockFragment implements ExportTaskLi
 		// http://code.google.com/p/openbmap/issues/detail?id=40
 
 		// checks credentials available?
-		String user = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getString(Preferences.KEY_CREDENTIALS_USER, null);
-		String password = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
+		final String user = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getString(Preferences.KEY_CREDENTIALS_USER, null);
+		final String password = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
 
 		if (!isValidLogin(user, password)) {
 			Log.e(TAG, "User credentials missing");
@@ -198,7 +172,7 @@ public class ExportTaskFragment extends SherlockFragment implements ExportTaskLi
 	 */
 	private void stageLocalChecks() {
 		if (sdCardWritable == CheckResult.UNKNOWN) {
-			sdCardWritable = (isSdCardWritable() ? CheckResult.GOOD : CheckResult.BAD);
+			sdCardWritable = (FileUtils.isSdCardWritable() ? CheckResult.GOOD : CheckResult.BAD);
 		}
 
 		if (credentialsProvided == CheckResult.UNKNOWN) {
@@ -217,21 +191,21 @@ public class ExportTaskFragment extends SherlockFragment implements ExportTaskLi
 		}
 		else if(allowedVersion == CheckResult.BAD) {
 			// version is outdated
-			int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
-			onExportFailed(id, getResources().getString(R.string.warning_outdated_client));
+			final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
+			onUploadFailed(id, getResources().getString(R.string.warning_outdated_client));
 		} else if(allowedVersion == CheckResult.UNKNOWN) {
 			// couldn't check version
-			int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
-			onExportFailed(id, getResources().getString(R.string.warning_client_version_not_checked));
+			final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
+			onUploadFailed(id, getResources().getString(R.string.warning_client_version_not_checked));
 		} else if (credentialsProvided == CheckResult.BAD) {
-			int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
-			onExportFailed(id, getResources().getString(R.string.user_or_password_missing));
+			final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
+			onUploadFailed(id, getResources().getString(R.string.user_or_password_missing));
 		} else if(sdCardWritable == CheckResult.BAD) {
-			int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
-			onExportFailed(id, getResources().getString(R.string.warning_sd_not_writable));
+			final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
+			onUploadFailed(id, getResources().getString(R.string.warning_sd_not_writable));
 		} else {
-			int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
-			onExportFailed(id, "Unknown error");
+			final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
+			onUploadFailed(id, "Unknown error");
 		}
 
 	}
@@ -249,7 +223,7 @@ public class ExportTaskFragment extends SherlockFragment implements ExportTaskLi
 	 * @see org.openbmap.soapclient.ServerValidation.ServerReply#onServerBad(java.lang.String)
 	 */
 	@Override
-	public void onServerBad(String text) {
+	public void onServerBad(final String text) {
 		Log.e(TAG, text);
 		allowedVersion = CheckResult.BAD;
 		// skip local checks, server can't be reached anyways
@@ -278,22 +252,22 @@ public class ExportTaskFragment extends SherlockFragment implements ExportTaskLi
 	}
 
 	/**
-	 * Retains progress dialog state for later restore (e.g. on device rotation)
+	 * Saves progress dialog state for later restore (e.g. on device rotation)
 	 * @param title
 	 * @param message
 	 * @param progress
 	 */
-	public void retainProgress(String title, String message, int progress) {
+	public void retainProgress(final String title, final String message, final int progress) {
 		mTitle = title;
 		mMessage = message;
 		mProgress = progress;
 	}
 
 	/**
-	 * Restores previously retain progress dialog state
+	 * Restores previously retained progress dialog state
 	 * @param progressDialog
 	 */
-	public void restoreProgress(ProgressDialog progressDialog) {
+	public void restoreProgress(final ProgressDialog progressDialog) {
 		progressDialog.setTitle(mTitle);
 		progressDialog.setMessage(mMessage);
 		progressDialog.setProgress(mProgress);
@@ -303,9 +277,9 @@ public class ExportTaskFragment extends SherlockFragment implements ExportTaskLi
 	 * @see org.openbmap.soapclient.ExportSessionTask.ExportTaskListener#onExportCompleted(int)
 	 */
 	@Override
-	public void onExportCompleted(final int id) {
+	public void onUploadCompleted(final int id) {
 		// forward to activity
-		((ExportTaskListener) getSherlockActivity()).onExportCompleted(id);
+		((UploadTaskListener) getSherlockActivity()).onUploadCompleted(id);
 
 		Log.i(TAG, "Export completed. Processing next");
 		toExport.remove(Integer.valueOf(id));
@@ -315,7 +289,7 @@ public class ExportTaskFragment extends SherlockFragment implements ExportTaskLi
 	@Override
 	public void onDryRunCompleted(final int id) {
 		// forward to activity
-		((ExportTaskListener) getSherlockActivity()).onDryRunCompleted(id);
+		((UploadTaskListener) getSherlockActivity()).onDryRunCompleted(id);
 
 		Log.i(TAG, "Export simulated. Processing next");
 		toExport.remove(Integer.valueOf(id));
@@ -326,9 +300,9 @@ public class ExportTaskFragment extends SherlockFragment implements ExportTaskLi
 	 * @see org.openbmap.soapclient.ExportSessionTask.ExportTaskListener#onExportFailed(java.lang.String)
 	 */
 	@Override
-	public void onExportFailed(int id, String error) {
+	public void onUploadFailed(final int id, final String error) {
 		// forward to activity
-		((ExportTaskListener) getSherlockActivity()).onExportFailed(id, error);
+		((UploadTaskListener) getSherlockActivity()).onUploadFailed(id, error);
 
 		Log.e(TAG, "Error exporting session " + id + ": " + error);
 		toExport.remove(Integer.valueOf(id));
@@ -339,8 +313,8 @@ public class ExportTaskFragment extends SherlockFragment implements ExportTaskLi
 	 * @see org.openbmap.soapclient.ExportSessionTask.ExportTaskListener#onProgressUpdate(java.lang.Object[])
 	 */
 	@Override
-	public void onProgressUpdate(Object... values) {
+	public void onUploadProgressUpdate(final Object... values) {
 		// forward to activity
-		((ExportTaskListener) getSherlockActivity()).onProgressUpdate(values);
+		((UploadTaskListener) getSherlockActivity()).onUploadProgressUpdate(values);
 	}
 }

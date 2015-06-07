@@ -118,9 +118,9 @@ public class GpxExporter {
 	 */
 	private static final SimpleDateFormat GPX_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
 
-	private int	mSession;
+	private final int	mSession;
 
-	private Context	mContext;
+	private final Context	mContext;
 
 	private DatabaseHelper	mDbHelper;
 
@@ -141,7 +141,7 @@ public class GpxExporter {
 		Log.i(TAG, "Finished building gpx file");
 		mDbHelper = new DatabaseHelper(mContext);
 
-		BufferedWriter bw = new BufferedWriter(new FileWriter(target));
+		final BufferedWriter bw = new BufferedWriter(new FileWriter(target));
 
 		bw.write(XML_HEADER);
 		bw.write(TAG_GPX);
@@ -391,7 +391,7 @@ public class GpxExporter {
 			final Date converted = INTERNAL_DATE_FORMAT.parse(String.valueOf(raw));
 			GPX_DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
 			return (GPX_DATE_FORMAT.format(converted));
-		} catch (ParseException e) {
+		} catch (final ParseException e) {
 			// should never happen
 			Log.e(TAG, "Error converting gpx date. Source " + raw);
 			return "0000-00-00T00:00:00Z";

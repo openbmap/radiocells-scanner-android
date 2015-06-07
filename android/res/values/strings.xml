@@ -38,8 +38,6 @@
 	</string>
 	<string name="prefs_save_wifis_summary">Activate to scan for wifis</string>
 	<string name="prefs_save_wifis">Wifi Logging</string>
-	<string name="prefs_data_dir">Data folder (relative to SD root)</string>
-	<string name="prefs_data_dir_hint">Select data folder</string>
 	<string name="prefs_data_map">Select Map</string>
 	<string name="prefs_data_map_summary">If you don\'t have a map yet, select \'Download
 		map\'
@@ -103,13 +101,10 @@
 	<string name="prefs_folder_settings">Folder settings</string>
 
 	<string name="prefs_map_folder">Map folder</string>
-	<string name="prefs_data_map_folder_summary">Select folder for downloaded maps (relative to SD
-		root)
-	</string>
+	<string name="prefs_data_map_folder_summary">Select map folder</string>
 
 	<string name="prefs_wifi_catalog_folder">Wifi catalog folder</string>
-	<string name="prefs_wifi_catalog_folder_summary">Select folder for downloaded wifi catalogs
-		(relative to SD root)
+	<string name="prefs_wifi_catalog_folder_summary">Select wifi catalog folder
 	</string>
 	<!-- End of Preferences -->
 
@@ -216,6 +211,7 @@
 	<string name="stop">Stop</string>
 	<string name="delete">Delete</string>
 	<string name="upload">Upload</string>
+	<string name="export_gpx">Export GPX track</string>
 	<string name="delete_all">DELETE ALL</string>
 	<string name="upload_skipped">Upload skipped (If this happened accidentally,
 		check
@@ -294,4 +290,7 @@
 	<string name="at">" at "</string>
 	<string name="yes">Yes</string>
 	<string name="no">No</string>
+	<string name="gpx_export_failed">GPX export failed</string>
+	<string name="info_using_online_map">No offline map available. Using online map</string>
+	<string name="select_folder">Select folder</string>
 </resources>

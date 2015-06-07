@@ -30,8 +30,7 @@ public final class Preferences {
 	public static final String KEY_GPS_LOGGING_INTERVAL = "gps.interval";
 	// TODO add support for external (e.g. bluetooth gps provider)
 	public static final String KEY_GPS_PROVIDER = "gps.provider";
-	public static final String KEY_GPS_SAVE_COMPLETE_TRACK = "gps.save_track";
-	public static final String KEY_DATA_FOLDER = "data.dir";
+	
 	public static final String KEY_MAP_FOLDER = "data.folder_map";
 	public static final String KEY_WIFI_CATALOG_FOLDER = "data.folder_catalog";
 	
@@ -73,12 +72,12 @@ public final class Preferences {
 	/**
 	 * Shall cells be saved?
 	 */
-	public static final String KEY_SAVE_CELLS = "save_cells";
+	public static final String KEY_LOG_CELLS = "save_cells";
 	
 	/**
 	 * Shall wifis be saved?
 	 */
-	public static final String KEY_SAVE_WIFIS = "save_wifis";
+	public static final String KEY_LOG_WIFIS = "save_wifis";
 	
 	/**
 	 * Minimum distance between cells logged.
@@ -129,11 +128,6 @@ public final class Preferences {
 	 */
 	
 	/**
-	 * Root folder for all additional data
-	 */
-	public static final String VAL_DATA_FOLDER = "/org.openbmap";
-	
-	/**
 	 * No map set
 	 */
 	public static final String VAL_MAP_NONE = "none";
@@ -146,7 +140,7 @@ public final class Preferences {
 	/**
 	 * Default reference database filename
 	 */
-	public static final String VAL_REF_DATABASE = "openbmap.sqlite";
+	public static final String VAL_WIFI_CATALOG_FILE = "openbmap.sqlite";
 	
 	/**
 	 * Reference database not set 
@@ -194,13 +188,6 @@ public final class Preferences {
 	public static final boolean VAL_SAVE_WIFIS = true;
 	
 	/**
-	 * Save complete gps track is deactivated by default.
-	 * If activated not only wifi and cell positions are saved,
-	 * but the complete track. Useful for debugging purposes
-	 */
-	public static final boolean	VAL_GPS_SAVE_COMPLETE_TRACK = false;
-	
-	/**
 	 * Check whether GPS is enabled by default
 	 */
 	public static final boolean VAL_GPS_CHECKSTARTUP = true;
@@ -219,17 +206,13 @@ public final class Preferences {
 	 * Default maps folder name, relative to application root dir.
 	 * Can be overwritten in settings by specifying KEY_MAP_FOLDER
 	 */
-	private static final String MAPS_SUBDIR = "maps";
-	
-	public static final String VAL_MAP_FOLDER = VAL_DATA_FOLDER  + File.separator + MAPS_SUBDIR;
+	public static final String MAPS_SUBDIR = "maps";
 	
 	/**
 	 * Default wifi catalog folder name, relative to application root dir.
 	 * Can be overwritten in settings by specifying KEY_WIFI_CATALOG_FOLDER
 	 */
-	private static final String WIFI_CATALOG_SUBDIR = "databases";
-	
-	public static final String VAL_WIFI_CATALOG_FOLDER = VAL_DATA_FOLDER + File.separator + WIFI_CATALOG_SUBDIR;
+	public static final String WIFI_CATALOG_SUBDIR = "databases";
 	
 	/**
 	 * Directory containing wifi blacklists, relative to application root dir.

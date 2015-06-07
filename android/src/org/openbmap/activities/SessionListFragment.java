@@ -81,6 +81,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	 * List action bar commands
 	 */
 	public interface SessionFragementListener {
+		
 		void deleteCommand(int id);
 		/**
 		 * Creates a new session.
@@ -102,17 +103,25 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		 *		Session to resume
 		 */
 		void deleteAllCommand();
+		
 		/**
-		 * Exports and uploads session.
+		 * Uploads selected session.
 		 * @param id
-		 *		Session to resume
+		 *		Session to upload
 		 */
-		void exportCommand(int id);
+		void uploadCommand(int id
+				);
 		/**
-		 * Exports and uploads all sessions not yet uploaded
+		 * Uploads all sessions not yet uploaded
 		 */
-		void exportAllCommand();
+		void uploadAllCommand();
 
+		/**
+		 * Exports GPX track of selected session
+		 * @param id
+		 */
+		void exportGpxCommand(int id);
+		
 		void reloadListFragment();
 	}
 
@@ -131,7 +140,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	public final void onActivityCreated(final Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		String[] from = new String[] {
+		final String[] from = new String[] {
 				Schema.COL_ID,
 				Schema.COL_CREATED_AT,
 				Schema.COL_IS_ACTIVE,
@@ -140,7 +149,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 				Schema.COL_NUMBER_OF_WIFIS
 		};
 
-		int[] to = new int[] {
+		final int[] to = new int[] {
 				R.id.sessionlistfragment_id,
 				R.id.sessionlistfragment_created_at,
 				R.id.sessionlistfragment_statusicon,
@@ -153,7 +162,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		mAdapter.setViewBinder(new SessionViewBinder());
 
 		// Trying to add a Header View.
-		View header = (View) getLayoutInflater(savedInstanceState).inflate(
+		final View header = (View) getLayoutInflater(savedInstanceState).inflate(
 				R.layout.sessionlistheader, null);
 		this.getListView().addHeaderView(header);
 
@@ -207,8 +216,8 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	 * Resumes session, if session hasn't been uploaded yet.
 	 */
 	private void resume(final int id) {
-		DataHelper datahelper = new DataHelper(this.getActivity());
-		Session check = datahelper.loadSession(id);
+		final DataHelper datahelper = new DataHelper(this.getActivity());
+		final Session check = datahelper.loadSession(id);
 		if (check != null && !check.hasBeenExported()) {
 			((SessionFragementListener) getSherlockActivity()).resumeCommand(id);
 		} else {
@@ -229,7 +238,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 
 	@Override
 	public final Loader<Cursor> onCreateLoader(final int arg0, final Bundle arg1) {
-		String[] projection = {
+		final String[] projection = {
 				Schema.COL_ID,
 				Schema.COL_CREATED_AT,
 				Schema.COL_IS_ACTIVE, 
@@ -237,7 +246,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 				Schema.COL_NUMBER_OF_CELLS,
 				Schema.COL_NUMBER_OF_WIFIS
 		};
-		CursorLoader cursorLoader = new CursorLoader(getActivity().getBaseContext(),
+		final CursorLoader cursorLoader = new CursorLoader(getActivity().getBaseContext(),
 				RadioBeaconContentProvider.CONTENT_URI_SESSION, projection, null, null, Schema.COL_CREATED_AT + " DESC");
 		return cursorLoader;
 	}
@@ -271,13 +280,13 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	 */
 	private static class SessionViewBinder implements ViewBinder {
 		public boolean setViewValue(final View view, final Cursor cursor, final int columnIndex) {
-			ImageView imgStatus = (ImageView) view.findViewById(R.id.sessionlistfragment_statusicon);
-			ImageView imgUpload = (ImageView) view.findViewById(R.id.sessionlistfragment_uploadicon);
-			TextView tvCreatedAt = (TextView) view.findViewById(R.id.sessionlistfragment_created_at);
+			final ImageView imgStatus = (ImageView) view.findViewById(R.id.sessionlistfragment_statusicon);
+			final ImageView imgUpload = (ImageView) view.findViewById(R.id.sessionlistfragment_uploadicon);
+			final TextView tvCreatedAt = (TextView) view.findViewById(R.id.sessionlistfragment_created_at);
 			if (columnIndex == cursor.getColumnIndex(Schema.COL_IS_ACTIVE)) {
 				//Log.d(TAG, "Modifying col " + cursor.getColumnIndex(Schema.COL_IS_ACTIVE));
 				// symbol for active track
-				int result = cursor.getInt(columnIndex);
+				final int result = cursor.getInt(columnIndex);
 				if (result > 0) {
 					// Yellow clock icon for Active
 					imgStatus.setImageResource(android.R.drawable.presence_away);
@@ -288,7 +297,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 				return true;
 			} else if (columnIndex == cursor.getColumnIndex(Schema.COL_HAS_BEEN_EXPORTED)) {
 				// symbol for uploaded tracks
-				int result = cursor.getInt(columnIndex);
+				final int result = cursor.getInt(columnIndex);
 				if (result > 0) {
 					// Lock icon for uploaded sessions
 					imgUpload.setImageResource(android.R.drawable.ic_lock_lock);
@@ -298,8 +307,8 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 				}
 				return true;
 			} else if (columnIndex == cursor.getColumnIndex(Schema.COL_CREATED_AT)) {
-				Date result = new Date(cursor.getLong(columnIndex));
-				SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd", Locale.US);
+				final Date result = new Date(cursor.getLong(columnIndex));
+				final SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd", Locale.US);
 				tvCreatedAt.setText(date.format(result));
 				return true;
 			}
@@ -311,7 +320,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	 * @see org.openbmap.utils.ActionModeHelper.ItemLongClickCallback#performAction(int, int)
 	 */
 	@Override
-	public boolean onItemLongClick(int item, int position, int id) {
+	public boolean onItemLongClick(final int item, final int position, final int id) {
 		// cancel if underlying item has gone..
 		if (id == -1) {
 			Log.i(TAG, "Skipping item click - nothing selected");
@@ -320,14 +329,17 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 
 		switch (item) {
 			case R.id.menu_upload_session:
-				DataHelper datahelper = new DataHelper(this.getActivity());
-				int pending = datahelper.countPendingExports();
+				final DataHelper datahelper = new DataHelper(this.getActivity());
+				final int pending = datahelper.countPendingExports();
 				if (pending > 1) {
 					AlertDialogHelper.newInstance(this, ID_MULTIPLE_UPLOADS, R.string.dialog_found_pending_uploads_title, R.string.dialog_found_pending_uploads_message, String.valueOf(id), false).show(getSherlockActivity().getSupportFragmentManager(), "multiple");
 				} else {
 					stop(id);
-					((SessionFragementListener) getSherlockActivity()).exportCommand(id);
+					((SessionFragementListener) getSherlockActivity()).uploadCommand(id);
 				}
+				return true;
+			case R.id.menu_export_gpx:
+				((SessionFragementListener) getSherlockActivity()).exportGpxCommand(id);
 				return true;
 			case R.id.menu_delete_session:
 				((SessionFragementListener) getSherlockActivity()).deleteCommand(id);
@@ -358,13 +370,13 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		 * @param neutralOnly show only neutral button
 		 * @return
 		 */
-		public static AlertDialogHelper newInstance(Fragment container, int id, int title, int message, String args, boolean neutralOnly) {
-			AlertDialogHelper frag = new AlertDialogHelper();
+		public static AlertDialogHelper newInstance(final Fragment container, final int id, final int title, final int message, final String args, final boolean neutralOnly) {
+			final AlertDialogHelper frag = new AlertDialogHelper();
 			frag.setTargetFragment(container, id);
 			// Caution: Don't set setRetainInstance(true) explicitly. This will cause the dialog to disappear
 			// see http://stackoverflow.com/questions/11307390/dialogfragment-disappears-on-rotation-despite-setretaininstancetrue
 			//frag.setRetainInstance(true);
-			Bundle bundle = new Bundle();
+			final Bundle bundle = new Bundle();
 			bundle.putInt("dialog_id", id);
 			bundle.putInt("title", title);
 			bundle.putInt("message", message);
@@ -375,14 +387,14 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		}
 
 		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState) {
+		public Dialog onCreateDialog(final Bundle savedInstanceState) {
 			final int dialogId = getArguments().getInt("dialog_id");
 			final int title = getArguments().getInt("title");
 			final int message = getArguments().getInt("message");
 			final String args = getArguments().getString("args");
 			final boolean neutralOnly = getArguments().getBoolean("only_neutral");
 
-			Builder dialog = new AlertDialog.Builder(getActivity())
+			final Builder dialog = new AlertDialog.Builder(getActivity())
 			.setIcon(android.R.drawable.ic_dialog_alert)
 			.setTitle(title)
 			.setMessage(message)
@@ -396,12 +408,12 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 					}});
 			} else {
 				dialog.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int whichButton) {
+					public void onClick(final DialogInterface dialog, final int whichButton) {
 						((OnAlertClickInterface)getTargetFragment()).onAlertPositiveClick(dialogId, args);
 					}
 				})
 				.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int whichButton) {
+					public void onClick(final DialogInterface dialog, final int whichButton) {
 						((OnAlertClickInterface)getTargetFragment()).onAlertNegativeClick(dialogId, args);
 					}
 				});
@@ -414,12 +426,12 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	 * @see org.openbmap.utils.OnAlertClickInterface#onAlertPositiveClick(int, java.lang.String)
 	 */
 	@Override
-	public void onAlertPositiveClick(int alertId, String args) {
+	public void onAlertPositiveClick(final int alertId, final String args) {
 		if (alertId == ID_MULTIPLE_UPLOADS) {
 			// just all pending
-			int id = (args != null ? Integer.valueOf(args) : RadioBeacon.SESSION_NOT_TRACKING);
+			final int id = (args != null ? Integer.valueOf(args) : RadioBeacon.SESSION_NOT_TRACKING);
 			stop(id);
-			((SessionFragementListener) getSherlockActivity()).exportAllCommand();
+			((SessionFragementListener) getSherlockActivity()).uploadAllCommand();
 		}
 		
 	}
@@ -428,12 +440,12 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	 * @see org.openbmap.utils.OnAlertClickInterface#onAlertNegativeClick(int, java.lang.String)
 	 */
 	@Override
-	public void onAlertNegativeClick(int alertId, String args) {
+	public void onAlertNegativeClick(final int alertId, final String args) {
 		if (alertId == ID_MULTIPLE_UPLOADS) {
 			// just upload selected
-			int id = (args != null ? Integer.valueOf(args) : RadioBeacon.SESSION_NOT_TRACKING);
+			final int id = (args != null ? Integer.valueOf(args) : RadioBeacon.SESSION_NOT_TRACKING);
 			stop(id);
-			((SessionFragementListener) getSherlockActivity()).exportCommand(id);
+			((SessionFragementListener) getSherlockActivity()).uploadCommand(id);
 		}
 		
 	}
@@ -442,7 +454,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	 * @see org.openbmap.utils.OnAlertClickInterface#onAlertNeutralClick(int, java.lang.String)
 	 */
 	@Override
-	public void onAlertNeutralClick(int alertId, String args) {
+	public void onAlertNeutralClick(final int alertId, final String args) {
 		// TODO Auto-generated method stub
 		
 	}

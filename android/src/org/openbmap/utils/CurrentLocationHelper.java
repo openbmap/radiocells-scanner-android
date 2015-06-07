@@ -40,7 +40,7 @@ public class CurrentLocationHelper {
 	private boolean gps_enabled  = false;
 	private boolean network_enabled  = false;
 
-	public boolean getLocation(Context context, LocationResult result) {
+	public boolean getLocation(final Context context, final LocationResult result) {
 		//I use LocationResult callback class to pass location value from CurrentLocationHelper to user code.
 		locationResult = result;
 		if (lmgr ==  null)
@@ -49,13 +49,13 @@ public class CurrentLocationHelper {
 		//exceptions will be thrown if provider is not permitted.
 		try {
 			gps_enabled  = lmgr.isProviderEnabled(LocationManager.GPS_PROVIDER);
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
 
 		}
 
 		try {
 			network_enabled = lmgr.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-		} catch(Exception ex){
+		} catch(final Exception ex){
 
 		}
 
@@ -73,27 +73,27 @@ public class CurrentLocationHelper {
 	}
 
 	LocationListener locationListenerGps = new LocationListener() {
-		public void onLocationChanged(Location location) {
+		public void onLocationChanged(final Location location) {
 			mTimer.cancel();
 			locationResult.gotLocation(location);
 			lmgr.removeUpdates(this);
 			lmgr.removeUpdates(locationListenerNetwork);
 		}
-		public void onProviderDisabled(String provider) {}
-		public void onProviderEnabled(String provider) {}
-		public void onStatusChanged(String provider, int status, Bundle extras) {}
+		public void onProviderDisabled(final String provider) {}
+		public void onProviderEnabled(final String provider) {}
+		public void onStatusChanged(final String provider, final int status, final Bundle extras) {}
 	};
 
 	LocationListener locationListenerNetwork = new LocationListener() {
-		public void onLocationChanged(Location location) {
+		public void onLocationChanged(final Location location) {
 			mTimer.cancel();
 			locationResult.gotLocation(location);
 			lmgr.removeUpdates(this);
 			lmgr.removeUpdates(locationListenerGps);
 		}
-		public void onProviderDisabled(String provider) {}
-		public void onProviderEnabled(String provider) {}
-		public void onStatusChanged(String provider, int status, Bundle extras) {}
+		public void onProviderDisabled(final String provider) {}
+		public void onProviderEnabled(final String provider) {}
+		public void onStatusChanged(final String provider, final int status, final Bundle extras) {}
 	};
 
 	class GetLastLocation extends TimerTask {

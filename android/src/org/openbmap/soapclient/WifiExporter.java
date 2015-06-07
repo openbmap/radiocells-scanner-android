@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.regex.Pattern;
 
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.DatabaseHelper;
@@ -80,27 +79,27 @@ public class WifiExporter  {
 	private static final int WIFIS_PER_FILE	= 1000;
 
 
-	private Context mContext;
+	private final Context mContext;
 
 	/**
 	 * Session Id to export
 	 */
-	private int mSession;
+	private final int mSession;
 
 	/**
 	 * Message in case of an error
 	 */
-	private String errorMsg = null;
+	private final String errorMsg = null;
 
 	/**
 	 * Datahelper
 	 */
-	private DataHelper mDataHelper;
+	private final DataHelper mDataHelper;
 
 	/**
 	 * Directory where xmls files are stored
 	 */
-	private String	mTempPath;
+	private final String	mTempPath;
 
 	private int	colLastAcc;
 
@@ -164,7 +163,7 @@ public class WifiExporter  {
 	 *  - Radiobeacon version used for exporting (available at runtime)
 	 * mExportVersion describes the later
 	 */
-	private String	mExportVersion;
+	private final String	mExportVersion;
 
 	/**
 	 * Anonymise SSIDs?
@@ -231,7 +230,7 @@ public class WifiExporter  {
 	 * If folder not yet exists, it is created
 	 */
 	private boolean ensureTempPath(final String path) {
-		File folder = new File(path);
+		final File folder = new File(path);
 
 		boolean folderAccessible = false;
 		if (folder.exists() && folder.canWrite()) {
@@ -254,7 +253,7 @@ public class WifiExporter  {
 
 		final DatabaseHelper mDbHelper = new DatabaseHelper(mContext);
 
-		ArrayList<String> generatedFiles = new ArrayList<String>();
+		final ArrayList<String> generatedFiles = new ArrayList<String>();
 
 		// get first CHUNK_SIZE records
 		Cursor cursorWifis = mDbHelper.getReadableDatabase().rawQuery(WIFI_SQL_QUERY,
@@ -288,7 +287,7 @@ public class WifiExporter  {
 		colLastAcc = cursorWifis.getColumnIndex("last_" + Schema.COL_ACCURACY);
 		// [end]
 
-		long startTime = System.currentTimeMillis();
+		final long startTime = System.currentTimeMillis();
 
 		long outer = 0;
 		while (!cursorWifis.isAfterLast()) {
@@ -297,8 +296,8 @@ public class WifiExporter  {
 				// creates files of 100 wifis each
 				Log.i(TAG, "Cycle " + i);
 
-				long fileTimeStamp = determineFileTimestamp(cursorWifis);
-				String filename  = mTempPath + generateFilename(fileTimeStamp);
+				final long fileTimeStamp = determineFileTimestamp(cursorWifis);
+				final String filename  = mTempPath + generateFilename(fileTimeStamp);
 
 				saveAndMoveCursor(filename, headerRecord, cursorWifis);
 
@@ -314,7 +313,7 @@ public class WifiExporter  {
 					String.valueOf(outer)});
 		}
 
-		long difference = System.currentTimeMillis() - startTime;
+		final long difference = System.currentTimeMillis() - startTime;
 		Log.i(TAG, "Serialize wifi took " + difference + " ms");
 
 		cursorWifis.close();
@@ -330,10 +329,10 @@ public class WifiExporter  {
 	 * @param cursor
 	 * @return
 	 */
-	private long determineFileTimestamp(Cursor cursor) {
+	private long determineFileTimestamp(final Cursor cursor) {
 		cursor.moveToPrevious();
 		if (cursor.moveToNext()) {
-			long timestamp = cursor.getLong(colReqTimestamp);
+			final long timestamp = cursor.getLong(colReqTimestamp);
 			cursor.moveToPrevious();
 			return timestamp;
 		}
@@ -445,7 +444,7 @@ public class WifiExporter  {
 			file = null;
 			bw = null;
 			return fileName;
-		} catch (IOException ioe) {
+		} catch (final IOException ioe) {
 			cursor.close();
 			ioe.printStackTrace();
 			return null;
@@ -487,7 +486,7 @@ public class WifiExporter  {
 	 * @return position tag
 	 */
 	private static String positionToXml(final long reqTime, final double lng, final double lat,
-			final double alt, final double head, final double speed, final double acc, String type) {
+			final double alt, final double head, final double speed, final double acc, final String type) {
 		return String.format(POSITION_XML, reqTime, lng, lat, alt, head, speed, acc, type);
 	}
 
@@ -515,7 +514,7 @@ public class WifiExporter  {
 	}
 
 	// http://stackoverflow.com/questions/6502759/how-to-strip-or-escape-html-tags-in-android
-	public static String stripHtml(String html) {
+	public static String stripHtml(final String html) {
 	    return Html.fromHtml(html).toString();
 	}
 	

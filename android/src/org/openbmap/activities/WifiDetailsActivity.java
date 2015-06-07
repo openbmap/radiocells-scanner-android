@@ -55,8 +55,8 @@ public class WifiDetailsActivity extends FragmentActivity {
 
 		initUi();
 
-		Bundle extras = getIntent().getExtras();
-		String bssid = extras.getString(Schema.COL_BSSID);
+		final Bundle extras = getIntent().getExtras();
+		final String bssid = extras.getString(Schema.COL_BSSID);
 		Integer session = null;
 		if (extras.getInt(Schema.COL_SESSION_ID) != 0) {
 			session = extras.getInt(Schema.COL_SESSION_ID);
@@ -64,7 +64,7 @@ public class WifiDetailsActivity extends FragmentActivity {
 		
 		// query content provider for wifi details
 		mDatahelper = new DataHelper(this);
-		ArrayList<WifiRecord> wifis = mDatahelper.loadWifisByBssid(bssid, session);
+		final ArrayList<WifiRecord> wifis = mDatahelper.loadWifisByBssid(bssid, session);
 		tvNoMeasurements.setText(String.valueOf(wifis.size()));
 		
 		mWifi = wifis.get(0);
@@ -87,8 +87,8 @@ public class WifiDetailsActivity extends FragmentActivity {
 		super.onResume();
 
 		// get the wifi _id
-		Bundle extras = getIntent().getExtras();
-		int id = extras.getInt(Schema.COL_ID);
+		final Bundle extras = getIntent().getExtras();
+		final int id = extras.getInt(Schema.COL_ID);
 		// query content provider for wifi details
 		mWifi = mDatahelper.loadWifiById(id);
 		
@@ -108,7 +108,7 @@ public class WifiDetailsActivity extends FragmentActivity {
 				tvCapabilities.setText(getResources().getString(R.string.n_a));
 			}
 
-			Integer freq = wifi.getFrequency();
+			final Integer freq = wifi.getFrequency();
 			if (freq != null) {
 				tvFrequency.setText(
 						((WifiChannel.getChannel(freq) == null) ? getResources().getString(R.string.unknown) : WifiChannel.getChannel(freq))

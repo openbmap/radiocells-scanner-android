@@ -81,27 +81,27 @@ public class CellExporter {
 	private static final int CELLS_PER_FILE	= 1000;
 
 
-	private Context mContext;
+	private final Context mContext;
 
 	/**
 	 * Session Id to export
 	 */
-	private int mSession;
+	private final int mSession;
 
 	/**
 	 * Message in case of an error
 	 */
-	private String errorMsg = null;
+	private final String errorMsg = null;
 
 	/**
 	 * Datahelper
 	 */
-	private DataHelper mDataHelper;
+	private final DataHelper mDataHelper;
 
 	/**
 	 * Directory where xmls files are stored
 	 */
-	private String	mTempPath;
+	private final String	mTempPath;
 
 	private int mColNetworkType;
 	private int mColIsCdma;
@@ -173,7 +173,7 @@ public class CellExporter {
 	 *  - Radiobeacon version used for exporting (available at runtime)
 	 * mExportVersion describes the later
 	 */
-	private String	mExportVersion;
+	private final String	mExportVersion;
 
 	private static final String CELL_SQL_QUERY = " SELECT " + Schema.TBL_CELLS + "." + Schema.COL_ID + ", "
 			+ Schema.COL_NETWORKTYPE + ", "
@@ -244,7 +244,7 @@ public class CellExporter {
 	 * If folder not yet exists, it is created
 	 */
 	private boolean ensureTempPath(final String path) {
-		File folder = new File(path);
+		final File folder = new File(path);
 
 		boolean folderAccessible = false;
 		if (folder.exists() && folder.canWrite()) {
@@ -268,7 +268,7 @@ public class CellExporter {
 
 		final DatabaseHelper mDbHelper = new DatabaseHelper(mContext);
 
-		ArrayList<String> generatedFiles = new ArrayList<String>();
+		final ArrayList<String> generatedFiles = new ArrayList<String>();
 
 		// get first CHUNK_SIZE records
 		Cursor cursorCells = mDbHelper.getReadableDatabase().rawQuery(CELL_SQL_QUERY,
@@ -310,7 +310,7 @@ public class CellExporter {
 		mColLastAcc = cursorCells.getColumnIndex("last_" + Schema.COL_ACCURACY);
 		// [end]
 
-		long startTime = System.currentTimeMillis();
+		final long startTime = System.currentTimeMillis();
 
 		mActiveMcc = determineActiveMcc(cursorCells);
 
@@ -322,8 +322,8 @@ public class CellExporter {
 				// creates files of 100 wifis each
 				Log.i(TAG, "Cycle " + i);
 
-				long fileTimeStamp = determineFileTimestamp(cursorCells);
-				String fileName  = mTempPath + generateFilename(mActiveMcc, fileTimeStamp);
+				final long fileTimeStamp = determineFileTimestamp(cursorCells);
+				final String fileName  = mTempPath + generateFilename(mActiveMcc, fileTimeStamp);
 				saveAndMoveCursor(fileName, headerRecord, cursorCells);
 
 				i += CELLS_PER_FILE;
@@ -338,7 +338,7 @@ public class CellExporter {
 					String.valueOf(outer)});
 		}
 
-		long difference = System.currentTimeMillis() - startTime;
+		final long difference = System.currentTimeMillis() - startTime;
 		Log.i(TAG, "Serialize cells took " + difference + " ms");
 
 		cursorCells.close();
@@ -354,10 +354,10 @@ public class CellExporter {
 	 * @param cursor
 	 * @return
 	 */
-	private long determineFileTimestamp(Cursor cursor) {
+	private long determineFileTimestamp(final Cursor cursor) {
 		cursor.moveToPrevious();
 		if (cursor.moveToNext()) {
-			long timestamp = cursor.getLong(mColReqTimestamp);
+			final long timestamp = cursor.getLong(mColReqTimestamp);
 			cursor.moveToPrevious();
 			return timestamp;
 		}
@@ -369,9 +369,9 @@ public class CellExporter {
 	 * @param cursor
 	 * @return
 	 */
-	private String determineActiveMcc(Cursor cursor) {
+	private String determineActiveMcc(final Cursor cursor) {
 		if (cursor.moveToFirst()) {
-			String activeMcc = cursor.getString(mColMcc);
+			final String activeMcc = cursor.getString(mColMcc);
 			// go back to initial position
 			cursor.moveToPrevious();
 			return activeMcc;
@@ -489,7 +489,7 @@ public class CellExporter {
 			file = null;
 			bw = null;
 
-		} catch (IOException ioe) {
+		} catch (final IOException ioe) {
 			cursor.close();
 			ioe.printStackTrace();
 		}
@@ -617,7 +617,7 @@ public class CellExporter {
 	 * @return position tag
 	 */
 	private static String positionToXml(final long reqTime, final double lng, final double lat,
-			final double alt, final double head, final double speed, final double acc, String type) {
+			final double alt, final double head, final double speed, final double acc, final String type) {
 		return String.format(POSITION_XML, reqTime, lng, lat, alt, head, speed, acc, type);
 	}
 

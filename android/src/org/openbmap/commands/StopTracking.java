@@ -20,9 +20,9 @@ package org.openbmap.commands;
 
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
+
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Bundle;
 import android.widget.Toast;
 
 /**
@@ -37,7 +37,7 @@ public class StopTracking  extends Activity {
 	protected final void onResume() {
 		super.onResume();
 
-		Intent intent = new Intent(RadioBeacon.INTENT_STOP_TRACKING);
+		final Intent intent = new Intent(RadioBeacon.INTENT_STOP_TRACKING);
 		sendBroadcast(intent);
 		Toast.makeText(this, R.string.stopped_tracking, Toast.LENGTH_SHORT).show();
 		this.finish();

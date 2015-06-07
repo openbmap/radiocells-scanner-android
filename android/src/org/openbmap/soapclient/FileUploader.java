@@ -77,9 +77,9 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 	/**
 	 * Used for callbacks.
 	 */
-	private UploadTaskListener mListener;
+	private final FileUploadListener mListener;
 
-	public interface UploadTaskListener {
+	public interface FileUploadListener {
 		void onUploadCompleted(String file);
 		void onUploadFailed(final String file, String error);
 	}
@@ -91,7 +91,7 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 
 	private final String mUser;
 	private final String mPassword;
-	private String	mServer;
+	private final String	mServer;
 	private String mFile;
 
 	/**
@@ -102,13 +102,13 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 	 * Reference:
 	 * http://code.google.com/p/openbmap/issues/detail?id=40
 	 */
-	private boolean	mValidateServerSide;
+	private final boolean	mValidateServerSide;
 
 	/**
 	 * Remote folder, in which uploaded files are searched upon validation
 	 * No trailing slash!
 	 */
-	private String mValidationBaseUrl;
+	private final String mValidationBaseUrl;
 
 	/**
 	 * 
@@ -119,7 +119,7 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 	 * @param validateServerSide	additional check, whether file is actually uploaded (more safe than just relying on server response 200)
 	 * @param validationBaseUrl		base URL for additional check 
 	 */
-	public FileUploader(final UploadTaskListener listener, final String user, final String password, final String server, final boolean validateServerSide, final String validationBaseUrl) {
+	public FileUploader(final FileUploadListener listener, final String user, final String password, final String server, final boolean validateServerSide, final String validationBaseUrl) {
 		mListener = listener;
 		mUser = user;
 		mPassword = password;
@@ -140,11 +140,11 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 		Log.i(TAG, "Uploading " + params[0]);
 		mFile = params[0];
 
-		Boolean httpResponseGood = scheduleUpload(mFile);
+		final Boolean httpResponseGood = scheduleUpload(mFile);
 
 		// perform additional checks if needed
 		if (mValidateServerSide && httpResponseGood && !fileActuallyExists(mFile)) {
-			String filename = mUser + "_" + mFile.substring(mFile.lastIndexOf(File.separator) + 1, mFile.length());
+			final String filename = mUser + "_" + mFile.substring(mFile.lastIndexOf(File.separator) + 1, mFile.length());
 			
 			lastErrorMsg = "Server reported code 200 on " + filename + ", but the file's not there..";
 			Log.e(TAG, lastErrorMsg);
@@ -189,20 +189,20 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 					+ mUser + "_"
 					+ file.substring(file.lastIndexOf(File.separator) + 1, file.length());
 			
-			HttpURLConnection connection = (HttpURLConnection) new URL(expectedUrl).openConnection();
+			final HttpURLConnection connection = (HttpURLConnection) new URL(expectedUrl).openConnection();
 			connection.setRequestMethod("HEAD");
-			int responseCode = connection.getResponseCode();
+			final int responseCode = connection.getResponseCode();
 			if (responseCode != 200) {
 				// Not OK.
 				return false;
 			}
 		}
-		catch (MalformedURLException e) {
+		catch (final MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return true;
 		}
-		catch (IOException e) {
+		catch (final IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -243,24 +243,24 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 		// @see http://developer.android.com/training/basics/network-ops/connecting.html
 
 		// Adjust HttpClient parameters
-		HttpParams httpParameters = new BasicHttpParams();
+		final HttpParams httpParameters = new BasicHttpParams();
 		// Set the timeout in milliseconds until a connection is established.
 		// The default value is zero, that means the timeout is not used. 
 		//HttpConnectionParams.setConnectionTimeout(httpParameters, CONNECTION_TIMEOUT);
 		// Set the default socket timeout (SO_TIMEOUT) 
 		// in milliseconds which is the timeout for waiting for data.
 		//HttpConnectionParams.setSoTimeout(httpParameters, SOCKET_TIMEOUT);
-		DefaultHttpClient httpclient = new DefaultHttpClient(httpParameters);
+		final DefaultHttpClient httpclient = new DefaultHttpClient(httpParameters);
 
-		HttpPost httppost = new HttpPost(mServer);
+		final HttpPost httppost = new HttpPost(mServer);
 		try {
 			
-			String authorizationString = "Basic " + Base64.encodeToString(
+			final String authorizationString = "Basic " + Base64.encodeToString(
 				        (mUser + ":" + mPassword).getBytes(),
 				        Base64.NO_WRAP);
 			httppost.setHeader("Authorization", authorizationString);
 			
-			MultipartEntity entity = new MultipartEntity();
+			final MultipartEntity entity = new MultipartEntity();
 
 			// TODO we don't need passwords for the new service
 			entity.addPart(LOGIN_FIELD, new StringBody(mUser)); 
@@ -268,9 +268,9 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 			entity.addPart(FILE_FIELD, new FileBody(new File(file), "text/xml"));
 
 			httppost.setEntity(entity);
-			HttpResponse response = httpclient.execute(httppost);
+			final HttpResponse response = httpclient.execute(httppost);
 
-			int reply = response.getStatusLine().getStatusCode();
+			final int reply = response.getStatusLine().getStatusCode();
 			if (reply == 200) {
 				Log.i(TAG, "Uploaded " + file + ": Server reply " + reply);
 			} else {
@@ -280,9 +280,9 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 			// TODO: redirects (301, 302) are NOT handled here 
 			// thus if something changes on the server side we're dead here
 			return (reply == HttpStatus.SC_OK);
-		} catch (ClientProtocolException e) {
+		} catch (final ClientProtocolException e) {
 			Log.e(TAG, e.getMessage());
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			Log.e(TAG, "I/O exception on file " + file);
 		}
 		return false;

@@ -60,12 +60,12 @@ public class SsidBlackList {
 	/**
 	 * List of ignored ssid prefixes
 	 */
-	private ArrayList<String>	mPrefixes;
+	private final ArrayList<String>	mPrefixes;
 	
 	/**
 	 * List of ignored ssid suffixes
 	 */
-	private ArrayList<String>	mSuffixes;
+	private final ArrayList<String>	mSuffixes;
 
 	public SsidBlackList() {
 		mPrefixes = new ArrayList<String>();
@@ -86,10 +86,10 @@ public class SsidBlackList {
 		
 		if (defaultList != null) {
 			try {				
-				File file = new File(defaultList);
-				FileInputStream defaultStream = new FileInputStream(file);
+				final File file = new File(defaultList);
+				final FileInputStream defaultStream = new FileInputStream(file);
 				add(defaultStream);
-			} catch (FileNotFoundException e) {
+			} catch (final FileNotFoundException e) {
 				Log.i(TAG, "Default blacklist " + defaultList + " not found. Setting up..");
 				SsidBlackListBootstraper.run(defaultList);
 			} 
@@ -97,10 +97,10 @@ public class SsidBlackList {
 
 		if (extraUserList != null) {
 			try {
-				File file = new File(extraUserList);
-				FileInputStream userStream = new FileInputStream(file);
+				final File file = new File(extraUserList);
+				final FileInputStream userStream = new FileInputStream(file);
 				add(userStream);
-			} catch (FileNotFoundException e) {
+			} catch (final FileNotFoundException e) {
 				Log.w(TAG, "User-defined blacklist " + extraUserList + " not found. Skipping");
 			} 
 		} else {
@@ -113,9 +113,9 @@ public class SsidBlackList {
 	 */
 	private void add(final FileInputStream file) {
 		try {
-			XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+			final XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
 			factory.setNamespaceAware(true);
-			XmlPullParser xpp = factory.newPullParser();
+			final XmlPullParser xpp = factory.newPullParser();
 
 			if (file != null) {
 				xpp.setInput(new InputStreamReader(file));
@@ -142,9 +142,9 @@ public class SsidBlackList {
 					eventType = xpp.next();
 				}
 			}
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			Log.e(TAG, "I/O exception reading blacklist");
-		} catch (XmlPullParserException e) {
+		} catch (final XmlPullParserException e) {
 			Log.e(TAG, "Error parsing blacklist");
 		}
 		Log.i(TAG, "Loaded " + (mPrefixes.size() + mSuffixes.size()) + " SSID blacklist entries");
@@ -158,7 +158,7 @@ public class SsidBlackList {
 	@SuppressLint("DefaultLocale")
 	public final boolean contains(final String ssid) {
 		boolean match = false;
-		for (String prefix : mPrefixes) {
+		for (final String prefix : mPrefixes) {
 			if (ssid.toLowerCase().startsWith(prefix.toLowerCase())) {
 				match = true; 
 				break;
@@ -170,7 +170,7 @@ public class SsidBlackList {
 			return match;
 		}
 		
-		for (String suffix : mSuffixes) {
+		for (final String suffix : mSuffixes) {
 			if (ssid.toLowerCase().endsWith(suffix.toLowerCase())) {
 				match = true;
 				break;

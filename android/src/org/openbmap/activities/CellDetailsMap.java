@@ -18,21 +18,25 @@
 
 package org.openbmap.activities;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
 import org.mapsforge.core.model.BoundingBox;
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
+import org.mapsforge.map.android.graphics.AndroidResourceBitmap;
 import org.mapsforge.map.android.rendertheme.AssetsRenderTheme;
+import org.mapsforge.map.android.util.AndroidUtil;
 import org.mapsforge.map.android.view.MapView;
+import org.mapsforge.map.layer.Layer;
 import org.mapsforge.map.layer.cache.TileCache;
+import org.mapsforge.map.layer.download.TileDownloadLayer;
+import org.mapsforge.map.layer.download.tilesource.OnlineTileSource;
 import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.model.common.Observer;
+import org.mapsforge.map.reader.MapFile;
 import org.mapsforge.map.rendertheme.XmlRenderTheme;
 import org.mapsforge.map.util.MapPositionUtil;
-import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.RadioBeaconContentProvider;
@@ -44,15 +48,11 @@ import org.openbmap.heatmap.HeatmapBuilder.HeatmapBuilderListener;
 import org.openbmap.utils.MapUtils;
 
 import android.annotation.SuppressLint;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -93,11 +93,16 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	 */
 	private TileCache mTileCache;
 
+	/**
+	 * Online tile layer, used when no offline map available
+	 */
+	private static TileDownloadLayer mapDownloadLayer = null;
+	
 	//[end]
 
 	// [start] Dynamic map variables
 
-	private ArrayList<HeatLatLong> points = new ArrayList<HeatLatLong>();
+	private final ArrayList<HeatLatLong> points = new ArrayList<HeatLatLong>();
 
 	private boolean	mPointsLoaded  = false;
 
@@ -118,14 +123,12 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 	private byte mZoomAtTrigger;
 
-	private AsyncTask<Object, Integer, Boolean>	builder;
-
 	// [end]
 
 
 	@Override
 	public final View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.celldetailsmap, container, false);	
+		final View view = inflater.inflate(R.layout.celldetailsmap, container, false);	
 		this.mMapView = (MapView) view.findViewById(R.id.map);
 
 		return view;
@@ -134,9 +137,8 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	@Override
 	public final void onActivityCreated(final Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);	
-
 		initMap();
-
+		
 		mCell = ((CellDetailsActivity) getActivity()).getCell();
 
 		if (savedInstanceState != null) {
@@ -147,11 +149,34 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 			getActivity().getSupportLoaderManager().initLoader(0, null, this);
 		}
 	}
+	
+	@Override
+	public final void onResume() {
+		if (mapDownloadLayer != null) {
+			mapDownloadLayer.onResume();
+		}
+	}
+	
+	@Override
+	public final void onPause() {
+		if (mapDownloadLayer != null) {
+			mapDownloadLayer.onResume();
+		}
+	}
+	
+	@Override
+	public void onDestroy() {
+	    super.onDestroy();
+	    this.mTileCache.destroy();
+	    this.mMapView.getModel().mapViewPosition.destroy();
+	    this.mMapView.destroy();
+	    AndroidResourceBitmap.clearResourceBitmaps();
+	}
 
 	@Override
 	public final Loader<Cursor> onCreateLoader(final int arg0, final Bundle arg1) {
 		// set query params: id and session id
-		ArrayList<String> args = new ArrayList<String>();
+		final ArrayList<String> args = new ArrayList<String>();
 		String selectSql = "";
 
 		if (mCell != null && mCell.getLogicalCellId() != -1  && !mCell.isCdma()) {
@@ -174,16 +199,16 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 			args.add(String.valueOf(mCell.getPsc()));
 		}
 
-		DataHelper dbHelper = new DataHelper(this.getActivity());
+		final DataHelper dbHelper = new DataHelper(this.getActivity());
 		args.add(String.valueOf(dbHelper.getActiveSessionId()));
 		if (selectSql.length() > 0) {
 			selectSql += " AND ";
 		}
 		selectSql += Schema.COL_SESSION_ID + " = ?";
 
-		String[] projection = {Schema.COL_ID, Schema.COL_STRENGTHDBM, Schema.COL_TIMESTAMP,  "begin_" + Schema.COL_LATITUDE, "begin_" + Schema.COL_LONGITUDE};
+		final String[] projection = {Schema.COL_ID, Schema.COL_STRENGTHDBM, Schema.COL_TIMESTAMP,  "begin_" + Schema.COL_LATITUDE, "begin_" + Schema.COL_LONGITUDE};
 		// query data from content provider
-		CursorLoader cursorLoader =
+		final CursorLoader cursorLoader =
 				new CursorLoader(getActivity().getBaseContext(),
 						RadioBeaconContentProvider.CONTENT_URI_CELL_EXTENDED, projection, selectSql, args.toArray(new String[args.size()]), Schema.COL_STRENGTHDBM + " DESC");
 		return cursorLoader;
@@ -193,13 +218,13 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	public final void onLoadFinished(final Loader<Cursor> loader, final Cursor cursor) {
 		if (cursor != null && cursor.getCount() > 0) {
 
-			int colLat = cursor.getColumnIndex("begin_" + Schema.COL_LATITUDE);
-			int colLon = cursor.getColumnIndex("begin_" + Schema.COL_LONGITUDE);
-			int colLevel = cursor.getColumnIndex(Schema.COL_STRENGTHDBM);
+			final int colLat = cursor.getColumnIndex("begin_" + Schema.COL_LATITUDE);
+			final int colLon = cursor.getColumnIndex("begin_" + Schema.COL_LONGITUDE);
+			final int colLevel = cursor.getColumnIndex(Schema.COL_STRENGTHDBM);
 
 			while (cursor.moveToNext()) {
 				//int intensity = (int) (HEAT_AMPLIFIER * (Math.min(cursor.getInt(colLevel) + MIN_HEAT, 0)) / -10f);
-				int intensity = cursor.getInt(colLevel) / -1;
+				final int intensity = cursor.getInt(colLevel) / -1;
 				points.add(new HeatLatLong(cursor.getDouble(colLat), cursor.getDouble(colLon), intensity));
 			}
 
@@ -223,7 +248,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 			clearLayer();
 
-			BoundingBox bbox = MapPositionUtil.getBoundingBox(
+			final BoundingBox bbox = MapPositionUtil.getBoundingBox(
 					mMapView.getModel().mapViewPosition.getMapPosition(),
 					mMapView.getDimension(), mMapView.getModel().displayModel.getTileSize());
 
@@ -233,7 +258,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 			mHeatmapLayer = new Marker(mTarget, null, 0, 0);
 			mMapView.getLayerManager().getLayers().add(mHeatmapLayer);
 
-			builder = new HeatmapBuilder(
+			new HeatmapBuilder(
 					CellDetailsMap.this, mMapView.getWidth(), mMapView.getHeight(), bbox,
 					mMapView.getModel().mapViewPosition.getZoomLevel(), mMapView.getModel().displayModel.getScaleFactor(),
 					mMapView.getModel().displayModel.getTileSize(), RADIUS).execute(points);
@@ -256,8 +281,8 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 			return;
 		}
 
-		BitmapDrawable drawable = new BitmapDrawable(backbuffer);
-		org.mapsforge.core.graphics.Bitmap mfBitmap = AndroidGraphicFactory.convertToBitmap(drawable);
+		final BitmapDrawable drawable = new BitmapDrawable(backbuffer);
+		final org.mapsforge.core.graphics.Bitmap mfBitmap = AndroidGraphicFactory.convertToBitmap(drawable);
 		if (mHeatmapLayer != null && mfBitmap != null) {
 			mHeatmapLayer.setBitmap(mfBitmap);
 		} else {
@@ -298,21 +323,13 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	}
 
 	/**
-	 * Opens selected map file
-	 * @return a map file
-	 */
-	protected final File getMapFile() {
-		return MapUtils.getMapFile(getActivity());
-	}
-
-	/**
 	 * Reads custom render theme from assets
 	 * @return render theme
 	 */
 	protected XmlRenderTheme getRenderTheme() {
 		try {
 			return new AssetsRenderTheme(this.getActivity(), "", "renderthemes/rendertheme-v4.xml");
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			Log.e(TAG, "Render theme failure " + e.toString());
 		}
 		return null;
@@ -326,19 +343,35 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 		this.mTileCache = createTileCache();
 
 		if (MapUtils.isMapSelected(this.getActivity())) {
-			// remove all layers including base layer
-			mMapView.getLayerManager().getLayers().add(MapUtils.createTileRendererLayer(
-					this.mTileCache,
-					this.mMapView.getModel().mapViewPosition,
-					getMapFile(), null, getRenderTheme()));
+			final Layer offlineLayer = MapUtils.createTileRendererLayer(
+					this.mTileCache, this.mMapView.getModel().mapViewPosition, getMapFile(), null, getRenderTheme());
+			if (offlineLayer != null) this.mMapView.getLayerManager().getLayers().add(offlineLayer);
 		} else {
-			this.mMapView.getModel().displayModel.setBackgroundColor(0xffffffff);
-			Toast.makeText(this.getActivity(), R.string.no_map_file_selected, Toast.LENGTH_LONG).show();
+			//this.mMapView.getModel().displayModel.setBackgroundColor(0xffffffff);
+			Toast.makeText(this.getActivity(), R.string.info_using_online_map, Toast.LENGTH_LONG).show();
+
+			final OnlineTileSource onlineTileSource = new OnlineTileSource(new String[]{
+					"otile1.mqcdn.com", "otile2.mqcdn.com", "otile3.mqcdn.com", "otile4.mqcdn.com"}, 80);
+			onlineTileSource.setName("MapQuest")
+			.setAlpha(false)
+			.setBaseUrl("/tiles/1.0.0/map/")
+			.setExtension("png")
+			.setParallelRequestsLimit(8)
+			.setProtocol("http")
+			.setTileSize(256)
+			.setZoomLevelMax((byte) 18)
+			.setZoomLevelMin((byte) 0);
+
+			mapDownloadLayer = new TileDownloadLayer(mTileCache,
+					mMapView.getModel().mapViewPosition, onlineTileSource,
+					AndroidGraphicFactory.INSTANCE);
+			mMapView.getLayerManager().getLayers().add(mapDownloadLayer);
+			mapDownloadLayer.onResume();
 		}
 
 
 		// register for layout finalization - we need this to get width and height
-		ViewTreeObserver vto = mMapView.getViewTreeObserver();
+		final ViewTreeObserver vto = mMapView.getViewTreeObserver();
 		vto.addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
 
 			@SuppressLint("NewApi")
@@ -348,7 +381,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 				mLayoutInflated = true;
 				proceedAfterHeatmapCompleted();
 
-				ViewTreeObserver obs = mMapView.getViewTreeObserver();
+				final ViewTreeObserver obs = mMapView.getViewTreeObserver();
 
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
 					obs.removeOnGlobalLayoutListener(this);
@@ -363,7 +396,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 			@Override
 			public void onChange() {
 
-				byte newZoom = mMapView.getModel().mapViewPosition.getZoomLevel();
+				final byte newZoom = mMapView.getModel().mapViewPosition.getZoomLevel();
 				if (newZoom != mCurrentZoom) {
 					// update overlays on zoom level changed
 					Log.i(TAG, "New zoom level " + newZoom + ", reloading map objects");
@@ -387,12 +420,6 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 		this.mMapView.setClickable(true);
 		this.mMapView.getMapScaleBar().setVisible(true);
 
-		/*
-			Layers layers = layerManager.getLayers();
-			// remove all layers including base layer
-			layers.clear();
-		 */
-
 		this.mMapView.getModel().mapViewPosition.setZoomLevel((byte) 16);
 	}
 
@@ -401,7 +428,15 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	 * @return
 	 */
 	protected final TileCache createTileCache() {
-		return MapUtils.createExternalStorageTileCache(getActivity(), getClass().getSimpleName());
+		return AndroidUtil.createTileCache(this.getActivity(), "mapcache", mMapView.getModel().displayModel.getTileSize(), 1f, this.mMapView.getModel().frameBufferModel.getOverdrawFactor());
+	}
+	
+	/**
+	 * Opens selected map file
+	 * @return a map file
+	 */
+	protected final MapFile getMapFile() {
+		return MapUtils.getMapFile(getActivity());
 	}
 
 	/**

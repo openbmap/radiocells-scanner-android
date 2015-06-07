@@ -145,8 +145,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	@Override
 	public final boolean onCreate() {
 		mDbHelper = new DatabaseHelper(getContext());
-		SQLiteDatabase db = mDbHelper.getWritableDatabase();
-		Log.i(TAG, "Current database version: " + db.getVersion());
+		final SQLiteDatabase db = mDbHelper.getWritableDatabase();
 		
 		// Enable foreign key constraints (per connection)
 		db.execSQL("PRAGMA foreign_keys = ON"); 
@@ -196,9 +195,9 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	private Uri insertCellMeasurement(final Uri baseUri, final ContentValues values) {
 		if (values.containsKey(Schema.COL_BEGIN_POSITION_ID)
 				&& values.containsKey(Schema.COL_TIMESTAMP)) {
-			long rowId = mDbHelper.getWritableDatabase().insert(Schema.TBL_CELLS, null, values);
+			final long rowId = mDbHelper.getWritableDatabase().insert(Schema.TBL_CELLS, null, values);
 			if (rowId > 0) {
-				Uri cellUri = ContentUris.withAppendedId(baseUri, rowId);
+				final Uri cellUri = ContentUris.withAppendedId(baseUri, rowId);
 				getContext().getContentResolver().notifyChange(RadioBeaconContentProvider.CONTENT_URI_CELL, null);
 				return cellUri;
 			}
@@ -216,9 +215,9 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	 */
 	private Uri insertWifiMeasurement(final Uri baseUri, final ContentValues values) {
 		if (values.containsKey(Schema.COL_BEGIN_POSITION_ID) && values.containsKey(Schema.COL_END_POSITION_ID) && values.containsKey(Schema.COL_TIMESTAMP)) {
-			long rowId = mDbHelper.getWritableDatabase().insert(Schema.TBL_WIFIS, null, values);
+			final long rowId = mDbHelper.getWritableDatabase().insert(Schema.TBL_WIFIS, null, values);
 			if (rowId > 0) {
-				Uri wifiUri = ContentUris.withAppendedId(baseUri, rowId);
+				final Uri wifiUri = ContentUris.withAppendedId(baseUri, rowId);
 				getContext().getContentResolver().notifyChange(RadioBeaconContentProvider.CONTENT_URI_WIFI, null);
 				return wifiUri;
 			}
@@ -239,9 +238,9 @@ public class RadioBeaconContentProvider extends ContentProvider {
 				&& values.containsKey(Schema.COL_LATITUDE)
 				&& values.containsKey(Schema.COL_TIMESTAMP)
 				&& values.containsKey(Schema.COL_SESSION_ID)) {
-			long rowId = mDbHelper.getWritableDatabase().insert(Schema.TBL_POSITIONS, null, values);
+			final long rowId = mDbHelper.getWritableDatabase().insert(Schema.TBL_POSITIONS, null, values);
 			if (rowId > 0) {
-				Uri positionUri = ContentUris.withAppendedId(baseUri, rowId);
+				final Uri positionUri = ContentUris.withAppendedId(baseUri, rowId);
 				getContext().getContentResolver().notifyChange(RadioBeaconContentProvider.CONTENT_URI_POSITION, null);
 				return positionUri;
 			}
@@ -259,9 +258,9 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	 */
 	private Uri insertLog(final Uri baseUri, final ContentValues values) {
 		if (values.containsKey(Schema.COL_TIMESTAMP)) {
-			long rowId = mDbHelper.getWritableDatabase().insert(Schema.TBL_LOGS, null, values);
+			final long rowId = mDbHelper.getWritableDatabase().insert(Schema.TBL_LOGS, null, values);
 			if (rowId > 0) {
-				Uri logUri = ContentUris.withAppendedId(baseUri, rowId);
+				final Uri logUri = ContentUris.withAppendedId(baseUri, rowId);
 				getContext().getContentResolver().notifyChange(RadioBeaconContentProvider.CONTENT_URI_LOGFILE, null);
 				return logUri;
 			}
@@ -280,9 +279,9 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	private Uri insertSession(final Uri baseUri, final ContentValues values) {
 		// Check that mandatory columns are present.
 		//if (values.containsKey(Schema.COL_TIMESTAMP)) {
-		long rowId = mDbHelper.getWritableDatabase().insert(Schema.TBL_SESSIONS, null, values);
+		final long rowId = mDbHelper.getWritableDatabase().insert(Schema.TBL_SESSIONS, null, values);
 		if (rowId > 0) {
-			Uri sessionUri = ContentUris.withAppendedId(baseUri, rowId);
+			final Uri sessionUri = ContentUris.withAppendedId(baseUri, rowId);
 			getContext().getContentResolver().notifyChange(RadioBeaconContentProvider.CONTENT_URI_SESSION, null);
 			return sessionUri;
 		}
@@ -486,7 +485,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 		selectionArgsList.add(argValue);
 		// Add the callers selection arguments, if any
 		if (null != selectionArgsIn) {
-			for (String arg : selectionArgsIn) {
+			for (final String arg : selectionArgsIn) {
 				selectionArgsList.add(arg);
 			}
 		}
@@ -560,7 +559,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	private int updateTable(final Uri uri, final String table, final ContentValues values,
 			final String selection, final String[] selectionArgs) {
 
-		int rows = mDbHelper.getWritableDatabase().update(table, values, selection, selectionArgs);
+		final int rows = mDbHelper.getWritableDatabase().update(table, values, selection, selectionArgs);
 		getContext().getContentResolver().notifyChange(uri, null);
 		return rows;
 	}
@@ -573,19 +572,19 @@ public class RadioBeaconContentProvider extends ContentProvider {
 		switch (uriMatcher.match(uri)) {
 			case Schema.URI_CODE_WIFI_ID:
 				// Delete selected wifi and delete all related entities (positions etc.).
-				String wifiId = Long.toString(ContentUris.parseId(uri));
-				int wRows = mDbHelper.getWritableDatabase().delete(Schema.TBL_WIFIS, Schema.COL_ID + " = ?", new String[] {wifiId});
+				final String wifiId = Long.toString(ContentUris.parseId(uri));
+				final int wRows = mDbHelper.getWritableDatabase().delete(Schema.TBL_WIFIS, Schema.COL_ID + " = ?", new String[] {wifiId});
 				getContext().getContentResolver().notifyChange(RadioBeaconContentProvider.CONTENT_URI_WIFI, null);
 				return wRows;
 			case Schema.URI_CODE_SESSION_ID:
 				// Deletes selected session.
-				String sessionId = Long.toString(ContentUris.parseId(uri));
-				int sRows = mDbHelper.getWritableDatabase().delete(Schema.TBL_SESSIONS, Schema.COL_ID + " = ?", new String[] {sessionId});
+				final String sessionId = Long.toString(ContentUris.parseId(uri));
+				final int sRows = mDbHelper.getWritableDatabase().delete(Schema.TBL_SESSIONS, Schema.COL_ID + " = ?", new String[] {sessionId});
 				getContext().getContentResolver().notifyChange(RadioBeaconContentProvider.CONTENT_URI_SESSION, null);
 				return sRows;
 			case Schema.URI_CODE_SESSIONS:
 				// Deletes all sessions.
-				int aRows =  mDbHelper.getWritableDatabase().delete(Schema.TBL_SESSIONS, null, null);
+				final int aRows =  mDbHelper.getWritableDatabase().delete(Schema.TBL_SESSIONS, null, null);
 				getContext().getContentResolver().notifyChange(RadioBeaconContentProvider.CONTENT_URI_SESSION, null);
 				return aRows;
 			default:

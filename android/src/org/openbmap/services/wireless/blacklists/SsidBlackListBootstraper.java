@@ -209,7 +209,7 @@ public final class SsidBlackListBootstraper {
 
 
 	public static void run(final String filename) {
-		File folder = new File(filename.substring(1, filename.lastIndexOf(File.separator)));
+		final File folder = new File(filename.substring(1, filename.lastIndexOf(File.separator)));
 		boolean folderAccessible = false;
 		if (folder.exists() && folder.canWrite()) {
 			folderAccessible = true;
@@ -221,24 +221,24 @@ public final class SsidBlackListBootstraper {
 		}
 
 		if (folderAccessible) {
-			StringBuilder sb = new StringBuilder();
+			final StringBuilder sb = new StringBuilder();
 			sb.append(START_TAG);
-			for (String[] prefix : PREFIXES) {
+			for (final String[] prefix : PREFIXES) {
 				sb.append(PREFIX_OPEN + prefix[0] + PREFIX_MIDDLE + prefix[1] + PREFIX_CLOSE);
 			}
 
-			for (String[] suffix : SUFFIXES) {
+			for (final String[] suffix : SUFFIXES) {
 				sb.append(SUFFIX_OPEN + suffix[0] + SUFFIX_MIDDLE + suffix[1] + SUFFIX_CLOSE);
 			}
 			sb.append(END_TAG);
 
 			try {
-				File file = new File(filename);
-				BufferedWriter bw = new BufferedWriter(new FileWriter(file.getAbsoluteFile()));
+				final File file = new File(filename);
+				final BufferedWriter bw = new BufferedWriter(new FileWriter(file.getAbsoluteFile()));
 				bw.append(sb);
 				bw.close();
 				Log.i(TAG, "Created default blacklist, " + PREFIXES.length + SUFFIXES.length + " entries");
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				Log.e(TAG, "Error writing blacklist");
 			} 
 		} else {

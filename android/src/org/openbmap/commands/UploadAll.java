@@ -37,7 +37,7 @@ public class UploadAll extends Activity {
 		super.onResume();
 
 		final Intent intent = new Intent(this, StartscreenActivity.class);
-		Bundle b = new Bundle();
+		final Bundle b = new Bundle();
 		b.putString("command", "upload_all");
 		intent.putExtras(b); 
 		

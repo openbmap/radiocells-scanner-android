@@ -19,7 +19,6 @@
 package org.openbmap.services.position.providers;
 
 import org.openbmap.Preferences;
-import org.openbmap.RadioBeacon;
 import org.openbmap.services.position.LocationService;
 import org.openbmap.services.position.LocationServiceFactory;
 import org.openbmap.services.position.PositioningService;
@@ -40,7 +39,7 @@ public class GpsProvider extends LocationProviderImpl implements Listener, Locat
 	@SuppressWarnings("unused")
 	private static final String	TAG	= GpsProvider.class.getSimpleName();
 
-	private Context	mContext;
+	private final Context	mContext;
 
 	/**
 	 * LocationManager
@@ -159,7 +158,7 @@ public class GpsProvider extends LocationProviderImpl implements Listener, Locat
 	 * @see android.location.GpsStatus.Listener#onGpsStatusChanged(int)
 	 */
 	@Override
-	public void onGpsStatusChanged(int event) {
+	public void onGpsStatusChanged(final int event) {
 		int satCount = -1;
 
 		switch (event) {
@@ -178,11 +177,11 @@ public class GpsProvider extends LocationProviderImpl implements Listener, Locat
 						|| (mLastGPSTimestamp + gpsLoggingInterval) < System.currentTimeMillis()) {
 					mLastGPSTimestamp = System.currentTimeMillis(); // save the time of this fix
 
-					GpsStatus status = lmgr.getGpsStatus(null);
+					final GpsStatus status = lmgr.getGpsStatus(null);
 
 					// Count active satellites
 					satCount = 0;
-					for (@SuppressWarnings("unused") GpsSatellite sat:status.getSatellites()) {
+					for (@SuppressWarnings("unused") final GpsSatellite sat:status.getSatellites()) {
 						satCount++;
 					}
 				}

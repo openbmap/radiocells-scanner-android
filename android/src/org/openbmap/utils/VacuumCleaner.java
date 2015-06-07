@@ -21,16 +21,12 @@ package org.openbmap.utils;
 import org.openbmap.R;
 import org.openbmap.db.DatabaseHelper;
 
-import com.actionbarsherlock.app.SherlockDialogFragment;
-
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabaseLockedException;
 import android.database.sqlite.SQLiteException;
 import android.os.AsyncTask;
-import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -40,7 +36,7 @@ import android.widget.Toast;
 public class VacuumCleaner extends AsyncTask<Void, Void, Boolean> {
 
 	private static final String TAG = VacuumCleaner.class.getSimpleName();
-	private Context	mContext;
+	private final Context	mContext;
 	private ProgressDialog	mDialog;
 
 	public VacuumCleaner(final Context context) {
@@ -63,17 +59,17 @@ public class VacuumCleaner extends AsyncTask<Void, Void, Boolean> {
 
 		Log.i(TAG, "Cleaning database");
 		try {
-			SQLiteDatabase db = new DatabaseHelper(mContext).getWritableDatabase();
+			final SQLiteDatabase db = new DatabaseHelper(mContext).getWritableDatabase();
 			db.execSQL("VACUUM");
 			Log.i(TAG, "Finished cleaning");
 			db.close();
 		}
-		catch (SQLiteDatabaseLockedException e){
+		catch (final SQLiteDatabaseLockedException e){
 			// possibly a database upgrade is currently taking place
 			Log.e(TAG, "Error locking database");
 			return false;
 
-		} catch (SQLiteException e) {
+		} catch (final SQLiteException e) {
 			Log.e(TAG, "Database error: " + e.getMessage());
 			return false;
 		}

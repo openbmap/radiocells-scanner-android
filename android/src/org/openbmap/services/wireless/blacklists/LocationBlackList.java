@@ -73,7 +73,7 @@ public class LocationBlackList {
 	/**
 	 * List of blocked locations
 	 */
-	private ArrayList<DeadArea> mLocations;
+	private final ArrayList<DeadArea> mLocations;
 
 	/**
 	 * Dead area is defined by center point and radius
@@ -104,10 +104,10 @@ public class LocationBlackList {
 	public final void openFile(final String extraUserList) {
 		if (extraUserList != null) {
 			try {
-				File file = new File(extraUserList);
-				FileInputStream userStream = new FileInputStream(file);
+				final File file = new File(extraUserList);
+				final FileInputStream userStream = new FileInputStream(file);
 				add(userStream);
-			} catch (FileNotFoundException e) {
+			} catch (final FileNotFoundException e) {
 				Log.w(TAG, "User-defined blacklist " + extraUserList + " not found. Skipping");
 			} 
 		} else {
@@ -121,9 +121,9 @@ public class LocationBlackList {
 	 */
 	private void add(final FileInputStream file) {
 		try {
-			XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+			final XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
 			factory.setNamespaceAware(true);
-			XmlPullParser xpp = factory.newPullParser();
+			final XmlPullParser xpp = factory.newPullParser();
 
 			if (file != null) {
 				xpp.setInput(new InputStreamReader(file));
@@ -144,7 +144,7 @@ public class LocationBlackList {
 						if (LATITUDE_TAG.equals(currentTag)) {
 							try {
 								loc.setLatitude(Double.valueOf(xpp.getText()));
-							} catch (NumberFormatException e) {
+							} catch (final NumberFormatException e) {
 								Log.e(TAG, "Error getting latitude");
 								loc = null;
 							}
@@ -152,7 +152,7 @@ public class LocationBlackList {
 						if (LONGITUDE_TAG.equals(currentTag)) {
 							try {
 								loc.setLongitude(Double.valueOf(xpp.getText()));
-							} catch (NumberFormatException e) {
+							} catch (final NumberFormatException e) {
 								Log.e(TAG, "Error getting longitude");
 								loc = null;
 							}
@@ -160,7 +160,7 @@ public class LocationBlackList {
 						if (RADIUS_TAG.equals(currentTag)) {
 							try {
 								radius = Long.valueOf(xpp.getText());
-							} catch (NumberFormatException e) {
+							} catch (final NumberFormatException e) {
 								Log.e(TAG, "Error getting longitude");
 								radius = DEFAULT_RADIUS;
 							}
@@ -177,9 +177,9 @@ public class LocationBlackList {
 					eventType = xpp.next();
 				}
 			}
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			Log.e(TAG, "I/O exception reading blacklist");
-		} catch (XmlPullParserException e) {
+		} catch (final XmlPullParserException e) {
 			Log.e(TAG, "Error parsing blacklist");
 		}
 		Log.i(TAG, "Loaded " + mLocations.size() + " location blacklist entries");
@@ -193,7 +193,7 @@ public class LocationBlackList {
 	@SuppressLint("DefaultLocale")
 	public final boolean contains(final Location location) {
 		boolean match = false;
-		for (DeadArea dead : mLocations) {
+		for (final DeadArea dead : mLocations) {
 			if (location.distanceTo(dead.location) < dead.radius) {
 				match = true; 
 				break;

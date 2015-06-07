@@ -33,7 +33,7 @@ public class DataHelper {
 	/**
 	 * ContentResolver to interact with content provider
 	 */
-	private ContentResolver contentResolver;
+	private final ContentResolver contentResolver;
 
 	/**
 	 * Constructor
@@ -57,7 +57,7 @@ public class DataHelper {
 			return;
 		}
 
-		ArrayList<ContentProviderOperation> operations = new ArrayList<ContentProviderOperation>();
+		final ArrayList<ContentProviderOperation> operations = new ArrayList<ContentProviderOperation>();
 
 		// saving begin position
 		operations.add(ContentProviderOperation.newInsert(RadioBeaconContentProvider.CONTENT_URI_POSITION)
@@ -85,7 +85,7 @@ public class DataHelper {
 				.withValue(Schema.COL_SOURCE, end.getSource())
 				.build());
 
-		for (WifiRecord wifi : wifis) {
+		for (final WifiRecord wifi : wifis) {
 			operations.add(ContentProviderOperation.newInsert(RadioBeaconContentProvider.CONTENT_URI_WIFI)
 					.withValue(Schema.COL_BSSID, wifi.getBssid())
 					.withValue(Schema.COL_SSID, wifi.getSsid())
@@ -103,10 +103,10 @@ public class DataHelper {
 		}
 
 		try {
-			ContentProviderResult[] results = contentResolver.applyBatch("org.openbmap.provider", operations);
-		} catch (RemoteException e) {
+			final ContentProviderResult[] results = contentResolver.applyBatch("org.openbmap.provider", operations);
+		} catch (final RemoteException e) {
 			e.printStackTrace();
-		} catch (OperationApplicationException e) {
+		} catch (final OperationApplicationException e) {
 			e.printStackTrace();
 		}
 	}
@@ -119,9 +119,9 @@ public class DataHelper {
 	 * @return ArrayList<WifiRecord> with all wifis for given session
 	 */
 	public final ArrayList<WifiRecord> loadWifisBySession(final int session, final String sort) {
-		ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>();
+		final ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>();
 
-		Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
+		final Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
 				RadioBeaconContentProvider.CONTENT_URI_WIFI, RadioBeaconContentProvider.CONTENT_URI_SESSION_SUFFIX), session),
 				null, null, null, sort);
 
@@ -137,7 +137,7 @@ public class DataHelper {
 		final int columnIndex9 = ca.getColumnIndex(Schema.COL_KNOWN_WIFI);
 
 		while (ca.moveToNext()) {
-			WifiRecord wifi = new WifiRecord();
+			final WifiRecord wifi = new WifiRecord();
 			wifi.setBssid(ca.getString(columnIndex));
 			wifi.setSsid(ca.getString(columnIndex2));
 			wifi.setCapabilities(ca.getString(columnIndex3));
@@ -161,10 +161,10 @@ public class DataHelper {
 	 * @return number of wifis
 	 */
 	public final int countWifis(final int session) {
-		Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
+		final Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
 				RadioBeaconContentProvider.CONTENT_URI_WIFI, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
 				new String[]{Schema.COL_ID}, null, null, null);
-		int count = ca.getCount();
+		final int count = ca.getCount();
 		ca.close();
 		return count;
 	}
@@ -175,10 +175,10 @@ public class DataHelper {
 	 * @return number of wifis
 	 */
 	public final int countNewWifis(final int session) {
-		Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
+		final Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
 				RadioBeaconContentProvider.CONTENT_URI_WIFI, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
 				new String[]{Schema.COL_ID}, Schema.COL_KNOWN_WIFI + " = ?", new String[]{"0"}, null);
-		int count = ca.getCount();
+		final int count = ca.getCount();
 		ca.close();
 		return count;
 	}
@@ -192,7 +192,7 @@ public class DataHelper {
 	public final WifiRecord loadWifiById(final int id) {
 		WifiRecord wifi = null;
 
-		Cursor ca = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_WIFI, id) , null, null, null, null);
+		final Cursor ca = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_WIFI, id) , null, null, null, null);
 		//Log.d(TAG, "getWifiMeasurement returned " + ca.getCount() + " records");
 		if (ca.moveToNext()) {
 			wifi = new WifiRecord(
@@ -219,7 +219,7 @@ public class DataHelper {
 	 * @return Array (of measurements) for that BSSID
 	 */
 	public final ArrayList<WifiRecord> loadWifisByBssid(final String bssid, final Integer session) {
-		ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>();
+		final ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>();
 
 		String selectSql;
 		if (session != null) {
@@ -228,7 +228,7 @@ public class DataHelper {
 			selectSql = Schema.COL_BSSID + " = \"" + bssid + "\"";
 		}
 
-		Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_WIFI, null, selectSql, null, null);
+		final Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_WIFI, null, selectSql, null, null);
 
 		// Performance tweaking: don't call ca.getColumnIndex on each iteration 
 		final int columnIndex = ca.getColumnIndex(Schema.COL_BSSID);
@@ -242,7 +242,7 @@ public class DataHelper {
 		final int columnIndex9 = ca.getColumnIndex(Schema.COL_KNOWN_WIFI);
 
 		while (ca.moveToNext()) {
-			WifiRecord wifi = new WifiRecord();
+			final WifiRecord wifi = new WifiRecord();
 			wifi.setBssid(ca.getString(columnIndex));
 			wifi.setSsid(ca.getString(columnIndex2));
 			wifi.setCapabilities(ca.getString(columnIndex3));
@@ -279,7 +279,7 @@ public class DataHelper {
 	 */
 	public final ArrayList<WifiRecord> loadWifisOverviewWithin(final int session, final Double minLon, final Double maxLon, final Double minLat, final Double maxLat) {
 		//long start = System.currentTimeMillis();
-		ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>();
+		final ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>();
 
 		String selection = null;
 		String[] selectionArgs = null;
@@ -292,7 +292,7 @@ public class DataHelper {
 			selectionArgs = new String[]{String.valueOf(minLon), String.valueOf(maxLon), String.valueOf(minLat), String.valueOf(maxLat)};
 		}
 
-		Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(RadioBeaconContentProvider.CONTENT_URI_WIFI,
+		final Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(RadioBeaconContentProvider.CONTENT_URI_WIFI,
 				RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
 				null, selection, selectionArgs, null);
 
@@ -308,7 +308,7 @@ public class DataHelper {
 		final int columnIndex9 = ca.getColumnIndex(Schema.COL_KNOWN_WIFI);
 
 		while (ca.moveToNext()) {	
-			WifiRecord wifi = new WifiRecord();
+			final WifiRecord wifi = new WifiRecord();
 			wifi.setBssid(ca.getString(columnIndex));
 			wifi.setSsid(ca.getString(columnIndex2));
 			wifi.setCapabilities(ca.getString(columnIndex3));
@@ -337,7 +337,7 @@ public class DataHelper {
 	 */
 	public final Session loadSession(final int id) {
 		Session session = null;
-		Cursor ca = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_SESSION, id), null, null, null, null);
+		final Cursor ca = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_SESSION, id), null, null, null, null);
 		if (ca.moveToNext()) {
 			session = new Session(
 					ca.getInt(ca.getColumnIndex(Schema.COL_ID)), 
@@ -373,14 +373,14 @@ public class DataHelper {
 		}
 
 		// check, whether session already exists, then update, otherwise save new session
-		Cursor ca = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_SESSION, session.getId()), null, null, null, null);
+		final Cursor ca = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_SESSION, session.getId()), null, null, null, null);
 		if (!ca.moveToNext()) {
 			storeSession(session);
 			ca.close();
 			return 1;
 		} else {
 			Log.d(TAG, "Updating existing session " + session.getId());
-			ContentValues values = new ContentValues();
+			final ContentValues values = new ContentValues();
 			values.put(Schema.COL_CREATED_AT, session.getCreatedAt());
 			values.put(Schema.COL_LAST_UPDATED, session.getLastUpdated());
 			values.put(Schema.COL_DESCRIPTION, session.getDescription());
@@ -404,7 +404,7 @@ public class DataHelper {
 	public final Uri storeSession(final Session newSession) {
 		Log.d(TAG, "Storing new session " + newSession.toString());
 
-		ContentValues values = new ContentValues();
+		final ContentValues values = new ContentValues();
 		// id is auto-assigned, remember to update new session manually
 		values.put(Schema.COL_CREATED_AT, newSession.getCreatedAt());
 		values.put(Schema.COL_LAST_UPDATED, newSession.getLastUpdated());
@@ -440,7 +440,7 @@ public class DataHelper {
 	 */
 	public final Session loadActiveSession() {
 		Session session = null;
-		Cursor ca = contentResolver.query(Uri.withAppendedPath(RadioBeaconContentProvider.CONTENT_URI_SESSION, "active"), null, null, null, null);
+		final Cursor ca = contentResolver.query(Uri.withAppendedPath(RadioBeaconContentProvider.CONTENT_URI_SESSION, "active"), null, null, null, null);
 		if (ca.moveToFirst()) {
 			session = new Session(
 					ca.getInt(ca.getColumnIndex(Schema.COL_ID)), 
@@ -464,8 +464,8 @@ public class DataHelper {
 	 * @return ArrayList with session ids
 	 */
 	public final ArrayList<Integer> getSessionList() {
-		ArrayList<Integer> sessions = new ArrayList<Integer>();
-		Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_SESSION, new String[]{Schema.COL_ID}, null, null, null);
+		final ArrayList<Integer> sessions = new ArrayList<Integer>();
+		final Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_SESSION, new String[]{Schema.COL_ID}, null, null, null);
 		while (ca.moveToNext()) {
 			sessions.add(ca.getInt(ca.getColumnIndex(Schema.COL_ID)));
 		} 
@@ -478,7 +478,7 @@ public class DataHelper {
 	 * @return session id if any active session, RadioBeacon.SESSION_NOT_TRACKING else
 	 */
 	public final int getActiveSessionId() {
-		Cursor ca = contentResolver.query(Uri.withAppendedPath(RadioBeaconContentProvider.CONTENT_URI_SESSION, "active"), null, null, null, null);
+		final Cursor ca = contentResolver.query(Uri.withAppendedPath(RadioBeaconContentProvider.CONTENT_URI_SESSION, "active"), null, null, null, null);
 		if (ca.moveToFirst()) {
 			return ca.getInt(ca.getColumnIndex(Schema.COL_ID));
 		}
@@ -490,9 +490,9 @@ public class DataHelper {
 	 * @return
 	 */
 	public int countPendingExports() {
-		Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_SESSION, new String[]{Schema.COL_ID}, Schema.COL_HAS_BEEN_EXPORTED + "= 0", null, null);
+		final Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_SESSION, new String[]{Schema.COL_ID}, Schema.COL_HAS_BEEN_EXPORTED + "= 0", null, null);
 
-		int count = ca.getCount();
+		final int count = ca.getCount();
 		ca.close();
 		return count;
 	}
@@ -509,7 +509,7 @@ public class DataHelper {
 		}
 
 		// add a new ContentProviderOperation
-		ArrayList<ContentProviderOperation> operations = new ArrayList<ContentProviderOperation>();
+		final ArrayList<ContentProviderOperation> operations = new ArrayList<ContentProviderOperation>();
 
 		//saving begin position
 		operations.add(ContentProviderOperation.newInsert(RadioBeaconContentProvider.CONTENT_URI_POSITION)
@@ -537,7 +537,7 @@ public class DataHelper {
 				.withValue(Schema.COL_SOURCE, end.getSource())
 				.build());
 
-		for (CellRecord cell: cells) {
+		for (final CellRecord cell: cells) {
 			if (!cell.isCdma()) {
 				// store GSM cell
 				operations.add(ContentProviderOperation.newInsert(RadioBeaconContentProvider.CONTENT_URI_CELL)
@@ -599,10 +599,10 @@ public class DataHelper {
 		}
 
 		try {
-			ContentProviderResult[] results = contentResolver.applyBatch("org.openbmap.provider", operations);
-		} catch (RemoteException e) {
+			final ContentProviderResult[] results = contentResolver.applyBatch("org.openbmap.provider", operations);
+		} catch (final RemoteException e) {
 			e.printStackTrace();
-		} catch (OperationApplicationException e) {
+		} catch (final OperationApplicationException e) {
 			e.printStackTrace();
 		}
 	}
@@ -616,7 +616,7 @@ public class DataHelper {
 	public final CellRecord loadCellById(final int id) {
 		CellRecord cell = null;
 
-		Cursor ca = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_CELL, id) , null, null, null, null);
+		final Cursor ca = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_CELL, id) , null, null, null, null);
 		if (ca.moveToNext()) {
 			cell = cursorToCell(ca);
 		}
@@ -631,9 +631,9 @@ public class DataHelper {
 	 * @return ArrayList<CellRecord> with all cells for given session
 	 */
 	public final ArrayList<CellRecord> loadCellsBySession(final long session, final String sort) {
-		ArrayList<CellRecord> cells = new ArrayList<CellRecord>();
+		final ArrayList<CellRecord> cells = new ArrayList<CellRecord>();
 
-		Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
+		final Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
 				RadioBeaconContentProvider.CONTENT_URI_CELL, RadioBeaconContentProvider.CONTENT_URI_SESSION_SUFFIX), session),
 				null, null, null, sort);
 
@@ -651,7 +651,7 @@ public class DataHelper {
 	 * @return CellRecord
 	 */
 	private CellRecord cursorToCell(final Cursor cursor) {
-		CellRecord cell = new CellRecord();
+		final CellRecord cell = new CellRecord();
 		final int colNetworkType = cursor.getColumnIndex(Schema.COL_NETWORKTYPE);
 		final int colIsCdma = cursor.getColumnIndex(Schema.COL_IS_CDMA);
 		final int colIsServing = cursor.getColumnIndex(Schema.COL_IS_SERVING);
@@ -708,10 +708,10 @@ public class DataHelper {
 	 * @return number of wifis
 	 */
 	public final int countCells(final long session) {
-		Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
+		final Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
 				RadioBeaconContentProvider.CONTENT_URI_CELL, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
 				new String[]{Schema.COL_ID}, null, null, null);
-		int count = ca.getCount();
+		final int count = ca.getCount();
 		ca.close();
 		return count;
 	}
@@ -736,7 +736,7 @@ public class DataHelper {
 		selection = Schema.COL_ID + " = ?";
 		selectionArgs = new String[]{id};
 
-		Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_POSITION, null, selection, selectionArgs, null);
+		final Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_POSITION, null, selection, selectionArgs, null);
 
 		PositionRecord position = new PositionRecord();
 		if (ca.moveToNext()) {
@@ -758,7 +758,7 @@ public class DataHelper {
 	 * @return
 	 */
 	public final ArrayList<PositionRecord> loadPositions(final int session, final Double minLat, final Double maxLat, final Double minLon, final Double maxLon) {
-		ArrayList<PositionRecord> positions = new ArrayList<PositionRecord>();
+		final ArrayList<PositionRecord> positions = new ArrayList<PositionRecord>();
 		String selection = Schema.COL_SESSION_ID + " = ?";
 
 		Cursor ca = null;
@@ -811,7 +811,7 @@ public class DataHelper {
 		final int columnIndex8 = cursor.getColumnIndex(Schema.COL_SESSION_ID);
 		final int columnIndex9 = cursor.getColumnIndex(Schema.COL_SOURCE);
 
-		PositionRecord position = new PositionRecord();
+		final PositionRecord position = new PositionRecord();
 		position.setLatitude(cursor.getDouble(columnIndex));
 		position.setLongitude(cursor.getDouble(columnIndex2));
 		position.setAltitude(cursor.getDouble(columnIndex3));
@@ -834,7 +834,7 @@ public class DataHelper {
 	public final LogFile loadLogFileBySession(final long id) {
 		LogFile logFile = null;
 
-		Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
+		final Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
 				RadioBeaconContentProvider.CONTENT_URI_LOGFILE, RadioBeaconContentProvider.CONTENT_URI_SESSION_SUFFIX), id),
 				null, null, null, null);
 
@@ -859,7 +859,7 @@ public class DataHelper {
 	 * @return
 	 */
 	public final Uri storeLogFile(final LogFile logFile, final int sessionId) {
-		ContentValues values = new ContentValues();
+		final ContentValues values = new ContentValues();
 		values.put(Schema.COL_MANUFACTURER, logFile.getManufacturer());
 		values.put(Schema.COL_MODEL, logFile.getModel());
 		values.put(Schema.COL_REVISION, logFile.getRevision());
@@ -876,7 +876,7 @@ public class DataHelper {
 	 * @return number of updated rows
 	 */
 	public final int invalidateActiveSessions() {
-		ContentValues values = new ContentValues();
+		final ContentValues values = new ContentValues();
 		values.put(Schema.COL_IS_ACTIVE, 0);
 		// disables all active sessions
 		return contentResolver.update(RadioBeaconContentProvider.CONTENT_URI_SESSION, values,
@@ -890,7 +890,7 @@ public class DataHelper {
 	 * @param mLocation
 	 */
 	public final Uri storePosition(final PositionRecord pos) {
-		ContentValues values = new ContentValues();
+		final ContentValues values = new ContentValues();
 		values.put(Schema.COL_LATITUDE, pos.getLatitude());
 		values.put(Schema.COL_LONGITUDE, pos.getLongitude());
 		values.put(Schema.COL_ALTITUDE, pos.getAltitude());

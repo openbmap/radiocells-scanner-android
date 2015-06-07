@@ -32,24 +32,24 @@ public class CustomViewPagerAdapter extends FragmentPagerAdapter {
 	 */
 	int pageCount = 4;
 
-	public CustomViewPagerAdapter(FragmentManager fm) {
+	public CustomViewPagerAdapter(final FragmentManager fm) {
 		super(fm);
 	}
 
 	@Override
-	public Fragment getItem(int arg0) {
+	public Fragment getItem(final int arg0) {
 		switch (arg0) {
 			case 0:
-				StatsActivity stats = new StatsActivity();
+				final StatsActivity stats = new StatsActivity();
 				return stats;
 			case 1:
-				WifiListContainer wifis = new WifiListContainer();
+				final WifiListContainer wifis = new WifiListContainer();
 				return wifis;
 			case 2:
-				CellsListContainer cells = new CellsListContainer();
+				final CellsListContainer cells = new CellsListContainer();
 				return cells;
 			case 3:
-				MapViewActivity map = new MapViewActivity();
+				final MapViewActivity map = new MapViewActivity();
 				return map;
 		}
 		return null;

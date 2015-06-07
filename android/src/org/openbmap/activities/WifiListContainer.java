@@ -122,7 +122,7 @@ public class WifiListContainer extends SherlockListFragment implements LoaderMan
 	private TriToggleButton	sortButton;
 	
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
 		return inflater.inflate(R.layout.wifilist, container, false);
 	}
 	
@@ -157,7 +157,7 @@ public class WifiListContainer extends SherlockListFragment implements LoaderMan
 			// Sort button: handler for user clicks
 			@Override
 			public void onClick(final View v) {
-				int state = sortButton.getState();
+				final int state = sortButton.getState();
 
 				try	{	
 					switch(state) {
@@ -176,7 +176,7 @@ public class WifiListContainer extends SherlockListFragment implements LoaderMan
 						default:
 							break; // Should never occur
 					}
-				} catch (Exception e) {
+				} catch (final Exception e) {
 					Log.e(TAG, "Error onClick");
 				}
 			}
@@ -184,10 +184,10 @@ public class WifiListContainer extends SherlockListFragment implements LoaderMan
 	}
 
 	private void initData() {
-		DataHelper dataHelper = new DataHelper(getActivity());
+		final DataHelper dataHelper = new DataHelper(getActivity());
 		mSession = dataHelper.getActiveSessionId();
 		
-		String[] from = new String []{
+		final String[] from = new String []{
 				Schema.COL_ID,
 				Schema.COL_BSSID,
 				Schema.COL_SSID,
@@ -196,7 +196,7 @@ public class WifiListContainer extends SherlockListFragment implements LoaderMan
 				Schema.COL_KNOWN_WIFI,
 				Schema.COL_CAPABILITIES};
 
-		int[] to = new int [] {
+		final int[] to = new int [] {
 				R.id.wifilistfragment_id,
 				R.id.wifilistfragment_bssid,
 				R.id.wifilistfragment_ssid,
@@ -216,7 +216,7 @@ public class WifiListContainer extends SherlockListFragment implements LoaderMan
 		super.onDestroy();
 	}
 
-	public void onCreateOptionsMenu (Menu menu, MenuInflater inflater){
+	public void onCreateOptionsMenu (final Menu menu, final MenuInflater inflater){
 		inflater.inflate(R.menu.wifilist_context, menu);
 	}
 	
@@ -234,7 +234,7 @@ public class WifiListContainer extends SherlockListFragment implements LoaderMan
 	*/
 	
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onOptionsItemSelected(final MenuItem item) {
 		switch (item.getItemId()) {
 			case R.id.menu_sort_timestamp:
 				mSortColumn = DEFAULT_SORT_COLUMN;
@@ -291,10 +291,10 @@ public class WifiListContainer extends SherlockListFragment implements LoaderMan
 
 			// documentation says call getListView().getItemAtPosition(position) not lv directly
 			// see http://developer.android.com/reference/android/app/ListFragment.html
-			Cursor row = (Cursor) getListView().getItemAtPosition(position);
-			String bssid = row.getString(row.getColumnIndex(Schema.COL_BSSID));
+			final Cursor row = (Cursor) getListView().getItemAtPosition(position);
+			final String bssid = row.getString(row.getColumnIndex(Schema.COL_BSSID));
 
-			Intent intent = new Intent();
+			final Intent intent = new Intent();
 			intent.setClass(getActivity(), WifiDetailsActivity.class);
 			intent.putExtra(Schema.COL_BSSID, bssid);
 			intent.putExtra(Schema.COL_SESSION_ID, mSession);
@@ -365,11 +365,11 @@ public class WifiListContainer extends SherlockListFragment implements LoaderMan
 		private final int DEFAULT_TEXT_COLOR = new TextView(getActivity()).getTextColors().getDefaultColor();;
 
 		public boolean setViewValue(final View view, final Cursor cursor, final int columnIndex) {
-			ImageView isNew = ((ImageView) ((View) view.getParent()).findViewById(R.id.wifilistfragment_statusicon));
-			TextView ssid = ((TextView) view.findViewById(R.id.wifilistfragment_ssid));
+			final ImageView isNew = ((ImageView) ((View) view.getParent()).findViewById(R.id.wifilistfragment_statusicon));
+			final TextView ssid = ((TextView) view.findViewById(R.id.wifilistfragment_ssid));
 
 			if (columnIndex == cursor.getColumnIndex(Schema.COL_KNOWN_WIFI)) {
-				int result = cursor.getInt(columnIndex);
+				final int result = cursor.getInt(columnIndex);
 				if (result == 0) {
 					// (+) icon for new wifis
 					isNew.setImageResource(android.R.drawable.stat_notify_more);
@@ -381,7 +381,7 @@ public class WifiListContainer extends SherlockListFragment implements LoaderMan
 			}
 
 			if (columnIndex == cursor.getColumnIndex(Schema.COL_SSID)) {
-				String encryp = cursor.getString(cursor.getColumnIndex(Schema.COL_CAPABILITIES));
+				final String encryp = cursor.getString(cursor.getColumnIndex(Schema.COL_CAPABILITIES));
 				// some devices report no encryption for free wifis, others (e.g. Nexus 4) 
 				// report [ESS]
 				if (encryp.length() < 1 || encryp.equals("[ESS]")) {

@@ -34,8 +34,8 @@ import android.net.Uri;
  */
 public class MediaScanner implements MediaScannerConnectionClient {
 
-	private MediaScannerConnection mScanner;
-	private File mFolder;
+	private final MediaScannerConnection mScanner;
+	private final File mFolder;
 	
 	public MediaScanner(final Context context, final File folder) {
 		mFolder = folder;
@@ -48,9 +48,13 @@ public class MediaScanner implements MediaScannerConnectionClient {
 	 */
 	@Override
 	public final void onMediaScannerConnected() {
-		File[] files = mFolder.listFiles();
-		for (File file : files) {
-			if (file.getName().endsWith(".xml") || file.getName().endsWith(".gpx")) {
+		final File[] files = mFolder.listFiles();
+		for (final File file : files) {
+			if (
+					file.getName().endsWith(".xml") ||
+					file.getName().endsWith(".gpx") ||
+					file.getName().endsWith(".map") ||
+					file.getName().endsWith(".sqlite")) {
 				mScanner.scanFile(file.getAbsolutePath(), null);
 			}
 		}

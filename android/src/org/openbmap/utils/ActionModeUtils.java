@@ -30,11 +30,11 @@ public class ActionModeUtils implements ActionMode.Callback, AdapterView.OnItemL
 		 boolean onItemLongClick(int item, int position, int id);
 	}
 	
-	private SherlockFragmentActivity host;
+	private final SherlockFragmentActivity host;
 	private ActionMode activeMode;
-	private ListView modeView;
-	private LongClickCallback handler;
-	private int menuId;
+	private final ListView modeView;
+	private final LongClickCallback handler;
+	private final int menuId;
 
 	public ActionModeUtils(final SherlockFragmentActivity fragmentActivity, final int menuId, final LongClickCallback handler, final ListView modeView) {
 		this.host = fragmentActivity;
@@ -44,8 +44,8 @@ public class ActionModeUtils implements ActionMode.Callback, AdapterView.OnItemL
 	}
 
 	@Override
-	public boolean onItemLongClick(AdapterView<?> view, View row,
-			int position, long id) {
+	public boolean onItemLongClick(final AdapterView<?> view, final View row,
+			final int position, final long id) {
 		modeView.clearChoices();
 		modeView.setItemChecked(position, true);
 
@@ -57,8 +57,8 @@ public class ActionModeUtils implements ActionMode.Callback, AdapterView.OnItemL
 	}
 
 	@Override
-	public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-		MenuInflater inflater = host.getSupportMenuInflater();
+	public boolean onCreateActionMode(final ActionMode mode, final Menu menu) {
+		final MenuInflater inflater = host.getSupportMenuInflater();
 		
 		inflater.inflate(menuId, menu);
 		//mode.setTitle(/*R.string.context_title*/ "Options");
@@ -67,15 +67,15 @@ public class ActionModeUtils implements ActionMode.Callback, AdapterView.OnItemL
 	}
 
 	@Override
-	public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+	public boolean onPrepareActionMode(final ActionMode mode, final Menu menu) {
 		return(false);
 	}
 
 	@Override
-	public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+	public boolean onActionItemClicked(final ActionMode mode, final MenuItem item) {
 		
-		int id = (modeView.getCheckedItemIds().length > 0 ? (int) modeView.getCheckedItemIds()[0] : -1);
-		boolean result = (handler.onItemLongClick(item.getItemId(),
+		final int id = (modeView.getCheckedItemIds().length > 0 ? (int) modeView.getCheckedItemIds()[0] : -1);
+		final boolean result = (handler.onItemLongClick(item.getItemId(),
 						modeView.getCheckedItemPosition(), id));
 
 		if (result) {
@@ -86,7 +86,7 @@ public class ActionModeUtils implements ActionMode.Callback, AdapterView.OnItemL
 	}
 
 	@Override
-	public void onDestroyActionMode(ActionMode mode) {
+	public void onDestroyActionMode(final ActionMode mode) {
 		activeMode = null;
 		modeView.clearChoices();
 		modeView.requestLayout();

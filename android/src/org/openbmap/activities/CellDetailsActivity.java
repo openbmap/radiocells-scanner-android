@@ -96,8 +96,8 @@ public class CellDetailsActivity  extends FragmentActivity {
 
 		mDatahelper = new DataHelper(this);
 		// get the cell _id
-		Bundle extras = getIntent().getExtras();
-		int id = extras.getInt(Schema.COL_ID);
+		final Bundle extras = getIntent().getExtras();
+		final int id = extras.getInt(Schema.COL_ID);
 		// query content provider for cell details
 		mDisplayed = mDatahelper.loadCellById(id);
 		mId = id;
@@ -108,8 +108,8 @@ public class CellDetailsActivity  extends FragmentActivity {
 		super.onResume();
 
 		// get the cell _id
-		Bundle extras = getIntent().getExtras();
-		int id = extras.getInt(Schema.COL_ID);
+		final Bundle extras = getIntent().getExtras();
+		final int id = extras.getInt(Schema.COL_ID);
 
 		// query content provider for cell details
 		mDisplayed = mDatahelper.loadCellById(id);
@@ -176,7 +176,7 @@ public class CellDetailsActivity  extends FragmentActivity {
 	 * @param id
 	 */
 	public final void onCellSelected(final long id) {
-		Intent intent = new Intent(this, MapViewActivity.class);
+		final Intent intent = new Intent(this, MapViewActivity.class);
 		intent.putExtra(Schema.COL_ID, (int) id);
 		startActivity(intent);
 	}

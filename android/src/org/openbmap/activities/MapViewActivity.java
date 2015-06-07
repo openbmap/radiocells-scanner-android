@@ -18,7 +18,6 @@
 
 package org.openbmap.activities;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -31,18 +30,21 @@ import org.mapsforge.core.model.LatLong;
 import org.mapsforge.core.model.Point;
 import org.mapsforge.map.android.AndroidPreferences;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
+import org.mapsforge.map.android.graphics.AndroidResourceBitmap;
 import org.mapsforge.map.android.rendertheme.AssetsRenderTheme;
+import org.mapsforge.map.android.util.AndroidUtil;
 import org.mapsforge.map.android.view.MapView;
 import org.mapsforge.map.layer.Layer;
-import org.mapsforge.map.layer.LayerManager;
 import org.mapsforge.map.layer.Layers;
 import org.mapsforge.map.layer.cache.TileCache;
+import org.mapsforge.map.layer.download.TileDownloadLayer;
+import org.mapsforge.map.layer.download.tilesource.OnlineTileSource;
 import org.mapsforge.map.layer.overlay.Circle;
 import org.mapsforge.map.layer.overlay.Polyline;
 import org.mapsforge.map.model.common.Observer;
+import org.mapsforge.map.reader.MapFile;
 import org.mapsforge.map.rendertheme.XmlRenderTheme;
 import org.mapsforge.map.util.MapPositionUtil;
-import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
@@ -170,26 +172,31 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	/**
 	 * System time of last gpx refresh (in millis)
 	 */
-	private long gpxRefreshTime;
+	private long mGpxRefreshTime;
 
-	private byte lastZoom;
+	private byte mLastZoom;
 
 	// [start] UI controls
 	/**
 	 * MapView
 	 */
-	private MapView mapView;
+	private MapView mMapView;
 
 	//[end]
-	
+
 	private DataHelper mDataHelper;
 
 	// [start] Map styles
 	/**
 	 * Baselayer cache
 	 */
-	private TileCache tileCache;
+	private TileCache mTileCache;
 
+	/**
+	 * Online tile layer, used when no offline map available
+	 */
+	private static TileDownloadLayer mapDownloadLayer = null;
+	
 	private Paint paintCatalogFill;
 
 	private Paint paintCatalogStroke;
@@ -268,7 +275,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	/**
 	 * Receives GPS location updates.
 	 */
-	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+	private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
 
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
@@ -276,15 +283,15 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 			if (RadioBeacon.INTENT_POSITION_UPDATE.equals(intent.getAction())) {
 				Location location = intent.getExtras().getParcelable("android.location.Location");
 
-				if (mapView == null) {
+				if (mMapView == null) {
 					Log.wtf(TAG, "Map view is null");
 					return;
 				}
 
 				// if btnSnapToLocation is checked, move map
 				if (snapToLocation) {
-					LatLong currentPos = new LatLong(location.getLatitude(), location.getLongitude());
-					mapView.getModel().mapViewPosition.setCenter(currentPos);
+					final LatLong currentPos = new LatLong(location.getLatitude(), location.getLongitude());
+					mMapView.getModel().mapViewPosition.setCenter(currentPos);
 				}
 
 				// update layers
@@ -295,11 +302,11 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 					 * 2.) layer items haven't been refreshed for a while AND user has moved a bit
 					 */
 
-					if ((mapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && (sessionLayerOutdated(location))) { 
+					if ((mMapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && (sessionLayerOutdated(location))) { 
 						refreshSessionLayer(location);
 					}
 
-					if ((mapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) &&
+					if ((mMapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) &&
 							catalogLayerSelected() &&
 							catalogLayerOutdated(location)) { 
 						refreshCatalogLayer(location);
@@ -322,8 +329,8 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	};
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.mapview, container, false);
+	public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
+		final View view = inflater.inflate(R.layout.mapview, container, false);
 
 		initUi(view);
 		initMap(view);
@@ -354,10 +361,14 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 
 		initDb();
 
+		if (mapDownloadLayer != null) {
+			mapDownloadLayer.onResume();
+		}
+		
 		registerReceiver();
 
 		if (getSherlockActivity().getIntent().hasExtra(Schema.COL_ID)) {
-			int focusWifi = getSherlockActivity().getIntent().getExtras().getInt(Schema.COL_ID);
+			final int focusWifi = getSherlockActivity().getIntent().getExtras().getInt(Schema.COL_ID);
 			Log.d(TAG, "Zooming onto " + focusWifi);
 			if (focusWifi != 0) {
 				loadSingleObject(focusWifi);
@@ -367,6 +378,11 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 
 	@Override
 	public final void onPause() {
+
+		if (mapDownloadLayer != null) {
+			mapDownloadLayer.onPause();
+		}
+
 		//releaseMap();
 		clearCatalogLayer();
 		clearSessionLayer();
@@ -397,55 +413,69 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	/**
 	 * Initializes map components
 	 */
-	private void initMap(View view) {
+	private void initMap(final View view) {
 
-		SharedPreferences sharedPreferences = getSherlockActivity().getSharedPreferences(getPersistableId(), /*MODE_PRIVATE*/ 0);
+		final SharedPreferences sharedPreferences = getSherlockActivity().getSharedPreferences(getPersistableId(), /*MODE_PRIVATE*/ 0);
 		preferencesFacade = new AndroidPreferences(sharedPreferences);
 
-		this.mapView = (MapView) view.findViewById(R.id.map);
-		this.mapView.getModel().init(preferencesFacade);
-		this.mapView.setClickable(true);
-		this.mapView.getMapScaleBar().setVisible(true);
-		this.tileCache = createTileCache();
+		this.mMapView = (MapView) view.findViewById(R.id.map);
+		this.mMapView.getModel().init(preferencesFacade);
+		this.mMapView.setClickable(true);
+		this.mMapView.getMapScaleBar().setVisible(true);
+		this.mTileCache = createTileCache();
 
 		// on first start zoom is set to very low value, so users won't see anything
-		// zoom to moderate zoomlevel..
-		if (this.mapView.getModel().mapViewPosition.getZoomLevel() < (byte) 10) {
-			this.mapView.getModel().mapViewPosition.setZoomLevel((byte) 15);
+		// zoom to moderate zoomlevel.. 
+		if (this.mMapView.getModel().mapViewPosition.getZoomLevel() < (byte) 10) {
+			this.mMapView.getModel().mapViewPosition.setZoomLevel((byte) 15);
 		}
-
-		LayerManager layerManager = this.mapView.getLayerManager();
-		Layers layers = layerManager.getLayers();
 
 		if (MapUtils.isMapSelected(this.getActivity())) {
 			// remove all layers including base layer
-			layers.clear();
-			Layer map = MapUtils.createTileRendererLayer(
-					this.tileCache, this.mapView.getModel().mapViewPosition, getMapFile(), this, getRenderTheme());
-			layers.add(map);
-
+			this.mMapView.getLayerManager().getLayers().clear();
+			final Layer offlineLayer = MapUtils.createTileRendererLayer(
+					this.mTileCache, this.mMapView.getModel().mapViewPosition, getMapFile(), this, getRenderTheme());
+			if (offlineLayer != null) this.mMapView.getLayerManager().getLayers().add(offlineLayer);
 		} else {
-			this.mapView.getModel().displayModel.setBackgroundColor(0xffffffff);
-			Toast.makeText(this.getSherlockActivity(), R.string.no_map_file_selected, Toast.LENGTH_LONG).show();
+			//this.mMapView.getModel().displayModel.setBackgroundColor(0xffffffff);
+			Toast.makeText(this.getSherlockActivity(), R.string.info_using_online_map, Toast.LENGTH_LONG).show();
+
+			final OnlineTileSource onlineTileSource = new OnlineTileSource(new String[]{
+					"otile1.mqcdn.com", "otile2.mqcdn.com", "otile3.mqcdn.com", "otile4.mqcdn.com"}, 80);
+			onlineTileSource.setName("MapQuest")
+			.setAlpha(false)
+			.setBaseUrl("/tiles/1.0.0/map/")
+			.setExtension("png")
+			.setParallelRequestsLimit(8)
+			.setProtocol("http")
+			.setTileSize(256)
+			.setZoomLevelMax((byte) 18)
+			.setZoomLevelMin((byte) 0);
+
+			mapDownloadLayer = new TileDownloadLayer(mTileCache,
+					mMapView.getModel().mapViewPosition, onlineTileSource,
+					AndroidGraphicFactory.INSTANCE);
+			this.mMapView.getLayerManager().getLayers().add(mapDownloadLayer);
+			mapDownloadLayer.onResume();
 		}
 
 		this.mapObserver = new Observer() {
 			@Override
 			public void onChange() {
 
-				byte zoom = mapView.getModel().mapViewPosition.getZoomLevel();
-				if (zoom != lastZoom && zoom >= MIN_OBJECT_ZOOM) {
+				final byte zoom = mMapView.getModel().mapViewPosition.getZoomLevel();
+				if (zoom != mLastZoom && zoom >= MIN_OBJECT_ZOOM) {
 					// Zoom level changed
 					Log.i(TAG, "New zoom level " + zoom + ", reloading map objects");
 					refreshAllLayers();
 
-					lastZoom = zoom;
+					mLastZoom = zoom;
 				}
 
 				if (!snapToLocation) {
 					// Free-move mode
-					LatLong tmp = mapView.getModel().mapViewPosition.getCenter();
-					Location position = new Location("DUMMY");
+					final LatLong tmp = mMapView.getModel().mapViewPosition.getCenter();
+					final Location position = new Location("DUMMY");
 					position.setLatitude(tmp.latitude);
 					position.setLongitude(tmp.longitude);
 
@@ -463,14 +493,14 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 			}
 
 		};
-		mapView.getModel().mapViewPosition.addObserver(mapObserver);
+		mMapView.getModel().mapViewPosition.addObserver(mapObserver);
 	}
 
 	/**
 	 * Initializes UI componensts
 	 * @param view 
 	 */
-	private void initUi(View view) {
+	private void initUi(final View view) {
 		paintCatalogFill = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_WIFI_CATALOG_FILL, 120, 150, 120), 2, Style.FILL);
 		paintCatalogStroke = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_WIFI_CATALOG_STROKE, 120, 150, 120), 2, Style.STROKE);
 		paintActiveSessionFill = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_SESSION_FILL, 0, 0, 255), 2, Style.FILL);
@@ -478,14 +508,14 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+	public void onCreateOptionsMenu(final Menu menu, final MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
 		inflater.inflate(R.menu.map_menu, menu);
 		menu.findItem(R.id.menu_snaptoLocation).setChecked(snapToLocation);
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public boolean onOptionsItemSelected(final MenuItem item) {
 		// Handle item selection
 		switch (item.getItemId()) {
 			case R.id.menu_snaptoLocation:
@@ -498,7 +528,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	}
 
 	private void registerReceiver() {
-		IntentFilter filter = new IntentFilter();
+		final IntentFilter filter = new IntentFilter();
 		filter.addAction(RadioBeacon.INTENT_POSITION_UPDATE);
 		getSherlockActivity().registerReceiver(mReceiver, filter);  
 	}
@@ -509,7 +539,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	private void unregisterReceiver() {
 		try {
 			getSherlockActivity().unregisterReceiver(mReceiver);
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			// do nothing here {@see http://stackoverflow.com/questions/2682043/how-to-check-if-mReceiver-is-registered-in-android}
 			return;
 		}
@@ -519,9 +549,9 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	 * 
 	 */
 	private void refreshAllLayers() {
-		Location mapCenter = new Location("DUMMY");
-		mapCenter.setLatitude(mapView.getModel().mapViewPosition.getCenter().latitude);
-		mapCenter.setLongitude(mapView.getModel().mapViewPosition.getCenter().longitude);
+		final Location mapCenter = new Location("DUMMY");
+		mapCenter.setLatitude(mMapView.getModel().mapViewPosition.getCenter().latitude);
+		mapCenter.setLongitude(mMapView.getModel().mapViewPosition.getCenter().longitude);
 		refreshSessionLayer(mapCenter);
 
 		if (catalogLayerSelected()) {
@@ -551,9 +581,9 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	 * 
 	 */
 	private void clearSessionLayer() {
-		for (Iterator<Layer> iterator = sessionObjects.iterator(); iterator.hasNext();) {
-			Layer layer = (Layer) iterator.next();
-			this.mapView.getLayerManager().getLayers().remove(layer);
+		for (final Iterator<Layer> iterator = sessionObjects.iterator(); iterator.hasNext();) {
+			final Layer layer = (Layer) iterator.next();
+			this.mMapView.getLayerManager().getLayers().remove(layer);
 		}
 		sessionObjects.clear();
 
@@ -564,9 +594,9 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	 */
 	private void clearCatalogLayer() {
 		synchronized (catalogObjects) {
-			for (Iterator<Layer> iterator = catalogObjects.iterator(); iterator.hasNext();) {
-				Layer layer = (Layer) iterator.next();
-				this.mapView.getLayerManager().getLayers().remove(layer);
+			for (final Iterator<Layer> iterator = catalogObjects.iterator(); iterator.hasNext();) {
+				final Layer layer = (Layer) iterator.next();
+				this.mMapView.getLayerManager().getLayers().remove(layer);
 			}
 			catalogObjects.clear();
 		}
@@ -596,9 +626,9 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	 */
 	private void proceedAfterCatalogLoaded() {
 
-		BoundingBox bbox = MapPositionUtil.getBoundingBox(
-				mapView.getModel().mapViewPosition.getMapPosition(),
-				mapView.getDimension(), mapView.getModel().displayModel.getTileSize());
+		final BoundingBox bbox = MapPositionUtil.getBoundingBox(
+				mMapView.getModel().mapViewPosition.getMapPosition(),
+				mMapView.getDimension(), mMapView.getModel().displayModel.getTileSize());
 
 		double minLatitude = bbox.minLatitude;
 		double maxLatitude = bbox.maxLatitude;
@@ -607,14 +637,14 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 
 		// query more than visible objects for smoother data scrolling / less database queries?
 		if (PREFETCH_MAP_OBJECTS) {
-			double latSpan = maxLatitude - minLatitude;
-			double lonSpan = maxLongitude - minLongitude;
+			final double latSpan = maxLatitude - minLatitude;
+			final double lonSpan = maxLongitude - minLongitude;
 			minLatitude -= latSpan * 0.5;
 			maxLatitude += latSpan * 0.5;
 			minLongitude -= lonSpan * 0.5;
 			maxLongitude += lonSpan * 0.5;
 		}
-		WifiCatalogMapObjectsLoader task = new WifiCatalogMapObjectsLoader(getSherlockActivity(), this);
+		final WifiCatalogMapObjectsLoader task = new WifiCatalogMapObjectsLoader(getSherlockActivity(), this);
 		task.execute(minLatitude, maxLatitude, minLongitude, maxLongitude);
 
 	}
@@ -625,13 +655,13 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	@Override
 	public final void onCatalogLoaded(final ArrayList<LatLong> points) {
 		Log.d(TAG, "Loaded catalog objects");
-		Layers layers = this.mapView.getLayerManager().getLayers();
+		final Layers layers = this.mMapView.getLayerManager().getLayers();
 
 		clearCatalogLayer(); 
 
 		// redraw
-		for (LatLong point : points) {
-			Circle circle = new Circle(point, CIRCLE_WIFI_CATALOG_WIDTH, paintCatalogFill, paintCatalogStroke);
+		for (final LatLong point : points) {
+			final Circle circle = new Circle(point, CIRCLE_WIFI_CATALOG_WIDTH, paintCatalogFill, paintCatalogStroke);
 			catalogObjects.add(circle);
 		}
 
@@ -702,13 +732,13 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	 *    If highlight is specified only this wifi is displayed
 	 */
 	private void proceedAfterSessionObjectsLoaded(final WifiRecord highlight) {
-		BoundingBox bbox = MapPositionUtil.getBoundingBox(
-				mapView.getModel().mapViewPosition.getMapPosition(),
-				mapView.getDimension(), mapView.getModel().displayModel.getTileSize());
+		final BoundingBox bbox = MapPositionUtil.getBoundingBox(
+				mMapView.getModel().mapViewPosition.getMapPosition(),
+				mMapView.getDimension(), mMapView.getModel().displayModel.getTileSize());
 
 		if (highlight == null) {
 
-			ArrayList<Integer> sessions = new ArrayList<Integer>();
+			final ArrayList<Integer> sessions = new ArrayList<Integer>();
 			/*if (allLayerSelected()) {
 				// load all session wifis
 				sessions = new DataHelper(this).getSessionList();
@@ -723,22 +753,22 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 
 			// query more than visible objects for smoother data scrolling / less database queries
 			if (PREFETCH_MAP_OBJECTS) {
-				double latSpan = maxLatitude - minLatitude;
-				double lonSpan = maxLongitude - minLongitude;
+				final double latSpan = maxLatitude - minLatitude;
+				final double lonSpan = maxLongitude - minLongitude;
 				minLatitude -= latSpan * 0.5;
 				maxLatitude += latSpan * 0.5;
 				minLongitude -= lonSpan * 0.5;
 				maxLongitude += lonSpan * 0.5;
 			}
 
-			SessionMapObjectsLoader task = new SessionMapObjectsLoader(getSherlockActivity(), this, sessions);
+			final SessionMapObjectsLoader task = new SessionMapObjectsLoader(getSherlockActivity(), this, sessions);
 			task.execute(minLatitude, maxLatitude, minLongitude, maxLatitude, null);
 		} else {
 			// draw specific wifi
-			ArrayList<Integer> sessions = new ArrayList<Integer>();
+			final ArrayList<Integer> sessions = new ArrayList<Integer>();
 			sessions.add(mSessionId);
 
-			SessionMapObjectsLoader task = new SessionMapObjectsLoader(getSherlockActivity(), this, sessions);
+			final SessionMapObjectsLoader task = new SessionMapObjectsLoader(getSherlockActivity(), this, sessions);
 			task.execute(bbox.minLatitude, bbox.maxLatitude, bbox.minLongitude, bbox.maxLatitude, highlight.getBssid());
 		}
 	}
@@ -750,23 +780,23 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	@Override
 	public final void onSessionLoaded(final ArrayList<SessionLatLong> points) {
 		Log.d(TAG, "Loaded session objects");
-		Layers layers = this.mapView.getLayerManager().getLayers();
+		final Layers layers = this.mMapView.getLayerManager().getLayers();
 
 		// clear layer
-		for (Iterator<Layer> iterator = sessionObjects.iterator(); iterator.hasNext();) {
-			Layer layer = (Layer) iterator.next();
+		for (final Iterator<Layer> iterator = sessionObjects.iterator(); iterator.hasNext();) {
+			final Layer layer = (Layer) iterator.next();
 			layers.remove(layer);
 		}
 		sessionObjects.clear();
 
-		for (SessionLatLong point : points) {
+		for (final SessionLatLong point : points) {
 			if (point.getSession() == mSessionId) {
 				// current session objects are larger
-				Circle circle = new Circle(point, CIRCLE_SESSION_WIDTH, paintActiveSessionFill, null);
+				final Circle circle = new Circle(point, CIRCLE_SESSION_WIDTH, paintActiveSessionFill, null);
 				sessionObjects.add(circle);
 			} else {
 				// other session objects are smaller and in other color
-				Circle circle = new Circle(point, CIRCLE_OTHER_SESSION_WIDTH, paintOtherSessionFill, null);
+				final Circle circle = new Circle(point, CIRCLE_OTHER_SESSION_WIDTH, paintOtherSessionFill, null);
 				sessionObjects.add(circle);
 			}
 		}
@@ -832,7 +862,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 			Log.d(TAG, "Updating gpx layer");
 			mRefreshGpxPending = true;
 			proceedAfterGpxObjectsLoaded();
-			gpxRefreshTime = System.currentTimeMillis();
+			mGpxRefreshTime = System.currentTimeMillis();
 		} else {
 			Log.v(TAG, "Gpx layer refreshing. Skipping refresh..");
 		}
@@ -843,17 +873,17 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	 * @return true if layer needs refresh
 	 */
 	private boolean gpxLayerOutdated() {
-		return ((System.currentTimeMillis() - gpxRefreshTime) > GPX_REFRESH_INTERVAL);
+		return ((System.currentTimeMillis() - mGpxRefreshTime) > GPX_REFRESH_INTERVAL);
 	}
 
 	/*
 	 * Loads gpx points in visible range.
 	 */
 	private void proceedAfterGpxObjectsLoaded() {
-		BoundingBox bbox = MapPositionUtil.getBoundingBox(
-				mapView.getModel().mapViewPosition.getMapPosition(),
-				mapView.getDimension(), mapView.getModel().displayModel.getTileSize());
-		GpxMapObjectsLoader task = new GpxMapObjectsLoader(getSherlockActivity(), this);
+		final BoundingBox bbox = MapPositionUtil.getBoundingBox(
+				mMapView.getModel().mapViewPosition.getMapPosition(),
+				mMapView.getDimension(), mMapView.getModel().displayModel.getTileSize());
+		final GpxMapObjectsLoader task = new GpxMapObjectsLoader(getSherlockActivity(), this);
 		// query with some extra space
 		task.execute(mSessionId, bbox.minLatitude - 0.01, bbox.maxLatitude + 0.01, bbox.minLongitude - 0.15, bbox.maxLatitude + 0.15);
 	}
@@ -868,19 +898,19 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 		if (gpxObjects != null) {
 			synchronized (this) {
 				// clear layer
-				mapView.getLayerManager().getLayers().remove(gpxObjects);	
+				mMapView.getLayerManager().getLayers().remove(gpxObjects);	
 			}
 		}
 
 		gpxObjects = new Polyline(MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(Color.GREEN), STROKE_GPX_WIDTH,
 				Style.STROKE), AndroidGraphicFactory.INSTANCE);
 
-		for (LatLong point : points) {
+		for (final LatLong point : points) {
 			gpxObjects.getLatLongs().add(point);	
 		}
 
 		synchronized (this) {
-			mapView.getLayerManager().getLayers().add(gpxObjects);
+			mMapView.getLayerManager().getLayers().add(gpxObjects);
 		}
 
 		mRefreshGpxPending = false;
@@ -893,7 +923,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	public final void loadSingleObject(final int id) {
 		Log.d(TAG, "Adding selected wifi to layer: " + id);
 
-		WifiRecord wifi = dbHelper.loadWifiById(id);
+		final WifiRecord wifi = dbHelper.loadWifiById(id);
 
 		if (wifi != null) {
 			proceedAfterSessionObjectsLoaded(wifi);
@@ -916,8 +946,8 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 		mRefreshDirectionPending = true;
 
 		// determine which drawable we currently 
-		ImageView iv = (ImageView) getView().findViewById(R.id.position_marker);
-		Integer id = (Integer) iv.getTag() == null ? 0 : (Integer) iv.getTag();
+		final ImageView iv = (ImageView) getView().findViewById(R.id.position_marker);
+		final Integer id = (Integer) iv.getTag() == null ? 0 : (Integer) iv.getTag();
 
 		if (location.hasBearing()) {
 			// determine which drawable we currently use
@@ -946,7 +976,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 		}
 
 		// rotate arrow
-		Matrix matrix = new Matrix();
+		final Matrix matrix = new Matrix();
 		iv.setScaleType(ScaleType.MATRIX);   //required
 		matrix.postRotate(bearing, iv.getWidth() / 2f, iv.getHeight() / 2f);
 		iv.setImageMatrix(matrix);
@@ -965,7 +995,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	 * Opens selected map file
 	 * @return a map file
 	 */
-	protected final File getMapFile() {
+	protected final MapFile getMapFile() {
 		return MapUtils.getMapFile(getActivity());
 	}
 
@@ -976,18 +1006,18 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	protected XmlRenderTheme getRenderTheme() {
 		try {
 			return new AssetsRenderTheme(this.getActivity(), "", "renderthemes/rendertheme-v4.xml");
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			Log.e(TAG, "Render theme failure " + e.toString());
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Creates a tile cache for the baselayer
 	 * @return
 	 */
 	protected final TileCache createTileCache() {
-		return MapUtils.createExternalStorageTileCache(getSherlockActivity(), getPersistableId());
+		return AndroidUtil.createTileCache(this.getActivity(), "mapcache", mMapView.getModel().displayModel.getTileSize(), 1f, this.mMapView.getModel().frameBufferModel.getOverdrawFactor());	
 	}
 
 	/**
@@ -1003,26 +1033,29 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	private void releaseMap() {
 		Log.i(TAG, "Releasing map components");
 
-		if (this.tileCache != null) {
-			this.tileCache.destroy();
+		if (this.mTileCache != null) {
+			this.mTileCache.destroy();
 		}
 
 		// release zoom / move observer for gc
 		this.mapObserver = null;
 
-		if (mapView != null) {
+		if (mMapView != null) {
 			// save map settings
-			this.mapView.getModel().save(this.preferencesFacade);
+			this.mMapView.getModel().save(this.preferencesFacade);
 			this.preferencesFacade.save();
-			this.mapView.destroy();
+			this.mMapView.getModel().mapViewPosition.destroy();
+			this.mMapView.destroy();
 		}
+
+		AndroidResourceBitmap.clearResourceBitmaps();
 	}
 
 	/* (non-Javadoc)
 	 * @see com.actionbarsherlock.app.ActionBar.OnNavigationListener#onNavigationItemSelected(int, long)
 	 */
 	@Override
-	public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+	public boolean onNavigationItemSelected(final int itemPosition, final long itemId) {
 		refreshAllLayers();
 		return true;
 	}
@@ -1031,12 +1064,8 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	 * @see org.openbmap.utils.MapUtils.onLongPressHandler#onLongPress(org.mapsforge.core.model.LatLong, org.mapsforge.core.model.Point, org.mapsforge.core.model.Point)
 	 */
 	@Override
-	public void onLongPress(LatLong tapLatLong, Point thisXY, Point tapXY) {
+	public void onLongPress(final LatLong tapLatLong, final Point thisXY, final Point tapXY) {
 		Toast.makeText(this.getActivity(), this.getActivity().getString(R.string.saved_waypoint) + this.getActivity().getString(R.string.at) + "\n" + tapLatLong.toString(), Toast.LENGTH_LONG).show();
-		if (!prefs.getBoolean(Preferences.KEY_GPS_SAVE_COMPLETE_TRACK, Preferences.VAL_GPS_SAVE_COMPLETE_TRACK)) {
-			Log.i(TAG, "Didn't save gpx: saving gpx is disabled.");
-			return;
-		}
 
 		if (mDataHelper == null) {
 			/*
@@ -1044,8 +1073,8 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 			 */
 			mDataHelper = new DataHelper(this.getActivity());
 		}
-		
-		PositionRecord pos = new PositionRecord(GeometryUtils.toLocation(tapLatLong), mSessionId, RadioBeacon.PROVIDER_USER_DEFINED, true);
+
+		final PositionRecord pos = new PositionRecord(GeometryUtils.toLocation(tapLatLong), mSessionId, RadioBeacon.PROVIDER_USER_DEFINED, true);
 
 		// so far we set end position = begin position 
 		mDataHelper.storePosition(pos);

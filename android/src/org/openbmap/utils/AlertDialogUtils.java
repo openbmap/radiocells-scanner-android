@@ -44,12 +44,12 @@ public class AlertDialogUtils extends SherlockDialogFragment{
 	 * @param neutralOnly show only neutral button
 	 * @return
 	 */
-	public static AlertDialogUtils newInstance(int id, String title, String message, String args, boolean neutralOnly) {
-		AlertDialogUtils frag = new AlertDialogUtils();
+	public static AlertDialogUtils newInstance(final int id, final String title, final String message, final String args, final boolean neutralOnly) {
+		final AlertDialogUtils frag = new AlertDialogUtils();
 		// Caution: Don't set setRetainInstance(true) explicitly. This will cause the dialog to disappear
 		// see http://stackoverflow.com/questions/11307390/dialogfragment-disappears-on-rotation-despite-setretaininstancetrue
 		//frag.setRetainInstance(true);
-		Bundle bundle = new Bundle();
+		final Bundle bundle = new Bundle();
 		bundle.putInt("dialog_id", id);
 		bundle.putString("title", title);
 		bundle.putString("message", message);
@@ -60,14 +60,14 @@ public class AlertDialogUtils extends SherlockDialogFragment{
 	}
 
 	@Override
-	public Dialog onCreateDialog(Bundle savedInstanceState) {
+	public Dialog onCreateDialog(final Bundle savedInstanceState) {
 		final int dialogId = getArguments().getInt("dialog_id");
 		final String title = getArguments().getString("title");
 		final String message = getArguments().getString("message");
 		final String args = getArguments().getString("args");
 		final boolean neutralOnly = getArguments().getBoolean("only_neutral");
 
-		Builder dialog = new AlertDialog.Builder(getActivity())
+		final Builder dialog = new AlertDialog.Builder(getActivity())
 		.setIcon(android.R.drawable.ic_dialog_alert)
 		.setTitle(title)
 		.setMessage(message)
@@ -81,12 +81,12 @@ public class AlertDialogUtils extends SherlockDialogFragment{
 				}});
 		} else {
 			dialog.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int whichButton) {
+				public void onClick(final DialogInterface dialog, final int whichButton) {
 					((OnAlertClickInterface)getActivity()).onAlertPositiveClick(dialogId, args);
 				}
 			})
 			.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int whichButton) {
+				public void onClick(final DialogInterface dialog, final int whichButton) {
 					((OnAlertClickInterface)getActivity()).onAlertNegativeClick(dialogId, args);
 				}
 			});

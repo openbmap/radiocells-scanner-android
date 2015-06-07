@@ -67,18 +67,18 @@ public class StatusBar extends LinearLayout {
 	/**
 	 * Is GPS active ?
 	 */
-	private boolean gpsActive = false;
+	private final boolean gpsActive = false;
 
 	private String mProvider;
 
 	private DataHelper dataHelper;
 
-	private TextView tvWifiCount;
-	private TextView tvNewWifiCount;
-	private TextView tvCellCount;
-	private TextView tvAccuracy;
+	private final TextView tvWifiCount;
+	private final TextView tvNewWifiCount;
+	private final TextView tvCellCount;
+	private final TextView tvAccuracy;
 
-	private ImageView imgSatIndicator;
+	private final ImageView imgSatIndicator;
 
 	public StatusBar(final Context context, final AttributeSet attrs) {
 		super(context, attrs);
@@ -102,12 +102,12 @@ public class StatusBar extends LinearLayout {
 	/**
 	 * Receives GPS location updates.
 	 */
-	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+	private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
 			// handling GPS broadcasts
 			if (RadioBeacon.INTENT_POSITION_UPDATE.equals(intent.getAction())) {
-				Location location = intent.getExtras().getParcelable("android.location.Location");
+				final Location location = intent.getExtras().getParcelable("android.location.Location");
 
 				if (location.hasAccuracy()) {
 					tvAccuracy.setText(ACCURACY_FORMAT.format(location.getAccuracy()) + " m");
@@ -116,8 +116,8 @@ public class StatusBar extends LinearLayout {
 				}
 			} else if (RadioBeacon.INTENT_POSITION_SAT_INFO.equals(intent.getAction())) {
 
-				String status = intent.getExtras().getString("STATUS");
-				int satCount = intent.getExtras().getInt("SAT_COUNT");
+				final String status = intent.getExtras().getString("STATUS");
+				final int satCount = intent.getExtras().getInt("SAT_COUNT");
 
 				if (status.equals("UPDATE")) {
 					// Count how many bars should we draw
@@ -167,7 +167,7 @@ public class StatusBar extends LinearLayout {
 			Log.e(TAG, "Can't register for gps status updates: context is null");
 			return;
 		}
-		IntentFilter filter = new IntentFilter();
+		final IntentFilter filter = new IntentFilter();
 		filter.addAction(RadioBeacon.INTENT_POSITION_UPDATE);
 		filter.addAction(RadioBeacon.INTENT_POSITION_SAT_INFO);
 		filter.addAction(RadioBeacon.INTENT_NEW_WIFI);
@@ -186,7 +186,7 @@ public class StatusBar extends LinearLayout {
 
 		try {
 			ctx.unregisterReceiver(mReceiver);
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			// do nothing here {@see http://stackoverflow.com/questions/2682043/how-to-check-if-mReceiver-is-registered-in-android}
 			return;
 		}

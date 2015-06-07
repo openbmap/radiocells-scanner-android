@@ -32,16 +32,16 @@ public class CustomViewPager extends ViewPager {
 	
 	private static final String TAG = CustomViewPager.class.getSimpleName();
 	
-    public CustomViewPager(Context context) {
+    public CustomViewPager(final Context context) {
         super(context);
     }
 
-    public CustomViewPager(Context context, AttributeSet attrs) {
+    public CustomViewPager(final Context context, final AttributeSet attrs) {
         super(context, attrs);
     }
 
     @Override
-    protected boolean canScroll(View v, boolean checkV, int dx, int x, int y) {
+    protected boolean canScroll(final View v, final boolean checkV, final int dx, final int x, final int y) {
         if (v instanceof MapView) {
         	Log.i(TAG, "Scrolling disabled for map view");
             return true;

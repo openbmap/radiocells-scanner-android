@@ -50,7 +50,7 @@ public abstract class AbstractService extends Service {
 	static final int MSG_REGISTER_CLIENT = 9991;
 	static final int MSG_UNREGISTER_CLIENT = 9992;
 
-	private ArrayList<Messenger> mClients = new ArrayList<Messenger>(); // Keeps track of all current registered clients.
+	private final ArrayList<Messenger> mClients = new ArrayList<Messenger>(); // Keeps track of all current registered clients.
 	private final Messenger mMessenger = new Messenger(new ServiceManagerHandler(this)); // Target we publish for clients to send messages to ServiceManagerHandler.
 
 	/**
@@ -67,7 +67,7 @@ public abstract class AbstractService extends Service {
 
 		@Override
 		public void handleMessage(final Message msg) {
-			AbstractService service = mWeakRef.get();
+			final AbstractService service = mWeakRef.get();
 			if (service != null) {
 
 				switch (msg.what) {
@@ -116,7 +116,7 @@ public abstract class AbstractService extends Service {
 			try {
 				Log.i(TAG, "Sending message to clients: " + msg);
 				mClients.get(i).send(msg);
-			} catch (RemoteException e) {
+			} catch (final RemoteException e) {
 				// The client is dead. Remove it from the list; we are going through the list from back to front so this is safe to do inside the loop.
 				Log.e(TAG , "Client is dead. Removing from list: " + i);
 				mClients.remove(i);

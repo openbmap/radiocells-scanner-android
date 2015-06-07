@@ -18,7 +18,6 @@
 
 package org.openbmap.services.position;
 
-import org.openbmap.Preferences;
 import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.PositionRecord;
@@ -84,7 +83,7 @@ public class GpxLoggerService extends AbstractService {
 	/**
 	 * Receives GPS location updates as well as wifi scan result updates
 	 */
-	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+	private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
 
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
@@ -95,8 +94,8 @@ public class GpxLoggerService extends AbstractService {
 					return;
 				}
 
-				Location location = intent.getExtras().getParcelable("android.location.Location");
-				String source = intent.getExtras().getString("position_provider_type");
+				final Location location = intent.getExtras().getParcelable("android.location.Location");
+				final String source = intent.getExtras().getString("position_provider_type");
 
 				if (location.distanceTo(mMostCurrentLocation) > MIN_TRACKPOINT_DISTANCE) {
 					performGpsUpdate(location, source);
@@ -119,11 +118,11 @@ public class GpxLoggerService extends AbstractService {
 		 */
 		mDataHelper = new DataHelper(this);
 
-		PowerManager mgr = (PowerManager) getSystemService(Context.POWER_SERVICE);
+		final PowerManager mgr = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		try {
 			myPowerLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, POWERLOCKNAME);
 			myPowerLock.setReferenceCounted(true);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 
@@ -133,7 +132,7 @@ public class GpxLoggerService extends AbstractService {
 	 * Registers receivers for GPS and wifi scan results.
 	 */
 	private void registerReceiver() {
-		IntentFilter filter = new IntentFilter();
+		final IntentFilter filter = new IntentFilter();
 		// Register our gps broadcast mReceiver
 		filter.addAction(RadioBeacon.INTENT_POSITION_UPDATE);
 		registerReceiver(mReceiver, filter);
@@ -145,7 +144,7 @@ public class GpxLoggerService extends AbstractService {
 	private void unregisterReceiver() {
 		try {
 			unregisterReceiver(mReceiver);
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			// do nothing here {@see http://stackoverflow.com/questions/2682043/how-to-check-if-receiver-is-registered-in-android}
 		}
 	}
@@ -166,19 +165,13 @@ public class GpxLoggerService extends AbstractService {
 	 * @param gpsLocation
 	 */
 	private void performGpsUpdate(final Location gpsLocation, final String source) {
-		// Is cell tracking disabled?
-		if (!prefs.getBoolean(Preferences.KEY_GPS_SAVE_COMPLETE_TRACK, Preferences.VAL_GPS_SAVE_COMPLETE_TRACK)) {
-			Log.i(TAG, "Didn't save gpx: saving gpx is disabled.");
-			return;
-		}
-
 		// Do we have gps?
 		if 	(gpsLocation == null) {
 			Log.e(TAG, "No GPS position available");
 			return;
 		}
 
-		PositionRecord pos = new PositionRecord(gpsLocation, mSessionId, source);
+		final PositionRecord pos = new PositionRecord(gpsLocation, mSessionId, source);
 
 		// so far we set end position = begin position 
 		mDataHelper.storePosition(pos);
@@ -235,8 +228,8 @@ public class GpxLoggerService extends AbstractService {
 			case RadioBeacon.MSG_START_TRACKING: 
 				Log.d(TAG, "GPX logger received MSG_START_TRACKING signal");
 
-				Bundle aBundle = msg.getData();
-				int sessionId = aBundle.getInt(RadioBeacon.MSG_KEY, RadioBeacon.SESSION_NOT_TRACKING); 
+				final Bundle aBundle = msg.getData();
+				final int sessionId = aBundle.getInt(RadioBeacon.MSG_KEY, RadioBeacon.SESSION_NOT_TRACKING); 
 
 				startTracking(sessionId);
 				break;
