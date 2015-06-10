@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TabHost xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/tabhost"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
+
+        <org.openbmap.activities.StatusBar
+            android:id="@+id/gpsStatus"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+        <org.openbmap.activities.CustomViewPager
+            android:id="@+id/pager"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" >
+        </org.openbmap.activities.CustomViewPager>
+    </LinearLayout>
+
+</TabHost>

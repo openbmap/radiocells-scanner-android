@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/outer"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical" >
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TableRow
+            android:id="@+id/tableRow4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_menu_wifi"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/stats_wifi_description"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.7"
+                android:gravity="center|left"
+                android:text="@string/n_a"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+
+            <TextView
+                android:id="@+id/stats_wifi_strength"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.2"
+                android:gravity="center"
+                android:text="@string/n_a"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/tableRow2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_menu_cell"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/stats_cell_description"
+                android:layout_width="0dp"
+                android:layout_height="fill_parent"
+                android:layout_weight="0.7"
+                android:text="@string/n_a"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+
+            <TextView
+                android:id="@+id/stats_cell_strength"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.2"
+                android:gravity="center"
+                android:text="@string/n_a"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+        </TableRow>
+
+        <TableRow>
+
+            <ImageView
+                android:id="@+id/stats_icon_alert"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.1"
+                android:src="@android:drawable/stat_sys_warning"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/stats_blacklisted"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.9"
+                android:ellipsize="marquee"
+                android:maxLines="2"
+                android:text=""
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+        </TableRow>
+
+        <TableRow>
+
+            <ImageView
+                android:id="@+id/stats_icon_free"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.1"
+                android:src="@drawable/stat_sys_free"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/stats_free"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.9"
+                android:ellipsize="marquee"
+                android:maxLines="2"
+                android:text=""
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+        </TableRow>
+    </TableLayout>
+
+    <LinearLayout
+        android:id="@+id/bottom"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="horizontal" >
+
+        <LinearLayout
+            android:id="@+id/graph2"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.7"
+            android:orientation="vertical" />
+
+        <TableLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.4"
+            android:orientation="vertical" >
+
+            <TableRow android:gravity="center" >
+
+                <TextView
+                    android:text="@string/networkTypeCaption"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+            </TableRow>
+
+            <TableRow>
+
+                <ToggleButton
+                    android:id="@+id/tbGsm"
+                    android:layout_width="0dp"
+                    android:layout_height="25dp"
+                    android:layout_marginLeft="1dp"
+                    android:layout_marginRight="1dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/custom_toggle"
+                    android:enabled="false"
+                    android:gravity="center"
+                    android:textColor="@color/custom_toggle"
+                    android:textOff="@string/gsm"
+                    android:textOn="@string/gsm" />
+
+                <ToggleButton
+                    android:id="@+id/tbEdge"
+                    android:layout_width="0dp"
+                    android:layout_height="25dp"
+                    android:layout_marginLeft="1dp"
+                    android:layout_marginRight="1dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/custom_toggle"
+                    android:enabled="false"
+                    android:gravity="center"
+                    android:textColor="@color/custom_toggle"
+                    android:textOff="@string/edge"
+                    android:textOn="@string/edge" />
+
+                <ToggleButton
+                    android:id="@+id/tbUmts"
+                    android:layout_width="0dp"
+                    android:layout_height="25dp"
+                    android:layout_marginLeft="1dp"
+                    android:layout_marginRight="1dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/custom_toggle"
+                    android:enabled="false"
+                    android:gravity="center"
+                    android:textColor="@color/custom_toggle"
+                    android:textOff="@string/umts"
+                    android:textOn="@string/umts" />
+
+                <ToggleButton
+                    android:id="@+id/tbCdma"
+                    android:layout_width="0dp"
+                    android:layout_height="25dp"
+                    android:layout_marginLeft="1dp"
+                    android:layout_marginRight="1dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/custom_toggle"
+                    android:enabled="false"
+                    android:gravity="center"
+                    android:textColor="@color/custom_toggle"
+                    android:textOff="@string/cdma"
+                    android:textOn="@string/cdma" />
+            </TableRow>
+
+            <TableRow>
+
+                <ToggleButton
+                    android:id="@+id/tbEvdo0"
+                    android:layout_width="0dp"
+                    android:layout_height="25dp"
+                    android:layout_marginLeft="1dp"
+                    android:layout_marginRight="1dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/custom_toggle"
+                    android:enabled="false"
+                    android:gravity="center"
+                    android:textColor="@color/custom_toggle"
+                    android:textOff="@string/edvo_0"
+                    android:textOn="@string/edvo_0" />
+
+                <ToggleButton
+                    android:id="@+id/tbEvdoA"
+                    android:layout_width="0dp"
+                    android:layout_height="25dp"
+                    android:layout_marginLeft="1dp"
+                    android:layout_marginRight="1dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/custom_toggle"
+                    android:enabled="false"
+                    android:gravity="center"
+                    android:textColor="@color/custom_toggle"
+                    android:textOff="@string/edvo_a"
+                    android:textOn="@string/edvo_a" />
+
+                <ToggleButton
+                    android:id="@+id/tbEvdoB"
+                    android:layout_width="0dp"
+                    android:layout_height="25dp"
+                    android:layout_marginLeft="1dp"
+                    android:layout_marginRight="1dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/custom_toggle"
+                    android:enabled="false"
+                    android:gravity="center"
+                    android:textColor="@color/custom_toggle"
+                    android:textOff="@string/edvo_b"
+                    android:textOn="@string/edvo_b" />
+
+                <ToggleButton
+                    android:id="@+id/tbOneXRtt"
+                    android:layout_width="0dp"
+                    android:layout_height="25dp"
+                    android:layout_marginLeft="1dp"
+                    android:layout_marginRight="1dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/custom_toggle"
+                    android:enabled="false"
+                    android:gravity="center"
+                    android:textColor="@color/custom_toggle"
+                    android:textOff="@string/onexrtt"
+                    android:textOn="@string/onexrtt" />
+            </TableRow>
+
+            <TableRow>
+
+                <ToggleButton
+                    android:id="@+id/tbHsdpa"
+                    android:layout_width="0dp"
+                    android:layout_height="25dp"
+                    android:layout_marginLeft="1dp"
+                    android:layout_marginRight="1dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/custom_toggle"
+                    android:enabled="false"
+                    android:gravity="center"
+                    android:textColor="@color/custom_toggle"
+                    android:textOff="@string/hsdpa"
+                    android:textOn="@string/hsdpa" />
+
+                <ToggleButton
+                    android:id="@+id/tbHsupa"
+                    android:layout_width="0dp"
+                    android:layout_height="25dp"
+                    android:layout_marginLeft="1dp"
+                    android:layout_marginRight="1dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/custom_toggle"
+                    android:enabled="false"
+                    android:gravity="center"
+                    android:textColor="@color/custom_toggle"
+                    android:textOff="@string/hsupa"
+                    android:textOn="@string/hsupa" />
+
+                <ToggleButton
+                    android:id="@+id/tbHspa"
+                    android:layout_width="0dp"
+                    android:layout_height="25dp"
+                    android:layout_marginLeft="1dp"
+                    android:layout_marginRight="1dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/custom_toggle"
+                    android:enabled="false"
+                    android:gravity="center"
+                    android:textColor="@color/custom_toggle"
+                    android:textOff="@string/hspa"
+                    android:textOn="@string/hspa" />
+
+                <ToggleButton
+                    android:id="@+id/tbIden"
+                    android:layout_width="0dp"
+                    android:layout_height="25dp"
+                    android:layout_marginLeft="1dp"
+                    android:layout_marginRight="1dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/custom_toggle"
+                    android:enabled="false"
+                    android:gravity="center"
+                    android:textColor="@color/custom_toggle"
+                    android:textOff="@string/iden"
+                    android:textOn="@string/iden" />
+            </TableRow>
+
+            <TableRow>
+
+                <ToggleButton
+                    android:id="@+id/tbLte"
+                    android:layout_width="0dp"
+                    android:layout_height="25dp"
+                    android:layout_marginLeft="1dp"
+                    android:layout_marginRight="1dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/custom_toggle"
+                    android:enabled="false"
+                    android:gravity="center"
+                    android:textColor="@color/custom_toggle"
+                    android:textOff="@string/lte"
+                    android:textOn="@string/lte" />
+
+                <ToggleButton
+                    android:id="@+id/tbEhrpd"
+                    android:layout_width="0dp"
+                    android:layout_height="25dp"
+                    android:layout_marginLeft="1dp"
+                    android:layout_marginRight="1dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/custom_toggle"
+                    android:enabled="false"
+                    android:gravity="center"
+                    android:textColor="@color/custom_toggle"
+                    android:textOff="@string/ehrpd"
+                    android:textOn="@string/ehrpd" />
+
+                <ToggleButton
+                    android:id="@+id/tbHspa_p"
+                    android:layout_width="0dp"
+                    android:layout_height="25dp"
+                    android:layout_marginLeft="1dp"
+                    android:layout_marginRight="1dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/custom_toggle"
+                    android:enabled="false"
+                    android:gravity="center"
+                    android:textColor="@color/custom_toggle"
+                    android:textOff="@string/hspa_p"
+                    android:textOn="@string/hspa_p" />
+
+                <ToggleButton
+                    android:id="@+id/tbN_a"
+                    android:layout_width="0dp"
+                    android:layout_height="25dp"
+                    android:layout_marginLeft="1dp"
+                    android:layout_marginRight="1dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/custom_toggle"
+                    android:enabled="false"
+                    android:gravity="center"
+                    android:textColor="@color/custom_toggle"
+                    android:textOff="@string/n_a"
+                    android:textOn="@string/n_a" />
+            </TableRow>
+
+        </TableLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

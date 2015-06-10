@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/LinearLayout1"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="horizontal" >
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.7"
+        android:padding="2dp"
+        android:text="@string/ssid" />
+
+    <org.openbmap.utils.TriToggleButton
+        android:id="@+id/triToggleButton1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        negative_image="@drawable/ic_action_down"
+        neutral_image="@drawable/ic_action_unsorted"
+        positive_image="@drawable/ic_action_up"
+        android:src="@drawable/arrow" />
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.3"
+        android:padding="2dp"
+        android:text="@string/level" />
+
+</LinearLayout>

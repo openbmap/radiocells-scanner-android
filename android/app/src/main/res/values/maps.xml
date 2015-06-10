@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="listDisplayWord">
+        <item>Albania</item>
+        <item>Andorra</item>
+        <item>Austria</item>
+        <item>Azores</item>
+        <item>Belarus</item>
+        <item>Belgium</item>
+        <item>Bosnia-Herzegovina</item>
+        <item>Bulgaria</item>
+        <item>Croatia</item>
+        <item>Cyprus</item>
+        <item>Czech Republic</item>
+        <item>Denmark</item>
+        <item>Estonia</item>
+        <item>Faroe Islands</item>
+        <item>Finland</item>
+        <item>France</item>
+        <item>Germany</item>
+        <item>Great Britain</item>
+        <item>Greece</item>
+        <item>Hungary</item>
+        <item>Iceland</item>
+        <item>India</item>
+        <item>Ireland</item>
+        <item>Isle Of Man</item>
+        <item>Italy</item>
+        <item>Kosovo</item>
+        <item>Latvia</item>
+        <item>Liechtenstein</item>
+        <item>Lithuania</item>
+        <item>Luxembourg</item>
+        <item>Macedonia</item>
+        <item>Madeira</item>
+        <item>Malta</item>
+        <item>Moldova</item>
+        <item>Monaco</item>
+        <item>Montenegro</item>
+        <item>Netherlands</item>
+        <item>Norway</item>
+        <item>Poland</item>
+        <item>Portugal</item>
+        <item>Romania</item>
+        <item>Russia</item>
+        <item>Serbia</item>
+        <item>Slovakia</item>
+        <item>Slovenia</item>
+        <item>South Korea</item>
+        <item>Spain</item>
+        <item>Sweden</item>
+        <item>Switzerland</item>
+        <item>Taiwan</item>
+        <item>Turkey</item>
+        <item>Ukraine</item>
+    </string-array>
+    <string-array name="listReturnValue">
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/albania.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/andorra.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/austria.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/azores.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/belarus.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/belgium.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/bosnia-herzegovina.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/bulgaria.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/croatia.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/cyprus.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/czech_republic.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/denmark.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/estonia.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/faroe-islands.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/finland.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/france.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/germany.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/great-britain.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/greece.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/hungary.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/iceland.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/apac/india.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/ireland.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/isle-of-man.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/italy.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/kosovo.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/latvia.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/liechtenstein.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/lithuania.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/luxembourg.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/macedonia.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/madeira.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/malta.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/moldova.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/monaco.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/montenegro.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/netherlands.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/norway.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/poland.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/portugal.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/romania.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/russia.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/serbia.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/slovakia.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/slovenia.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs//maps/apac/south-korea.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/spain.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/sweden.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/switzerland.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs//maps/apac/taiwan.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/turkey.map</item>
+        <item>http://googledrive.com/host/0B97gHr4MqjHpM2h0QVR5SWJOcGs/maps/europe/ukraine.map</item>
+    </string-array>
+
+</resources>

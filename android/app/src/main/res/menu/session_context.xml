@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/menu_resume_session"
+        android:icon="@drawable/ic_action_play"
+        android:showAsAction="always"
+        android:title="@string/resume">
+    </item>
+    <item
+        android:id="@+id/menu_stop_session"
+        android:icon="@drawable/ic_action_stop"
+        android:showAsAction="ifRoom"
+        android:title="@string/stop">
+    </item>
+    <item
+        android:id="@+id/menu_delete_session"
+        android:icon="@drawable/ic_action_remove"
+        android:showAsAction="always"
+        android:title="@string/delete">
+    </item>
+    <item
+        android:id="@+id/menu_upload_session"
+        android:icon="@drawable/ic_action_upload"
+        android:showAsAction="always"
+        android:title="@string/upload">
+    </item>
+    <item
+        android:id="@+id/menu_delete_all_sessions"
+        android:icon="@android:drawable/ic_notification_clear_all"
+        android:showAsAction="ifRoom"
+        android:title="@string/delete_all">
+    </item>
+    <item
+        android:id="@+id/menu_export_gpx"
+        android:icon="@drawable/ic_gpx"
+        android:showAsAction="ifRoom"
+        android:title="@string/export_gpx">
+    </item>
+
+</menu>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+    <issue id="HardcodedText">
+        <ignore path="res/layout/celldetails.xml" />
+    </issue>
+    <issue id="SmallSp">
+        <ignore path="res/layout/stats.xml" />
+    </issue>
+</lint>

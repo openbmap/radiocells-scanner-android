@@ -1,0 +1,38 @@
+apply plugin: 'com.android.application'
+
+android {
+    packagingOptions {
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+    }
+
+    compileSdkVersion 19
+    buildToolsVersion "21.1.2"
+
+    defaultConfig {
+        applicationId "org.openbmap"
+        minSdkVersion 8
+        targetSdkVersion 11
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles 'proguard.cfg'
+        }
+    }
+}
+
+dependencies {
+    compile 'com.android.support:support-v4:22.1.1'
+    compile 'com.actionbarsherlock:actionbarsherlock:4.4.0@aar'
+    compile 'com.android.support:support-v4:22.1.1'
+    compile files('libs/androidsvg-1.2.1.jar')
+    compile files('libs/commons-lang3-3.1.jar')
+    compile files('libs/GraphView-3.1.2.jar')
+    compile files('libs/httpmime-4.2.3.jar')
+    compile files('libs/mapsforge-core-0.5.1.jar')
+    compile files('libs/mapsforge-map-0.5.1.jar')
+    compile files('libs/mapsforge-map-android-0.5.1.jar')
+    compile files('libs/mapsforge-map-reader-0.5.1.jar')
+}

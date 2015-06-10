@@ -16,6 +16,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 History
 
+0.8.6
+    - Fix issue 77: no LTE cell logging, thanks @ ybe.rehpotsirhc
+    - changed to Gradle Build for better F-Droid compatibility
+    
 0.8.5
     - Use online map provider, if no offline map is available
     - Move data folder from userspace to Android/data (thanks agilob)
