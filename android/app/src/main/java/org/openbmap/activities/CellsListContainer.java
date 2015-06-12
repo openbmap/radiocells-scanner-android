@@ -18,17 +18,12 @@
 
 package org.openbmap.activities;
 
-import org.openbmap.R;
-import org.openbmap.db.DataHelper;
-import org.openbmap.db.RadioBeaconContentProvider;
-import org.openbmap.db.Schema;
-import org.openbmap.db.models.CellRecord;
-
 import android.content.ContentUris;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -40,12 +35,16 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.actionbarsherlock.app.SherlockListFragment;
+import org.openbmap.R;
+import org.openbmap.db.DataHelper;
+import org.openbmap.db.RadioBeaconContentProvider;
+import org.openbmap.db.Schema;
+import org.openbmap.db.models.CellRecord;
 
 /**
  * Parent activity for hosting cell list
  */
-public class CellsListContainer extends SherlockListFragment implements LoaderManager.LoaderCallbacks<Cursor>{
+public class CellsListContainer extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor>{
 
 	@SuppressWarnings("unused")
 	private static final String TAG = CellsListContainer.class.getSimpleName();
@@ -73,7 +72,7 @@ public class CellsListContainer extends SherlockListFragment implements LoaderMa
 	private int	mSession;
 
 	/**
-	 * @see http://stackoverflow.com/questions/6317767/cant-add-a-headerview-to-a-listfragment
+	 * @link http://stackoverflow.com/questions/6317767/cant-add-a-headerview-to-a-listfragment
 	 *      Fragment lifecycle
 	 *      onAttach(Activity) called once the fragment is associated with its activity.
 	 *      onCreate(Bundle) called to do initial creation of the fragment.

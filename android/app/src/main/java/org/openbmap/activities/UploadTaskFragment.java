@@ -18,7 +18,12 @@
 
 package org.openbmap.activities;
 
-import java.util.Vector;
+import android.app.ProgressDialog;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
+import android.util.Log;
 
 import org.openbmap.Preferences;
 import org.openbmap.R;
@@ -29,18 +34,12 @@ import org.openbmap.soapclient.UploadTask;
 import org.openbmap.soapclient.UploadTask.UploadTaskListener;
 import org.openbmap.utils.FileUtils;
 
-import android.app.ProgressDialog;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.util.Log;
-
-import com.actionbarsherlock.app.SherlockFragment;
+import java.util.Vector;
 
 /**
  *  Fragment manages export background tasks and retains itself across configuration changes.
  */
-public class UploadTaskFragment extends SherlockFragment implements UploadTaskListener, ServerReply {
+public class UploadTaskFragment extends Fragment implements UploadTaskListener, ServerReply {
 
 	private static final String TAG = UploadTaskFragment.class.getSimpleName();
 
@@ -112,14 +111,14 @@ public class UploadTaskFragment extends SherlockFragment implements UploadTaskLi
 	private void process(final int session) {
 
 		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-		final String user = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getString(Preferences.KEY_CREDENTIALS_USER, null);
-		final String password = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
+		final String user = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_USER, null);
+		final String password = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
 		final String targetPath = getActivity().getExternalFilesDir(null).getAbsolutePath();
-		final boolean skipUpload = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getBoolean(Preferences.KEY_SKIP_UPLOAD, Preferences.VAL_SKIP_UPLOAD);
-		final boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getBoolean(Preferences.KEY_SKIP_DELETE, Preferences.VAL_SKIP_DELETE);
+		final boolean skipUpload = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_SKIP_UPLOAD, Preferences.VAL_SKIP_UPLOAD);
+		final boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_SKIP_DELETE, Preferences.VAL_SKIP_DELETE);
 		final boolean anonymiseSsid = prefs.getBoolean(Preferences.KEY_ANONYMISE_SSID, Preferences.VAL_ANONYMISE_SSID); 
 
-		mExportTask = new UploadTask(getSherlockActivity(), this, session,
+		mExportTask = new UploadTask(getActivity(), this, session,
 				targetPath, user, password, anonymiseSsid);
 
 		mExportTask.setExportCells(true);
@@ -143,8 +142,8 @@ public class UploadTaskFragment extends SherlockFragment implements UploadTaskLi
 		// http://code.google.com/p/openbmap/issues/detail?id=40
 
 		// checks credentials available?
-		final String user = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getString(Preferences.KEY_CREDENTIALS_USER, null);
-		final String password = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity()).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
+		final String user = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_USER, null);
+		final String password = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
 
 		if (!isValidLogin(user, password)) {
 			Log.e(TAG, "User credentials missing");
@@ -161,7 +160,7 @@ public class UploadTaskFragment extends SherlockFragment implements UploadTaskLi
 	private void stageVersionCheck() {
 		if (allowedVersion == CheckResult.UNKNOWN) {
 			// will call onServerCheckGood()/onServerCheckBad() upon completion
-			new ServerValidation(getSherlockActivity(), this).execute(RadioBeacon.VERSION_COMPATIBILITY);
+			new ServerValidation(getActivity(), this).execute(RadioBeacon.VERSION_COMPATIBILITY);
 		} else if (allowedVersion == CheckResult.GOOD) {
 			stageLocalChecks();
 		}
@@ -279,7 +278,7 @@ public class UploadTaskFragment extends SherlockFragment implements UploadTaskLi
 	@Override
 	public void onUploadCompleted(final int id) {
 		// forward to activity
-		((UploadTaskListener) getSherlockActivity()).onUploadCompleted(id);
+		((UploadTaskListener) getActivity()).onUploadCompleted(id);
 
 		Log.i(TAG, "Export completed. Processing next");
 		toExport.remove(Integer.valueOf(id));
@@ -289,7 +288,7 @@ public class UploadTaskFragment extends SherlockFragment implements UploadTaskLi
 	@Override
 	public void onDryRunCompleted(final int id) {
 		// forward to activity
-		((UploadTaskListener) getSherlockActivity()).onDryRunCompleted(id);
+		((UploadTaskListener) getActivity()).onDryRunCompleted(id);
 
 		Log.i(TAG, "Export simulated. Processing next");
 		toExport.remove(Integer.valueOf(id));
@@ -302,7 +301,7 @@ public class UploadTaskFragment extends SherlockFragment implements UploadTaskLi
 	@Override
 	public void onUploadFailed(final int id, final String error) {
 		// forward to activity
-		((UploadTaskListener) getSherlockActivity()).onUploadFailed(id, error);
+		((UploadTaskListener) getActivity()).onUploadFailed(id, error);
 
 		Log.e(TAG, "Error exporting session " + id + ": " + error);
 		toExport.remove(Integer.valueOf(id));
@@ -315,6 +314,6 @@ public class UploadTaskFragment extends SherlockFragment implements UploadTaskLi
 	@Override
 	public void onUploadProgressUpdate(final Object... values) {
 		// forward to activity
-		((UploadTaskListener) getSherlockActivity()).onUploadProgressUpdate(values);
+		((UploadTaskListener) getActivity()).onUploadProgressUpdate(values);
 	}
 }

@@ -18,9 +18,27 @@
 
 package org.openbmap.activities;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.graphics.Matrix;
+import android.location.Location;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
+import android.widget.Toast;
 
 import org.mapsforge.core.graphics.Color;
 import org.mapsforge.core.graphics.Paint;
@@ -62,33 +80,14 @@ import org.openbmap.utils.SessionMapObjectsLoader.OnSessionLoadedListener;
 import org.openbmap.utils.WifiCatalogMapObjectsLoader;
 import org.openbmap.utils.WifiCatalogMapObjectsLoader.OnCatalogLoadedListener;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.graphics.Matrix;
-import android.location.Location;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.ImageView.ScaleType;
-import android.widget.Toast;
-
-import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.SherlockFragment;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Activity for displaying session's GPX track and wifis
  */
-public class MapViewActivity extends SherlockFragment implements
+public class MapViewActivity extends Fragment implements
 OnCatalogLoadedListener,
 OnSessionLoadedListener,
 OnGpxLoadedListener,
@@ -344,7 +343,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 		setHasOptionsMenu(true);
 
 		// get shared preferences
-		prefs = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity());
+		prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
 		// Register our gps broadcast mReceiver
 		registerReceiver();
@@ -367,8 +366,8 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 		
 		registerReceiver();
 
-		if (getSherlockActivity().getIntent().hasExtra(Schema.COL_ID)) {
-			final int focusWifi = getSherlockActivity().getIntent().getExtras().getInt(Schema.COL_ID);
+		if (getActivity().getIntent().hasExtra(Schema.COL_ID)) {
+			final int focusWifi = getActivity().getIntent().getExtras().getInt(Schema.COL_ID);
 			Log.d(TAG, "Zooming onto " + focusWifi);
 			if (focusWifi != 0) {
 				loadSingleObject(focusWifi);
@@ -400,7 +399,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	}
 
 	private void initDb() {
-		dbHelper = new DataHelper(getSherlockActivity());
+		dbHelper = new DataHelper(getActivity());
 		mSessionId = dbHelper.getActiveSessionId();
 
 		if (mSessionId != RadioBeacon.SESSION_NOT_TRACKING) {
@@ -415,7 +414,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	 */
 	private void initMap(final View view) {
 
-		final SharedPreferences sharedPreferences = getSherlockActivity().getSharedPreferences(getPersistableId(), /*MODE_PRIVATE*/ 0);
+		final SharedPreferences sharedPreferences = getActivity().getSharedPreferences(getPersistableId(), /*MODE_PRIVATE*/ 0);
 		preferencesFacade = new AndroidPreferences(sharedPreferences);
 
 		this.mMapView = (MapView) view.findViewById(R.id.map);
@@ -438,7 +437,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 			if (offlineLayer != null) this.mMapView.getLayerManager().getLayers().add(offlineLayer);
 		} else {
 			//this.mMapView.getModel().displayModel.setBackgroundColor(0xffffffff);
-			Toast.makeText(this.getSherlockActivity(), R.string.info_using_online_map, Toast.LENGTH_LONG).show();
+			Toast.makeText(this.getActivity(), R.string.info_using_online_map, Toast.LENGTH_LONG).show();
 
 			final OnlineTileSource onlineTileSource = new OnlineTileSource(new String[]{
 					"otile1.mqcdn.com", "otile2.mqcdn.com", "otile3.mqcdn.com", "otile4.mqcdn.com"}, 80);
@@ -530,7 +529,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	private void registerReceiver() {
 		final IntentFilter filter = new IntentFilter();
 		filter.addAction(RadioBeacon.INTENT_POSITION_UPDATE);
-		getSherlockActivity().registerReceiver(mReceiver, filter);  
+		getActivity().registerReceiver(mReceiver, filter);
 	}
 
 	/**
@@ -538,7 +537,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	 */
 	private void unregisterReceiver() {
 		try {
-			getSherlockActivity().unregisterReceiver(mReceiver);
+			getActivity().unregisterReceiver(mReceiver);
 		} catch (final IllegalArgumentException e) {
 			// do nothing here {@see http://stackoverflow.com/questions/2682043/how-to-check-if-mReceiver-is-registered-in-android}
 			return;
@@ -621,8 +620,6 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	/**
 	 * Loads reference wifis around location from openbmap wifi catalog.
 	 * Callback function, upon completion onCatalogLoaded is called for drawing
-	 * @param center
-	 *    For performance reasons only wifis around specified location are displayed.
 	 */
 	private void proceedAfterCatalogLoaded() {
 
@@ -644,7 +641,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 			minLongitude -= lonSpan * 0.5;
 			maxLongitude += lonSpan * 0.5;
 		}
-		final WifiCatalogMapObjectsLoader task = new WifiCatalogMapObjectsLoader(getSherlockActivity(), this);
+		final WifiCatalogMapObjectsLoader task = new WifiCatalogMapObjectsLoader(getActivity(), this);
 		task.execute(minLatitude, maxLatitude, minLongitude, maxLongitude);
 
 	}
@@ -761,14 +758,14 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 				maxLongitude += lonSpan * 0.5;
 			}
 
-			final SessionMapObjectsLoader task = new SessionMapObjectsLoader(getSherlockActivity(), this, sessions);
+			final SessionMapObjectsLoader task = new SessionMapObjectsLoader(getActivity(), this, sessions);
 			task.execute(minLatitude, maxLatitude, minLongitude, maxLatitude, null);
 		} else {
 			// draw specific wifi
 			final ArrayList<Integer> sessions = new ArrayList<Integer>();
 			sessions.add(mSessionId);
 
-			final SessionMapObjectsLoader task = new SessionMapObjectsLoader(getSherlockActivity(), this, sessions);
+			final SessionMapObjectsLoader task = new SessionMapObjectsLoader(getActivity(), this, sessions);
 			task.execute(bbox.minLatitude, bbox.maxLatitude, bbox.minLongitude, bbox.maxLatitude, highlight.getBssid());
 		}
 	}
@@ -883,7 +880,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 		final BoundingBox bbox = MapPositionUtil.getBoundingBox(
 				mMapView.getModel().mapViewPosition.getMapPosition(),
 				mMapView.getDimension(), mMapView.getModel().displayModel.getTileSize());
-		final GpxMapObjectsLoader task = new GpxMapObjectsLoader(getSherlockActivity(), this);
+		final GpxMapObjectsLoader task = new GpxMapObjectsLoader(getActivity(), this);
 		// query with some extra space
 		task.execute(mSessionId, bbox.minLatitude - 0.01, bbox.maxLatitude + 0.01, bbox.minLongitude - 0.15, bbox.maxLatitude + 0.15);
 	}

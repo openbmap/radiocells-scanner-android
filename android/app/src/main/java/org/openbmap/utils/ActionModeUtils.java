@@ -14,29 +14,29 @@
 
 package org.openbmap.utils;
 
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.view.ActionMode;
+import android.support.v7.view.ActionMode.Callback;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.ActionMode;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
+public class ActionModeUtils implements Callback, AdapterView.OnItemLongClickListener {
 
-public class ActionModeUtils implements ActionMode.Callback, AdapterView.OnItemLongClickListener {
-	
 	public interface LongClickCallback {
 		 boolean onItemLongClick(int item, int position, int id);
 	}
 	
-	private final SherlockFragmentActivity host;
+	private final ActionBarActivity host;
 	private ActionMode activeMode;
 	private final ListView modeView;
 	private final LongClickCallback handler;
 	private final int menuId;
 
-	public ActionModeUtils(final SherlockFragmentActivity fragmentActivity, final int menuId, final LongClickCallback handler, final ListView modeView) {
+	public ActionModeUtils(final ActionBarActivity fragmentActivity, final int menuId, final LongClickCallback handler, final ListView modeView) {
 		this.host = fragmentActivity;
 		this.handler = handler;
 		this.modeView = modeView;
@@ -50,7 +50,7 @@ public class ActionModeUtils implements ActionMode.Callback, AdapterView.OnItemL
 		modeView.setItemChecked(position, true);
 
 		if (activeMode == null) {
-			activeMode = host.startActionMode(this);
+			activeMode = ((ActionBarActivity) host).startSupportActionMode(this);
 		}
 
 		return(true);
@@ -58,11 +58,11 @@ public class ActionModeUtils implements ActionMode.Callback, AdapterView.OnItemL
 
 	@Override
 	public boolean onCreateActionMode(final ActionMode mode, final Menu menu) {
-		final MenuInflater inflater = host.getSupportMenuInflater();
-		
+		final MenuInflater inflater = host.getMenuInflater();
+
 		inflater.inflate(menuId, menu);
 		//mode.setTitle(/*R.string.context_title*/ "Options");
-		
+
 		return(true);
 	}
 

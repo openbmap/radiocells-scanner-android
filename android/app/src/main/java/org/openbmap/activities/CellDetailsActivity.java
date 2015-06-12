@@ -35,25 +35,24 @@ import android.widget.TextView;
  */
 public class CellDetailsActivity  extends FragmentActivity {
 
-	private TextView	tvNetworkType;
-	private TextView	tvCellId;
+	private TextView tvNetworkType;
+	private TextView tvCellId;
 
-	private TextView	tvOperator;
-	private TextView	tvMcc;
-	private TextView	tvMnc;
-	private TextView	tvLac;
-	private TextView	tvStrength;
-	private TextView	tvPsc;
-	private TextView 	tvNoMeasurements;
-	private TableRow	rowCdma;
-	private TextView	tvBaseId;
-	private TextView	tvSystemId;
-	private TextView	tvNetworkId;
-	private TableRow	rowUtran;
-	private TextView	tvLcid;
-	private TextView	tvRnc;
-	
-	
+	private TextView tvOperator;
+	private TextView tvMcc;
+	private TextView tvMnc;
+	private TextView tvLac;
+	private TextView tvStrength;
+	private TextView tvPsc;
+	private TextView  tvNoMeasurements;
+	private TableRow rowCdma;
+	private TextView tvBaseId;
+	private TextView tvSystemId;
+	private TextView tvNetworkId;
+	private TableRow rowUtran;
+	private TextView tvLcid;
+	private TextView tvRnc;
+
 	private DataHelper mDatahelper;
 
 	/**

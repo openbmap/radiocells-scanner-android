@@ -18,10 +18,21 @@
 
 package org.openbmap.activities;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.Intent;
+import android.net.wifi.WifiManager;
+import android.net.wifi.WifiManager.WifiLock;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentManager;
+import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.widget.TabHost;
+import android.widget.Toast;
 
 import org.openbmap.Preferences;
 import org.openbmap.R;
@@ -35,27 +46,15 @@ import org.openbmap.utils.OnAlertClickInterface;
 import org.openbmap.utils.TabManager;
 import org.openbmap.utils.TempFileUtils;
 
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.Intent;
-import android.net.wifi.WifiManager;
-import android.net.wifi.WifiManager.WifiLock;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.v4.app.FragmentManager;
-import android.util.Log;
-import android.widget.TabHost;
-import android.widget.Toast;
-
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * Parent screen for hosting main screen
  */
-public class StartscreenActivity extends SherlockFragmentActivity
+public class StartscreenActivity extends ActionBarActivity
 implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, UploadTaskListener, ExportGpxTaskListener {
 
 	/**
@@ -404,7 +403,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 */
 	@Override
 	public final boolean onCreateOptionsMenu(final Menu menu) {
-		final MenuInflater inflater = getSupportMenuInflater();
+		final MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.main_menu, menu);
 		return true;
 	}
@@ -676,7 +675,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	/**
 	 * Creates or restores a progress dialogs
 	 * This dialog is not shown until calling showExportDialog() explicitly
-	 * @param new 
+	 * @param newDialog
 	 * 
 	 */
 	private void initUploadTaskDialog(final boolean newDialog) {
@@ -703,7 +702,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	/**
 	 * Creates or restores a progress dialogs
 	 * This dialog is not shown until calling showExportDialog() explicitly
-	 * @param new 
+	 * @param newDialog
 	 * 
 	 */
 	private void initExportGpxTaskDialog(final boolean newDialog) {

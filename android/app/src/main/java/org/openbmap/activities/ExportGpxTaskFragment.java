@@ -17,15 +17,14 @@
  */
 package org.openbmap.activities;
 
+import android.app.ProgressDialog;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+
 import org.openbmap.soapclient.ExportGpxTask;
 import org.openbmap.soapclient.ExportGpxTask.ExportGpxTaskListener;
 
-import android.app.ProgressDialog;
-import android.os.Bundle;
-
-import com.actionbarsherlock.app.SherlockFragment;
-
-public class ExportGpxTaskFragment extends SherlockFragment implements ExportGpxTaskListener {
+public class ExportGpxTaskFragment extends Fragment implements ExportGpxTaskListener {
 
 	private String mTitle;
 	private String mMessage;
@@ -87,17 +86,17 @@ public class ExportGpxTaskFragment extends SherlockFragment implements ExportGpx
 
 	@Override
 	public void onExportGpxProgressUpdate(final Object... values) {
-		((ExportGpxTaskListener) getSherlockActivity()).onExportGpxProgressUpdate(values);
+		((ExportGpxTaskListener) getActivity()).onExportGpxProgressUpdate(values);
 	}
 
 	@Override
 	public void onExportGpxCompleted(final int id) {
-		((ExportGpxTaskListener) getSherlockActivity()).onExportGpxCompleted(id);
+		((ExportGpxTaskListener) getActivity()).onExportGpxCompleted(id);
 	}
 
 	@Override
 	public void onExportGpxFailed(final int id, final String error) {
-		((ExportGpxTaskListener) getSherlockActivity()).onExportGpxFailed(id, error);
+		((ExportGpxTaskListener) getActivity()).onExportGpxFailed(id, error);
 	}
 
 	public boolean isExecuting() {

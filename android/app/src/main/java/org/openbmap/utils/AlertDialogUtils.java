@@ -18,22 +18,21 @@
 
 package org.openbmap.utils;
 
-import org.openbmap.R;
-
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.AlertDialog.Builder;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 
-import com.actionbarsherlock.app.SherlockDialogFragment;
+import org.openbmap.R;
 
 /**
  * Helper class Alert Dialogs
  *
  */
-public class AlertDialogUtils extends SherlockDialogFragment{
+public class AlertDialogUtils extends DialogFragment {
 
 	/**
 	 * Creates a new alert dialog

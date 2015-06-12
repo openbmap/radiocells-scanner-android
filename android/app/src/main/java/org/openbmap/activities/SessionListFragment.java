@@ -18,9 +18,30 @@
 
 package org.openbmap.activities;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.database.ContentObserver;
+import android.database.Cursor;
+import android.os.Bundle;
+import android.os.Handler;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.ListFragment;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.support.v4.widget.SimpleCursorAdapter;
+import android.support.v4.widget.SimpleCursorAdapter.ViewBinder;
+import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
@@ -32,36 +53,14 @@ import org.openbmap.utils.ActionModeUtils;
 import org.openbmap.utils.ActionModeUtils.LongClickCallback;
 import org.openbmap.utils.OnAlertClickInterface;
 
-import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
-import android.app.Dialog;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
-import android.database.ContentObserver;
-import android.database.Cursor;
-import android.os.Bundle;
-import android.os.Handler;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager.LoaderCallbacks;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
-import android.support.v4.widget.SimpleCursorAdapter;
-import android.support.v4.widget.SimpleCursorAdapter.ViewBinder;
-import android.util.Log;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import com.actionbarsherlock.app.SherlockDialogFragment;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.app.SherlockListFragment;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * Fragment for displaying all sessions
  */
-public class SessionListFragment extends SherlockListFragment implements
+public class SessionListFragment extends ListFragment implements
 LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	
 	private static final String	TAG	= SessionListFragment.class.getSimpleName();
@@ -99,8 +98,6 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		void resumeCommand(int id);
 		/**
 		 * Deletes all sessions.
-		 * @param id
-		 *		Session to resume
 		 */
 		void deleteAllCommand();
 		
@@ -109,8 +106,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		 * @param id
 		 *		Session to upload
 		 */
-		void uploadCommand(int id
-				);
+		void uploadCommand(int id);
 		/**
 		 * Uploads all sessions not yet uploaded
 		 */
@@ -126,7 +122,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	}
 
 	/**
-	 * @see http://stackoverflow.com/questions/6317767/cant-add-a-headerview-to-a-listfragment
+	 * @link http://stackoverflow.com/questions/6317767/cant-add-a-headerview-to-a-listfragment
 	 *      Fragment lifecycle
 	 *      onAttach(Activity) called once the fragment is associated with its activity.
 	 *      onCreate(Bundle) called to do initial creation of the fragment.
@@ -181,7 +177,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		getListView().setLongClickable(true);
 		getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 		getListView().setOnItemLongClickListener(new ActionModeUtils(
-				(SherlockFragmentActivity) this.getSherlockActivity(), R.menu.session_context, this,
+				(ActionBarActivity) this.getActivity(), R.menu.session_context, this,
 				getListView()));
 	}
 
@@ -209,7 +205,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	 * Stops session (and services)
 	 */
 	private void stop(final int id) {
-		((SessionFragementListener) getSherlockActivity()).stopCommand(id);
+		((SessionFragementListener) getActivity()).stopCommand(id);
 	}
 
 	/**
@@ -219,7 +215,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		final DataHelper datahelper = new DataHelper(this.getActivity());
 		final Session check = datahelper.loadSession(id);
 		if (check != null && !check.hasBeenExported()) {
-			((SessionFragementListener) getSherlockActivity()).resumeCommand(id);
+			((SessionFragementListener) getActivity()).resumeCommand(id);
 		} else {
 			Toast.makeText(this.getActivity(), R.string.warning_session_closed, Toast.LENGTH_SHORT).show();
 		}
@@ -332,20 +328,25 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 				final DataHelper datahelper = new DataHelper(this.getActivity());
 				final int pending = datahelper.countPendingExports();
 				if (pending > 1) {
-					AlertDialogHelper.newInstance(this, ID_MULTIPLE_UPLOADS, R.string.dialog_found_pending_uploads_title, R.string.dialog_found_pending_uploads_message, String.valueOf(id), false).show(getSherlockActivity().getSupportFragmentManager(), "multiple");
+					AlertDialogHelper.newInstance(this,
+							ID_MULTIPLE_UPLOADS,
+							R.string.dialog_found_pending_uploads_title,
+							R.string.dialog_found_pending_uploads_message,
+							String.valueOf(id),
+							false).show(getActivity().getSupportFragmentManager(), "multiple");
 				} else {
 					stop(id);
-					((SessionFragementListener) getSherlockActivity()).uploadCommand(id);
+					((SessionFragementListener) getActivity()).uploadCommand(id);
 				}
 				return true;
 			case R.id.menu_export_gpx:
-				((SessionFragementListener) getSherlockActivity()).exportGpxCommand(id);
+				((SessionFragementListener) getActivity()).exportGpxCommand(id);
 				return true;
 			case R.id.menu_delete_session:
-				((SessionFragementListener) getSherlockActivity()).deleteCommand(id);
+				((SessionFragementListener) getActivity()).deleteCommand(id);
 				return true;
 			case R.id.menu_delete_all_sessions:
-				((SessionFragementListener) getSherlockActivity()).deleteAllCommand();
+				((SessionFragementListener) getActivity()).deleteAllCommand();
 				return true;
 			case R.id.menu_resume_session:
 				resume(id);
@@ -359,7 +360,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		return true;
 	}
 	
-	public static class AlertDialogHelper extends SherlockDialogFragment{
+	public static class AlertDialogHelper extends DialogFragment {
 
 		/**
 		 * Creates a new alert dialog
@@ -431,7 +432,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 			// just all pending
 			final int id = (args != null ? Integer.valueOf(args) : RadioBeacon.SESSION_NOT_TRACKING);
 			stop(id);
-			((SessionFragementListener) getSherlockActivity()).uploadAllCommand();
+			((SessionFragementListener) getActivity()).uploadAllCommand();
 		}
 		
 	}
@@ -445,7 +446,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 			// just upload selected
 			final int id = (args != null ? Integer.valueOf(args) : RadioBeacon.SESSION_NOT_TRACKING);
 			stop(id);
-			((SessionFragementListener) getSherlockActivity()).uploadCommand(id);
+			((SessionFragementListener) getActivity()).uploadCommand(id);
 		}
 		
 	}

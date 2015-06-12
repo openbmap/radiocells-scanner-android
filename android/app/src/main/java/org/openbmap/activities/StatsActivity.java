@@ -18,10 +18,6 @@
 
 package org.openbmap.activities;
 
-import org.openbmap.R;
-import org.openbmap.RadioBeacon;
-import org.openbmap.db.models.Session;
-
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -29,6 +25,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,16 +35,19 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-import com.actionbarsherlock.app.SherlockFragment;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.GraphView.GraphViewData;
 import com.jjoe64.graphview.GraphViewSeries;
 import com.jjoe64.graphview.LineGraphView;
 
+import org.openbmap.R;
+import org.openbmap.RadioBeacon;
+import org.openbmap.db.models.Session;
+
 /**
  * Activity for displaying basic session infos (# of cells, wifis, etc.)
  */
-public class StatsActivity extends SherlockFragment {
+public class StatsActivity extends Fragment {
 
 	private static final String TAG = StatsActivity.class.getSimpleName();
 
@@ -454,7 +454,7 @@ public class StatsActivity extends SherlockFragment {
 		filter.addAction(RadioBeacon.INTENT_SESSION_UPDATE);
 		filter.addAction(RadioBeacon.INTENT_WIFI_BLACKLISTED);
 		filter.addAction(RadioBeacon.INTENT_WIFI_FREE);
-		getSherlockActivity().registerReceiver(mReceiver, filter);
+		getActivity().registerReceiver(mReceiver, filter);
 	}
 
 	/**
@@ -462,7 +462,7 @@ public class StatsActivity extends SherlockFragment {
 	 */
 	private void unregisterReceiver() {
 		try {
-			getSherlockActivity().unregisterReceiver(mReceiver);
+			getActivity().unregisterReceiver(mReceiver);
 		} catch (final IllegalArgumentException e) {
 			// do nothing here {@see
 			// http://stackoverflow.com/questions/2682043/how-to-check-if-receiver-is-registered-in-android}

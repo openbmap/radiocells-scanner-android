@@ -18,20 +18,6 @@
 
 package org.openbmap.activities;
 
-import java.lang.ref.WeakReference;
-
-import org.openbmap.Preferences;
-import org.openbmap.R;
-import org.openbmap.RadioBeacon;
-import org.openbmap.db.DataHelper;
-import org.openbmap.db.models.Session;
-import org.openbmap.services.ServiceManager;
-import org.openbmap.services.position.GpxLoggerService;
-import org.openbmap.services.position.PositioningService;
-import org.openbmap.services.position.PositioningService.State;
-import org.openbmap.services.wireless.WirelessLoggerService;
-import org.openbmap.utils.ActivityUtils;
-
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -50,15 +36,28 @@ import android.provider.Settings;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBar.Tab;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.ActionBar.Tab;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
+import org.openbmap.Preferences;
+import org.openbmap.R;
+import org.openbmap.RadioBeacon;
+import org.openbmap.db.DataHelper;
+import org.openbmap.db.models.Session;
+import org.openbmap.services.ServiceManager;
+import org.openbmap.services.position.GpxLoggerService;
+import org.openbmap.services.position.PositioningService;
+import org.openbmap.services.position.PositioningService.State;
+import org.openbmap.services.wireless.WirelessLoggerService;
+import org.openbmap.utils.ActivityUtils;
+
+import java.lang.ref.WeakReference;
 
 /**
  * HostActity for "tracking" mode. It hosts the tabs "Stats", "Wifi Overview", "Cell Overview" and "Map".
@@ -67,7 +66,7 @@ import com.actionbarsherlock.view.MenuItem;
  * They can be manually stopped by calling INTENT_STOP_TRACKING.
  * 
  */
-public class HostActivity extends SherlockFragmentActivity {
+public class HostActivity extends ActionBarActivity {
 	private static final String	TAG	= HostActivity.class.getSimpleName();
 
 	/**
@@ -326,7 +325,7 @@ public class HostActivity extends SherlockFragmentActivity {
 	 */
 	@Override
 	public final boolean onCreateOptionsMenu(final Menu menu) {
-		final MenuInflater inflater = getSupportMenuInflater();
+		final MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.control_menu, menu);
 		return true;
 	}
@@ -417,7 +416,7 @@ public class HostActivity extends SherlockFragmentActivity {
 
 	/**
 	 * Starts broadcasting GPS position.
-	 * @param gps 
+	 * @param provider
 	 * @return false on error, otherwise true
 	 */
 	public final boolean requestPositionUpdates(final State provider) {

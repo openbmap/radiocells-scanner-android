@@ -18,44 +18,44 @@
 
 package org.openbmap.activities;
 
-import org.openbmap.R;
-import org.openbmap.db.DataHelper;
-import org.openbmap.db.RadioBeaconContentProvider;
-import org.openbmap.db.Schema;
-import org.openbmap.utils.TriToggleButton;
-
 import android.content.ContentUris;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter.ViewBinder;
 import android.util.Log;
-//import android.view.ContextMenu;
-//import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
-//import android.view.MenuInflater;
-//import android.view.MenuItem;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.actionbarsherlock.app.SherlockListFragment;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
+import org.openbmap.R;
+import org.openbmap.db.DataHelper;
+import org.openbmap.db.RadioBeaconContentProvider;
+import org.openbmap.db.Schema;
+import org.openbmap.utils.TriToggleButton;
+
+//import android.view.ContextMenu;
+//import android.view.ContextMenu.ContextMenuInfo;
+//import android.view.MenuInflater;
+//import android.view.MenuItem;
 
 /**
  * Parent activity for hosting wifi list
  */
-public class WifiListContainer extends SherlockListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class WifiListContainer extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	
 	private static final String TAG = WifiListContainer.class.getSimpleName();
 
@@ -145,7 +145,6 @@ public class WifiListContainer extends SherlockListFragment implements LoaderMan
 	
 	/**
 	 * Setup Ui controls
-	 * @param savedInstanceState
 	 */
 	private void initUi() {
 		sortButton = (TriToggleButton) mHheader.findViewById(R.id.triToggleButton1);
