@@ -11,14 +11,14 @@ android {
 
     defaultConfig {
         applicationId "org.openbmap"
-        minSdkVersion 8
-        targetSdkVersion 11
+        minSdkVersion 9
+        targetSdkVersion 19
     }
 
     buildTypes {
         release {
             minifyEnabled true
-            proguardFiles 'proguard.cfg'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
         }
     }
 }
