@@ -1,8 +1,6 @@
-/android/cleanup.bat
-bin
-/android/.idea
+.idea
 build
 .gradle
 *.iml
-/android/app/src/main/res/raw/build.txt
-/android/app/src/main/setbuild.sh
+/gradle
+local.properties
