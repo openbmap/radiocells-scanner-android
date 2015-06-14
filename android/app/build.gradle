@@ -50,3 +50,18 @@ dependencies {
     //compile 'org.mapsforge:svg-android:0.5.1'
     compile 'org.mapsforge:mapsforge:0.5.1'
 }
+
+task writeVersionInfo {
+    // This will output something like 'bf16f5d', or 'bf16f5d-dirty' if the tree has uncommitted changes
+    def cmd = "git describe --match=null --always --dirty"
+    def version = cmd.execute().text.trim()
+
+    def resRawDir = new File(android.sourceSets.main.res.srcDirs[0], 'raw')
+    resRawDir.mkdirs()
+    def output = new File(resRawDir, 'build.txt')
+    output.write(version)
+}
+
+gradle.projectsEvaluated {
+    preBuild.dependsOn writeVersionInfo
+}
