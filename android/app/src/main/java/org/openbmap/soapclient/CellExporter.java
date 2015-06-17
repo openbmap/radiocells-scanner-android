@@ -18,13 +18,9 @@
 
 package org.openbmap.soapclient;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.ArrayList;
+import android.content.Context;
+import android.database.Cursor;
+import android.util.Log;
 
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.DatabaseHelper;
@@ -32,9 +28,13 @@ import org.openbmap.db.Schema;
 import org.openbmap.db.models.CellRecord;
 import org.openbmap.db.models.LogFile;
 
-import android.content.Context;
-import android.database.Cursor;
-import android.util.Log;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.ArrayList;
 
 /**
  * Exports cells to xml format for later upload.
@@ -101,7 +101,7 @@ public class CellExporter {
 	/**
 	 * Directory where xmls files are stored
 	 */
-	private final String	mTempPath;
+	private final String mTempPath;
 
 	private int mColNetworkType;
 	private int mColIsCdma;
@@ -223,13 +223,15 @@ public class CellExporter {
 	 * @param context	Activities' context
 	 * @param session Session id to export
 	 * @param tempPath (full) path where temp files are saved. Will be created, if not existing.
-	 * @param user Openbmap username, required for filename generation
 	 * @param exportVersion current Radiobeacon version (can differ from Radiobeacon version used for tracking) 
 
 	 */
-	public CellExporter(final Context context, final int session, final String tempPath, final String exportVersion) {
+	public CellExporter(final Context context, final int session, String tempPath, final String exportVersion) {
 		this.mContext = context;
 		this.mSession = session;
+		if (tempPath != null && !tempPath.endsWith(File.separator)) {
+			tempPath = tempPath + File.separator;
+		}
 		this.mTempPath = tempPath;
 		this.mExportVersion = exportVersion;
 		//this.mTimestamp = Calendar.getInstance();
@@ -397,7 +399,6 @@ public class CellExporter {
 
 			File file = new File(fileName);
 
-			//BufferedWriter bw = new BufferedWriter(new FileWriter(file.getAbsoluteFile()), 30 * 1024);
 			Writer bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file.getAbsoluteFile()), "UTF-8"), 30 * 1024);
 
 			// Write header

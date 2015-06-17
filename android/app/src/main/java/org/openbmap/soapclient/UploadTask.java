@@ -100,7 +100,7 @@ public class UploadTask extends AsyncTask<Void, Object, Boolean> implements File
 	/**
 	 * Directory where xmls files are stored
 	 */
-	private final String	mTargetPath;
+	private final String mTargetPath;
 
 	/*
 	 *  Openbmap credentials : openbmap username
@@ -170,7 +170,6 @@ public class UploadTask extends AsyncTask<Void, Object, Boolean> implements File
 	 */
 	public UploadTask(final Context context, final UploadTaskListener listener, final int session,
 			final String targetPath, final String user, final String password, final boolean anonymiseSsid) {
-		// EXPERIMENTAL: use ApplicationContext here !!!
 		this.mAppContext = context.getApplicationContext();
 		this.mSession = session;
 		this.mTargetPath = targetPath;
@@ -216,7 +215,7 @@ public class UploadTask extends AsyncTask<Void, Object, Boolean> implements File
 						} catch (final InterruptedException e) {
 						}
 					}
-					publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.uploading_cells) + "(Files: " + String.valueOf(cellFiles.size() -i) +")" , 0);
+					publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.uploading_cells) + "(" + "Files" + ": " + String.valueOf(cellFiles.size() -i) +")" , 0);
 					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 						// enforce parallel execution on HONEYCOMB
 						new FileUploader(this, mUser, mPassword, CELL_WEBSERVICE, VALIDATE_UPLOAD, CELL_TARGET_FOLDER).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, cellFiles.get(i));

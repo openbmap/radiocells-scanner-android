@@ -34,6 +34,7 @@ import org.openbmap.soapclient.UploadTask;
 import org.openbmap.soapclient.UploadTask.UploadTaskListener;
 import org.openbmap.utils.FileUtils;
 
+import java.io.File;
 import java.util.Vector;
 
 /**
@@ -113,7 +114,7 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
 		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 		final String user = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_USER, null);
 		final String password = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
-		final String targetPath = getActivity().getExternalFilesDir(null).getAbsolutePath();
+		final String targetPath = getActivity().getExternalFilesDir(null).getAbsolutePath() + File.separator;
 		final boolean skipUpload = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_SKIP_UPLOAD, Preferences.VAL_SKIP_UPLOAD);
 		final boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_SKIP_DELETE, Preferences.VAL_SKIP_DELETE);
 		final boolean anonymiseSsid = prefs.getBoolean(Preferences.KEY_ANONYMISE_SSID, Preferences.VAL_ANONYMISE_SSID); 
