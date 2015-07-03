@@ -43,7 +43,7 @@ public final class XmlSanitizer {
         // assure we only have ASCII chars
         result = result && PURE_ASCII_STRING.matcher(test).matches();
         // assure we really only A-Z and numbers in it
-        result = result && (test.replaceAll("[^a-zA-Z0-9]", "").length() == test.length());
+        result = result && (test.replaceAll("[^a-zA-Z0-9-+.!_\\s]", "").length() == test.length());
 
 		return result;
 	}
