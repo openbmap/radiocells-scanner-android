@@ -18,18 +18,18 @@
 
 package org.openbmap.utils;
 
-import java.io.File;
-
 import android.content.Context;
 import android.media.MediaScannerConnection;
 import android.media.MediaScannerConnection.MediaScannerConnectionClient;
 import android.net.Uri;
 
+import java.io.File;
+
 /**
  * Rescans given folder to refresh MTP cache
  * Otherwise files won't show up when connected to desktop pc
  * with Android > HONEYCOMB
- * @see http://code.google.com/p/android/issues/detail?id=38282
+ * @link http://code.google.com/p/android/issues/detail?id=38282
  *
  */
 public class MediaScanner implements MediaScannerConnectionClient {
