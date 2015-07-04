@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <CheckBoxPreference
+        android:key="ignore_battery"
+        android:summary="@string/prefs_ignore_battery_summary"
+        android:title="@string/prefs_ignore_battery_title"
+        />
+
+    <PreferenceCategory android:title="@string/prefs_privacy" >
+        <Preference
+            android:key="privacy.block_homezone"
+            android:summary="@string/prefs_block_homezone_summary"
+            android:title="@string/prefs_block_homezone_title" >
+        </Preference>
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="privacy.anonymise_ssid"
+            android:summary="@string/prefs_anonymise_ssid_summary"
+            android:title="@string/prefs_anonymise_ssid" >
+        </CheckBoxPreference>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/prefs_folder_settings"
+        android:icon="@drawable/ic_sd_card">
+        <Preference
+            android:defaultValue="/org.openbmap/maps"
+            android:dialogTitle="@string/prefs_map_folder"
+            android:key="data.folder_map"
+            android:summary="@string/prefs_data_map_folder_summary"
+            android:title="@string/prefs_map_folder" />
+        <Preference
+            android:defaultValue="/org.openbmap/databases"
+            android:dialogTitle="@string/prefs_wifi_catalog_folder"
+            android:key="data.folder_catalog"
+            android:summary="@string/prefs_wifi_catalog_folder_summary"
+            android:title="@string/prefs_wifi_catalog_folder" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/prefs_debug">
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="debug.simulate_upload"
+            android:summary="@string/prefs_simulate_upload_summary"
+            android:title="@string/prefs_simulate_upload"/>
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="debug.keep_export_files"
+            android:summary="@string/prefs_keep_export_files_summary"
+            android:title="@string/prefs_keep_export_files"/>
+
+        <Preference
+            android:key="debug.clean_database"
+            android:summary="@string/prefs_clean_database_summary"
+            android:title="@string/prefs_clean_database_title"/>
+        
+        <Preference
+            android:key="debug.update_catalog"
+            android:summary="@string/prefs_update_catalog_summary"
+            android:title="@string/prefs_update_catalog" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

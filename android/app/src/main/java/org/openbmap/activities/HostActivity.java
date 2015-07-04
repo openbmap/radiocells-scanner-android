@@ -134,14 +134,20 @@ public class HostActivity extends ActionBarActivity {
 
 			if (Intent.ACTION_BATTERY_LOW.equals(intent.getAction())) {
 				Log.d(TAG, "ACTION_BATTERY_LOW received");
-				Toast.makeText(context, getString(R.string.battery_warning), Toast.LENGTH_LONG).show();
-				updateSessionStats();
-				// invalidates active track
-				closeActiveSession();
-				// stops background services
-				stopServices();
+				final boolean ignoreBattery = mPrefs.getBoolean(Preferences.KEY_IGNORE_BATTERY, Preferences.VAL_IGNORE_BATTERY);
+				if (!ignoreBattery) {
+					Toast.makeText(context, getString(R.string.battery_warning), Toast.LENGTH_LONG).show();
+					updateSessionStats();
+					// invalidates active track
+					closeActiveSession();
+					// stops background services
+					stopServices();
 
-				HostActivity.this.finish();
+					HostActivity.this.finish();
+				} else {
+					Log.i(HostActivity.TAG, "Battery low but ignoring due to settings");
+				}
+
 			}
 		}
 	};

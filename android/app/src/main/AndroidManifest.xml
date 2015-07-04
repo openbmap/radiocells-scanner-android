@@ -5,8 +5,8 @@
     android:versionName="0.8.8" >
 
     <uses-sdk
-        android:minSdkVersion="8"
-        android:targetSdkVersion="11" />
+        android:minSdkVersion="9"
+        android:targetSdkVersion="19" />
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -85,6 +85,10 @@
             android:label="Preferences" >
         </activity>
         <activity
+            android:name="org.openbmap.activities.AdvancedSettingsActivity"
+            android:label="@string/advanced_settings" >
+        </activity>
+        <activity
             android:name="org.openbmap.activities.CreditsActivity"
             android:label="Credits" >
         </activity>
@@ -96,9 +100,11 @@
                 <action android:name=".intent.GPS_SERVICE" />
             </intent-filter>
         </service>
-        <service android:name="org.openbmap.services.position.GpxLoggerService" >
+        <service
+            android:name="org.openbmap.services.position.GpxLoggerService" >
         </service>
-        <service android:name="org.openbmap.services.wireless.WirelessLoggerService" >
+        <service
+            android:name="org.openbmap.services.wireless.WirelessLoggerService" >
         </service>
 
         <provider

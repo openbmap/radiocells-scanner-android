@@ -17,16 +17,14 @@
 */
 package org.openbmap;
 
-import java.io.File;
-
 /**
  * Stores settings keys and default values.
  * See preferences.xml for layout, strings-preferences.xml for text.
  */
 public final class Preferences {
-	// Property names
-	public static final String KEY_GPS_OSSETTINGS = "gps.ossettings";
-	public static final String KEY_GPS_CHECKSTARTUP = "gps.checkstartup";
+	// 'Button id' Advanced settings
+	public static final String KEY_ADVANCED_SETTINGS = "advanced_settings";
+
 	public static final String KEY_GPS_LOGGING_INTERVAL = "gps.interval";
 	// TODO add support for external (e.g. bluetooth gps provider)
 	public static final String KEY_GPS_PROVIDER = "gps.provider";
@@ -112,7 +110,7 @@ public final class Preferences {
 	/**
 	 * Keep local temp files after upload?
 	 */
-	public static final String	KEY_SKIP_DELETE = "debug.keep_export_files";
+	public static final String KEY_SKIP_DELETE = "debug.keep_export_files";
 	
 	/**
 	 * Blocks wifi and cell scan around current location
@@ -123,11 +121,23 @@ public final class Preferences {
 	 * Replace SSIDS by md5 hash on upload
 	 */
 	public static final String KEY_ANONYMISE_SSID = "privacy.anonymise_ssid";
+
+    /**
+     * Ignore battery warnings
+     */
+    public static final String KEY_IGNORE_BATTERY = "ignore_battery";
+
 	/*
 	 * Default values following ..
 	 */
-	
-	/**
+
+    /**
+     * Default: stop tracking on low battery
+     */
+    public static final boolean VAL_IGNORE_BATTERY = false;
+
+
+    /**
 	 * No map set
 	 */
 	public static final String VAL_MAP_NONE = "none";
@@ -186,12 +196,7 @@ public final class Preferences {
 	 * Save wifis by default
 	 */
 	public static final boolean VAL_SAVE_WIFIS = true;
-	
-	/**
-	 * Check whether GPS is enabled by default
-	 */
-	public static final boolean VAL_GPS_CHECKSTARTUP = true;
-	
+
 	/**
 	 * GPS update frequence in seconds, 0 = update position as often as possible by default
 	 */
@@ -248,7 +253,7 @@ public final class Preferences {
 	 * old address: "http://www.openbmap.org/current_version.xml";
 	 */
 	public static final String	VERSION_CHECK_URL = "http://radiocells.org/uploads/version.xml";
-	
+
 	/**
 	 * Private dummy constructor
 	 */

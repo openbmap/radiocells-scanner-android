@@ -29,16 +29,16 @@
 		idle time
 	</string>
 	<string name="prefs_credentials">Credentials</string>
-	<string name="prefs_credentials_user">openbmap Login</string>
-	<string name="prefs_credentials_user_summary">openbmap Login</string>
-	<string name="prefs_credentials_password">openbmap Password</string>
-	<string name="prefs_credentials_password_summary">openbmap Password</string>
-	<string name="prefs_save_cells">Cell Logging</string>
-	<string name="prefs_save_cells_summary">Activate to scan for (GSM, UMTS, CDMA, ..) cells
+	<string name="prefs_credentials_user">Login</string>
+	<string name="prefs_credentials_user_summary">If you don\'t have an account yet, create on at http://radiocells.org (Required for upload only)</string>
+	<string name="prefs_credentials_password">Password</string>
+	<string name="prefs_credentials_password_summary"></string>
+	<string name="prefs_save_cells">Save Cells</string>
+	<string name="prefs_save_cells_summary">Activate to scan for cells
 	</string>
 	<string name="prefs_save_wifis_summary">Activate to scan for wifis</string>
-	<string name="prefs_save_wifis">Wifi Logging</string>
-	<string name="prefs_data_map">Select Map</string>
+	<string name="prefs_save_wifis">Save Wifis</string>
+	<string name="prefs_data_map">Offline map</string>
 	<string name="prefs_data_map_summary">If you don\'t have a map yet, select \'Download
 		map\'
 	</string>
@@ -60,8 +60,8 @@
 		meters)
 	</string>
 	<string name="prefs_req_gps_accuracy">Required GPS accuracy</string>
-	<string name="prefs_req_gps_accuracy_hint">If GPS accuracy (in meters) is worse than
-		threshold, logging will be skipped
+	<string name="prefs_req_gps_accuracy_hint">If GPS accuracy is worse than
+		threshold, scan results are discarded (in meters)
 	</string>
 	<string name="prefs_display_always_on">Screen always on</string>
 	<string name="prefs_display_always_on_summary">Screen will stay on while tracking. Disable to save battery
@@ -92,8 +92,8 @@
 		can also directly edit custom_location.xml on your SD-card
 	</string>
 	<string name="prefs_block_homezone_title">Don\'t scan my back-yard</string>
-	<string name="prefs_anonymise_ssid_summary">Replaces SSIDs in uploads with a MD5 value to
-		mitigate privacy issues (ssid \'John Does wifi\' would something like
+	<string name="prefs_anonymise_ssid_summary">Replaces SSIDs in uploads with a MD5 hash to
+		mitigate privacy issues (SSID \'John Does Wifi\' would become something like
 		\'FD33531\')
 	</string>
 	<string name="prefs_anonymise_ssid">Anonymise SSID in upload files</string>
@@ -293,4 +293,8 @@
 	<string name="gpx_export_failed">GPX export failed</string>
 	<string name="info_using_online_map">No offline map available. Using online map</string>
 	<string name="select_folder">Select folder</string>
+	<string name="advanced_settings">Advanced settings</string>
+	<string name="vacuuming">Vacuuming</string>
+	<string name="prefs_ignore_battery_summary">Continue scanning even with low battery (only recommended if you have external battery supply)</string>
+	<string name="prefs_ignore_battery_title">Ignore low battery</string>
 </resources>

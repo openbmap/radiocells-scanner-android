@@ -18,27 +18,6 @@
 
 package org.openbmap.activities;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-
-import org.openbmap.Preferences;
-import org.openbmap.R;
-import org.openbmap.RadioBeacon;
-import org.openbmap.utils.CurrentLocationHelper;
-import org.openbmap.utils.CurrentLocationHelper.LocationResult;
-import org.openbmap.utils.DirectoryChooserDialog;
-import org.openbmap.utils.FileUtils;
-import org.openbmap.utils.LegacyDownloader;
-import org.openbmap.utils.LegacyDownloader.LegacyDownloadListener;
-import org.openbmap.utils.MediaScanner;
-import org.openbmap.utils.VacuumCleaner;
-import org.openbmap.utils.WifiCatalogUpdater;
-
 import android.annotation.SuppressLint;
 import android.app.DownloadManager;
 import android.app.DownloadManager.Query;
@@ -47,23 +26,30 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
-import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
+
+import org.openbmap.Preferences;
+import org.openbmap.R;
+import org.openbmap.utils.FileUtils;
+import org.openbmap.utils.LegacyDownloader;
+import org.openbmap.utils.LegacyDownloader.LegacyDownloadListener;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * Preferences activity.
@@ -83,9 +69,6 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 
 		addPreferencesFromResource(R.xml.preferences);
 
-		initMapFolderControl();
-		initWifiCatalogFolderControl();
-
 		// with versions >= GINGERBREAD use download manager
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
 			initDownloadManager();
@@ -99,13 +82,10 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 		initActiveMapControl(PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_MAP_FOLDER,
 				this.getExternalFilesDir(null).getAbsolutePath() + Preferences.MAPS_SUBDIR));
 
-		initGpsSystemSettingsControl();
-		initCleanDatabaseControl();
-
-		initUpdateWifiCatalogControl();
-		initHomezoneBlockingControl();
 
 		initGpsLogIntervalControl();
+
+		initAdvancedSettingsButton();
 	}
 
 	/**
@@ -158,74 +138,14 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 	}
 
 	/**
-	 * Initializes gps system preference.
-	 * OnPreferenceClick system gps settings are displayed.
+	 * Starts advanced setting activity
 	 */
-	private void initGpsSystemSettingsControl() {
-		final Preference pref = findPreference(Preferences.KEY_GPS_OSSETTINGS);
+	private void initAdvancedSettingsButton() {
+		final Preference pref = findPreference(Preferences.KEY_ADVANCED_SETTINGS);
 		pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			@Override
 			public boolean onPreferenceClick(final Preference preference) {
-				startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-				return true;
-			}
-		});
-	}
-
-	/**
-	 * Blocks wifi and cell recording around current position
-	 */
-	private void initHomezoneBlockingControl() {
-		final Preference pref = findPreference(org.openbmap.Preferences.KEY_BLOCK_HOMEZONE);
-		pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-			@Override
-			public boolean onPreferenceClick(final Preference preference) {
-				final LocationResult locationResult = new LocationResult(){
-					@Override
-					public void gotLocation(final Location location){
-						final String blacklistPath = SettingsActivity.this.getExternalFilesDir(null).getAbsolutePath() + Preferences.BLACKLIST_SUBDIR;
-						final String filename = blacklistPath + File.separator + RadioBeacon.DEFAULT_LOCATION_BLOCK_FILE;
-						final String blocker = String.format("<ignorelist>"
-								+ "<location comment=\"homezone\">"
-								+ "<latitude>%s</latitude>"
-								+ "<longitude>%s</longitude>"
-								+ "<radius>550</radius>"
-								+ "</location>"
-								+ "</ignorelist>", location.getLatitude(), location.getLongitude());
-
-						final File folder = new File(filename.substring(1, filename.lastIndexOf(File.separator)));
-						boolean folderAccessible = false;
-						if (folder.exists() && folder.canWrite()) {
-							folderAccessible = true;
-						}
-
-						if (!folder.exists()) {
-							Log.i(TAG, "Folder missing: create " + folder.getAbsolutePath());
-							folderAccessible = folder.mkdirs();
-						}
-
-						if (folderAccessible) {
-							try {
-								final File file = new File(filename);
-								final BufferedWriter bw = new BufferedWriter(new FileWriter(file.getAbsoluteFile()));
-								bw.append(blocker);
-								bw.close();
-								Log.i(TAG, "Created default location blacklist");
-								Toast.makeText(SettingsActivity.this, getResources().getString(R.string.location_blacklist_saved), Toast.LENGTH_LONG).show();
-								new MediaScanner(SettingsActivity.this, folder);
-							} catch (final IOException e) {
-								Log.e(TAG, "Error writing blacklist");
-							} 
-						} else {
-							Log.e(TAG, "Folder not accessible: can't write blacklist");
-							Toast.makeText(SettingsActivity.this, getResources().getString(R.string.error_writing_location_blacklist), Toast.LENGTH_LONG).show();
-						}
-					}
-				};
-
-				final CurrentLocationHelper myLocation = new CurrentLocationHelper();
-				myLocation.getLocation(SettingsActivity.this, locationResult);
-
+				startActivity(new Intent(pref.getContext(), AdvancedSettingsActivity.class));
 				return true;
 			}
 		});
@@ -248,131 +168,6 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 				preference.setSummary(newValue
 						+ " " + getResources().getString(R.string.prefs_gps_logging_interval_seconds)
 						+ ". " + getResources().getString(R.string.prefs_gps_logging_interval_summary));
-				return true;
-			}
-		});
-	}
-
-	/**
-	 * Initializes data directory preference.
-	 * @return EditTextPreference with data directory.
-	 */
-	/*
-	private EditTextPreference initDataFolderControl() {
-		// External storage directory
-		EditTextPreference pref = (EditTextPreference) findPreference(Preferences.KEY_DATA_FOLDER);
-		pref.setSummary(PreferenceManager.getDefaultSharedPreferences(this).getString(org.openbmap.Preferences.KEY_DATA_FOLDER, org.openbmap.Preferences.VAL_DATA_FOLDER));
-		pref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-			@Override
-			public boolean onPreferenceChange(final Preference preference, final Object newValue) {
-				String pathName = "";
-
-				// Ensure there is always a leading slash
-				if (!((String) newValue).startsWith(File.separator)) {
-					pathName = File.separator + (String) newValue;
-				} else {
-					pathName = (String) newValue;
-				}
-
-				// try to create directory
-				File folder = new File(Environment.getExternalStorageDirectory() + pathName);
-				boolean success = true;
-				if (!folder.exists()) {
-					success = folder.mkdirs();
-				}
-				if (!success) {
-					Toast.makeText(getBaseContext(), R.string.error_create_directory_failed + pathName, Toast.LENGTH_LONG).show();
-					return false;
-				}
-
-				// Set summary with the directory value
-				preference.setSummary((String) pathName);
-
-				// Re-populate available maps
-				//initActiveMap((String) pathName); 
-
-				return true;
-			}
-		});
-		return pref;
-	}*/
-
-	/**
-	 * Initializes data directory preference.
-	 *
-	 * @return EditTextPreference with data directory.
-	 */
-	/* NEW VERSION
-    private void initDataFolderControl() {
-        Preference button = (Preference) findPreference(Preferences.KEY_DATA_FOLDER);
-        button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            private String mChosenDir = PreferenceManager.getDefaultSharedPreferences(SettingsActivity.this).getString(
-            		Preferences.KEY_DATA_FOLDER,
-                    SettingsActivity.this.getExternalFilesDir(null).getAbsolutePath());
-            private boolean mNewFolderEnabled = true;
-
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-
-                // Create DirectoryChooserDialog and register a callback
-                DirectoryChooserDialog directoryChooserDialog =
-                        new DirectoryChooserDialog(SettingsActivity.this, new DirectoryChooserDialog.ChosenDirectoryListener() {
-                                    @Override
-                                    public void onChosenDir(String chosenDir) {
-                                        mChosenDir = chosenDir;
-
-                                        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(SettingsActivity.this);
-                                        settings.edit().putString(Preferences.KEY_DATA_FOLDER, chosenDir).commit();
-
-                                        Toast.makeText(SettingsActivity.this, chosenDir, Toast.LENGTH_LONG).show();
-                                    }
-                                });
-                // Toggle new folder button enabling
-                directoryChooserDialog.setNewFolderEnabled(mNewFolderEnabled);
-                // Load directory chooser dialog for initial 'mChosenDir' directory.
-                // The registered callback will be called upon final directory selection.
-                directoryChooserDialog.chooseDirectory(mChosenDir);
-                mNewFolderEnabled = !mNewFolderEnabled;
-
-                // Set summary with the directory value
-				preference.setSummary((String) mChosenDir);
-                return true;
-            }
-        });
-    }
-	 */
-
-	/**
-	 * Initializes data directory preference.
-	 * @return EditTextPreference with data directory.
-	 */
-	private void initMapFolderControl() {
-		final Preference button = (Preference) findPreference(Preferences.KEY_MAP_FOLDER);
-		button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-			private String mChosenDir = PreferenceManager.getDefaultSharedPreferences(SettingsActivity.this).getString(Preferences.KEY_MAP_FOLDER,
-					SettingsActivity.this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.MAPS_SUBDIR);
-
-			private boolean mNewFolderEnabled = false;
-
-			@Override
-			public boolean onPreferenceClick(final Preference arg0) {
-
-				final DirectoryChooserDialog directoryChooserDialog =
-						new DirectoryChooserDialog(SettingsActivity.this, new DirectoryChooserDialog.ChosenDirectoryListener() {
-							@Override
-							public void onChosenDir(final String chosenDir) {
-								mChosenDir = chosenDir;
-								final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(SettingsActivity.this);
-								settings.edit().putString(Preferences.KEY_MAP_FOLDER, chosenDir).commit();
-								initActiveMapControl(chosenDir);
-								//Toast.makeText(SettingsActivity.this, chosenDir, Toast.LENGTH_LONG).show();
-							}
-						});
-
-				directoryChooserDialog.setNewFolderEnabled(mNewFolderEnabled);
-				directoryChooserDialog.chooseDirectory(mChosenDir);
-				mNewFolderEnabled = !mNewFolderEnabled;
-
 				return true;
 			}
 		});
@@ -552,43 +347,6 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 	}
 
 	/**
-	 * Initializes wifi catalog folder preference.
-	 * @return EditTextPreference with data directory.
-	 */
-	private void initWifiCatalogFolderControl() {
-		final Preference button = (Preference) findPreference(Preferences.KEY_WIFI_CATALOG_FOLDER);
-		button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-			private String mChosenDir = PreferenceManager.getDefaultSharedPreferences(SettingsActivity.this).getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
-					SettingsActivity.this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_SUBDIR);
-
-			private boolean mNewFolderEnabled = false;
-
-			@Override
-			public boolean onPreferenceClick(final Preference arg0) {
-
-				// Create DirectoryChooserDialog and register a callback
-				final DirectoryChooserDialog directoryChooserDialog =
-						new DirectoryChooserDialog(SettingsActivity.this, new DirectoryChooserDialog.ChosenDirectoryListener() {
-							@Override
-							public void onChosenDir(final String chosenDir) {
-								mChosenDir = chosenDir;
-								final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(SettingsActivity.this);
-								settings.edit().putString(Preferences.KEY_WIFI_CATALOG_FOLDER, chosenDir).commit();
-								initActiveWifiCatalogControl(chosenDir);
-								//Toast.makeText(SettingsActivity.this, chosenDir, Toast.LENGTH_LONG).show();
-							}
-						});
-
-				directoryChooserDialog.setNewFolderEnabled(mNewFolderEnabled);
-				directoryChooserDialog.chooseDirectory(mChosenDir);
-				mNewFolderEnabled = !mNewFolderEnabled;
-
-				return true;
-			}
-		});
-	}
-
-	/**
 	 * Initializes wifi catalog source preference
 	 */
 	@SuppressLint("NewApi")
@@ -748,35 +506,6 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 				lf.setValueIndex(i);
 			}
 		}
-	}
-
-	/**
-	 * Performs VACCUM ANALYZE on database
-	 */
-	private void initCleanDatabaseControl() {
-		final Preference pref = findPreference(Preferences.KEY_CLEAN_DATABASE);
-		pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-			@Override
-			public boolean onPreferenceClick(final Preference preference) {
-				new VacuumCleaner(SettingsActivity.this).execute(new Void[]{null});
-				return true;
-			}
-		});
-	}
-
-	/**
-	 * Updates wifi catalog with new local wifis
-	 */
-	private void initUpdateWifiCatalogControl() {
-		final Preference pref = findPreference(Preferences.KEY_UPDATE_CATALOG);
-		pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-			@Override
-			public boolean onPreferenceClick(final Preference preference) {
-				Toast.makeText(SettingsActivity.this, R.string.synchronizing, Toast.LENGTH_LONG).show();
-				new WifiCatalogUpdater(SettingsActivity.this).execute(new Void[]{null});
-				return true;
-			}
-		});
 	}
 
 	/**
