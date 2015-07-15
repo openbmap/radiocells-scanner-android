@@ -60,6 +60,16 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 
 	private DownloadManager mDownloadManager;
 
+    /*
+     * Id of the active catalog download or -1 if no active download
+     */
+	private long currentCatalogDownloadId = -1;
+
+    /*
+     * Id of the active map download or -1 if no active download
+     */
+	private long currentMapDownloadId = -1;
+
 	private BroadcastReceiver mReceiver = null; 
 
 	@SuppressLint("NewApi")
@@ -143,12 +153,12 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 	private void initAdvancedSettingsButton() {
 		final Preference pref = findPreference(Preferences.KEY_ADVANCED_SETTINGS);
 		pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-			@Override
-			public boolean onPreferenceClick(final Preference preference) {
-				startActivity(new Intent(pref.getContext(), AdvancedSettingsActivity.class));
-				return true;
-			}
-		});
+            @Override
+            public boolean onPreferenceClick(final Preference preference) {
+                startActivity(new Intent(pref.getContext(), AdvancedSettingsActivity.class));
+                return true;
+            }
+        });
 	}
 
 	/**
@@ -158,19 +168,19 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 		// Update GPS logging interval summary to the current value
 		final Preference pref = findPreference(org.openbmap.Preferences.KEY_GPS_LOGGING_INTERVAL);
 		pref.setSummary(
-				PreferenceManager.getDefaultSharedPreferences(this).getString(org.openbmap.Preferences.KEY_GPS_LOGGING_INTERVAL, org.openbmap.Preferences.VAL_GPS_LOGGING_INTERVAL)
-				+ " " + getResources().getString(R.string.prefs_gps_logging_interval_seconds)
-				+ ". " + getResources().getString(R.string.prefs_gps_logging_interval_summary));
+                PreferenceManager.getDefaultSharedPreferences(this).getString(org.openbmap.Preferences.KEY_GPS_LOGGING_INTERVAL, org.openbmap.Preferences.VAL_GPS_LOGGING_INTERVAL)
+                        + " " + getResources().getString(R.string.prefs_gps_logging_interval_seconds)
+                        + ". " + getResources().getString(R.string.prefs_gps_logging_interval_summary));
 		pref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-			@Override
-			public boolean onPreferenceChange(final Preference preference, final Object newValue) {
-				// Set summary with the interval and "seconds"
-				preference.setSummary(newValue
-						+ " " + getResources().getString(R.string.prefs_gps_logging_interval_seconds)
-						+ ". " + getResources().getString(R.string.prefs_gps_logging_interval_summary));
-				return true;
-			}
-		});
+            @Override
+            public boolean onPreferenceChange(final Preference preference, final Object newValue) {
+                // Set summary with the interval and "seconds"
+                preference.setSummary(newValue
+                        + " " + getResources().getString(R.string.prefs_gps_logging_interval_seconds)
+                        + ". " + getResources().getString(R.string.prefs_gps_logging_interval_summary));
+                return true;
+            }
+        });
 	}
 
 	/**
@@ -193,6 +203,10 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 			lf.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
 				@SuppressLint("NewApi")
 				public boolean onPreferenceChange(final Preference preference, final Object newValue) {
+                    if (currentMapDownloadId > -1) {
+                        Toast.makeText(SettingsActivity.this, getString(R.string.other_download_active), Toast.LENGTH_LONG).show();
+                        return true;
+                    }
 
 					// try to create directory
 					final File folder = new File(PreferenceManager.getDefaultSharedPreferences(SettingsActivity.this).getString(
@@ -221,7 +235,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 							// e.g. on second SD card a security exception is thrown
 							final Request request = new Request(Uri.parse(newValue.toString()));
 							request.setDestinationUri(Uri.fromFile(target));
-							final long mapDownloadId = mDownloadManager.enqueue(request);
+							currentMapDownloadId = mDownloadManager.enqueue(request);
 						} catch (final SecurityException sec) {
 							// download to temp dir and try to move to target later
 							Log.w(TAG, "Security exception, can't write to " + target + ", using " + SettingsActivity.this.getExternalCacheDir());
@@ -229,7 +243,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 
 							final Request request = new Request(Uri.parse(newValue.toString()));
 							request.setDestinationUri(Uri.fromFile(tempFile));
-							mDownloadManager.enqueue(request);
+							currentMapDownloadId = mDownloadManager.enqueue(request);
 						}
 					} else {
 						Toast.makeText(preference.getContext(), R.string.error_save_file_failed, Toast.LENGTH_SHORT).show();
@@ -357,6 +371,10 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 			pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 				@Override
 				public boolean onPreferenceClick(final Preference preference) {
+                    if (currentCatalogDownloadId > -1) {
+                        Toast.makeText(SettingsActivity.this, getString(R.string.other_download_active), Toast.LENGTH_LONG).show();
+                        return true;
+                    }
 					// try to create directory		
 					final File folder = new File(PreferenceManager.getDefaultSharedPreferences(SettingsActivity.this).getString(
 							Preferences.KEY_WIFI_CATALOG_FOLDER,
@@ -383,7 +401,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 							final Request request = new Request(
 									Uri.parse(Preferences.WIFI_CATALOG_DOWNLOAD_URL));
 							request.setDestinationUri(Uri.fromFile(target));
-							final long catalogDownloadId = mDownloadManager.enqueue(request);
+							currentCatalogDownloadId = mDownloadManager.enqueue(request);
 						} catch (final SecurityException sec) {
 							// download to temp dir and try to move to target later
 							Log.w(TAG, "Security exception, can't write to " + target + ", using " + SettingsActivity.this.getExternalCacheDir() 
@@ -522,6 +540,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 		file = file.replace("file://", "");
 
 		if (extension.equals(org.openbmap.Preferences.MAP_FILE_EXTENSION)) {
+			currentMapDownloadId = -1;
 			final String mapFolder = PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_MAP_FOLDER,
 					SettingsActivity.this.getExternalFilesDir(null).getAbsolutePath() + Preferences.MAPS_SUBDIR);
 			if (file.indexOf(SettingsActivity.this.getExternalCacheDir().getPath()) > - 1 ) {
@@ -533,6 +552,7 @@ public class SettingsActivity extends PreferenceActivity implements LegacyDownlo
 			// handling map files
 			activateMap(file);
 		} else if (extension.equals(org.openbmap.Preferences.WIFI_CATALOG_FILE_EXTENSION)) {
+			currentCatalogDownloadId = -1;
 			final String catalogFolder = PreferenceManager.getDefaultSharedPreferences(this).getString(
 					Preferences.KEY_WIFI_CATALOG_FOLDER,
 					SettingsActivity.this.getExternalFilesDir(null).getAbsolutePath() + Preferences.WIFI_CATALOG_SUBDIR);
