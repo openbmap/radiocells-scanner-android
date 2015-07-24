@@ -18,8 +18,23 @@
 
 package org.openbmap.activities;
 
-import java.io.IOException;
-import java.util.ArrayList;
+import android.annotation.SuppressLint;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+import android.widget.Toast;
 
 import org.mapsforge.core.model.BoundingBox;
 import org.mapsforge.core.model.LatLong;
@@ -47,23 +62,8 @@ import org.openbmap.heatmap.HeatmapBuilder;
 import org.openbmap.heatmap.HeatmapBuilder.HeatmapBuilderListener;
 import org.openbmap.utils.MapUtils;
 
-import android.annotation.SuppressLint;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.os.Build;
-import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
-import android.view.ViewTreeObserver.OnGlobalLayoutListener;
-import android.widget.Toast;
+import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Fragment for displaying cell detail information
@@ -152,6 +152,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	
 	@Override
 	public final void onResume() {
+		super.onResume();
 		if (mapDownloadLayer != null) {
 			mapDownloadLayer.onResume();
 		}
@@ -162,6 +163,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 		if (mapDownloadLayer != null) {
 			mapDownloadLayer.onResume();
 		}
+		super.onPause();
 	}
 	
 	@Override
