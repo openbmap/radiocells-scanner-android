@@ -57,13 +57,13 @@ import java.util.Locale;
 public class StartscreenActivity extends ActionBarActivity
 implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, UploadTaskListener, ExportGpxTaskListener {
 
+	private static final String TAG = StartscreenActivity.class.getSimpleName();
+
 	/**
 	 * 
 	 */
 	private static final String UPLOAD_TASK = "upload_task";
 	private static final String EXPORT_GPX_TASK = "export_gpx_task";
-
-	private static final String TAG = StartscreenActivity.class.getSimpleName();
 
 	private static final String	WIFILOCK_NAME	= "UploadLock";
 
@@ -94,7 +94,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	/**
 	 * Wifi lock, used while exporting
 	 */
-	private WifiLock wifiLock;
+	private WifiLock mWifiLock;
 
 	/**
 	 * Persistent fragment saving upload task across activity re-creation
@@ -198,8 +198,6 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	@Override
 	public final void onResume() {
 		super.onResume();
-
-		createWifiLock();
 
 		// force an fragment refresh
 		reloadListFragment();
@@ -366,7 +364,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 */
 	@Override
 	public final void deleteAllCommand() {
-		AlertDialogUtils.newInstance(ID_DELETE_ALL, 
+		AlertDialogUtils.newInstance(ID_DELETE_ALL,
 				getResources().getString(R.string.dialog_delete_all_sessions_title), getResources().getString(R.string.dialog_delete_all_sessions_message),
 				null, false).show(getSupportFragmentManager(), "delete_all");
 	}
@@ -676,34 +674,6 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * Creates or restores a progress dialogs
 	 * This dialog is not shown until calling showExportDialog() explicitly
 	 * @param newDialog
-	 * 
-	 */
-	private void initUploadTaskDialog(final boolean newDialog) {
-		if (newDialog) {
-			mUploadProgress = new ProgressDialog(this);
-			mUploadProgress.setCancelable(false);
-			mUploadProgress.setIndeterminate(true);
-
-			final String defaultTitle = getResources().getString(R.string.preparing_export);
-			final String defaultMessage = getResources().getString(R.string.please_stay_patient);
-			mUploadProgress.setTitle(defaultTitle);
-			mUploadProgress.setMessage(defaultMessage);
-
-			mUploadTaskFragment.retainProgress(defaultTitle, defaultMessage, (int) mUploadProgress.getProgress());	
-		} else {
-			mUploadProgress = new ProgressDialog(this);
-			mUploadProgress.setCancelable(false);
-			mUploadProgress.setIndeterminate(true);
-
-			mUploadTaskFragment.restoreProgress(mUploadProgress);
-		}
-	}
-
-	/**
-	 * Creates or restores a progress dialogs
-	 * This dialog is not shown until calling showExportDialog() explicitly
-	 * @param newDialog
-	 * 
 	 */
 	private void initExportGpxTaskDialog(final boolean newDialog) {
 		if (newDialog) {
@@ -727,23 +697,6 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	}
 
 	/**
-	 * Opens upload dialog, if any
-	 */
-	private void showUploadTaskDialog() {
-		if (mUploadProgress == null) {
-			throw new IllegalArgumentException("Export progress dialog must not be null");
-		}
-
-		if (mUploadTaskFragment.isExecuting()) {
-			mUploadTaskFragment.restoreProgress(mUploadProgress);
-
-			if (!mUploadProgress.isShowing()) {
-				mUploadProgress.show();
-			}
-		}
-	}
-
-	/**
 	 * Opens export gpx dialog, if any
 	 */
 	private void showExportGpxTaskDialog() {
@@ -761,7 +714,51 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	}
 
 	/**
-	 * Closes export dialog
+	 * Creates or restores a progress dialogs
+	 * This dialog is not shown until calling showExportDialog() explicitly
+	 * @param newDialog
+	 *
+	 */
+	private void initUploadTaskDialog(final boolean newDialog) {
+		if (newDialog) {
+			mUploadProgress = new ProgressDialog(this);
+			mUploadProgress.setCancelable(false);
+			mUploadProgress.setIndeterminate(true);
+
+			final String defaultTitle = getResources().getString(R.string.preparing_export);
+			final String defaultMessage = getResources().getString(R.string.please_stay_patient);
+			mUploadProgress.setTitle(defaultTitle);
+			mUploadProgress.setMessage(defaultMessage);
+
+			mUploadTaskFragment.retainProgress(defaultTitle, defaultMessage, (int) mUploadProgress.getProgress());
+		} else {
+			mUploadProgress = new ProgressDialog(this);
+			mUploadProgress.setCancelable(false);
+			mUploadProgress.setIndeterminate(true);
+
+			mUploadTaskFragment.restoreProgress(mUploadProgress);
+		}
+	}
+
+	/**
+	 * Opens upload dialog, if any
+	 */
+	private void showUploadTaskDialog() {
+		if (mUploadProgress == null) {
+			throw new IllegalArgumentException("Export progress dialog must not be null");
+		}
+
+		if (mUploadTaskFragment.isExecuting()) {
+			mUploadTaskFragment.restoreProgress(mUploadProgress);
+
+			if (!mUploadProgress.isShowing()) {
+				mUploadProgress.show();
+			}
+		}
+	}
+
+	/**
+	 * Closes upload dialog
 	 */
 	private void hideUploadTaskDialog() {
 		if (mUploadProgress != null) {
@@ -770,30 +767,26 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	}
 
 	/**
-	 * Creates a new wifi lock, which isn't yet acquired
-	 */
-	private void createWifiLock() {
-		// create wifi lock (will be acquired for version check/upload)
-		final WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
-		if (wifiManager != null) {
-			wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL, WIFILOCK_NAME);
-		} else {
-			Log.e(TAG, "Error acquiring wifi lock");
-		}
-	}
-
-	/**
-	 * Acquires wifi lock
+	 * Prevent Wi-Fi sleep by acquiring a wifi lock
 	 */
 	private void acquireWifiLock() {
-		if (wifiLock == null) {
-			Log.w(TAG, "Wifilock not found. Skipping acquisition..");
+		if (mWifiLock == null) {
+			final WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+			if (wifiManager != null) {
+				mWifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL, WIFILOCK_NAME);
+			} else {
+				Log.e(TAG, "Error acquiring wifi lock");
+			}
+		}
+
+		if (mWifiLock == null) {
+			Log.w(TAG, "WifiLock not found. Skipping acquisition..");
 			return;
 		}
-		if (!wifiLock.isHeld()) {
-			wifiLock.acquire();
+		if (!mWifiLock.isHeld()) {
+			mWifiLock.acquire();
 		} else {
-			Log.i(TAG, "Wifilock is hold already. Skipping acquisition..");
+			Log.i(TAG, "WifiLock is hold already. Skipping acquisition..");
 		}
 	}
 
@@ -801,21 +794,22 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * Releases previously acquired wifi lock
 	 */
 	private void releaseWifiLock() {
-		if (wifiLock != null && wifiLock.isHeld()) {
-			wifiLock.release();
+		if (mWifiLock != null && mWifiLock.isHeld()) {
+			mWifiLock.release();
+			mWifiLock = null;
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openbmap.soapclient.ExportGpxTask.ExportGpxTaskListener#onExportGpxCompleted(int)
+	/*
+	 * Fired once gpx export task has finished
 	 */
 	@Override
 	public void onExportGpxCompleted(final int id) {
 		Log.i(TAG, "GPX export completed");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openbmap.soapclient.ExportGpxTask.ExportGpxTaskListener#onExportGpxFailed(int, java.lang.String)
+	/*
+	 * Fired once gpx export task has failed
 	 */
 	@Override
 	public void onExportGpxFailed(final int id, final String error) {
