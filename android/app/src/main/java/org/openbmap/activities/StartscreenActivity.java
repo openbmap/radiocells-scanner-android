@@ -449,9 +449,9 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * @param id Session id
 	 * @return true if session has been uploaded or doesn't exist
 	 */
-	private boolean hasBeenUploaded(final int Id) {
+	private boolean hasBeenUploaded(final int id) {
 		final DataHelper dataHelper = new DataHelper(this);
-		final Session session = dataHelper.loadSession(Id);
+		final Session session = dataHelper.loadSession(id);
 
 		if (session != null) {
 			return session.hasBeenExported();

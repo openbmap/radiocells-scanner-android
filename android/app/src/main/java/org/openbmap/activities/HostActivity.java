@@ -342,21 +342,6 @@ public class HostActivity extends ActionBarActivity {
 	@Override
 	public final boolean onOptionsItemSelected(final MenuItem item) {
 		switch (item.getItemId()) {
-			/*
-			case R.id.menu_starttracking:
-				// kill previous session
-				stopServices();
-
-				requestPosition(PositioningService.State.GPS);
-				requestWirelessTracking();
-				requestGpxTracking();
-				startNotification();
-				break;
-			case R.id.menu_pausetracking:
-				updateSessionStats();
-				requestPause();
-				stopNotifyBackgroundService();
-				break;*/
 			case R.id.menu_stoptracking:
 				updateSessionStats();
 				closeActiveSession();
@@ -655,7 +640,6 @@ public class HostActivity extends ActionBarActivity {
 
 		resume.isActive(true);
 		mDataHelper.storeSession(resume, true);
-
 	}
 
 	/**

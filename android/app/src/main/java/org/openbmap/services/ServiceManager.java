@@ -18,11 +18,6 @@
 
 package org.openbmap.services;
 
-import java.lang.ref.WeakReference;
-
-import org.openbmap.RadioBeacon;
-
-
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.content.ComponentName;
@@ -35,6 +30,10 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
+
+import org.openbmap.RadioBeacon;
+
+import java.lang.ref.WeakReference;
 
 public class ServiceManager {
 
@@ -79,7 +78,6 @@ public class ServiceManager {
 	}
 
 	private final ServiceConnection mConnection = new ServiceConnection() {
-
 		/*
 		 * (non-Javadoc)
 		 * @see android.content.ServiceConnection#onServiceConnected(android.content.ComponentName, android.os.IBinder)
