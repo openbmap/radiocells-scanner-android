@@ -25,6 +25,8 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Matrix;
 import android.location.Location;
+import android.media.AudioManager;
+import android.media.ToneGenerator;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -1075,6 +1077,10 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 
 		// so far we set end position = begin position 
 		mDataHelper.storePosition(pos);
+
+        // beep once point has been saved
+		ToneGenerator toneG = new ToneGenerator(AudioManager.STREAM_ALARM, 100);
+		toneG.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 200);
 	}
 
 }
