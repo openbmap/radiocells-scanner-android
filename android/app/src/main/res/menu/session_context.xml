@@ -29,7 +29,7 @@
     <item
         android:id="@+id/menu_delete_all_sessions"
         android:icon="@android:drawable/ic_notification_clear_all"
-        app:showAsAction="ifRoom"
+        app:showAsAction="never"
         android:title="@string/delete_all">
     </item>
     <item
