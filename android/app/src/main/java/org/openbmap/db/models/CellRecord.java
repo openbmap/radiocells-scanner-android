@@ -18,15 +18,15 @@
 
 package org.openbmap.db.models;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.openbmap.RadioBeacon;
-
 import android.annotation.SuppressLint;
 import android.os.Build;
 import android.telephony.TelephonyManager;
+
+import org.openbmap.RadioBeacon;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Model for gsm, umts and cdma records
@@ -93,7 +93,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	/**
 	 * GSM location area code, -1 if unknown, 0xffff max legal value 
 	 */
-	private int mLac;
+    private int mArea;
 
 	/**
 	 * Primary scrambling code, -1 if in GSM mode
@@ -136,10 +136,10 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 		setSessionId(session);
 
 		setLogicalCellId(-1);
-		setLac(-1);
-		setUtranRnc(-1);
-		setActualCid(-1);
-		setPsc(-1);
+        setArea(-1);
+        setUtranRnc(-1);
+        setActualCid(-1);
+        setPsc(-1);
 		setSystemId("-1");
 		setNetworkId("-1");
 		setBaseId("-1");
@@ -150,14 +150,12 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	/**
 	 * used for contains method
 	 */
-	public final boolean equals(final Object aCell) {
-		CellRecord oneCell = (CellRecord) aCell;
-
-		return (getMcc().equals(oneCell.getMcc()))
-				&& (getMnc().equals(oneCell.getMnc()))
-				&& (getLac() == oneCell.getLac())
-				&& (getLogicalCellId() == oneCell.getLogicalCellId());
-	}
+    public final boolean equals(final CellRecord arg) {
+        return (getMcc().equals(arg.getMcc()))
+                && (getMnc().equals(arg.getMnc()))
+                && (getArea() == arg.getArea())
+                && (getLogicalCellId() == arg.getLogicalCellId());
+    }
 
 	public final int getSessionId() {
 		return mSessionId;
@@ -169,9 +167,9 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 
 	@Override
 	public final String toString() {
-		return "Cell " + mLogicalCellId + " / Operator " + mOperatorName + ", " + mOperator + " / MCC " + mMcc + " / MNC " +  mMnc 
-				+ " / Type " + mNetworkType + " / LAC " + mLac + " / PSc " + mPsc + " / dbm " + mStrengthdBm + " / Session Id " + mSessionId;
-	}
+        return "Cell " + mLogicalCellId + " / Operator " + mOperatorName + ", " + mOperator + " / MCC " + mMcc + " / MNC " + mMnc
+                + " / Type " + mNetworkType + " / LAC " + mArea + " / PSc " + mPsc + " / dbm " + mStrengthdBm + " / Session Id " + mSessionId;
+    }
 
 	@Override
 	public final int compareTo(final CellRecord aCell) {
@@ -223,9 +221,9 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 
 	/**
 	 * Returns cell id as returned by android.telephony.gsmlocation.getCid(). Be careful: by default this is the LCID)
-	 * @return
-	 */
-	public final int getLogicalCellId() {
+     * @return logical cell id
+     */
+    public final int getLogicalCellId() {
 		return mLogicalCellId;
 	}
 	
@@ -239,7 +237,6 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	
 	/**
 	 * For GSM networks equals cell id; for UMTS and other UTRAN networks this is the actual cell id (as opposed to lcid)
-	 * @param cid
 	 */
 	public final int getActualCellId() {
 		return mActualCellId;
@@ -249,9 +246,9 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	 * On GSM networks equals cell id;
 	 * On UMTS and other UTRAN networks this is the actual cell id (as opposed to lcid)
 	 * On LTE this is the physical cell id
-	 * 
-	 * @param actualCellId
-	 */
+	 *
+     * @param actualCellId Actual cell id
+     */
 	public final void setActualCid(final int actualCellId) {
 		this.mActualCellId = actualCellId;
 	}
@@ -263,25 +260,26 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	public final void setUtranRnc(final int utranRncId) {
 		this.mUtranRncId = utranRncId;
 	}
+
 	/**
 	 * Gets location area code
 	 * @return location area code
 	 */
-	public final int getLac() {
-		return mLac;
-	}
+    public final int getArea() {
+        return mArea;
+    }
 
 	/**
 	 * Sets location area code
-	 * @param lac 
-	 * 		On GSM networks this is set to location area code
-	 *		On LTE networks this is set to TAC (tracking area)
-	 *  	-1 if unknown,
+     * @param area
+     * 		On GSM networks this is set to location area code
+     *		On LTE networks this is set to TAC (tracking area)
+     *  	-1 if unknown,
 	 *		0xffff max legal value
 	 */
-	public final void setLac(final int lac) {
-		this.mLac = lac;
-	}
+    public final void setArea(final int area) {
+        this.mArea = area;
+    }
 
 	public final int getPsc() {
 		return mPsc;
@@ -360,10 +358,11 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	}
 
 	/**
-	 * @see http://sourceforge.net/apps/mediawiki/myposition/index.php?title=Log_format
-	 * @return 
-	 */
-	@SuppressLint("InlinedApi")
+     * Returns human readable technology name
+     * @link https://radiocells.org/default/wiki/cell-format
+     * @return technology name
+     */
+    @SuppressLint("InlinedApi")
 	public static Map<Integer, String> TECHNOLOGY_MAP() {
 		Map<Integer, String> result = new HashMap<Integer, String>();
 		result.put(TelephonyManager.NETWORK_TYPE_UNKNOWN, "NA");
