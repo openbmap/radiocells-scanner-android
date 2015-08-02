@@ -18,21 +18,20 @@
 
 package org.openbmap.utils;
 
-import java.io.File;
-import java.util.ArrayList;
-
-import org.mapsforge.core.model.LatLong;
-import org.openbmap.Preferences;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
+
+import org.mapsforge.core.model.LatLong;
+import org.openbmap.Preferences;
+
+import java.io.File;
+import java.util.ArrayList;
 
 /**
  * Loads reference wifis asynchronously.
@@ -78,7 +77,7 @@ public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayLi
 	/**
 	 * Database containing well-known wifis from openbmap.org.
 	 */
-	private SQLiteDatabase mRefdb;
+	private SQLiteDatabase mCatalog;
 
 	private OnCatalogLoadedListener mListener;
 	private final Context mContext;
@@ -118,12 +117,12 @@ public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayLi
 			final String file = mPrefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
 					mContext.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_SUBDIR)
 					+ File.separator + mPrefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_WIFI_CATALOG_FILE);
-			mRefdb = SQLiteDatabase.openDatabase(file, null, SQLiteDatabase.OPEN_READONLY);
+			mCatalog = SQLiteDatabase.openDatabase(file, null, SQLiteDatabase.OPEN_READONLY);
 
 			Cursor refs = null;
 			if (!GROUP_WIFIS) {
 				// Option 1: Full precision 
-				refs = mRefdb.rawQuery("SELECT _id, latitude as grouped_lat, longitude as grouped_lon FROM wifi_zone WHERE "
+				refs = mCatalog.rawQuery("SELECT _id, latitude as grouped_lat, longitude as grouped_lon FROM wifi_zone WHERE "
 						+ "(latitude > ? AND latitude < ? AND longitude > ? AND longitude < ?)", 
 						// TODO this probably fails around 0 meridian
 						new String[] {
@@ -134,7 +133,7 @@ public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayLi
 						);
 			} else {
 				// Option 2 (default): Group in 10m intervals for performance reasons
-				refs = mRefdb.rawQuery("SELECT round(latitude,4) as grouped_lat, round(longitude,4) as grouped_lon FROM wifi_zone WHERE "
+				refs = mCatalog.rawQuery("SELECT round(latitude,4) as grouped_lat, round(longitude,4) as grouped_lon FROM wifi_zone WHERE "
 						+ "(latitude > ? AND latitude < ? AND longitude > ? AND longitude < ?) GROUP BY grouped_lat, grouped_lon", 
 						// TODO this probably fails around 0 meridian
 						new String[] {
@@ -160,8 +159,8 @@ public class WifiCatalogMapObjectsLoader extends AsyncTask<Object, Void, ArrayLi
 		} catch (final Exception e) {
 			e.printStackTrace();
 		} finally {
-			if (mRefdb != null) {
-				mRefdb.close();	
+			if (mCatalog != null) {
+				mCatalog.close();
 			}
 		}
 

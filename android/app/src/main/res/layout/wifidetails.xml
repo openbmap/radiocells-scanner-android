@@ -21,6 +21,27 @@
                 android:text="@string/ssid"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
         </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="0dip"
+                android:layout_weight="0.35"
+                android:layout_height="wrap_content"
+                android:text="Manufactor" />
+
+            <TextView
+                android:id="@+id/wifidetails_manufactor"
+                android:layout_width="0dip"
+                android:layout_weight="0.65"
+                android:layout_height="wrap_content"
+                android:text="@string/n_a"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+        </TableRow>
+
         <TableRow>
             <TextView
                 android:id="@+id/textView3"

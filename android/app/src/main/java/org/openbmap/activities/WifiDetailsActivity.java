@@ -18,8 +18,16 @@
 
 package org.openbmap.activities;
 
-import java.util.ArrayList;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentActivity;
+import android.widget.ImageView;
+import android.widget.TextView;
 
+import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.Schema;
@@ -27,10 +35,8 @@ import org.openbmap.db.models.WifiChannel;
 import org.openbmap.db.models.WifiRecord;
 import org.openbmap.db.models.WifiRecord.CatalogStatus;
 
-import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
-import android.widget.ImageView;
-import android.widget.TextView;
+import java.io.File;
+import java.util.ArrayList;
 
 /**
  * Parent activity for hosting wifi detail fragment
@@ -43,6 +49,7 @@ public class WifiDetailsActivity extends FragmentActivity {
 	private TextView tvCapabilities;
 	private TextView tvFrequency;
 	private TextView tvNoMeasurements;
+    private TextView tvManufactor;
 	private ImageView ivIsNew;
 	
 	private WifiRecord	mWifi;
@@ -79,6 +86,7 @@ public class WifiDetailsActivity extends FragmentActivity {
 		tvCapabilities = (TextView) findViewById(R.id.wifidetails_capa);
 		tvFrequency = (TextView) findViewById(R.id.wifidetails_freq);
 		tvNoMeasurements = (TextView) findViewById(R.id.wifidetails_no_measurements);
+        tvManufactor = (TextView) findViewById(R.id.wifidetails_manufactor);
 		ivIsNew = (ImageView) findViewById(R.id.wifidetails_is_new);
 	}
 
@@ -100,6 +108,29 @@ public class WifiDetailsActivity extends FragmentActivity {
 	 * 
 	 */
 	private void displayRecord(final WifiRecord wifi) {
+
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        if (!prefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_WIFI_CATALOG_NONE).equals(Preferences.VAL_WIFI_CATALOG_NONE)) {
+            // Open catalog database
+            final String file = prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
+                    this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_SUBDIR)
+                    + File.separator + prefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_WIFI_CATALOG_FILE);
+            final SQLiteDatabase mCatalog = SQLiteDatabase.openDatabase(file, null, SQLiteDatabase.OPEN_READONLY);
+
+            Cursor cur = null;
+            cur = mCatalog.rawQuery("SELECT _id, manufactor FROM manufactors WHERE "
+                                + "(bssid = ?) LIMIT 1",
+                        new String[] {wifi.getBssid().replace(":", "").replace("-","").substring(0,6).toUpperCase()});
+
+            if (cur.moveToFirst()) {
+                final String manufactor = cur.getString(cur.getColumnIndex("manufactor"));
+                tvManufactor.setText(manufactor);
+            }
+        }
+
+
+
 		if (wifi != null) {
 			tvSsid.setText(wifi.getSsid() + " (" + wifi.getBssid() + ")");
 			if (wifi.getCapabilities() != null) {
@@ -117,8 +148,8 @@ public class WifiDetailsActivity extends FragmentActivity {
 			
 			if (wifi.getCatalogStatus().equals(CatalogStatus.NEW)) {
 				ivIsNew.setImageResource(android.R.drawable.checkbox_on_background);
-			} else {
-				ivIsNew.setImageResource(android.R.drawable.checkbox_off_background);
+            } else {
+                ivIsNew.setImageResource(android.R.drawable.checkbox_off_background);
 			}
 		}
 	}
