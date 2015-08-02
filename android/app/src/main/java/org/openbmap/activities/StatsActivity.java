@@ -30,10 +30,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.GraphView.GraphViewData;
@@ -68,26 +70,11 @@ public class StatsActivity extends Fragment {
 	private TextView tvCellStrength;
 	private TextView tvWifiDescription;
 	private TextView tvWifiStrength;
-	private TextView tvIgnored;
+    private TextView tvTechnology;
+    private TextView tvIgnored;
 	private TextView tvFree;
 	private ImageView ivFree;
 	private ImageView ivAlert;
-	private ToggleButton tbNa;
-	private ToggleButton tbGsm;
-	private ToggleButton tbEdge;
-	private ToggleButton tbUmts;
-	private ToggleButton tbCdma;
-	private ToggleButton tbEvdo0;
-	private ToggleButton tbEvdoA;
-	private ToggleButton tbEvdoB;
-	private ToggleButton tbOneXRtt;
-	private ToggleButton tbHsdpa;
-	private ToggleButton tbHsupa;
-	private ToggleButton tbHspa;
-	private ToggleButton tbIden;
-	private ToggleButton tbLte;
-	private ToggleButton tbEhrpd;
-	private ToggleButton tbHspa_p;
 	private GraphView graphView;
 
 	GraphViewSeries measurements;
@@ -118,10 +105,9 @@ public class StatsActivity extends Fragment {
 	private final Handler mRefreshHandler = new Handler();
 	private Runnable mPeriodicRefreshTask;
 
-	private String currentOperator;
-	private int currentCellId;
-	private String currentTechnology;
-	private int currentStrength;
+    private int mCurrentStrength;
+
+    private String mLastTechnology;
 
 	/**
 	 * Receives cell / wifi news
@@ -154,114 +140,54 @@ public class StatsActivity extends Fragment {
 
 			// handling cell and wifi broadcasts
 			if (RadioBeacon.INTENT_NEW_CELL.equals(intent.getAction())) {
-				currentOperator = intent.getStringExtra(RadioBeacon.MSG_OPERATOR);
-				currentCellId = intent.getIntExtra(RadioBeacon.MSG_CELL_ID, -1);
-				currentTechnology = intent.getStringExtra(RadioBeacon.MSG_TECHNOLOGY);
-				currentStrength = intent.getIntExtra(RadioBeacon.MSG_STRENGTH, -1);
+				final String currentOperator = intent.getStringExtra(RadioBeacon.MSG_OPERATOR);
+                final int currentCellId = intent.getIntExtra(RadioBeacon.MSG_CELL_ID, -1);
+                final String currentMcc = intent.getStringExtra(RadioBeacon.MSG_MCC);
+                final String currentMnc = intent.getStringExtra(RadioBeacon.MSG_MNC);
+                final int currentArea = intent.getIntExtra(RadioBeacon.MSG_AREA, -1);
+                final String currentTechnology = intent.getStringExtra(RadioBeacon.MSG_TECHNOLOGY);
+                mCurrentStrength = intent.getIntExtra(RadioBeacon.MSG_STRENGTH, -1);
 
-				if (currentOperator != null) {
-					tvCellDescription.setText(String.format("%s %d", currentOperator, currentCellId));
-				} else {
-					tvCellDescription.setText(getString(R.string.n_a));
-				}
-				
-				tvCellStrength.setText(String.format("%d dBm", currentStrength));
+                String description = "";
 
-				if (currentTechnology.equals("NA")) {
-					tbNa.setChecked(true);
-				} else {
-					tbNa.setChecked(false);
-				}
+                if (currentOperator != null) {
+                    description = currentOperator;
+                }
 
-				if (currentTechnology.equals("GSM")) {
-					tbGsm.setChecked(true);
-				} else {
-					tbGsm.setChecked(false);
-				}
+                if (currentMcc != null && currentMnc != null) {
+                    if (description.length() > 0) { description += "\n";}
+                    description += String.format("%s/%s/%s/%s", currentMcc, currentMnc, currentArea, currentCellId);
+                }
 
-				if (currentTechnology.equals("EDGE")) {
-					tbEdge.setChecked(true);
-				} else {
-					tbEdge.setChecked(false);
-				}
+				tvCellDescription.setText(description);
+				tvCellStrength.setText(String.format("%d dBm", mCurrentStrength));
 
-				if (currentTechnology.equals("UMTS")) {
-					tbUmts.setChecked(true);
-				} else {
-					tbUmts.setChecked(false);
-				}
+                if (!currentTechnology.equals(mLastTechnology)) {
+                    final Animation in = new AlphaAnimation(0.0f, 1.0f);
+                    in.setDuration(2000);
+                    final Animation out = new AlphaAnimation(1.0f, 0.0f);
+                    out.setDuration(2000);
+                    out.setAnimationListener(new AnimationListener() {
+                        @Override
+                        public void onAnimationStart(Animation animation) {
 
-				if (currentTechnology.equals("CDMA")) {
-					tbCdma.setChecked(true);
-				} else {
-					tbCdma.setChecked(false);
-				}
+                        }
 
-				if (currentTechnology.equals("EDVO_0")) {
-					tbEvdo0.setChecked(true);
-				} else {
-					tbEvdo0.setChecked(false);
-				}
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                            tvTechnology.setText(currentTechnology);
+                            tvTechnology.startAnimation(in);
+                        }
 
-				if (currentTechnology.equals("EDVO_A")) {
-					tbEvdoA.setChecked(true);
-				} else {
-					tbEvdoA.setChecked(false);
-				}
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {
 
-				if (currentTechnology.equals("1xRTT")) {
-					tbOneXRtt.setChecked(true);
-				} else {
-					tbOneXRtt.setChecked(false);
-				}
+                        }
+                    });
+                    tvTechnology.startAnimation(out);
+                }
 
-				if (currentTechnology.equals("HSDPA")) {
-					tbHsdpa.setChecked(true);
-				} else {
-					tbHsdpa.setChecked(false);
-				}
-
-				if (currentTechnology.equals("HSUPA")) {
-					tbHsupa.setChecked(true);
-				} else {
-					tbHsupa.setChecked(false);
-				}
-
-				if (currentTechnology.equals("HSPA")) {
-					tbHspa.setChecked(true);
-				} else {
-					tbHspa.setChecked(false);
-				}
-
-				if (currentTechnology.equals("IDEN")) {
-					tbIden.setChecked(true);
-				} else {
-					tbIden.setChecked(false);
-				}
-
-				if (currentTechnology.equals("EDV0_B")) {
-					tbEvdoB.setChecked(true);
-				} else {
-					tbEvdoB.setChecked(false);
-				}
-
-				if (currentTechnology.equals("LTE")) {
-					tbLte.setChecked(true);
-				} else {
-					tbLte.setChecked(false);
-				}
-
-				if (currentTechnology.equals("eHRPD")) {
-					tbEhrpd.setChecked(true);
-				} else {
-					tbEhrpd.setChecked(false);
-				}
-
-				if (currentTechnology.equals("HSPA+")) {
-					tbHspa_p.setChecked(true);
-				} else {
-					tbHspa_p.setChecked(false);
-				}
+                mLastTechnology = currentTechnology;
 
 				mLastCellUpdate = System.currentTimeMillis();
 
@@ -415,22 +341,7 @@ public class StatsActivity extends Fragment {
 		ivFree = (ImageView) view.findViewById(R.id.stats_icon_free);
 		ivAlert = (ImageView) view.findViewById(R.id.stats_icon_alert);
 
-		tbNa = (ToggleButton) view.findViewById(R.id.tbN_a);
-		tbGsm = (ToggleButton) view.findViewById(R.id.tbGsm);
-		tbEdge = (ToggleButton) view.findViewById(R.id.tbEdge);
-		tbUmts = (ToggleButton) view.findViewById(R.id.tbUmts);
-		tbCdma = (ToggleButton) view.findViewById(R.id.tbCdma);
-		tbEvdo0 = (ToggleButton) view.findViewById(R.id.tbEvdo0);
-		tbEvdoA = (ToggleButton) view.findViewById(R.id.tbEvdoA);
-		tbEvdoB = (ToggleButton) view.findViewById(R.id.tbEvdoB);
-		tbOneXRtt = (ToggleButton) view.findViewById(R.id.tbOneXRtt);
-		tbHsdpa = (ToggleButton) view.findViewById(R.id.tbHsdpa);
-		tbHsupa = (ToggleButton) view.findViewById(R.id.tbHsupa);
-		tbHspa = (ToggleButton) view.findViewById(R.id.tbHspa);
-		tbIden = (ToggleButton) view.findViewById(R.id.tbIden);
-		tbLte = (ToggleButton) view.findViewById(R.id.tbLte);
-		tbEhrpd = (ToggleButton) view.findViewById(R.id.tbEhrpd);
-		tbHspa_p = (ToggleButton) view.findViewById(R.id.tbHspa_p);
+		tvTechnology = (TextView) view.findViewById(R.id.tvTechnology);
 
 		graphView = new LineGraphView(this.getActivity().getBaseContext() // context
 				, "Cell strength (dBm)");
@@ -490,12 +401,12 @@ public class StatsActivity extends Fragment {
 			graphView.addSeries(measurements);
 		}
 
-		if (currentStrength != -1) {
-			measurements.appendData(new GraphViewData(System.currentTimeMillis() , currentStrength), true, 60);
+		if (mCurrentStrength != -1) {
+			measurements.appendData(new GraphViewData(System.currentTimeMillis() , mCurrentStrength), true, 60);
 		} else {
 			measurements.appendData(new GraphViewData(System.currentTimeMillis(), -100d), true, 60);
 		}
-		currentStrength = -1;
+		mCurrentStrength = -1;
 	}
 
 	/**

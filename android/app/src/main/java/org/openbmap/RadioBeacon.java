@@ -129,7 +129,22 @@ public final class RadioBeacon {
 	 * Extra data key: Operator name
 	 */
 	public static final String MSG_OPERATOR = "operator";
-	
+
+	/**
+	 * Extra data key: MCC
+	 */
+	public static final String MSG_MCC = "mcc";
+
+	/**
+	 * Extra data key: MNC
+	 */
+	public static final String MSG_MNC = "mnc";
+
+	/**
+	 * Extra data key: Area (location area code)
+	 */
+	public static final String MSG_AREA = "area";
+
 	/**
 	 * Extra data key: Cell id
 	 */

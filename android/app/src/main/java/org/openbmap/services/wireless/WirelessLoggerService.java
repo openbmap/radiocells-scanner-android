@@ -891,7 +891,7 @@ public class WirelessLoggerService extends AbstractService {
 					return null;
 				}
 
-				serving.setLac(gsmLocation.getLac());
+				serving.setArea(gsmLocation.getLac());
 				serving.setStrengthdBm(gsmStrengthDbm);
 				serving.setStrengthAsu(gsmStrengthAsu);
 
@@ -1016,7 +1016,7 @@ public class WirelessLoggerService extends AbstractService {
 					return null;
 				}
 
-				result.setLac(gsmIdentity.getLac());
+				result.setArea(gsmIdentity.getLac());
 				result.setStrengthdBm(((CellInfoGsm) cell).getCellSignalStrength().getDbm());
 				result.setStrengthAsu(((CellInfoGsm) cell).getCellSignalStrength().getAsuLevel());
 
@@ -1074,7 +1074,7 @@ public class WirelessLoggerService extends AbstractService {
 					return null;
 				}
 
-				result.setLac(wcdmaIdentity.getLac());
+				result.setArea(wcdmaIdentity.getLac());
 				result.setStrengthdBm(((CellInfoWcdma) cell).getCellSignalStrength().getDbm());
 				result.setStrengthAsu(((CellInfoWcdma) cell).getCellSignalStrength().getAsuLevel());
 
@@ -1173,7 +1173,7 @@ public class WirelessLoggerService extends AbstractService {
                 }
 
                 // LTE specific
-                result.setLac(lteIdentity.getTac());
+                result.setArea(lteIdentity.getTac());
                 result.setPsc(lteIdentity.getPci());
 
                 result.setStrengthdBm(((CellInfoLte) cell).getCellSignalStrength().getDbm());
@@ -1247,7 +1247,7 @@ public class WirelessLoggerService extends AbstractService {
 					neighbor.setIsCdma(false);
 
 					neighbor.setLogicalCellId(ci.getCid());
-					neighbor.setLac(ci.getLac());
+					neighbor.setArea(ci.getLac());
 					neighbor.setStrengthdBm(-113 + 2 * ci.getRssi());
 					neighbor.setStrengthAsu(ci.getRssi());
 
@@ -1407,6 +1407,9 @@ public class WirelessLoggerService extends AbstractService {
 		 */
 
 		intent.putExtra(RadioBeacon.MSG_OPERATOR, recent.getOperatorName());
+		intent.putExtra(RadioBeacon.MSG_MCC, recent.getMcc());
+		intent.putExtra(RadioBeacon.MSG_MNC, recent.getMnc());
+		intent.putExtra(RadioBeacon.MSG_AREA, recent.getArea());
 		intent.putExtra(RadioBeacon.MSG_CELL_ID, recent.getLogicalCellId());
 		intent.putExtra(RadioBeacon.MSG_TECHNOLOGY, CellRecord.TECHNOLOGY_MAP().get(recent.getNetworkType()));
 		intent.putExtra(RadioBeacon.MSG_STRENGTH, recent.getStrengthdBm());

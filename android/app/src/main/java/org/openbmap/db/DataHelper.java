@@ -549,7 +549,7 @@ public class DataHelper {
 						.withValue(Schema.COL_ACTUAL_CELLID, cell.getActualCellId())
 						.withValue(Schema.COL_UTRAN_RNC, cell.getUtranRnc())
 						.withValue(Schema.COL_PSC, cell.getPsc())
-						.withValue(Schema.COL_LAC, cell.getLac())
+						.withValue(Schema.COL_LAC, cell.getArea())
 						.withValue(Schema.COL_MCC, cell.getMcc())
 						.withValue(Schema.COL_MNC, cell.getMnc())
 						.withValue(Schema.COL_OPERATORNAME, cell.getOperatorName())
@@ -574,7 +574,7 @@ public class DataHelper {
 						.withValue(Schema.COL_IS_CDMA, cell.isCdma())
 						.withValue(Schema.COL_IS_SERVING, cell.isServing())
 						.withValue(Schema.COL_IS_NEIGHBOR, cell.isNeighbor())
-						.withValue(Schema.COL_LAC, cell.getLac())
+						.withValue(Schema.COL_LAC, cell.getArea())
 						.withValue(Schema.COL_MCC, cell.getMcc())
 						.withValue(Schema.COL_MNC, cell.getMnc())
 						.withValue(Schema.COL_PSC, cell.getPsc())
@@ -687,7 +687,7 @@ public class DataHelper {
 		cell.setOperator(cursor.getString(colOperator)); 
 		cell.setMcc(cursor.getString(colMcc)); 
 		cell.setMnc(cursor.getString(colMnc));
-		cell.setLac(cursor.getInt(colLac)); 
+		cell.setArea(cursor.getInt(colLac));
 		cell.setBaseId(cursor.getString(colBaseId));
 		cell.setNetworkId(cursor.getString(colNetworkId));
 		cell.setSystemId(cursor.getString(colSystemId));
