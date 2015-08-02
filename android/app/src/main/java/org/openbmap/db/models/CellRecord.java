@@ -293,12 +293,27 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 		this.mPsc = psc;
 	}
 
+    /**
+     * Gets dbm level
+     * @return received signal strength in dBm
+     */
 	public final int getStrengthdBm() {
 		return mStrengthdBm;
 	}
 
-	public final void setStrengthdBm(final int strengthdBm) {
-		this.mStrengthdBm = strengthdBm;
+    /**
+     * Sets dbm level
+     * Invalid values are replaced by default value, for specification compare
+     * Caution: some devices are known to report invalid dbm values, e.g. positive values
+     * @link http://www.etsi.org/deliver/etsi_ts/127000_127099/127007/08.05.00_60/
+     * @param strength received signal strength in dBm
+     */
+	public final void setStrengthdBm(final int strength) {
+        if (strength > -51) {
+            this.mStrengthdBm = -99;
+        } else {
+            this.mStrengthdBm = strength;
+        }
 	}
 
 	public final int getStrengthAsu() {

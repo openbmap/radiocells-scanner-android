@@ -94,7 +94,7 @@ public class WirelessLoggerService extends AbstractService {
 
 	public static final String TAG = WirelessLoggerService.class.getSimpleName();
 
-	/**
+    /**
 	 * Keeps the SharedPreferences
 	 */
 	private SharedPreferences prefs = null;
@@ -115,6 +115,7 @@ public class WirelessLoggerService extends AbstractService {
 	 * Phone state listeners to receive cell updates
 	 */
 	private TelephonyManager mTelephonyManager;
+
 	private PhoneStateListener mPhoneListener;
 
 	/*	
@@ -396,7 +397,7 @@ public class WirelessLoggerService extends AbstractService {
 		mPhoneListener = new PhoneStateListener() {
 			@Override
 			public void onSignalStrengthsChanged(final SignalStrength signalStrength) {
-				// TODO we need a timestamp for signalstrength
+				// TODO we need a timestamp for signal strength
 				try {
 					cdmaStrengthDbm = signalStrength.getCdmaDbm();
 					cdmaEcIo = signalStrength.getCdmaEcio();
@@ -1329,7 +1330,7 @@ public class WirelessLoggerService extends AbstractService {
 
 	/**
 	 * A valid wcdma cell must have cell id set
-	 * @param cdmaLocation {@link CdmaCellLocation}
+	 * @param wcdmaInfo {@link CellIdentityWcdma}
 	 * @return true if valid cdma id
 	 */
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -1343,7 +1344,7 @@ public class WirelessLoggerService extends AbstractService {
 
 	/**
 	 * A valid LTE cell must have cell id set
-	 * @param cdmaLocation {@link CdmaCellLocation}
+	 * @param lteInfo {@link CellIdentityLte}
 	 * @return true if valid cdma id
 	 */
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
