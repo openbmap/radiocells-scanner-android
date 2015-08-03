@@ -9,34 +9,34 @@
         android:layout_width="0dp"
         android:layout_height="32dp"
         android:layout_weight="0.2"
-        android:padding="2dp" />
+         />
 
     <TextView
         android:id="@+id/textViewOperator"
         android:layout_width="0dp"
         android:layout_height="32dp"
         android:layout_weight="0.35"
-        android:padding="2dp" />
+        />
 
     <TextView
         android:id="@+id/textViewNetworkType"
         android:layout_width="0dp"
         android:layout_height="32dp"
         android:layout_weight="0.2"
-        android:padding="2dp" />
+         />
 
     <TextView
-        android:id="@+id/textViewStrenghtDbm"
+        android:id="@+id/textViewArea"
         android:layout_width="0dp"
         android:layout_height="32dp"
         android:layout_weight="0.1"
-        android:padding="2dp" />
+        />
 
     <TextView
         android:id="@+id/textViewStrenghtAsu"
         android:layout_width="0dp"
         android:layout_height="32dp"
-        android:layout_weight="0.1"
-        android:padding="2dp" />
+        android:layout_weight="0.15"
+         />
 
 </LinearLayout>

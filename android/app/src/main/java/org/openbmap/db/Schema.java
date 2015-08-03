@@ -75,7 +75,7 @@ public final class Schema {
 	public static final String COL_OPERATOR = "Operator";
 	public static final String COL_MCC = "mcc";
 	public static final String COL_MNC = "mnc";
-	public static final String COL_LAC = "lac";
+	public static final String COL_AREA = "lac";
 	public static final String COL_PSC = "psc";
 	public static final String COL_STRENGTHDBM = "dbm";
 	public static final String	COL_STRENGTHASU	= "asu";

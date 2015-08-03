@@ -99,7 +99,7 @@
                 android:layout_weight="0.2"
                 android:gravity="center"
                 android:text="@string/n_a"
-                />
+                android:textAppearance="?android:attr/textAppearanceLarge" />
         </TableRow>
 
         <TableRow>

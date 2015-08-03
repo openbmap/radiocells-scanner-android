@@ -387,7 +387,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 				+ Schema.COL_OPERATOR + ", "
 				+ Schema.COL_MCC + ", "
 				+ Schema.COL_MNC + ", "
-				+ Schema.COL_LAC + ", "
+				+ Schema.COL_AREA + ", "
 				+ Schema.COL_PSC + ", "
 				+ Schema.COL_NETWORKTYPE + ", "
 				+ Schema.COL_IS_SERVING + ", "

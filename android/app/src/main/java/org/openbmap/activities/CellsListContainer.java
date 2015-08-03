@@ -111,14 +111,14 @@ public class CellsListContainer extends ListFragment implements LoaderManager.Lo
 				Schema.COL_ACTUAL_CELLID,
 				Schema.COL_OPERATORNAME,
 				Schema.COL_NETWORKTYPE,
-				"MAX(" + Schema.COL_STRENGTHDBM + ")" 
+				Schema.COL_AREA
 		};
 
 		final int[] to = new int[] {
 				R.id.textViewCellID,
 				R.id.textViewOperator,
 				R.id.textViewNetworkType,
-				R.id.textViewStrenghtDbm
+				R.id.textViewArea
 		};
 
 		mAdapter = new SimpleCursorAdapter(getActivity().getBaseContext(),
@@ -160,7 +160,7 @@ public class CellsListContainer extends ListFragment implements LoaderManager.Lo
 				Schema.COL_ACTUAL_CELLID,
 				Schema.COL_OPERATORNAME,
 				Schema.COL_NETWORKTYPE,
-				"MAX(" + Schema.COL_STRENGTHDBM + ")"
+				Schema.COL_AREA
 		};
 
 		final int session = dataHelper.getActiveSessionId();

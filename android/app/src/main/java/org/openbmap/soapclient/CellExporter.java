@@ -183,7 +183,7 @@ public class CellExporter {
 			+ Schema.COL_LOGICAL_CELLID + ", "
 			+ Schema.COL_ACTUAL_CELLID + ", "
 			+ Schema.COL_UTRAN_RNC + ", "
-			+ Schema.COL_LAC + ", "
+			+ Schema.COL_AREA + ", "
 			+ Schema.COL_MCC + ", "
 			+ Schema.COL_MNC + ", "
 			+ Schema.COL_PSC + ", "
@@ -289,7 +289,7 @@ public class CellExporter {
 		mColOperator = cursorCells.getColumnIndex(Schema.COL_OPERATOR);
 		mColMcc = cursorCells.getColumnIndex(Schema.COL_MCC);
 		mColMnc = cursorCells.getColumnIndex(Schema.COL_MNC);
-		mColLac = cursorCells.getColumnIndex(Schema.COL_LAC);
+		mColLac = cursorCells.getColumnIndex(Schema.COL_AREA);
 		mColStrengthDbm = cursorCells.getColumnIndex(Schema.COL_STRENGTHDBM);
 		mColStrengthAsu = cursorCells.getColumnIndex(Schema.COL_STRENGTHASU);
 		mColTimestamp = cursorCells.getColumnIndex(Schema.COL_TIMESTAMP);

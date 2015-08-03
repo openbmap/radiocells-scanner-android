@@ -549,7 +549,7 @@ public class DataHelper {
 						.withValue(Schema.COL_ACTUAL_CELLID, cell.getActualCellId())
 						.withValue(Schema.COL_UTRAN_RNC, cell.getUtranRnc())
 						.withValue(Schema.COL_PSC, cell.getPsc())
-						.withValue(Schema.COL_LAC, cell.getArea())
+						.withValue(Schema.COL_AREA, cell.getArea())
 						.withValue(Schema.COL_MCC, cell.getMcc())
 						.withValue(Schema.COL_MNC, cell.getMnc())
 						.withValue(Schema.COL_OPERATORNAME, cell.getOperatorName())
@@ -574,7 +574,7 @@ public class DataHelper {
 						.withValue(Schema.COL_IS_CDMA, cell.isCdma())
 						.withValue(Schema.COL_IS_SERVING, cell.isServing())
 						.withValue(Schema.COL_IS_NEIGHBOR, cell.isNeighbor())
-						.withValue(Schema.COL_LAC, cell.getArea())
+						.withValue(Schema.COL_AREA, cell.getArea())
 						.withValue(Schema.COL_MCC, cell.getMcc())
 						.withValue(Schema.COL_MNC, cell.getMnc())
 						.withValue(Schema.COL_PSC, cell.getPsc())
@@ -593,7 +593,7 @@ public class DataHelper {
 
 						// set unused (GSM) fields to -1
 						.withValue(Schema.COL_LOGICAL_CELLID, -1)
-						.withValue(Schema.COL_LAC, -1)
+						.withValue(Schema.COL_AREA, -1)
 						.build());	
 			}
 		}
@@ -664,7 +664,7 @@ public class DataHelper {
 		final int colOperator = cursor.getColumnIndex(Schema.COL_OPERATOR);
 		final int colMcc = cursor.getColumnIndex(Schema.COL_MCC);
 		final int colMnc = cursor.getColumnIndex(Schema.COL_MNC);
-		final int colLac = cursor.getColumnIndex(Schema.COL_LAC);
+		final int colLac = cursor.getColumnIndex(Schema.COL_AREA);
 		final int colBaseId = cursor.getColumnIndex(Schema.COL_CDMA_BASEID);
 		final int colNetworkId = cursor.getColumnIndex(Schema.COL_CDMA_NETWORKID);
 		final int colSystemId = cursor.getColumnIndex(Schema.COL_CDMA_SYSTEMID);

@@ -8,28 +8,24 @@
         android:layout_height="wrap_content"
         android:layout_width="0dp"
         android:layout_weight="0.2"
-        android:padding="2dp"
         android:text="@string/cell" />
 
     <TextView
         android:layout_height="wrap_content"
         android:layout_width="0dp"
         android:layout_weight="0.35"
-        android:padding="2dp"
         android:text="@string/operator" />
 
     <TextView
         android:layout_height="wrap_content"
         android:layout_width="0dp"
         android:layout_weight="0.2"
-        android:padding="2dp"
         android:text="@string/type" />
 
     <TextView
         android:layout_height="wrap_content"
         android:layout_width="0dp"
-        android:layout_weight="0.1"
-        android:padding="2dp"
-        android:text="@string/dbm" />
+        android:layout_weight="0.15"
+        android:text="@string/lac" />
 
 </LinearLayout>
