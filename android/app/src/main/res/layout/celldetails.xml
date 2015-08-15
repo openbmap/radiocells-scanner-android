@@ -248,7 +248,6 @@
         <TableRow>
 
             <TextView
-                android:id="@+id/textView10"
                 android:layout_width="0dip"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.35"

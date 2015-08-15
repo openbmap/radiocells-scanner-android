@@ -1,28 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:showAsAction="always"
+    >
     <item
         android:id="@+id/menu_sort_timestamp"
         android:icon="@android:drawable/ic_menu_delete"
-        android:title="Sort by timestamp">
+        android:title="@string/sort_by_timestamp">
     </item>
     <item
         android:id="@+id/menu_sort_ssid"
         android:icon="@android:drawable/ic_notification_clear_all"
-        android:title="Sort by SSID">
+        android:title="@string/sort_by_ssid">
     </item>
     <item
         android:id="@+id/menu_display_only_new"
         android:icon="@android:drawable/ic_menu_delete"
-        android:title="Show only new">
+        android:title="@string/show_only_new">
     </item>
     <item
         android:id="@+id/menu_display_free"
         android:icon="@android:drawable/ic_menu_delete"
-        android:title="Show only free">
+        android:title="@string/show_only_free">
     </item> 
     <item
         android:id="@+id/menu_display_all"
         android:icon="@android:drawable/ic_menu_delete"
-        android:title="Show all">
+        android:title="@string/show_all">
     </item> 
 </menu>

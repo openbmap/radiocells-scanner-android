@@ -4,65 +4,61 @@
     android:layout_height="fill_parent" >
 
     <ImageView
-        android:id="@+id/imageView2"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:layout_gravity="center_vertical|center_horizontal"
         android:src="@drawable/ic_menu_cell" />
 
     <TextView
-        android:id="@+id/gpsstatus_record_tvCellCount"
+        android:id="@+id/gpsstatus_cell_count"
         android:layout_width="0dip"
         android:layout_height="fill_parent"
         android:layout_gravity="center_vertical|center_horizontal"
         android:layout_weight="1"
         android:gravity="center"
-        android:text="--" >
+        android:text="@string/empty" >
     </TextView>
 
     <ImageView
-        android:id="@+id/imageView3"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:layout_gravity="center_vertical|center_horizontal"
         android:src="@drawable/ic_menu_wifi" />
 
     <TextView
-        android:id="@+id/gpsstatus_record_tvWifiCount"
+        android:id="@+id/gpsstatus_wifi_count"
         android:layout_width="0dip"
         android:layout_height="fill_parent"
         android:layout_gravity="center_vertical|center_horizontal"
         android:layout_weight="1"
         android:gravity="center"
-        android:text="--" >
+        android:text="@string/empty" >
     </TextView>
 
     <ImageView
-        android:id="@+id/imageView1"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:layout_gravity="center_vertical|center_horizontal"
         android:src="@drawable/ic_added" />
 
     <TextView
-        android:id="@+id/gpsstatus_record_tvNewWifiCount"
+        android:id="@+id/gpsstatus_new_wifi_count"
         android:layout_width="0dip"
         android:layout_height="fill_parent"
         android:layout_gravity="center_vertical|center_horizontal"
         android:layout_weight="1"
         android:gravity="center"
-        android:text="--" >
+        android:text="@string/empty" >
     </TextView>
 
     <ImageView
-        android:id="@+id/imageView4"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:layout_gravity="center_vertical|center_horizontal"
         android:src="@drawable/ic_menu_mylocation" />
 
     <TextView
-        android:id="@+id/gpsstatus_record_tvAccuracy"
+        android:id="@+id/gpsstatus_accuracy"
         android:layout_width="0dip"
         android:layout_height="fill_parent"
         android:layout_gravity="center_vertical|center_horizontal"
@@ -72,7 +68,7 @@
     </TextView>
 
     <ImageView
-        android:id="@+id/gpsstatus_record_imgSatIndicator"
+        android:id="@+id/gpsstatus_sat_indicator"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:layout_gravity="center_vertical|center_horizontal"

@@ -298,4 +298,11 @@
 	<string name="prefs_ignore_battery_summary">Continue scanning even with low battery (only recommended if you have external battery supply)</string>
 	<string name="prefs_ignore_battery_title">Ignore low battery</string>
 	<string name="other_download_active">Please wait for current download to complete!</string>
+	<string name="meter">m</string>
+	<string name="sort_by_timestamp">Sort by timestamp</string>
+	<string name="sort_by_ssid">Sort by SSID</string>
+	<string name="show_only_new">Show only new</string>
+	<string name="show_only_free">Show only free</string>
+	<string name="show_all">Show all</string>
+	<string name="empty">--</string>
 </resources>
