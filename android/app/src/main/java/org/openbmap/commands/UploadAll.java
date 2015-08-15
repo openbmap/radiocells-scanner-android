@@ -18,11 +18,11 @@
 
 package org.openbmap.commands;
 
-import org.openbmap.activities.StartscreenActivity;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+
+import org.openbmap.activities.StartscreenActivity;
 
 /**
  * Dispatcher for external 'start tracking' command

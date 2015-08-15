@@ -18,46 +18,96 @@
 
 package org.openbmap.activities;
 
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
+import android.app.Fragment;
+import android.content.Context;
+import android.os.Bundle;
+import android.support.v13.app.FragmentStatePagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+
+import java.util.ArrayList;
+
 
 /**
  * Handles tab pages
  */
-public class CustomViewPagerAdapter extends FragmentPagerAdapter {
+public class CustomViewPagerAdapter extends FragmentStatePagerAdapter
+        implements ActionBar.TabListener, ViewPager.OnPageChangeListener {
+private final Context mContext;
+private final ActionBar mActionBar;
+private final ViewPager mViewPager;
+private final ArrayList<TabInfo> mTabs = new ArrayList<TabInfo>();
 
-	/**
-	 * Number of ViewPager pages
-	 */
-	int pageCount = 4;
+    @Override
+    public void onTabSelected(ActionBar.Tab tab, android.support.v4.app.FragmentTransaction ft) {
+        Object tag = tab.getTag();
+        for (int i=0; i<mTabs.size(); i++) {
+            if (mTabs.get(i) == tag) {
+                mViewPager.setCurrentItem(i);
+            }
+        }
+    }
 
-	public CustomViewPagerAdapter(final FragmentManager fm) {
-		super(fm);
-	}
+    @Override
+    public void onTabUnselected(ActionBar.Tab tab, android.support.v4.app.FragmentTransaction ft) {
 
-	@Override
-	public Fragment getItem(final int arg0) {
-		switch (arg0) {
-			case 0:
-				final StatsActivity stats = new StatsActivity();
-				return stats;
-			case 1:
-				final WifiListContainer wifis = new WifiListContainer();
-				return wifis;
-			case 2:
-				final CellsListContainer cells = new CellsListContainer();
-				return cells;
-			case 3:
-				final MapViewActivity map = new MapViewActivity();
-				return map;
-		}
-		return null;
-	}
+    }
 
-	@Override
-	public int getCount() {
-		return pageCount;
-	}
+    @Override
+    public void onTabReselected(ActionBar.Tab tab, android.support.v4.app.FragmentTransaction ft) {
 
+    }
+
+    static final class TabInfo {
+    private final Class<?> clss;
+    private final Bundle args;
+
+    TabInfo(Class<?> _class, Bundle _args) {
+        clss = _class;
+        args = _args;
+    }
+}
+
+    public CustomViewPagerAdapter(AppCompatActivity activity, ViewPager pager) {
+        super(activity.getFragmentManager());
+        mContext = activity;
+        mActionBar = activity.getSupportActionBar();
+        mViewPager = pager;
+        mViewPager.setAdapter(this);
+        mViewPager.setOnPageChangeListener(this);
+    }
+
+    public void addTab(ActionBar.Tab tab, Class<?> clss, Bundle args) {
+        TabInfo info = new TabInfo(clss, args);
+        tab.setTag(info);
+        tab.setTabListener(this);
+        mTabs.add(info);
+        mActionBar.addTab(tab);
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public int getCount() {
+        return mTabs.size();
+    }
+
+    @Override
+    public Fragment getItem(int position) {
+        TabInfo info = mTabs.get(position);
+        return Fragment.instantiate(mContext, info.clss.getName(), info.args);
+    }
+
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+    }
+
+    @Override
+    public void onPageSelected(int position) {
+        mActionBar.setSelectedNavigationItem(position);
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
+    }
 }

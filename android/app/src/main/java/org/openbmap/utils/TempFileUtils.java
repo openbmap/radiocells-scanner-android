@@ -18,13 +18,13 @@
 
 package org.openbmap.utils;
 
-import java.io.File;
-import java.io.FilenameFilter;
+import android.content.Context;
+import android.util.Log;
 
 import org.openbmap.Preferences;
 
-import android.content.Context;
-import android.util.Log;
+import java.io.File;
+import java.io.FilenameFilter;
 
 /**
  * Deletes all (temp) log files in data dir

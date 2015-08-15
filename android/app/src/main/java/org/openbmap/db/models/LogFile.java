@@ -18,8 +18,9 @@
 
 package org.openbmap.db.models;
 
-import java.util.ArrayList;
 import org.openbmap.RadioBeacon;
+
+import java.util.ArrayList;
 
 /**
  * Model for general log file properties (cell manufacturer, model, etc.)

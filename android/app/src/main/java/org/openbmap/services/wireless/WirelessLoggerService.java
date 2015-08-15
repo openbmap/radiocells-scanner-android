@@ -18,33 +18,8 @@
 
 package org.openbmap.services.wireless;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-
-import org.openbmap.Preferences;
-import org.openbmap.R;
-import org.openbmap.RadioBeacon;
-import org.openbmap.activities.HostActivity;
-import org.openbmap.db.DataHelper;
-import org.openbmap.db.models.CellRecord;
-import org.openbmap.db.models.LogFile;
-import org.openbmap.db.models.PositionRecord;
-import org.openbmap.db.models.WifiRecord;
-import org.openbmap.db.models.WifiRecord.CatalogStatus;
-import org.openbmap.services.AbstractService;
-import org.openbmap.services.wireless.blacklists.BlacklistReasonType;
-import org.openbmap.services.wireless.blacklists.LocationBlackList;
-import org.openbmap.services.wireless.blacklists.SsidBlackList;
-import org.openbmap.utils.GeometryUtils;
-
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -83,6 +58,27 @@ import android.telephony.cdma.CdmaCellLocation;
 import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
 
+import org.openbmap.Preferences;
+import org.openbmap.RadioBeacon;
+import org.openbmap.db.DataHelper;
+import org.openbmap.db.models.CellRecord;
+import org.openbmap.db.models.LogFile;
+import org.openbmap.db.models.PositionRecord;
+import org.openbmap.db.models.WifiRecord;
+import org.openbmap.db.models.WifiRecord.CatalogStatus;
+import org.openbmap.services.AbstractService;
+import org.openbmap.services.wireless.blacklists.BlacklistReasonType;
+import org.openbmap.services.wireless.blacklists.LocationBlackList;
+import org.openbmap.services.wireless.blacklists.SsidBlackList;
+import org.openbmap.utils.GeometryUtils;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
 /**
  * WirelessLoggerService takes care of wireless logging, i.e. cell & wifi logging
  * 
@@ -94,7 +90,9 @@ public class WirelessLoggerService extends AbstractService {
 
 	public static final String TAG = WirelessLoggerService.class.getSimpleName();
 
-    /**
+	public static final String LOCATION_PARCEL = "android.location.Location";
+
+	/**
 	 * Keeps the SharedPreferences
 	 */
 	private SharedPreferences prefs = null;
@@ -132,11 +130,6 @@ public class WirelessLoggerService extends AbstractService {
 	private int gsmBitErrorRate = 0;
 	private final int signalStrengthGsm = 0;
 	private final boolean signalStrengthIsGsm = false;
-
-	/**
-	 * System notification id.
-	 */
-	private static final int NOTIFICATION_ID = 1234;
 
 	/*
 	 * last known location
@@ -258,7 +251,7 @@ public class WirelessLoggerService extends AbstractService {
 					return;
 				}
 
-				final Location location = intent.getExtras().getParcelable("android.location.Location");
+				final Location location = intent.getExtras().getParcelable(LOCATION_PARCEL);
 				final String source = location.getProvider();
 
 				// do nothing, if required minimum gps accuracy is not given
@@ -315,22 +308,10 @@ public class WirelessLoggerService extends AbstractService {
 		}
 	};
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public final void onCreate() {		
 		Log.d(TAG, "WirelessLoggerService created");
 		super.onCreate();
-
-		final Notification note = new Notification(R.drawable.icon_greyed_25x25, getString(R.string.notification_caption), System.currentTimeMillis());
-		final Intent i = new Intent(this, HostActivity.class);
-		i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
-		final PendingIntent pi = PendingIntent.getActivity(this, 0, i, 0);
-		note.setLatestEventInfo(this, getString(R.string.app_name), getString(R.string.notification_caption), pi);
-		note.flags|=Notification.FLAG_NO_CLEAR;
-
-		//Notification note = new Notification(R.drawable.icon_greyed_25x25, getString(R.string.notification_caption), System.currentTimeMillis());
-		//note.flags |= Notification.FLAG_NO_CLEAR;
-		startForeground(NOTIFICATION_ID, note);
 
 		// get shared preferences
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);

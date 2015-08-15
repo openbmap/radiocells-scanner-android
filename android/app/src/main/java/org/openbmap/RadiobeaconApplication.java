@@ -17,13 +17,14 @@
  */
 package org.openbmap;
 
-import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
-import org.mapsforge.map.model.DisplayModel;
-
 import android.app.Application;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
+
+import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
+import org.mapsforge.map.model.DisplayModel;
+import org.openbmap.services.MasterBrainService;
 
 public class RadiobeaconApplication extends Application {
 
@@ -38,7 +39,10 @@ public class RadiobeaconApplication extends Application {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		Log.i(TAG, "Application created");
+
+		Intent serviceIntent = new Intent(getApplicationContext(), MasterBrainService.class);
+		startService(serviceIntent);
+
 		AndroidGraphicFactory.createInstance(this);
 		final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 		final float fs = Float.valueOf(preferences.getString(SETTING_SCALE,

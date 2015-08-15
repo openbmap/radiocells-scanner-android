@@ -21,11 +21,11 @@
  */
 package org.openbmap.services.position;
 
-import java.util.List;
+import android.location.Location;
 
 import org.openbmap.services.position.providers.LocationProvider;
 
-import android.location.Location;
+import java.util.List;
 
 public interface LocationService {
 
@@ -42,7 +42,7 @@ public interface LocationService {
 	 * This method checks which position is more accurate and uses the most accurate. If force is set, the location will be forced to overwrite the current location.
 	 * </p>
 	 * 
-	 * @param mLocation current position
+	 * @param pos current position
 	 * @param force overwrite if set 
 	 * @return 
 	 */
@@ -53,7 +53,7 @@ public interface LocationService {
 	 * Updates the location service with the current position.<br />
 	 * This method checks which position is more accurate and uses the most accurate
 	 * </p>
-	 * @param mLocation current position
+	 * @param pos current position
 	 */
 	void updateLocation(Location pos);
 	

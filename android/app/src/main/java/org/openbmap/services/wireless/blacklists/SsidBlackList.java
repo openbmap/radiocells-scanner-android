@@ -18,19 +18,19 @@
 
 package org.openbmap.services.wireless.blacklists;
 
+import android.annotation.SuppressLint;
+import android.util.Log;
+
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
-
-import android.annotation.SuppressLint;
-import android.util.Log;
 
 /**
  * Validates ssid against xml file of black listed wifis (e.g. mobile wlans on buses, trains, etc)

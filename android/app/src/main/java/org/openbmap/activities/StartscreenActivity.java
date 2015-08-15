@@ -26,7 +26,7 @@ import android.net.wifi.WifiManager.WifiLock;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -54,7 +54,7 @@ import java.util.Locale;
 /**
  * Parent screen for hosting main screen
  */
-public class StartscreenActivity extends ActionBarActivity
+public class StartscreenActivity extends AppCompatActivity
 implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, UploadTaskListener, ExportGpxTaskListener {
 
 	private static final String TAG = StartscreenActivity.class.getSimpleName();
@@ -137,6 +137,8 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	public final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+        initPersistantFragments();
+
 		// setup data connections
 		mDataHelper = new DataHelper(this);
 
@@ -144,12 +146,10 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		if (b != null) {
 			if (b.getString("command") != null && b.getString("command").equals("upload_all")) {
 				uploadAllCommand();
-			}
-		}
+            }
+        }
 
-		initUi(savedInstanceState);
-
-		initPersistantFragments();
+        initUi(savedInstanceState);
 	}
 
 	/**
@@ -166,7 +166,8 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		if (mUploadTaskFragment == null) {
 			Log.d(TAG, "Task fragment not found. Creating..");
 			mUploadTaskFragment = new UploadTaskFragment();
-			fm.beginTransaction().add(mUploadTaskFragment, UPLOAD_TASK).commitAllowingStateLoss();
+            // was commitAllowingStateLoss()
+			fm.beginTransaction().add(mUploadTaskFragment, UPLOAD_TASK).commit();
 
 			initUploadTaskDialog(true);
 		} else {
@@ -179,7 +180,8 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		if (mExportGpxTaskFragment == null) {
 			Log.d(TAG, "Task fragment not found. Creating..");
 			mExportGpxTaskFragment = new ExportGpxTaskFragment();
-			fm.beginTransaction().add(mExportGpxTaskFragment, EXPORT_GPX_TASK).commitAllowingStateLoss();
+            // was commitAllowingStateLoss()
+            fm.beginTransaction().add(mExportGpxTaskFragment, EXPORT_GPX_TASK).commit();
 
 			initExportGpxTaskDialog(true);
 		} else {
@@ -203,6 +205,8 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		reloadListFragment();
 	}
 
+
+
 	@Override
 	public final void onPause() {
 		releaseWifiLock();
@@ -220,21 +224,30 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 */
 	@Override
 	public final void startCommand() {
-		final Intent newSession = new Intent(this, HostActivity.class);
-		newSession.putExtra("new_session", true);
-		startActivity(newSession);
+        // bring up service
+        final Intent intent = new Intent(RadioBeacon.INTENT_START_TRACKING);
+        sendBroadcast(intent);
+        // bring up UI
+		final Intent activity = new Intent(this, HostActivity.class);
+		activity.putExtra("new_session", true);
+		startActivity(activity);
 	}
 
 
 	/* 
 	 * Resumes existing session
-	 * @param session session to resume
+	 * @param id session id to resume
 	 */
 	@Override
-	public final void resumeCommand(final int session) {
-		final Intent resumeSession = new Intent(this, HostActivity.class);
-		resumeSession.putExtra("_id", session);
-		startActivity(resumeSession);
+	public final void resumeCommand(final int id) {
+        // bring up service
+        final Intent intent = new Intent(RadioBeacon.INTENT_START_TRACKING);
+        intent.putExtra("_id", id);
+        sendBroadcast(intent);
+
+		final Intent activity = new Intent(this, HostActivity.class);
+		activity.putExtra("_id", id);
+		startActivity(activity);
 	}
 
 	/**
@@ -365,8 +378,8 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	@Override
 	public final void deleteAllCommand() {
 		AlertDialogUtils.newInstance(ID_DELETE_ALL,
-				getResources().getString(R.string.dialog_delete_all_sessions_title), getResources().getString(R.string.dialog_delete_all_sessions_message),
-				null, false).show(getSupportFragmentManager(), "delete_all");
+                getResources().getString(R.string.dialog_delete_all_sessions_title), getResources().getString(R.string.dialog_delete_all_sessions_message),
+                null, false).show(getSupportFragmentManager(), "delete_all");
 	}
 
 	public final void deleteAllConfirmed() {
@@ -762,10 +775,18 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 */
 	private void hideUploadTaskDialog() {
 		if (mUploadProgress != null) {
-			mUploadProgress.cancel();
-		}
+			mUploadProgress.dismiss();
+            }
 	}
 
+    /**
+     * Closes upload dialog
+     */
+    private void hideGpxTaskDialog() {
+        if (mExportGpxProgress != null) {
+            mExportGpxProgress.dismiss();
+        }
+    }
 	/**
 	 * Prevent Wi-Fi sleep by acquiring a wifi lock
 	 */
@@ -806,6 +827,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	@Override
 	public void onExportGpxCompleted(final int id) {
 		Log.i(TAG, "GPX export completed");
+        hideGpxTaskDialog();
 	}
 
 	/*
@@ -814,6 +836,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	@Override
 	public void onExportGpxFailed(final int id, final String error) {
 		Log.e(TAG, "GPX export failed: " + error);
+        hideGpxTaskDialog();
 		Toast.makeText(this, R.string.gpx_export_failed, Toast.LENGTH_LONG).show();
 	}
 

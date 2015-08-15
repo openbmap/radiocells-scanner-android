@@ -18,21 +18,21 @@
 
 package org.openbmap.activities;
 
+import android.app.ListFragment;
+import android.app.LoaderManager;
 import android.content.ContentUris;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
-import android.support.v4.widget.SimpleCursorAdapter;
-import android.support.v4.widget.SimpleCursorAdapter.ViewBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
+import android.widget.SimpleCursorAdapter.ViewBinder;
 import android.widget.TextView;
 
 import org.openbmap.R;
@@ -70,6 +70,7 @@ public class CellsListContainer extends ListFragment implements LoaderManager.Lo
 	 * Session id
 	 */
 	private int	mSession;
+	private View mHeader;
 
 	/**
 	 * @link http://stackoverflow.com/questions/6317767/cant-add-a-headerview-to-a-listfragment
@@ -86,17 +87,17 @@ public class CellsListContainer extends ListFragment implements LoaderManager.Lo
 	public final void onActivityCreated(final Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		// Trying to add a Header View.
-		final View header = (View) getLayoutInflater(savedInstanceState).inflate(R.layout.celllistheader, null);
-		this.getListView().addHeaderView(header);
+		this.getListView().addHeaderView(mHeader);
 
 		// setup data
 		initData();
-		getActivity().getSupportLoaderManager().initLoader(CELL_LOADER_ID, null, this);
+		getActivity().getLoaderManager().initLoader(CELL_LOADER_ID, null, this);
 	}
 
 	@Override
 	public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
+		// Trying to add a Header View.
+		mHeader = (View) inflater.inflate(R.layout.celllistheader, null);
 		return inflater.inflate(R.layout.cellslist, container, false);
 	}
 	

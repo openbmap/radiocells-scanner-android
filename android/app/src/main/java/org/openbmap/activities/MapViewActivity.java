@@ -18,6 +18,8 @@
 
 package org.openbmap.activities;
 
+import android.app.ActionBar;
+import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -29,8 +31,6 @@ import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -340,6 +340,12 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	}
 
 	@Override
+	public void onDestroyView() {
+		Log.i(TAG, "OnDestroyView called");
+		super.onDestroyView();
+	}
+
+	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
@@ -587,7 +593,6 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 			this.mMapView.getLayerManager().getLayers().remove(layer);
 		}
 		sessionObjects.clear();
-
 	}
 
 	/**
@@ -1044,7 +1049,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 			this.mMapView.getModel().save(this.preferencesFacade);
 			this.preferencesFacade.save();
 			this.mMapView.getModel().mapViewPosition.destroy();
-			this.mMapView.destroy();
+			this.mMapView.destroyAll();
 		}
 
 		AndroidResourceBitmap.clearResourceBitmaps();

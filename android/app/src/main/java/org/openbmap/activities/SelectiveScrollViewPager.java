@@ -17,26 +17,26 @@
  */
 package org.openbmap.activities;
 
-import org.mapsforge.map.android.view.MapView;
-
 import android.content.Context;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 
+import org.mapsforge.map.android.view.MapView;
+
 /**
  * View pager, that disables swipe scrolling for map tab
  */
-public class CustomViewPager extends ViewPager {
+public class SelectiveScrollViewPager extends ViewPager {
 	
-	private static final String TAG = CustomViewPager.class.getSimpleName();
+	private static final String TAG = SelectiveScrollViewPager.class.getSimpleName();
 	
-    public CustomViewPager(final Context context) {
+    public SelectiveScrollViewPager(final Context context) {
         super(context);
     }
 
-    public CustomViewPager(final Context context, final AttributeSet attrs) {
+    public SelectiveScrollViewPager(final Context context, final AttributeSet attrs) {
         super(context, attrs);
     }
 

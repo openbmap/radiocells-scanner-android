@@ -18,27 +18,27 @@
 
 package org.openbmap.activities;
 
+import android.app.ActionBar;
 import android.app.AlertDialog;
+import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
+import android.os.Messenger;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBar.Tab;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -48,16 +48,8 @@ import android.widget.Toast;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
-import org.openbmap.db.DataHelper;
-import org.openbmap.db.models.Session;
-import org.openbmap.services.ServiceManager;
-import org.openbmap.services.position.GpxLoggerService;
-import org.openbmap.services.position.PositioningService;
-import org.openbmap.services.position.PositioningService.State;
-import org.openbmap.services.wireless.WirelessLoggerService;
+import org.openbmap.services.MasterBrainService;
 import org.openbmap.utils.ActivityUtils;
-
-import java.lang.ref.WeakReference;
 
 /**
  * HostActity for "tracking" mode. It hosts the tabs "Stats", "Wifi Overview", "Cell Overview" and "Map".
@@ -66,47 +58,136 @@ import java.lang.ref.WeakReference;
  * They can be manually stopped by calling INTENT_STOP_TRACKING.
  * 
  */
-public class HostActivity extends ActionBarActivity {
+public class HostActivity extends AppCompatActivity {
 	private static final String	TAG	= HostActivity.class.getSimpleName();
 
 	/**
 	 * Tab pager
 	 */
-	private CustomViewPager mPager;
-
-	private Tab mTab;
+	private SelectiveScrollViewPager mPager;
 
 	/**
 	 * Keeps the SharedPreferences.
 	 */
 	private SharedPreferences mPrefs = null;
 
-	/**
-	 * Background service collecting cell and wifi infos.
-	 */
-	private ServiceManager mWirelessServiceManager;
+	private android.support.v7.app.ActionBar mActionBar;
 
-	/**
-	 * Background gps location service.
-	 */
-	private ServiceManager mPositionServiceManager;
+    /** Messenger for communicating with service. */
+    Messenger mService = null;
 
-	/**
-	 * Background gpx logger server
-	 */
-	private ServiceManager mGpxLoggerServiceManager;
+    /** Flag indicating whether we have called bind on the service. */
+    boolean mIsBound;
 
-	/**
-	 * Database helper used for session handling here.
-	 */
-	private DataHelper mDataHelper;
+    private CustomViewPagerAdapter mTabsAdapter;
 
-	/**
-	 * Selected navigation provider, default GPS
-	 */
-	private State mSelectedProvider = State.GPS;
+    /**
+     * Handler of incoming messages from service.
+     */
+    class IncomingHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case RadioBeacon.MSG_SERVICE_SHUTDOWN:
+                    int reason = msg.arg1;
 
-	private ActionBar mActionBar;
+                    if (reason == RadioBeacon.SHUTDOWN_REASON_LOW_POWER) {
+                        Toast.makeText(HostActivity.this, getString(R.string.battery_warning), Toast.LENGTH_LONG).show();
+                    }
+
+                    doUnbindService();
+                    HostActivity.this.finish();
+                    break;
+                default:
+                    super.handleMessage(msg);
+            }
+        }
+    }
+
+    /**
+     * Target we publish for clients to send messages to IncomingHandler.
+     */
+    final Messenger mMessenger = new Messenger(new IncomingHandler());
+
+    /**
+     * Class for interacting with the main interface of the service.
+     */
+    private ServiceConnection mConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // This is called when the connection with the service has been
+            // established, giving us the service object we can use to
+            // interact with the service.  We are communicating with our
+            // service through an IDL interface, so get a client-side
+            // representation of that from the raw service object.
+            mService = new Messenger(service);
+            //mCallbackText.setText("Attached.");
+
+            // We want to monitor the service for as long as we are
+            // connected to it.
+            try {
+                Message msg = Message.obtain(null, RadioBeacon.MSG_REGISTER_CLIENT);
+                msg.replyTo = mMessenger;
+                mService.send(msg);
+
+                // Give it some value as an example.
+                //msg = Message.obtain(null, MasterBrainService.MSG_SET_VALUE, this.hashCode(), 0);
+                //mService.send(msg);
+            } catch (RemoteException e) {
+                // In this case the service has crashed before we could even
+                // do anything with it; we can count on soon being
+                // disconnected (and then reconnected if it can be restarted)
+                // so there is no need to do anything here.
+            }
+
+            // As part of the sample, tell the user what happened.
+            //Toast.makeText(HostActivity.this, "Service connected", Toast.LENGTH_SHORT).show();
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            // This is called when the connection with the service has been
+            // unexpectedly disconnected -- that is, its process crashed.
+            mService = null;
+            // mCallbackText.setText("Disconnected.");
+
+            // As part of the sample, tell the user what happened.
+            // Toast.makeText(HostActivity.this, "Service disconnected", Toast.LENGTH_SHORT).show();
+        }
+    };
+
+    /**
+     * Establish a connection with the service.  We use an explicit
+     * class name because there is no reason to be able to let other
+     * applications replace our component.
+     */
+    void doBindService() {
+
+        bindService(new Intent(HostActivity.this, MasterBrainService.class), mConnection, Context.BIND_AUTO_CREATE);
+        mIsBound = true;
+        //mCallbackText.setText("Binding.");
+    }
+
+    void doUnbindService() {
+        if (mIsBound) {
+            // If we have received the service, and hence registered with
+            // it, then now is the time to unregister.
+            if (mService != null) {
+                try {
+                    Message msg = Message.obtain(null, RadioBeacon.MSG_UNREGISTER_CLIENT);
+                    msg.replyTo = mMessenger;
+                    mService.send(msg);
+                } catch (RemoteException e) {
+                    // There is nothing special we need to do if the service
+                    // has crashed.
+                }
+            }
+
+            // Detach our existing connection.
+            unbindService(mConnection);
+            mIsBound = false;
+            //mCallbackText.setText("Unbinding.");
+        }
+    }
 
 	/**
 	 * Receives GPS location updates 
@@ -119,136 +200,20 @@ public class HostActivity extends ActionBarActivity {
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
 			Log.d(TAG, "Received intent " + intent.getAction().toString());
-			/*if (RadioBeacon.INTENT_START_TRACKING.equals(intent.getAction())) {
-				startServices();
-			} else*/
-			if (RadioBeacon.INTENT_STOP_TRACKING.equals(intent.getAction())) {
-				Log.d(TAG, "INTENT_STOP_TRACKING received");
-				// invalidates active track
-				closeActiveSession();
-				// stops background services
-				stopServices();
-
-				HostActivity.this.finish();
-			}
-
-			if (Intent.ACTION_BATTERY_LOW.equals(intent.getAction())) {
-				Log.d(TAG, "ACTION_BATTERY_LOW received");
-				final boolean ignoreBattery = mPrefs.getBoolean(Preferences.KEY_IGNORE_BATTERY, Preferences.VAL_IGNORE_BATTERY);
-				if (!ignoreBattery) {
-					Toast.makeText(context, getString(R.string.battery_warning), Toast.LENGTH_LONG).show();
-					updateSessionStats();
-					// invalidates active track
-					closeActiveSession();
-					// stops background services
-					stopServices();
-
-					HostActivity.this.finish();
-				} else {
-					Log.i(HostActivity.TAG, "Battery low but ignoring due to settings");
-				}
-
-			}
 		}
 	};
-
-	/**
-	 * Reacts on messages from gps location service 
-	 */
-	private static class GpsLocationHandler extends Handler {
-		private final WeakReference<HostActivity> mActivity;
-
-		GpsLocationHandler(final HostActivity activity) {
-			mActivity = new WeakReference<HostActivity>(activity);
-		}
-
-		@Override
-		public void handleMessage(final Message msg) {
-			switch (msg.what) {
-				case RadioBeacon.MSG_SERVICE_READY:
-					// start tracking immediately after service is ready 
-					Log.d(TAG, "Positioning Service ready. Requesting position updates");
-					if (mActivity != null) {	
-						final HostActivity tab =  mActivity.get();
-						tab.requestPositionUpdates(State.GPS);
-					}
-					break;
-
-				default:
-					super.handleMessage(msg);
-			}
-		}
-	}
-
-	/**
-	 * Reacts on messages from wireless logging service 
-	 */
-	private static class WirelessHandler extends Handler {
-		private final WeakReference<HostActivity> mActivity;
-
-		WirelessHandler(final HostActivity activity) {
-			mActivity = new WeakReference<HostActivity>(activity);
-		}
-
-		@Override
-		public void handleMessage(final Message msg) {
-			switch (msg.what) {
-				case RadioBeacon.MSG_SERVICE_READY:
-					// start tracking immediately after service is ready 
-					Log.d(TAG, "WirelessLogger Service ready. Requesting wireless updates");
-					if (mActivity != null) {
-						final HostActivity tab =  mActivity.get();
-						tab.requestWirelessUpdates();
-					}
-				default:
-					super.handleMessage(msg);
-			}
-		}
-	}
-
-	/**
-	 * Reacts on messages from gps logging service 
-	 */
-	private static class GpxLoggerHandler extends Handler {
-		private final WeakReference<HostActivity> mActivity;
-
-		GpxLoggerHandler(final HostActivity activity) {
-			mActivity = new WeakReference<HostActivity>(activity);
-		}
-
-		@Override
-		public void handleMessage(final Message msg) {
-			switch (msg.what) {
-				case RadioBeacon.MSG_SERVICE_READY:
-					// start tracking immediately after service is ready 
-					if (mActivity != null) {
-						final HostActivity tab =  mActivity.get();
-						tab.requestGpxTracking();
-					}
-				default:
-					super.handleMessage(msg);
-			}
-		}
-	}
 
 	/** Called when the activity is first created. */
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		Log.d(TAG, "Creating HostActivity");
-
-		mDataHelper = new DataHelper(this);
-
 		// get shared preferences
 		mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
 		// UI related stuff
-		setContentView(R.layout.host_activity);
-		final boolean keepScreenOn = mPrefs.getBoolean(Preferences.KEY_KEEP_SCREEN_ON, false);
-		ActivityUtils.setKeepScreenOn(this, keepScreenOn);
 
-		initUi(savedInstanceState);
+		initUi();
 
 		// service related stuff
 		verifyGPSProvider();
@@ -261,36 +226,18 @@ public class HostActivity extends ActionBarActivity {
 	protected final void onResume() {
 		super.onResume();
 
-		Log.d(TAG, "Resuming HostActivity");
-
+        doBindService();
 		setupBroadcastReceiver();
-		setupSession();
-
-		/* TODO: sort out, what is needed here
-		 * // Check GPS status if (checkGPSFlag &&
-		 * prefs.getBoolean(OSMTracker.Preferences.KEY_GPS_CHECKSTARTUP, OSMTracker.Preferences.VAL_GPS_CHECKSTARTUP)) { checkGPSProvider(); }
-		 */
-		// Register GPS status update for upper controls
-		//((StatusBar) findViewById(R.id.gpsStatus)).requestLocationUpdates(true);
-
-		// setup GPS and wireless logger services
-		startServices();
-
-		// explicitly request updates, automatic resume isn't working smoothly 
-		requestPositionUpdates(mSelectedProvider);
-		requestWirelessUpdates();
 	}
 
 	@Override
 	protected final void onPause() {
-		Log.d(TAG, "Pausing HostActivity");
-		updateSessionStats();
+        doUnbindService();
 		super.onPause();
 	}
 
 	@Override
 	protected final void onStop() {
-		Log.d(TAG, "Stopping HostActivity");
 		// TODO: if receivers are unregistered on stop, there is no way to start/stop services via receivers from outside
 		unregisterReceiver();
 		super.onStop();
@@ -298,16 +245,7 @@ public class HostActivity extends ActionBarActivity {
 
 	@Override
 	protected final void onDestroy() {
-		Log.d(TAG, "Destroying HostActivity");
-
-		updateSessionStats();
 		unregisterReceiver();
-
-		// change from unbind to unbindAndStop caused problems, when screen was locked
-		if (mPositionServiceManager != null) { mPositionServiceManager.unbind();};
-		if (mWirelessServiceManager != null) { mWirelessServiceManager.unbind();}
-		if (mGpxLoggerServiceManager != null) { mGpxLoggerServiceManager.unbind();};
-
 		super.onDestroy();
 	}
 
@@ -343,9 +281,8 @@ public class HostActivity extends ActionBarActivity {
 	public final boolean onOptionsItemSelected(final MenuItem item) {
 		switch (item.getItemId()) {
 			case R.id.menu_stoptracking:
-				updateSessionStats();
-				closeActiveSession();
-				stopServices();
+				final Intent stop = new Intent(RadioBeacon.INTENT_STOP_TRACKING);
+				sendBroadcast(stop);
 
 				final Intent intent = new Intent(this, StartscreenActivity.class);
 				intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -356,18 +293,6 @@ public class HostActivity extends ActionBarActivity {
 				break; 
 		}
 		return super.onOptionsItemSelected(item);
-	}
-
-	/**
-	 * Updates number of cells and wifis.
-	 */
-	private void updateSessionStats() {
-		final Session active = mDataHelper.loadActiveSession();
-		if (active != null) {
-			active.setNumberOfWifis(mDataHelper.countWifis(active.getId()));
-			active.setNumberOfCells(mDataHelper.countCells(active.getId()));
-			mDataHelper.storeSession(active, false);
-		}	
 	}
 
 	/**
@@ -404,382 +329,76 @@ public class HostActivity extends ActionBarActivity {
 		}
 	}
 
-
-	/**
-	 * Starts broadcasting GPS position.
-	 * @param provider
-	 * @return false on error, otherwise true
-	 */
-	public final boolean requestPositionUpdates(final State provider) {
-		// TODO check whether services have already been connected (i.e. received MSG_SERVICE_READY signal)
-		Log.d(TAG, "Requesting position updates");
-		try {
-			if (mPositionServiceManager == null) {
-				Log.w(TAG, "gpsPositionServiceManager is null. No message will be sent");
-				return false;
-			}
-
-			final int session = mDataHelper.getActiveSessionId();
-
-			if (session == RadioBeacon.SESSION_NOT_TRACKING) {
-				Log.e(TAG, "Couldn't start tracking, no active session");
-				return false;
-			}
-
-			final Bundle aProviderBundle = new Bundle();
-			aProviderBundle.putString("provider", provider.toString());
-
-			final Message msgGpsUp = new Message(); 
-			msgGpsUp.what = RadioBeacon.MSG_START_TRACKING;
-			msgGpsUp.setData(aProviderBundle);
-
-			mPositionServiceManager.sendAsync(msgGpsUp);
-
-			// update recording indicator
-			//((StatusBar) findViewById(R.id.gpsStatus)).manageRecordingIndicator(true);
-
-			updateUI();	
-			mSelectedProvider = provider;
-			return true;
-		} catch (final RemoteException e) {
-			// service communication failed
-			e.printStackTrace();
-			return false;
-		} catch (final NumberFormatException e) {
-			e.printStackTrace();
-			return false;
-		} catch (final Exception e) {
-			e.printStackTrace();
-			return false;
-		}
-	}
-
-
-	/**
-	 * Starts wireless tracking.
-	 * @return false on error, otherwise true
-	 */
-	public final boolean requestWirelessUpdates() {
-		// TODO check whether services have already been connected (i.e. received MSG_SERVICE_READY signal)
-		Log.d(TAG, "Requesting wireless updates");
-		try {
-			if (mWirelessServiceManager == null) {
-				Log.w(TAG, "wirelessServiceManager is null. No message will be sent");
-				return false;
-			}
-
-			final int session = mDataHelper.getActiveSessionId();
-
-			if (session == RadioBeacon.SESSION_NOT_TRACKING) {
-				Log.e(TAG, "Couldn't start tracking, no active session");
-				return false;
-			}
-
-			final Bundle aSessionIdBundle = new Bundle();
-			aSessionIdBundle.putInt(RadioBeacon.MSG_KEY, session);
-
-			final Message msgWirelessUp = new Message(); 
-			msgWirelessUp.what = RadioBeacon.MSG_START_TRACKING;
-			msgWirelessUp.setData(aSessionIdBundle);
-
-			mWirelessServiceManager.sendAsync(msgWirelessUp);
-
-			updateUI();			
-			return true;
-		} catch (final RemoteException e) {
-			// service communication failed
-			e.printStackTrace();
-			return false;
-		} catch (final NumberFormatException e) {
-			e.printStackTrace();
-			return false;	
-		} catch (final Exception e) {
-			e.printStackTrace();
-			return false;	
-		}	
-	}
-
-	/**
-	 * Starts GPX tracking.
-	 * @return false on error, otherwise true
-	 */
-	public final boolean requestGpxTracking() {
-		// TODO check whether services have already been connected (i.e. received MSG_SERVICE_READY signal)
-		Log.d(TAG, "Requesting gpx tracking");
-		try {
-			if (mPositionServiceManager == null) {
-				Log.w(TAG, "gpsPositionServiceManager is null. No message will be sent");
-				return false;
-			}
-
-			final int session = mDataHelper.getActiveSessionId();
-
-			if (session == RadioBeacon.SESSION_NOT_TRACKING) {
-				Log.e(TAG, "Couldn't start tracking, no active session");
-				return false;
-			}
-
-			Log.d(TAG, "Resuming session " + session);
-
-			final Bundle aSessionIdBundle = new Bundle();
-			aSessionIdBundle.putInt(RadioBeacon.MSG_KEY, session);
-
-			final Message msgGpsUp = new Message(); 
-			msgGpsUp.what = RadioBeacon.MSG_START_TRACKING;
-			msgGpsUp.setData(aSessionIdBundle);
-
-			mPositionServiceManager.sendAsync(msgGpsUp);
-
-			return true;
-		} catch (final RemoteException e) {
-			// service communication failed
-			e.printStackTrace();
-			return false;
-		} catch (final NumberFormatException e) {
-			e.printStackTrace();
-			return false;
-		} catch (final Exception e) {
-			e.printStackTrace();
-			return false;
-		}
-	}
-
-
 	/**
 	 * Setups receiver for STOP_TRACKING and ACTION_BATTERY_LOW messages
 	 */
 	private void setupBroadcastReceiver() {
 		final IntentFilter filter = new IntentFilter();
-		//filter.addAction(RadioBeacon.INTENT_START_TRACKING);
 		filter.addAction(RadioBeacon.INTENT_STOP_TRACKING);
-		filter.addAction(Intent.ACTION_BATTERY_LOW);
 		registerReceiver(mReceiver, filter);		
 	}
 
 	/**
-	 * Pauses GPS und wireless logger services.
-	 */
-	/* doesn't work: services aren't properly restarted / finally stopped
-	private void requestPause() {
-		// Pause tracking
-		try {
-			gpsPositionServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
-			wirelessServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
-
-			Session toPause = mDataHelper.loadActiveSession();
-			if (toPause != null) {
-				toPause.isActive(false);
-				mDataHelper.storeSession(toPause, true);
-			}
-
-			((StatusBar) findViewById(R.id.gpsStatus)).manageRecordingIndicator(false); 
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-	}
-	 */
-
-	/**
-	 * Opens a new session object. If there's any active session or a specific session id is provided, this session is resumed,
-	 * otherwise a new session created
-	 */
-	private void setupSession() {
-
-		final Bundle extras = getIntent().getExtras();
-		if (extras != null && extras.getInt("_id")  != 0) {
-			// A session to resume was specified
-			final int id = extras.getInt("_id");
-			Log.i(TAG, "Opening specified session " + id);
-			mDataHelper.invalidateActiveSessions();
-			openExistingSession(id);
-		} else {
-			// search for any active session
-			final int activeSession = mDataHelper.getActiveSessionId();
-			if (activeSession != RadioBeacon.SESSION_NOT_TRACKING) {
-				Log.i(TAG, "Resuming session " + activeSession);
-				openExistingSession(activeSession);
-			} else {
-				Log.i(TAG, "Starting new session");
-				openNewSession();
-			}
-		}
-		updateSessionStats();
-	}
-
-	/**
-	 * Opens new session
-	 */
-	private void openNewSession() {
-		// invalidate all active session
-		mDataHelper.invalidateActiveSessions();
-		// Create a new session and activate it
-		// Then start HostActivity. HostActivity onStart() and onResume() check active session
-		// and starts services for active session
-		final Session active = new Session();
-		active.setCreatedAt(System.currentTimeMillis());
-		active.setLastUpdated(System.currentTimeMillis());
-		active.setDescription("No description yet");
-		active.isActive(true);
-		// id can only be set after session has been stored to database.
-		final Uri result = mDataHelper.storeSession(active);
-		active.setId(result);
-	}
-
-	/**
-	 * Resumes specific session
-	 * @param id
-	 */
-	private void openExistingSession(final int id) {
-		// TODO: check whether we need a INTENT_START_SERVICE here
-		final Session resume = mDataHelper.loadSession(id);
-
-		if (resume == null) {
-			Log.e(TAG, "Error loading session " + id);
-			return;
-		}
-
-		resume.isActive(true);
-		mDataHelper.storeSession(resume, true);
-	}
-
-	/**
-	 * 
-	 */
-	private void closeActiveSession() {
-		mDataHelper.invalidateActiveSessions();
-		// update recording indicator
-		// ((StatusBar) findViewById(R.id.gpsStatus)).manageRecordingIndicator(false);
-	}
-
-	/**
-	 * Setups services. Any running services will be restart.
-	 */
-	private void startServices() {
-		stopServices();
-
-		Log.d(TAG, "Starting Services");
-		if (mPositionServiceManager == null) {
-			mPositionServiceManager = new ServiceManager(this, PositioningService.class, new GpsLocationHandler(this));
-		}
-		mPositionServiceManager.bindAndStart();
-
-		if (mWirelessServiceManager == null) {
-			mWirelessServiceManager = new ServiceManager(this, WirelessLoggerService.class, new WirelessHandler(this));
-		}
-		mWirelessServiceManager.bindAndStart();
-
-		if (mGpxLoggerServiceManager == null) {
-			mGpxLoggerServiceManager = new ServiceManager(this, GpxLoggerService.class, new GpxLoggerHandler(this));
-		}
-		mGpxLoggerServiceManager.bindAndStart();
-	}
-
-	/**
-	 * Stops GPS und wireless logger services.
-	 */
-	private void stopServices() {
-		Log.d(TAG, "Stopping Services");
-		// Brute force: specific ServiceManager can be null, if service hasn't been started
-		// Service status is ignored, stop message is send regardless of whether started or not
-		try {
-			mPositionServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
-			// deactivated: let's call this from the service itself
-			// positionServiceManager.unbindAndStop();
-		} catch (final Exception e) {
-			Log.w(TAG, "Failed to stop gpsPositionServiceManager. Is service runnign?" /*+ e.getMessage()*/);
-			//e.printStackTrace();
-		}
-
-		try {
-			mWirelessServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
-			// deactivated: let's call this from the service itself
-			// wirelessServiceManager.unbindAndStop();
-		} catch (final Exception e) {
-			Log.w(TAG, "Failed to stop wirelessServiceManager. Is service running?" /*+ e.getMessage()*/);
-			//e.printStackTrace();
-		}
-
-		try {
-			mGpxLoggerServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
-			// deactivated: let's call this from the service itself
-			// gpxLoggerServiceManager.unbindAndStop();
-		} catch (final Exception e) {
-			Log.w(TAG, "Failed to stop gpxLoggerServiceManager. Is service running?" /*+ e.getMessage()*/);
-			//e.printStackTrace();
-		}
-	}
-
-	/**
 	 * Configures UI elements.
-	 * @param savedInstanceState 
 	 */
-	private void initUi(final Bundle savedInstanceState) {
-		getSupportActionBar().setDisplayShowTitleEnabled(false);
+	private void initUi() {
+        setContentView(R.layout.host_activity);
+        final boolean keepScreenOn = mPrefs.getBoolean(Preferences.KEY_KEEP_SCREEN_ON, false);
+        ActivityUtils.setKeepScreenOn(this, keepScreenOn);
 
-		mActionBar = getSupportActionBar();
-		mActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        // Activate Fragment Manager
+        final FragmentManager fm = getFragmentManager();
 
-		// Locate ViewPager in activity_main.xml
-		mPager = (CustomViewPager) findViewById(R.id.pager);
-		// Activate Fragment Manager
-		final FragmentManager fm = getSupportFragmentManager();
+        mActionBar = getSupportActionBar();
+		getSupportActionBar().setDisplayShowHomeEnabled(true);
+		getSupportActionBar().setDisplayShowTitleEnabled(true);
+		//getSupportActionBar().setLogo(R.drawable.ic_action_logo);
+		//getSupportActionBar().setDisplayUseLogoEnabled(true);
+        mActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
-		// Capture ViewPager page swipes
-		final ViewPager.SimpleOnPageChangeListener ViewPagerListener = new ViewPager.SimpleOnPageChangeListener() {
-			@Override
-			public void onPageSelected(final int position) {
-				super.onPageSelected(position);
-				// Find the ViewPager Position
-				getSupportActionBar().setSelectedNavigationItem(position);
-			}
-		};
+        // Highlight helper for selected tab in actionbar
+        mPager = (SelectiveScrollViewPager) findViewById(R.id.pager);
+        mPager.setOffscreenPageLimit(0);
 
-		mPager.setOnPageChangeListener(ViewPagerListener);
+        // add tabs to actionbar
+        final CustomViewPagerAdapter mTabsAdapter = new CustomViewPagerAdapter(this, mPager);
+        mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.overview)), StatsActivity.class, null);
+        mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.wifis)), WifiListContainer.class, null);
+        mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.cells)), CellsListContainer.class, null);
+        mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.map)), MapViewActivity.class, null);
 
-		final CustomViewPagerAdapter viewpageradapter = new CustomViewPagerAdapter(fm);
-		mPager.setAdapter(viewpageradapter);
 
-		// Capture tab button clicks
-		final ActionBar.TabListener tabListener = new ActionBar.TabListener() {
-			@Override
-			public void onTabSelected(final Tab tab, final FragmentTransaction ft) {
-				// Pass the position on tab click to ViewPager
-				mPager.setCurrentItem(tab.getPosition());
-			}
+ /*
+        final ActionBar.TabListener tabListener = new ActionBar.TabListener() {
+            @Override
+            public void onTabSelected(final Tab tab, final FragmentTransaction ft) {
+                // Highlight actionbar
+                Object tag = tab.getTag();
+                for (int i=0; i < getSupportActionBar().getTabCount(); i++) {
+                    if (getSupportActionBar().getTabAt(i).getTag() == tag) {
+                        mPager.setCurrentItem(0);
+                        mPager.setCurrentItem(i);
+                    }
+                }
+				//mPager.setCurrentItem(tab.getPosition());
+            }
 
-			@Override
-			public void onTabUnselected(final Tab tab, final FragmentTransaction ft) {
-				// TODO Auto-generated method stub
-			}
+            @Override
+            public void  onTabUnselected(final Tab tab, final FragmentTransaction ft) {
+                // TODO Auto-generated method stub
+            }
 
-			@Override
-			public void onTabReselected(final Tab tab, final FragmentTransaction ft) {
-				// TODO Auto-generated method stub
-			}
-		};
+            @Override
+            public void onTabReselected(final Tab tab, final FragmentTransaction ft) {
+                // TODO Auto-generated method stub
+            }
+        };
+*/
+        // set contents
 
-		// Create tabs
-		mTab = mActionBar.newTab().setText(R.string.overview).setTabListener(tabListener);
-		getSupportActionBar().addTab(mTab);
 
-		mTab = mActionBar.newTab().setText(R.string.wifis).setTabListener(tabListener);
-		getSupportActionBar().addTab(mTab);
 
-		mTab = mActionBar.newTab().setText(R.string.cells).setTabListener(tabListener);
-		getSupportActionBar().addTab(mTab);
 
-		mTab = mActionBar.newTab().setText(R.string.map).setTabListener(tabListener);
-		getSupportActionBar().addTab(mTab);
+
 	}
-
-	/**
-	 * Broadcasts requests for UI refresh on wifi and cell info.
-	 */
-	private void updateUI() {
-		final Intent intent1 = new Intent(RadioBeacon.INTENT_WIFI_UPDATE);
-		sendBroadcast(intent1);
-		final Intent intent2 = new Intent(RadioBeacon.INTENT_CELL_UPDATE);
-		sendBroadcast(intent2);
-	}
-
 }

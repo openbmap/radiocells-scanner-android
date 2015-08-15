@@ -18,15 +18,15 @@
 
 package org.openbmap.services.position;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Vector;
+import android.location.Location;
+import android.util.Log;
 
 import org.openbmap.services.position.providers.LocationProvider;
 import org.openbmap.utils.GeometryUtils;
 
-import android.location.Location;
-import android.util.Log;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
 
 /**
  * Inspirations from Paul Woelfel, Email: frig@frig.at

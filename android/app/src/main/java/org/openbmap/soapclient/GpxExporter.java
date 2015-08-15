@@ -18,6 +18,15 @@
 
 package org.openbmap.soapclient;
 
+import android.content.Context;
+import android.database.Cursor;
+import android.util.Log;
+
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.openbmap.RadioBeacon;
+import org.openbmap.db.DatabaseHelper;
+import org.openbmap.db.Schema;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -27,15 +36,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
-
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.openbmap.RadioBeacon;
-import org.openbmap.db.DatabaseHelper;
-import org.openbmap.db.Schema;
-
-import android.content.Context;
-import android.database.Cursor;
-import android.util.Log;
 
 /**
  * Writes GPX file for session
@@ -138,7 +138,7 @@ public class GpxExporter {
 	 * @throws IOException 
 	 */
 	public final void doExport(final String trackName, final File target) throws IOException {
-		Log.i(TAG, "Finished building gpx file");
+		Log.i(TAG, "Exporting gpx file" + target.getAbsolutePath());
 		mDbHelper = new DatabaseHelper(mContext);
 
 		final BufferedWriter bw = new BufferedWriter(new FileWriter(target));

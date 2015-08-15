@@ -18,11 +18,6 @@
 
 package org.openbmap.services.position;
 
-import org.openbmap.RadioBeacon;
-import org.openbmap.db.DataHelper;
-import org.openbmap.db.models.PositionRecord;
-import org.openbmap.services.AbstractService;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -35,6 +30,11 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
 import android.util.Log;
+
+import org.openbmap.RadioBeacon;
+import org.openbmap.db.DataHelper;
+import org.openbmap.db.models.PositionRecord;
+import org.openbmap.services.AbstractService;
 
 
 /**
@@ -87,7 +87,7 @@ public class GpxLoggerService extends AbstractService {
 
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
-			Log.d(TAG, "Received intent " + intent.getAction());
+			//Log.d(TAG, "Received intent " + intent.getAction());
 			// handling gps broadcasts
 			if (RadioBeacon.INTENT_POSITION_UPDATE.equals(intent.getAction())) {
 				if (!mIsTracking) {

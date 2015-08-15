@@ -18,18 +18,16 @@
 
 package org.openbmap.activities;
 
+import android.app.ListFragment;
+import android.app.LoaderManager;
 import android.content.ContentUris;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
-import android.support.v4.widget.SimpleCursorAdapter;
-import android.support.v4.widget.SimpleCursorAdapter.ViewBinder;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -39,6 +37,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
+import android.widget.SimpleCursorAdapter.ViewBinder;
 import android.widget.TextView;
 
 import org.openbmap.R;
@@ -46,11 +46,6 @@ import org.openbmap.db.DataHelper;
 import org.openbmap.db.RadioBeaconContentProvider;
 import org.openbmap.db.Schema;
 import org.openbmap.utils.TriToggleButton;
-
-//import android.view.ContextMenu;
-//import android.view.ContextMenu.ContextMenuInfo;
-//import android.view.MenuInflater;
-//import android.view.MenuItem;
 
 /**
  * Parent activity for hosting wifi list
@@ -123,6 +118,7 @@ public class WifiListContainer extends ListFragment implements LoaderManager.Loa
 	
 	@Override
 	public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
+		mHheader = (View) inflater.inflate(R.layout.wifilistheader, null);
 		return inflater.inflate(R.layout.wifilist, container, false);
 	}
 	
@@ -130,8 +126,7 @@ public class WifiListContainer extends ListFragment implements LoaderManager.Loa
 	public final void onActivityCreated(final Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		setHasOptionsMenu(true);
-		
-		mHheader = (View) getLayoutInflater(savedInstanceState).inflate(R.layout.wifilistheader, null);
+
 		this.getListView().addHeaderView(mHheader);
 		registerForContextMenu(mHheader);
 
@@ -140,7 +135,7 @@ public class WifiListContainer extends ListFragment implements LoaderManager.Loa
 		// setup data
 		initData();
 
-		getActivity().getSupportLoaderManager().initLoader(WIFI_LOADER_ID, null, this); 
+		getActivity().getLoaderManager().initLoader(WIFI_LOADER_ID, null, this);
 	}
 	
 	/**
@@ -218,20 +213,7 @@ public class WifiListContainer extends ListFragment implements LoaderManager.Loa
 	public void onCreateOptionsMenu (final Menu menu, final MenuInflater inflater){
 		inflater.inflate(R.menu.wifilist_context, menu);
 	}
-	
-	/*
-	@Override
-	public final void onCreateContextMenu(final ContextMenu menu, final View v, final ContextMenuInfo menuInfo) {
-		super.onCreateContextMenu(menu, v, menuInfo);
-		
-		//TODO: context menu not yet shown
 
-		int menuId = R.menu.wifilist_context;
-		MenuInflater inflater = getActivity().getMenuInflater();
-		inflater.inflate(menuId, menu);
-	}
-	*/
-	
 	@Override
 	public boolean onOptionsItemSelected(final MenuItem item) {
 		switch (item.getItemId()) {

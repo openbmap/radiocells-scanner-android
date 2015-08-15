@@ -18,16 +18,15 @@
 
 package org.openbmap.db.models;
 
+import android.location.Location;
+
+import org.openbmap.RadioBeacon;
+import org.openbmap.utils.GeometryUtils;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-
-import org.mapsforge.core.model.LatLong;
-import org.openbmap.RadioBeacon;
-import org.openbmap.utils.GeometryUtils;
-
-import android.location.Location;
 
 /**
  * Model position record

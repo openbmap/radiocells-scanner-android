@@ -18,10 +18,10 @@
 
 package org.openbmap.services.position.providers;
 
+import android.location.Location;
+
 import org.openbmap.services.position.LocationService;
 import org.openbmap.services.position.PositioningService;
-
-import android.location.Location;
 
 public interface LocationProvider {
 	

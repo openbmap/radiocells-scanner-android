@@ -24,6 +24,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -42,6 +43,8 @@ import java.util.ArrayList;
  * Parent activity for hosting wifi detail fragment
  */
 public class WifiDetailsActivity extends FragmentActivity {
+
+	private static final String TAG = WifiDetailsActivity.class.getSimpleName();
 
 	private DataHelper mDatahelper;
 
@@ -111,27 +114,29 @@ public class WifiDetailsActivity extends FragmentActivity {
 
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-        if (!prefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_WIFI_CATALOG_NONE).equals(Preferences.VAL_WIFI_CATALOG_NONE)) {
-            // Open catalog database
-            final String file = prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
-                    this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_SUBDIR)
-                    + File.separator + prefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_WIFI_CATALOG_FILE);
-            final SQLiteDatabase mCatalog = SQLiteDatabase.openDatabase(file, null, SQLiteDatabase.OPEN_READONLY);
+		if (wifi == null) {
+			Log.e(TAG, "Wifi argument was null");
+			return;
+		}
 
-            Cursor cur = null;
-            cur = mCatalog.rawQuery("SELECT _id, manufactor FROM manufactors WHERE "
-                                + "(bssid = ?) LIMIT 1",
-                        new String[] {wifi.getBssid().replace(":", "").replace("-","").substring(0,6).toUpperCase()});
+			if (!prefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_WIFI_CATALOG_NONE).equals(Preferences.VAL_WIFI_CATALOG_NONE)) {
+				// Open catalog database
+				final String file = prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
+						this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_SUBDIR)
+						+ File.separator + prefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_WIFI_CATALOG_FILE);
+				final SQLiteDatabase mCatalog = SQLiteDatabase.openDatabase(file, null, SQLiteDatabase.OPEN_READONLY);
 
-            if (cur.moveToFirst()) {
-                final String manufactor = cur.getString(cur.getColumnIndex("manufactor"));
-                tvManufactor.setText(manufactor);
-            }
-        }
+				Cursor cur = null;
+				cur = mCatalog.rawQuery("SELECT _id, manufactor FROM manufactors WHERE "
+								+ "(bssid = ?) LIMIT 1",
+						new String[] {wifi.getBssid().replace(":", "").replace("-","").substring(0,6).toUpperCase()});
 
+				if (cur.moveToFirst()) {
+					final String manufactor = cur.getString(cur.getColumnIndex("manufactor"));
+					tvManufactor.setText(manufactor);
+				}
+			}
 
-
-		if (wifi != null) {
 			tvSsid.setText(wifi.getSsid() + " (" + wifi.getBssid() + ")");
 			if (wifi.getCapabilities() != null) {
 				tvCapabilities.setText(wifi.getCapabilities().replace("[", "\n["));
@@ -151,7 +156,6 @@ public class WifiDetailsActivity extends FragmentActivity {
             } else {
                 ivIsNew.setImageResource(android.R.drawable.checkbox_off_background);
 			}
-		}
 	}
 
 	public final WifiRecord getWifi() {

@@ -18,18 +18,18 @@
 
 package org.openbmap.utils;
 
-import org.openbmap.R;
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
-import android.graphics.Rect;
 import android.graphics.Paint.Align;
+import android.graphics.Rect;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
+
+import org.openbmap.R;
 
 /** 
  * Vertical label control

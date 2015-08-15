@@ -14,7 +14,7 @@
 
 package org.openbmap.utils;
 
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
 import android.support.v7.view.ActionMode.Callback;
 import android.view.Menu;
@@ -30,13 +30,13 @@ public class ActionModeUtils implements Callback, AdapterView.OnItemLongClickLis
 		 boolean onItemLongClick(int item, int position, int id);
 	}
 	
-	private final ActionBarActivity host;
+	private final AppCompatActivity host;
 	private ActionMode activeMode;
 	private final ListView modeView;
 	private final LongClickCallback handler;
 	private final int menuId;
 
-	public ActionModeUtils(final ActionBarActivity fragmentActivity, final int menuId, final LongClickCallback handler, final ListView modeView) {
+	public ActionModeUtils(final AppCompatActivity fragmentActivity, final int menuId, final LongClickCallback handler, final ListView modeView) {
 		this.host = fragmentActivity;
 		this.handler = handler;
 		this.modeView = modeView;
@@ -50,7 +50,7 @@ public class ActionModeUtils implements Callback, AdapterView.OnItemLongClickLis
 		modeView.setItemChecked(position, true);
 
 		if (activeMode == null) {
-			activeMode = ((ActionBarActivity) host).startSupportActionMode(this);
+			activeMode = host.startSupportActionMode(this);
 		}
 
 		return(true);

@@ -18,16 +18,16 @@
 
 package org.openbmap.activities;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import android.app.Activity;
+import android.os.Bundle;
+import android.widget.TextView;
 
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.widget.TextView;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Credit activity

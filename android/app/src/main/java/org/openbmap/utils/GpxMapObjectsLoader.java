@@ -18,14 +18,14 @@
 
 package org.openbmap.utils;
 
-import java.util.ArrayList;
+import android.content.Context;
+import android.os.AsyncTask;
 
 import org.mapsforge.core.model.LatLong;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.PositionRecord;
 
-import android.content.Context;
-import android.os.AsyncTask;
+import java.util.ArrayList;
 
 /**
  * Loads session wifis asynchronously.

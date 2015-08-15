@@ -18,12 +18,12 @@
 
 package org.openbmap.commands;
 
-import org.openbmap.R;
-import org.openbmap.RadioBeacon;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.widget.Toast;
+
+import org.openbmap.R;
+import org.openbmap.RadioBeacon;
 
 /**
  * Dispatcher for external 'stop tracking' command

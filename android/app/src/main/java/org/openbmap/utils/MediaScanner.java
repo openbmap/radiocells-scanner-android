@@ -44,7 +44,7 @@ public class MediaScanner implements MediaScannerConnectionClient {
 	}
 
 	/**
-	 * Re-indexes all xml files
+	 * Scans folder for gpx, sqlite, map and xml files, so they become visible
 	 */
 	@Override
 	public final void onMediaScannerConnected() {

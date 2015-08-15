@@ -18,11 +18,6 @@
 
 package org.openbmap.db;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.openbmap.RadioBeacon;
-
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -32,6 +27,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.util.Log;
+
+import org.openbmap.RadioBeacon;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Content provider
@@ -318,46 +318,39 @@ public class RadioBeaconContentProvider extends ContentProvider {
 				 *  measurement (criteria level) is returned
 				 *  @author http://stackoverflow.com/questions/3800551/sql-select-first-row-in-each-group-by-group
 				 */
-				final String wifiFields = 
-				// pseudo-id has to be used, otherwise grouping fails
-				"w.rowid as " + Schema.COL_ID + ","
-				+ "w." + Schema.COL_BSSID + ", " 
-				+ "w." + Schema.COL_MD5_SSID + ", " 
-				+ "w." + Schema.COL_SSID + ", " 
-				+ "MAX(" + Schema.COL_LEVEL + "), " 
-				+ "w." + Schema.COL_CAPABILITIES + ", "  
-				+ "w." + Schema.COL_FREQUENCY + ", " 
-				+ "w." + Schema.COL_TIMESTAMP + "," 
-				+ "w." + Schema.COL_BEGIN_POSITION_ID + ", " 
-				+ "w." + Schema.COL_END_POSITION_ID + ", "
-				//+ "w." + Schema.COL_IS_NEW_WIFI + " "; 
-				+ "w." + Schema.COL_KNOWN_WIFI + " "; 
 
-				String wifiOverviewQuery = "SELECT " + wifiFields + " FROM " + Schema.TBL_WIFIS + " as w "
-						+ " JOIN " + Schema.TBL_POSITIONS +  " as b ON " + Schema.COL_BEGIN_POSITION_ID + " = b." + Schema.COL_ID + " ";
+                String tablesWifis = Schema.TBL_WIFIS + " as w "
+                        + " JOIN " + Schema.TBL_POSITIONS + " as b ON " + Schema.COL_BEGIN_POSITION_ID + " = b." + Schema.COL_ID;
 
-				// default where clause
-				wifiOverviewQuery += " WHERE w." + Schema.COL_SESSION_ID + " = " + uri.getLastPathSegment();
-
-				if (selectionIn != null) {
-					// add optional where clause
-					String extraWhere = selectionIn;
-					for (int i = 0; i < selectionArgsIn.length; i++) {
-						// TODO find some proper way
-						extraWhere = extraWhere.replaceFirst("\\?", selectionArgsIn[i]);
-					}
-
-					wifiOverviewQuery += " AND " + extraWhere;
-				}
-
-				wifiOverviewQuery +=  " GROUP BY w." + Schema.COL_BSSID + ", w." + Schema.COL_MD5_SSID;
-				if (sortOrder != null) {
-					wifiOverviewQuery += " ORDER BY w." + sortOrder;
-				}
-				return queryRaw(wifiOverviewQuery, uri);
+                String columnsWifis[] = {
+                        "w.rowid as " + Schema.COL_ID,
+                        "w." + Schema.COL_BSSID,
+                        "w." + Schema.COL_MD5_SSID,
+                        "w." + Schema.COL_SSID,
+                        "MAX(" + Schema.COL_LEVEL + ")",
+                        "w." + Schema.COL_CAPABILITIES,
+                        "w." + Schema.COL_FREQUENCY,
+                        "w." + Schema.COL_TIMESTAMP,
+                        "w." + Schema.COL_BEGIN_POSITION_ID,
+                        "w." + Schema.COL_END_POSITION_ID,
+                        "w." + Schema.COL_KNOWN_WIFI
+                };
+                String orderByWifis = "w." + Schema.COL_TIMESTAMP;
+                String groupByWifis = "w." + Schema.COL_BSSID + ", w." + Schema.COL_MD5_SSID;
+                return queryTable(uri, tablesWifis, columnsWifis,
+                        addColumntoSelection("w." + Schema.COL_SESSION_ID, selectionIn),
+                        addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn),
+                        orderByWifis,
+                        groupByWifis,
+                        null);
 			case Schema.URI_CODE_WIFI_ID:
 				// returns given wifi
-				return queryTable(RadioBeaconContentProvider.CONTENT_URI_WIFI, Schema.TBL_WIFIS, projection, addColumntoSelection(Schema.COL_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);
+				return queryTable(RadioBeaconContentProvider.CONTENT_URI_WIFI,
+                        Schema.TBL_WIFIS, projection,
+                        addColumntoSelection(Schema.COL_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn),
+                        sortOrder,
+                        null,
+                        null);
 			case Schema.URI_CODE_WIFIS_BY_SESSION:
 				// returns wifis for given session.
 				return queryTable(RadioBeaconContentProvider.CONTENT_URI_WIFI, Schema.TBL_WIFIS, projection, addColumntoSelection(Schema.COL_SESSION_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);
@@ -373,40 +366,56 @@ public class RadioBeaconContentProvider extends ContentProvider {
 				 *  http://stackoverflow.com/questions/3800551/sql-select-first-row-in-each-group-by-group
 				 */
 
-				// TODO: this probably won't work for CDMA as they don't have cell_id
-				final String cellFields =
-				// TODO: implement as in wifiFields, i.e. "rowid AS _id, "
-				Schema.COL_ID + ", "
-				+ Schema.COL_LOGICAL_CELLID + ", "
-				+ Schema.COL_ACTUAL_CELLID + ", "
-				+ Schema.COL_PSC + ", "
-				+ Schema.COL_CDMA_BASEID + ", "
-				+ Schema.COL_CDMA_SYSTEMID + ", "
-				+ Schema.COL_CDMA_NETWORKID + ", "
-				+ Schema.COL_OPERATORNAME + ", "
-				+ Schema.COL_OPERATOR + ", "
-				+ Schema.COL_MCC + ", "
-				+ Schema.COL_MNC + ", "
-				+ Schema.COL_AREA + ", "
-				+ Schema.COL_PSC + ", "
-				+ Schema.COL_NETWORKTYPE + ", "
-				+ Schema.COL_IS_SERVING + ", "
-				+ " MAX(" + Schema.COL_STRENGTHDBM + ") ";
+				String tablesCells = Schema.TBL_CELLS + " as c "
+						+ " JOIN " + Schema.TBL_POSITIONS + " as b ON " + Schema.COL_BEGIN_POSITION_ID + " = b." + Schema.COL_ID;
+
+                String columnsCells[] = {
+						"c.rowid as " + Schema.COL_ID,
+                        Schema.COL_LOGICAL_CELLID ,
+                        Schema.COL_ACTUAL_CELLID ,
+                        Schema.COL_PSC ,
+                        Schema.COL_CDMA_BASEID ,
+                        Schema.COL_CDMA_SYSTEMID,
+                        Schema.COL_CDMA_NETWORKID ,
+                        Schema.COL_OPERATORNAME,
+                        Schema.COL_OPERATOR,
+                        Schema.COL_MCC ,
+                        Schema.COL_MNC ,
+                        Schema.COL_AREA ,
+                        Schema.COL_PSC ,
+                        Schema.COL_NETWORKTYPE ,
+                        Schema.COL_IS_SERVING,
+                        " MAX(" + Schema.COL_STRENGTHDBM + ") "
+                };
+
+                String whereCells =  "c." + Schema.COL_SESSION_ID + " = ? AND " + Schema.COL_LOGICAL_CELLID + " > ?";
+                String[] whereArgs = {uri.getLastPathSegment(), "-1"};
+                String orderByCells = Schema.COL_IS_SERVING + " DESC";
+                String groupByCells = "c." + Schema.COL_LOGICAL_CELLID + ", "
+                        + Schema.COL_PSC + ", " + Schema.COL_CDMA_SYSTEMID + ", " + Schema.COL_CDMA_NETWORKID + ", " + Schema.COL_CDMA_BASEID + ", "
+                        + Schema.COL_IS_SERVING;
+
+                return queryTable(uri, tablesCells, columnsCells,
+                        whereCells,
+                        whereArgs,
+                        orderByCells,
+                        groupByCells,
+                        null);
 
 				// get gsm cells as well as neigbor gsm cells (gsm cell: cell id > -1
-				String cellOverviewQuery = "SELECT " + cellFields + " FROM cells "
-						+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 1 AND " + Schema.COL_LOGICAL_CELLID + " > -1 GROUP BY " + Schema.COL_LOGICAL_CELLID
-						+ " UNION SELECT " + cellFields  + " FROM cells "
-						+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 0 AND " + Schema.COL_LOGICAL_CELLID + " > -1 GROUP BY " + Schema.COL_LOGICAL_CELLID;
+				// String cellOverviewQuery = "SELECT " + cellFields + " FROM cells "
+				//		+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 1 AND " + Schema.COL_LOGICAL_CELLID + " > -1 GROUP BY " + Schema.COL_LOGICAL_CELLID
+				//		+ " UNION SELECT " + cellFields  + " FROM cells "
+				//		+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 0 AND " + Schema.COL_LOGICAL_CELLID + " > -1 GROUP BY " + Schema.COL_LOGICAL_CELLID;
 
 				// add umts / cdma cells
-				cellOverviewQuery += " UNION SELECT " + cellFields  + " FROM cells "
-						+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 0 AND " + Schema.COL_LOGICAL_CELLID + " = -1 GROUP BY "
-						+ Schema.COL_PSC + ", " + Schema.COL_CDMA_SYSTEMID + ", " + Schema.COL_CDMA_NETWORKID + ", " + Schema.COL_CDMA_BASEID;
+				//cellOverviewQuery += " UNION SELECT " + cellFields  + " FROM cells "
+				//		+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 0 AND " + Schema.COL_LOGICAL_CELLID + " = -1 GROUP BY "
+				//		+ Schema.COL_PSC + ", " + Schema.COL_CDMA_SYSTEMID + ", " + Schema.COL_CDMA_NETWORKID + ", " + Schema.COL_CDMA_BASEID;
 
-				cellOverviewQuery += " ORDER BY " + Schema.COL_IS_SERVING + " DESC";
-				//Log.i(TAG, cellOverviewQuery);
-				return queryRaw(cellOverviewQuery, RadioBeaconContentProvider.CONTENT_URI_CELL);
+				// cellOverviewQuery += " ORDER BY " + Schema.COL_IS_SERVING + " DESC";
+
+				// return queryRaw(cellOverviewQuery, RadioBeaconContentProvider.CONTENT_URI_CELL);
 			case Schema.URI_CODE_CELL_ID:
 				//  Returns given cell.
 				return queryTable(RadioBeaconContentProvider.CONTENT_URI_CELL, Schema.TBL_CELLS, projection, addColumntoSelection(Schema.COL_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);
@@ -511,7 +520,8 @@ public class RadioBeaconContentProvider extends ContentProvider {
 			final String[] projection,
 			final String selectionIn,
 			final String[] selectionArgsIn,
-			final String sortOrder, final String groupBy, final String limit) {
+			final String sortOrder,
+            final String groupBy, final String limit) {
 
 		SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
 		qb.setTables(tableName); 

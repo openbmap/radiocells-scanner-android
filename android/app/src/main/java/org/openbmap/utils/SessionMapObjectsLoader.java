@@ -18,7 +18,10 @@
 
 package org.openbmap.utils;
 
-import java.util.ArrayList;
+import android.content.Context;
+import android.database.Cursor;
+import android.os.AsyncTask;
+import android.util.Log;
 
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.DatabaseHelper;
@@ -26,10 +29,7 @@ import org.openbmap.db.Schema;
 import org.openbmap.db.models.PositionRecord;
 import org.openbmap.db.models.WifiRecord;
 
-import android.content.Context;
-import android.database.Cursor;
-import android.os.AsyncTask;
-import android.util.Log;
+import java.util.ArrayList;
 
 /**
  * Loads session wifis asynchronously.

@@ -19,13 +19,13 @@
 package org.openbmap.activities;
 
 import android.annotation.SuppressLint;
+import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -387,8 +387,8 @@ public class StatsActivity extends Fragment {
 		final String deltaCellString = String.format(getString(R.string.time_since_last_cell_update), getTimeSinceLastUpdate(mLastCellUpdate));
 		final String deltaWifiString = String.format(getString(R.string.time_since_last_wifi_update), getTimeSinceLastUpdate(mLastWifiUpdate));
 
-		Log.v(TAG, deltaCellString);
-		Log.v(TAG, deltaWifiString);
+		Log.d(TAG, deltaCellString);
+		Log.d(TAG, deltaWifiString);
 	}
 
 	/**

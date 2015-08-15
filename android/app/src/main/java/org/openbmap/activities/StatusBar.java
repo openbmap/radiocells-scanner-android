@@ -18,16 +18,12 @@
 
 package org.openbmap.activities;
 
-import java.text.DecimalFormat;
-
-import org.openbmap.R;
-import org.openbmap.RadioBeacon;
-import org.openbmap.db.DataHelper;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -35,6 +31,12 @@ import android.view.LayoutInflater;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import org.openbmap.R;
+import org.openbmap.RadioBeacon;
+import org.openbmap.db.DataHelper;
+
+import java.text.DecimalFormat;
 
 /**
  * Layout for the GPS status bar
@@ -58,6 +60,7 @@ public class StatusBar extends LinearLayout {
 	 * of satellites for each bars;
 	 */
 	private static final int[] SAT_INDICATOR_TRESHOLD = {2, 3, 4, 6, 8};
+	public static final String LOCATION_PARCEL = "android.location.Location";
 
 	/**
 	 * Containing activity
@@ -78,19 +81,21 @@ public class StatusBar extends LinearLayout {
 	private final TextView tvCellCount;
 	private final TextView tvAccuracy;
 
+    private Bitmap mIcon;
+
 	private final ImageView imgSatIndicator;
 
 	public StatusBar(final Context context, final AttributeSet attrs) {
 		super(context, attrs);
 		LayoutInflater.from(context).inflate(R.layout.statusbar, this, true);
 
-		tvCellCount = (TextView) findViewById(R.id.gpsstatus_record_tvCellCount);
-		tvWifiCount = (TextView) findViewById(R.id.gpsstatus_record_tvWifiCount);
-		tvNewWifiCount = (TextView) findViewById(R.id.gpsstatus_record_tvNewWifiCount);
-		tvAccuracy = (TextView) findViewById(R.id.gpsstatus_record_tvAccuracy);
-		tvAccuracy.setText("");
+		tvCellCount = (TextView) findViewById(R.id.gpsstatus_cell_count);
+		tvWifiCount = (TextView) findViewById(R.id.gpsstatus_wifi_count);
+		tvNewWifiCount = (TextView) findViewById(R.id.gpsstatus_new_wifi_count);
+		tvAccuracy = (TextView) findViewById(R.id.gpsstatus_accuracy);
+		tvAccuracy.setText(getResources().getString(R.string.empty));
 		
-		imgSatIndicator = (ImageView) findViewById(R.id.gpsstatus_record_imgSatIndicator);
+		imgSatIndicator = (ImageView) findViewById(R.id.gpsstatus_sat_indicator);
 		imgSatIndicator.setImageResource(R.drawable.sat_indicator_unknown);
 
 		if (context instanceof HostActivity) {
@@ -107,19 +112,28 @@ public class StatusBar extends LinearLayout {
 		public void onReceive(final Context context, final Intent intent) {
 			// handling GPS broadcasts
 			if (RadioBeacon.INTENT_POSITION_UPDATE.equals(intent.getAction())) {
-				final Location location = intent.getExtras().getParcelable("android.location.Location");
+				final Location location = intent.getExtras().getParcelable(LOCATION_PARCEL);
+
+				if (location == null) {
+					return;
+				}
 
 				if (location.hasAccuracy()) {
-					tvAccuracy.setText(ACCURACY_FORMAT.format(location.getAccuracy()) + " m");
+					tvAccuracy.setText(ACCURACY_FORMAT.format(location.getAccuracy()) + getResources().getString(R.string.meter));
 				} else {
-					tvAccuracy.setText("");
+					tvAccuracy.setText(getResources().getString(R.string.empty));
 				}
 			} else if (RadioBeacon.INTENT_POSITION_SAT_INFO.equals(intent.getAction())) {
 
 				final String status = intent.getExtras().getString("STATUS");
 				final int satCount = intent.getExtras().getInt("SAT_COUNT");
 
-				if (status.equals("UPDATE")) {
+                imgSatIndicator.setImageBitmap(null);
+                if (mIcon != null && !mIcon.isRecycled()) {
+                    mIcon.recycle();
+                }
+
+				if ("UPDATE".equals(status)) {
 					// Count how many bars should we draw
 					int nbBars = 0;
 					for (int i = 0; i < SAT_INDICATOR_TRESHOLD.length; i++) {
@@ -127,14 +141,17 @@ public class StatusBar extends LinearLayout {
 							nbBars = i;
 						}
 					}
-					imgSatIndicator.setImageResource(getResources().getIdentifier("drawable/sat_indicator_" + nbBars, null, RadioBeacon.class.getPackage().getName()));
-				} else if (status.equals("OUT_OF_SERVICE")) {
-					imgSatIndicator.setImageResource(R.drawable.sat_indicator_off);
+                    mIcon = BitmapFactory.decodeResource(getResources(), getResources().getIdentifier("drawable/sat_indicator_" + nbBars, null, RadioBeacon.class.getPackage().getName()));
+
+				} else if ("OUT_OF_SERVICE".equals(status)) {
+                    mIcon = BitmapFactory.decodeResource(getResources(), R.drawable.sat_indicator_off);
 					tvAccuracy.setText(getResources().getString(R.string.no_sat_signal));
-				} else if (status.equals("TEMPORARILY_UNAVAILABLE")) {
-					imgSatIndicator.setImageResource(R.drawable.sat_indicator_off);
+				} else if ("TEMPORARILY_UNAVAILABLE".equals(status)) {
+                    mIcon = BitmapFactory.decodeResource(getResources(), R.drawable.sat_indicator_off);
 					tvAccuracy.setText(getResources().getString(R.string.no_sat_signal));
 				}
+
+                imgSatIndicator.setImageBitmap(mIcon);
 			} else if (RadioBeacon.INTENT_NEW_CELL.equals(intent.getAction())) {
 				if (dataHelper != null) {
 					tvCellCount.setText(String.valueOf(dataHelper.countCells(dataHelper.getActiveSessionId())));
@@ -151,6 +168,7 @@ public class StatusBar extends LinearLayout {
 
 	@Override 
 	protected void onAttachedToWindow() {
+		super.onAttachedToWindow();
 		dataHelper = new DataHelper(ctx);
 		registerReceiver();
 	}
@@ -188,8 +206,6 @@ public class StatusBar extends LinearLayout {
 			ctx.unregisterReceiver(mReceiver);
 		} catch (final IllegalArgumentException e) {
 			// do nothing here {@see http://stackoverflow.com/questions/2682043/how-to-check-if-mReceiver-is-registered-in-android}
-			return;
 		}
 	}
-
 }

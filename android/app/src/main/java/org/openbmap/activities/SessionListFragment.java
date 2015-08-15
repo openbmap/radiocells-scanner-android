@@ -35,7 +35,7 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter.ViewBinder;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -177,7 +177,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		getListView().setLongClickable(true);
 		getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 		getListView().setOnItemLongClickListener(new ActionModeUtils(
-				(ActionBarActivity) this.getActivity(), R.menu.session_context, this,
+				(AppCompatActivity) this.getActivity(), R.menu.session_context, this,
 				getListView()));
 	}
 

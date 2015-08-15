@@ -18,10 +18,10 @@
 
 package org.openbmap.commands;
 
-import org.openbmap.activities.HostActivity;
-
 import android.app.Activity;
 import android.content.Intent;
+
+import org.openbmap.activities.HostActivity;
 
 /**
  * Dispatcher for external 'start tracking' command

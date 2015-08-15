@@ -35,7 +35,7 @@ public final class RadioBeacon {
 	/**
 	 * Intent to start services
 	 */
-	//public static final String INTENT_START_TRACKING = RadioBeacon.PACKAGE_NAME + ".intent.START_SERVICES";
+	public static final String INTENT_START_TRACKING = RadioBeacon.PACKAGE_NAME + ".intent.START_TRACKING";
 
 	/**
 	 * Intent to stop tracking and kill the services.
@@ -101,26 +101,38 @@ public final class RadioBeacon {
 	 * Key for extra data "uuid" in Intent
 	 */
 	public static final String INTENT_KEY_UUID = "uuid";
-	
-	/**
-	 * time (in ms) we use to handle a key press as a long press
-	 */
-	public static final long LONG_PRESS_TIME = 1000;
 
 	// Messages
-	public static final int MSG_REGISTER_CLIENT = 1;
+
+    /**
+     * Command to the service to register a client, receiving callbacks
+     * from the service.  The Message's replyTo field must be a Messenger of
+     * the client where callbacks should be sent.
+     */
+    public static final int MSG_REGISTER_CLIENT = 1;
 
 	public static final int MSG_REQUEST_STATUS = 2;
 
-	public static final int MSG_UNREGISTER_CLIENT = 3;
+    /**
+     * Command to the service to unregister a client, ot stop receiving callbacks
+     * from the service.  The Message's replyTo field must be a Messenger of
+     * the client as previously given with MSG_REGISTER_CLIENT.
+     */
+    public static final int MSG_UNREGISTER_CLIENT = 3;
 
 	public static final int MSG_START_TRACKING = 4;
 	
 	public static final int MSG_STOP_TRACKING = 5;
 	
 	public static final int MSG_SERVICE_READY = 5;
-	
-	/**
+
+    public static final int MSG_SERVICE_SHUTDOWN = 999;
+
+    public static final int SHUTDOWN_REASON_NORMAL = 1;
+
+    public static final int SHUTDOWN_REASON_LOW_POWER = 2;
+
+    /**
 	 * Extra data key: Generic key
 	 */
 	public static final String MSG_KEY = "msg";
@@ -238,7 +250,7 @@ public final class RadioBeacon {
 	 */
 	public static final int DATABASE_VERSION = 10;
 
-	/**
+    /**
 	 * Private dummy constructor
 	 */
 	private RadioBeacon() {

@@ -18,9 +18,6 @@
 
 package org.openbmap.utils;
 
-import org.openbmap.R;
-import org.openbmap.db.DatabaseHelper;
-
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -29,6 +26,9 @@ import android.database.sqlite.SQLiteException;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
+
+import org.openbmap.R;
+import org.openbmap.db.DatabaseHelper;
 
 /**
  * Uploads xml files as multipart message to webservice.

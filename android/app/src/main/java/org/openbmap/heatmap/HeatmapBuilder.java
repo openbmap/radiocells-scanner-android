@@ -18,11 +18,6 @@
 
 package org.openbmap.heatmap;
 
-import java.util.ArrayList;
-
-import org.mapsforge.core.model.BoundingBox;
-import org.mapsforge.core.util.MercatorProjection;
-
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -31,6 +26,11 @@ import android.graphics.RadialGradient;
 import android.graphics.Shader.TileMode;
 import android.os.AsyncTask;
 import android.util.Log;
+
+import org.mapsforge.core.model.BoundingBox;
+import org.mapsforge.core.util.MercatorProjection;
+
+import java.util.ArrayList;
 
 /**
  * Builds heat map bitmap

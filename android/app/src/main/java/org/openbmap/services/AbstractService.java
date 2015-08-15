@@ -40,15 +40,14 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 
+import org.openbmap.RadioBeacon;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 public abstract class AbstractService extends Service {
 
 	private static final String TAG = AbstractService.class.getSimpleName();
-
-	static final int MSG_REGISTER_CLIENT = 9991;
-	static final int MSG_UNREGISTER_CLIENT = 9992;
 
 	private final ArrayList<Messenger> mClients = new ArrayList<Messenger>(); // Keeps track of all current registered clients.
 	private final Messenger mMessenger = new Messenger(new ServiceManagerHandler(this)); // Target we publish for clients to send messages to ServiceManagerHandler.
@@ -69,11 +68,11 @@ public abstract class AbstractService extends Service {
 			if (service != null) {
 
 				switch (msg.what) {
-					case MSG_REGISTER_CLIENT:
+					case RadioBeacon.MSG_REGISTER_CLIENT:
 						Log.i(TAG, "Client registered: " + msg.replyTo);
 						service.mClients.add(msg.replyTo);
 						break;
-					case MSG_UNREGISTER_CLIENT:
+					case RadioBeacon.MSG_UNREGISTER_CLIENT:
 						Log.i(TAG, "Client un-registered: " + msg.replyTo);
 						service.mClients.remove(msg.replyTo);
 						break;            

@@ -18,17 +18,17 @@
 
 package org.openbmap.soapclient;
 
-import java.io.File;
-import java.io.IOException;
-
-import org.openbmap.R;
-import org.openbmap.utils.MediaScanner;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.util.Log;
+
+import org.openbmap.R;
+import org.openbmap.utils.MediaScanner;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Manages export gpx process
@@ -125,12 +125,11 @@ public class ExportGpxTask extends AsyncTask<Void, Object, Boolean> {
 	@Override
 	protected final void onPostExecute(final Boolean success) {
 
-		// rescan SD card on honeycomb devices
-		// Otherwise files may not be visible when connected to desktop pc (MTP cache problem)
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-			Log.i(TAG, "Re-indexing SD card temp folder");
-			new MediaScanner(mAppContext, new File(mPath));
-		}
+		// rescan SD card, otherwise files may not be visible when connected to desktop pc
+		// (MTP cache problem)
+		Log.i(TAG, "Re-indexing SD card folder " + mPath);
+		new MediaScanner(mAppContext, new File(mPath));
+
 
 		if (success) {
 			if (mListener != null) {

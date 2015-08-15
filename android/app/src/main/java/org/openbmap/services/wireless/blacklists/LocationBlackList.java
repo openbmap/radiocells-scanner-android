@@ -18,21 +18,21 @@
 
 package org.openbmap.services.wireless.blacklists;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
+import android.annotation.SuppressLint;
+import android.location.Location;
+import android.util.Log;
 
 import org.openbmap.utils.GeometryUtils;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
-import android.annotation.SuppressLint;
-import android.location.Location;
-import android.util.Log;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 /**
  * Validates ssid against xml file of black listed locations

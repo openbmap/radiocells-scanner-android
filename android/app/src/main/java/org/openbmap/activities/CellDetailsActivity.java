@@ -18,10 +18,6 @@
 
 package org.openbmap.activities;
 
-import org.openbmap.R;
-import org.openbmap.db.DataHelper;
-import org.openbmap.db.Schema;
-import org.openbmap.db.models.CellRecord;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -29,6 +25,11 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TableRow;
 import android.widget.TextView;
+
+import org.openbmap.R;
+import org.openbmap.db.DataHelper;
+import org.openbmap.db.Schema;
+import org.openbmap.db.models.CellRecord;
 
 /**
  * Parent activity for hosting cell detail fragement

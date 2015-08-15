@@ -18,16 +18,16 @@
 
 package org.openbmap.services.position;
 
-import org.openbmap.RadioBeacon;
-import org.openbmap.services.AbstractService;
-import org.openbmap.services.position.providers.GpsProvider;
-import org.openbmap.services.position.providers.LocationChangeListener;
-
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Message;
 import android.util.Log;
+
+import org.openbmap.RadioBeacon;
+import org.openbmap.services.AbstractService;
+import org.openbmap.services.position.providers.GpsProvider;
+import org.openbmap.services.position.providers.LocationChangeListener;
 
 /**
  * GPS position service.
@@ -72,6 +72,12 @@ public class PositioningService extends AbstractService implements LocationChang
 	private GpsProvider	gpsProvider;
 
 	@Override
+	public final void onCreate() {	
+		super.onCreate();
+		providerState = State.OFF;
+	}
+
+	@Override
 	public final boolean onUnbind(final Intent intent) {
 		// If we aren't currently tracking we can stop ourselves
 		if (!mIsTracking) {
@@ -81,12 +87,6 @@ public class PositioningService extends AbstractService implements LocationChang
 
 		// We don't want onRebind() to be called, so return false.
 		return false;
-	}
-
-	@Override
-	public final void onCreate() {	
-		super.onCreate();
-		providerState = State.OFF;
 	}
 
 	@Override

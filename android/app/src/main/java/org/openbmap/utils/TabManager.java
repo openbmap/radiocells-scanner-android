@@ -18,8 +18,6 @@
 
 package org.openbmap.utils;
 
-import java.util.HashMap;
-
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -27,6 +25,8 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.widget.TabHost;
+
+import java.util.HashMap;
 
 /**
  * Tab Helper class from ActionBarSherlock Samples

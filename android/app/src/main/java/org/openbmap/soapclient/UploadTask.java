@@ -18,8 +18,12 @@
 
 package org.openbmap.soapclient;
 
-import java.io.File;
-import java.util.ArrayList;
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.os.AsyncTask;
+import android.os.Build;
+import android.util.Log;
+import android.widget.Toast;
 
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
@@ -27,12 +31,8 @@ import org.openbmap.soapclient.FileUploader.FileUploadListener;
 import org.openbmap.utils.MediaScanner;
 import org.openbmap.utils.WifiCatalogUpdater;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.os.AsyncTask;
-import android.os.Build;
-import android.util.Log;
-import android.widget.Toast;
+import java.io.File;
+import java.util.ArrayList;
 
 /**
  * Manages export and upload processes
@@ -150,8 +150,9 @@ public class UploadTask extends AsyncTask<Void, Object, Boolean> implements File
 	 * List of all successfully uploaded files. For the moment no differentiation between cells and wifis
 	 */
 	private ArrayList<String>	mUploadedFiles;
+    private long mSpeed = -1;
 
-	public interface UploadTaskListener {
+    public interface UploadTaskListener {
 		void onUploadProgressUpdate(Object... values);
 		void onUploadCompleted(final int id);
 		void onDryRunCompleted(final int id);
@@ -208,10 +209,10 @@ public class UploadTask extends AsyncTask<Void, Object, Boolean> implements File
 			if (!getSkipUpload()) {
 				for (int i = 0; i < cellFiles.size(); i++) {
 					// thread control for the poor: spawn only MAX_THREADS tasks
-					while (mActiveUploads > MAX_THREADS) {
-						Log.i(TAG, "Maximum number of upload threads reached. Waiting..");
+					while (mActiveUploads >= allowedThreads()) {
+						Log.i(TAG, "Number of upload threads exceeds max parallel threads (" + mActiveUploads + "/" +  allowedThreads() + "). Waiting..");
 						try {
-							Thread.sleep(50);
+							Thread.sleep(100);
 						} catch (final InterruptedException e) {
 						}
 					}
@@ -239,7 +240,7 @@ public class UploadTask extends AsyncTask<Void, Object, Boolean> implements File
 			// upload
 			if (!getSkipUpload()) {
 				for (int i = 0; i < wifiFiles.size(); i++) {
-					while (mActiveUploads > MAX_THREADS) {
+					while (mActiveUploads >= allowedThreads()) {
 						Log.i(TAG, "Maximum number of upload threads reached. Waiting..");
 						try {
 							Thread.sleep(50);
@@ -312,6 +313,23 @@ public class UploadTask extends AsyncTask<Void, Object, Boolean> implements File
 
 		return success;
 	}
+
+    /**
+     * Returns number of parallel uploads threads
+     * @return 1 if no speed measurement available yet
+     */
+	private int allowedThreads() {
+        if (mSpeed == -1) {
+            Log.d(TAG, "No speed measurements. Only 1 thread allowed");
+            return 1;
+        } else if (mSpeed < 10) {
+            Log.d(TAG, "Speed below 10kb. Only 1 thread allowed");
+            return 1;
+        } else {
+            Log.d(TAG, "No thread restriction. " + MAX_THREADS + " allowed");
+            return MAX_THREADS;
+        }
+    }
 
 	/**
 	 * Updates progress bar.
@@ -403,10 +421,11 @@ public class UploadTask extends AsyncTask<Void, Object, Boolean> implements File
 	 * @see org.openbmap.soapclient.FileUploader.UploadTaskListener#onUploadCompleted(java.util.ArrayList)
 	 */
 	@Override
-	public final void onUploadCompleted(final String file) {
+	public final void onUploadCompleted(final String file, final long size, final long speed) {
 		mUploadedFiles.add(file);
 		mActiveUploads -= 1;
-		Log.i(TAG, "Finished upload, pending uploads " + mActiveUploads);
+        mSpeed = speed;
+		Log.i(TAG, "Finished upload (size " + size + " bytes, speed" + speed + "kb), pending uploads " + mActiveUploads);
 	}
 
 	/* (non-Javadoc)
@@ -416,6 +435,7 @@ public class UploadTask extends AsyncTask<Void, Object, Boolean> implements File
 	public final void onUploadFailed(final String file, final String error) {
 		Log.e(TAG, "Upload failed:" + file + " " + error);
 		mActiveUploads -= 1;
+        mSpeed = -1;
 	}
 
 	/**

@@ -19,12 +19,12 @@ Radiobeacon - Openbmap wifi and cell logger
 
 package org.openbmap.services.wireless.blacklists;
 
+import android.util.Log;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-
-import android.util.Log;
 
 /**
  * Creates initial wifi blacklist with some default entries

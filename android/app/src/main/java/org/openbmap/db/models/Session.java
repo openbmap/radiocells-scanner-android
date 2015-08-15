@@ -18,9 +18,9 @@
 
 package org.openbmap.db.models;
 
-import org.openbmap.RadioBeacon;
-
 import android.net.Uri;
+
+import org.openbmap.RadioBeacon;
 
 /**
  * Model for general session meta data: create at, updated at, etc.

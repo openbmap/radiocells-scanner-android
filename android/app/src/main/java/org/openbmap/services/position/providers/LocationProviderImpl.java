@@ -18,12 +18,12 @@
 
 package org.openbmap.services.position.providers;
 
+import android.content.Context;
+import android.location.Location;
+
 import org.openbmap.services.position.LocationService;
 import org.openbmap.services.position.LocationServiceFactory;
 import org.openbmap.services.position.PositioningService;
-
-import android.content.Context;
-import android.location.Location;
 
 /**
 Inspirations from Paul Woelfel, Email: frig@frig.at

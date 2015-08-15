@@ -18,11 +18,11 @@
 
 package org.openbmap.utils;
 
-import org.mapsforge.core.model.LatLong;
-import org.openbmap.RadioBeacon;
-
 import android.location.Location;
 import android.util.Log;
+
+import org.mapsforge.core.model.LatLong;
+import org.openbmap.RadioBeacon;
 
 public final class GeometryUtils {
 	

@@ -18,10 +18,10 @@
 
 package org.openbmap.db.models;
 
+import org.openbmap.RadioBeacon;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
-import org.openbmap.RadioBeacon;
 
 /**
  * Model for wifi records

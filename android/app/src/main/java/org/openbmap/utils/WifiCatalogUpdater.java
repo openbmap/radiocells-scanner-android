@@ -18,14 +18,6 @@
 
 package org.openbmap.utils;
 
-import java.io.File;
-import java.util.ArrayList;
-
-import org.openbmap.Preferences;
-import org.openbmap.db.DatabaseHelper;
-import org.openbmap.db.RadioBeaconContentProvider;
-import org.openbmap.db.Schema;
-
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -34,9 +26,16 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
+
+import org.openbmap.Preferences;
+import org.openbmap.db.DatabaseHelper;
+import org.openbmap.db.RadioBeaconContentProvider;
+import org.openbmap.db.Schema;
+
+import java.io.File;
+import java.util.ArrayList;
 
 /**
  * Adds new wifis to wifi catalog

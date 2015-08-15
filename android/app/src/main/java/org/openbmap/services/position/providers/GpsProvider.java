@@ -18,11 +18,6 @@
 
 package org.openbmap.services.position.providers;
 
-import org.openbmap.Preferences;
-import org.openbmap.services.position.LocationService;
-import org.openbmap.services.position.LocationServiceFactory;
-import org.openbmap.services.position.PositioningService;
-
 import android.content.Context;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
@@ -33,6 +28,11 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+
+import org.openbmap.Preferences;
+import org.openbmap.services.position.LocationService;
+import org.openbmap.services.position.LocationServiceFactory;
+import org.openbmap.services.position.PositioningService;
 
 public class GpsProvider extends LocationProviderImpl implements Listener, LocationListener {
 

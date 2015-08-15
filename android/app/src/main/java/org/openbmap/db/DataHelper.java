@@ -1,16 +1,5 @@
 package org.openbmap.db;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.openbmap.RadioBeacon;
-import org.openbmap.db.models.CellRecord;
-import org.openbmap.db.models.LogFile;
-import org.openbmap.db.models.PositionRecord;
-import org.openbmap.db.models.Session;
-import org.openbmap.db.models.WifiRecord;
-import org.openbmap.db.models.WifiRecord.CatalogStatus;
-
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.ContentResolver;
@@ -22,6 +11,17 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.RemoteException;
 import android.util.Log;
+
+import org.openbmap.RadioBeacon;
+import org.openbmap.db.models.CellRecord;
+import org.openbmap.db.models.LogFile;
+import org.openbmap.db.models.PositionRecord;
+import org.openbmap.db.models.Session;
+import org.openbmap.db.models.WifiRecord;
+import org.openbmap.db.models.WifiRecord.CatalogStatus;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Data helper for talking to content resolver 

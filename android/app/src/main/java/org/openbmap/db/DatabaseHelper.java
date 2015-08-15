@@ -18,14 +18,6 @@
 
 package org.openbmap.db;
 
-import java.io.File;
-import java.io.IOException;
-
-import org.openbmap.Preferences;
-import org.openbmap.RadioBeacon;
-import org.openbmap.utils.FileUtils;
-import org.openbmap.utils.MediaScanner;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.SQLException;
@@ -34,6 +26,14 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
+
+import org.openbmap.Preferences;
+import org.openbmap.RadioBeacon;
+import org.openbmap.utils.FileUtils;
+import org.openbmap.utils.MediaScanner;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Takes care of database creation
