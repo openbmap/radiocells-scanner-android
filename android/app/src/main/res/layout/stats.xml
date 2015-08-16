@@ -145,7 +145,6 @@
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:layout_column="2" />
         </TableRow>
-
     </TableLayout>
 
     <LinearLayout
@@ -154,13 +153,11 @@
         android:layout_height="0dp"
         android:layout_gravity="fill_horizontal"
         android:layout_weight="50">
-
-        <LinearLayout
-            android:id="@+id/graph2"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:gravity="bottom"
-            android:orientation="vertical" />
+        <com.jjoe64.graphview.GraphView
+            android:id="@+id/graph"
+            android:layout_gravity="bottom"
+            android:layout_width="match_parent"
+            android:layout_height="220dip" />
     </LinearLayout>
 
 </LinearLayout>

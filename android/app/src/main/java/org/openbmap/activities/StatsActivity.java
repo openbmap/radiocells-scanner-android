@@ -24,6 +24,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -34,17 +35,18 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.GraphView.GraphViewData;
-import com.jjoe64.graphview.GraphViewSeries;
-import com.jjoe64.graphview.LineGraphView;
+import com.jjoe64.graphview.GridLabelRenderer;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
 
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.db.models.Session;
+
+import java.util.Random;
 
 /**
  * Activity for displaying basic session infos (# of cells, wifis, etc.)
@@ -76,8 +78,8 @@ public class StatsActivity extends Fragment {
 	private ImageView ivFree;
 	private ImageView ivAlert;
 	private GraphView graphView;
-
-	GraphViewSeries measurements;
+    private LineGraphSeries measurements;
+    private LineGraphSeries highlight;
 
 	private Session mSession;
 
@@ -256,8 +258,9 @@ public class StatsActivity extends Fragment {
 							}
 		}
 	};
+    private double graph2LastXValue;
 
-	@Override
+    @Override
 	public final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
@@ -343,16 +346,19 @@ public class StatsActivity extends Fragment {
 
 		tvTechnology = (TextView) view.findViewById(R.id.tvTechnology);
 
-		graphView = new LineGraphView(this.getActivity().getBaseContext() // context
-				, "Cell strength (dBm)");
-		graphView.setManualYAxisBounds(-50, -100); 
-		graphView.getGraphViewStyle().setNumVerticalLabels(3);
-		graphView.setHorizontalLabels(new String[] {""});
-		graphView.setViewPort(2, 60000);
-		graphView.setScrollable(true);
-
-		final LinearLayout layout = (LinearLayout) view.findViewById(R.id.graph2);
-		layout.addView(graphView);
+		graphView = (GraphView) view.findViewById(R.id.graph);
+        graphView.getViewport().setXAxisBoundsManual(true);
+        graphView.getViewport().setYAxisBoundsManual(true);
+        graphView.getViewport().setMinY(-100);
+        graphView.getViewport().setMaxY(-50);
+        graphView.setTitle(this.getString(R.string.graph_title));
+        graphView.getGridLabelRenderer().setVerticalAxisTitle(this.getString(R.string.dbm));
+        graphView.getGridLabelRenderer().setHorizontalLabelsVisible(false);
+        graphView.getGridLabelRenderer().setHighlightZeroLines(false);
+        graphView.getGridLabelRenderer().setGridStyle(GridLabelRenderer.GridStyle.HORIZONTAL);
+        graphView.getGridLabelRenderer().setNumVerticalLabels(3);
+        graphView.getViewport().setMinX(0);
+        graphView.getViewport().setMaxX(60);
 	}
 
 	/**
@@ -395,19 +401,63 @@ public class StatsActivity extends Fragment {
 	 * 
 	 */
 	private void updateGraph() {
-		if (measurements == null) {
-			// TODO proper release
-			measurements = new GraphViewSeries(new GraphViewData[] { new GraphViewData(System.currentTimeMillis(), -100.0d) });
-			graphView.addSeries(measurements);
+
+        if (measurements == null) {
+            Log.i(TAG, "Adding new data series to chart");
+            measurements = new LineGraphSeries<DataPoint>();
+            graphView.addSeries(measurements);
 		}
 
+        if (highlight == null) {
+            highlight = new LineGraphSeries<DataPoint>();
+            highlight.setDrawBackground(true);
+            highlight.setBackgroundColor(Color.argb(100, 255, 255, 0));
+            /*
+            final Paint paint = new Paint();
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(10);
+            paint.setPathEffect(new DashPathEffect(new float[]{8, 5}, 0));
+            highlight.setCustomPaint(paint);
+            */
+            graphView.addSeries(highlight);
+        }
+
 		if (mCurrentStrength != -1) {
-			measurements.appendData(new GraphViewData(System.currentTimeMillis() , mCurrentStrength), true, 60);
+			measurements.appendData(new DataPoint(graph2LastXValue , mCurrentStrength), true, 30);
 		} else {
-			measurements.appendData(new GraphViewData(System.currentTimeMillis(), -100d), true, 60);
+			measurements.appendData(new DataPoint(graph2LastXValue, -100d), true, 30);
 		}
+
+        if (mCurrentStrength > -60 && mCurrentStrength < -1) {
+            highlight.appendData(new DataPoint(graph2LastXValue, mCurrentStrength), true, 30);
+        } else {
+            highlight.appendData(new DataPoint(graph2LastXValue, -105d), true, 30);
+        }
+        graph2LastXValue += 1d;
 		mCurrentStrength = -1;
 	}
+
+
+    private DataPoint[] generateData() {
+        int count = 30;
+        DataPoint[] values = new DataPoint[count];
+        for (int i=0; i<count; i++) {
+            double x = i;
+            double f = mRand.nextDouble()*0.15+0.3;
+            double y = Math.sin(i*f+2) + mRand.nextDouble()*0.3;
+            DataPoint v = new DataPoint(x, y);
+            values[i] = v;
+        }
+        return values;
+    }
+
+    double mLastRandom = 2;
+    Random mRand = new Random();
+    private double getRandom() {
+        return mLastRandom += mRand.nextDouble()*0.5 - 0.25;
+    }
+
+
 
 	/**
 	 * Returns time since base value as human-readable string

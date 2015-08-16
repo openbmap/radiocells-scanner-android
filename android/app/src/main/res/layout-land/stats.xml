@@ -4,16 +4,16 @@
     android:id="@+id/outer"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical" >
+    android:orientation="vertical">
 
     <TableLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content">
 
         <TableRow
             android:id="@+id/tableRow4"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content">
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -43,7 +43,7 @@
         <TableRow
             android:id="@+id/tableRow2"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content">
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -126,15 +126,13 @@
         android:id="@+id/bottom"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:orientation="horizontal" >
+        android:orientation="horizontal">
 
-        <LinearLayout
-            android:id="@+id/graph2"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="0.7"
-            android:orientation="vertical" />
-
+        <com.jjoe64.graphview.GraphView
+            android:id="@+id/graph"
+            android:layout_gravity="top"
+            android:layout_width="match_parent"
+            android:layout_height="200dip" />
     </LinearLayout>
 
 </LinearLayout>

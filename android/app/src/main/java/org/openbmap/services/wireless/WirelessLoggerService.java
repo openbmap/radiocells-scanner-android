@@ -321,12 +321,17 @@ public class WirelessLoggerService extends AbstractService {
 					getApplicationContext().getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_SUBDIR)
 					+ File.separator + prefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_WIFI_CATALOG_FILE);
 
-			try {
-				mRefDb = SQLiteDatabase.openDatabase(catalogPath, null, SQLiteDatabase.OPEN_READONLY);
-			} catch (final SQLiteCantOpenDatabaseException ex) {
-				Log.e(TAG, "Can't open wifi catalog database @ " + catalogPath);
-				mRefDb = null;
-			}
+			if (!(new File(catalogPath)).exists()) {
+                Log.w(TAG, "Selected catalog doesn't exist");
+                mRefDb = null;
+            } else {
+                try {
+                    mRefDb = SQLiteDatabase.openDatabase(catalogPath, null, SQLiteDatabase.OPEN_READONLY);
+                } catch (final SQLiteCantOpenDatabaseException ex) {
+                    Log.e(TAG, "Can't open wifi catalog database @ " + catalogPath);
+                    mRefDb = null;
+                }
+            }
 		} else {
 			Log.w(TAG, "No wifi catalog selected. Can't compare scan results with openbmap dataset.");
 		}

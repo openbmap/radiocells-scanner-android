@@ -307,4 +307,5 @@
 	<string name="empty">--</string>
 	<string name="files">Files</string>
 	<string name="warning_bad_password">Wrong username or password!</string>
+	<string name="graph_title">Cell strength</string>
 </resources>
