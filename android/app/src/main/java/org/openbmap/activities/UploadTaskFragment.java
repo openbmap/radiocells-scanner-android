@@ -28,293 +28,271 @@ import android.util.Log;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
-import org.openbmap.soapclient.ServerValidation;
-import org.openbmap.soapclient.ServerValidation.ServerReply;
-import org.openbmap.soapclient.UploadTask;
-import org.openbmap.soapclient.UploadTask.UploadTaskListener;
+import org.openbmap.soapclient.ServerCheckTask;
+import org.openbmap.soapclient.ServerCheckTask.ServerCheckerListener;
+import org.openbmap.soapclient.ExportDataTask;
+import org.openbmap.soapclient.ExportDataTask.UploadTaskListener;
 import org.openbmap.utils.FileUtils;
+import org.openbmap.soapclient.ServerCheckTask.ServerAnswer;
 
 import java.io.File;
 import java.util.Vector;
 
 /**
- *  Fragment manages export background tasks and retains itself across configuration changes.
+ * Fragment manages export background tasks and retains itself across configuration changes.
  */
-public class UploadTaskFragment extends Fragment implements UploadTaskListener, ServerReply {
+public class UploadTaskFragment extends Fragment implements UploadTaskListener, ServerCheckerListener {
 
-	private static final String TAG = UploadTaskFragment.class.getSimpleName();
+    private static final String TAG = UploadTaskFragment.class.getSimpleName();
+    private boolean mBadPasswordFlag;
 
-	private enum CheckResult {UNKNOWN, BAD, GOOD};
-	private CheckResult sdCardWritable = CheckResult.UNKNOWN;
-	private CheckResult credentialsProvided = CheckResult.UNKNOWN;
-	private CheckResult allowedVersion = CheckResult.UNKNOWN;
+    private enum CheckResult {UNKNOWN, FAILED, PASSED}
 
-	private final Vector<Integer> toExport = new Vector<Integer>();
-	private UploadTask mExportTask;
+    ;
+    private CheckResult sdCardWritable = CheckResult.UNKNOWN;
+    private CheckResult serverReply = CheckResult.UNKNOWN;
 
-	private String mTitle;
-	private String mMessage;
-	private int	mProgress;
-	private boolean	mIsExecuting = false;
+    private final Vector<Integer> toExport = new Vector<Integer>();
+    private ExportDataTask mExportDataTask;
 
-	/**
-	 * This method will only be called once when the retained
-	 * Fragment is first created.
-	 */
-	@Override
-	public void onCreate(final Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+    private String mTitle;
+    private String mMessage;
+    private int mProgress;
+    private boolean mIsExecuting = false;
 
-		// Retain this fragment across configuration changes.
-		setRetainInstance(true);
-	}
+    /**
+     * This method will only be called once when the retained
+     * Fragment is first created.
+     */
+    @Override
+    public void onCreate(final Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Retain this fragment across configuration changes.
+        setRetainInstance(true);
+    }
+
+    /**
+     * Saves progress dialog state for later restore (e.g. on device rotation)
+     *
+     * @param title
+     * @param message
+     * @param progress
+     */
+    public void retainProgress(final String title, final String message, final int progress) {
+        mTitle = title;
+        mMessage = message;
+        mProgress = progress;
+    }
+
+    /**
+     * Restores previously retained progress dialog state
+     *
+     * @param progressDialog
+     */
+    public void restoreProgress(final ProgressDialog progressDialog) {
+        progressDialog.setTitle(mTitle);
+        progressDialog.setMessage(mMessage);
+        progressDialog.setProgress(mProgress);
+    }
 
 
-	public int size() {
-		return toExport.size();
-	}
+    public int size() {
+        return toExport.size();
+    }
 
-	public void add(final int id) {
-		toExport.add(id);
-	}
+    public void add(final int id) {
+        toExport.add(id);
+    }
 
-	/**
-	 * Starts export after all checks have been passed
-	 */
-	public void execute() {
-		mIsExecuting = true;
-		stageVersionCheck();
-	}
+    /**
+     * Starts export after all checks have been passed
+     */
+    public void execute() {
+        mIsExecuting = true;
+        stageVersionCheck();
+    }
 
-	/**
-	 * Exports while sessions on the list
-	 */
-	private void looper() {
-		Log.i(TAG, "Looping over pending exports");
-		if (toExport.size() > 0) {
-			Log.i(TAG, "Will process export " + toExport.get(0));
-			process(toExport.get(0));
-		} else {
-			Log.i(TAG, "No more pending exports left. Finishing");
-			mIsExecuting = false;
-		}
-	}
+    /**
+     * Exports while sessions on the list
+     */
+    private void looper() {
+        Log.i(TAG, "Looping over pending exports");
+        if (toExport.size() > 0) {
+            Log.i(TAG, "Will process export " + toExport.get(0));
+            process(toExport.get(0));
+        } else {
+            Log.i(TAG, "No more pending exports left. Finishing");
+            mIsExecuting = false;
+        }
+    }
 
-	public boolean isExecuting() {
-		return this.mIsExecuting;
-	}
+    public boolean isExecuting() {
+        return this.mIsExecuting;
+    }
 
-	/**
-	 * Does the actual work
-	 * @param session
-	 */
+    /**
+     * Does the actual work
+     *
+     * @param session
+     */
 
-	private void process(final int session) {
+    private void process(final int session) {
 
-		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-		final String user = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_USER, null);
-		final String password = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
-		final String targetPath = getActivity().getExternalFilesDir(null).getAbsolutePath() + File.separator;
-		final boolean skipUpload = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_SKIP_UPLOAD, Preferences.VAL_SKIP_UPLOAD);
-		final boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_SKIP_DELETE, Preferences.VAL_SKIP_DELETE);
-		final boolean anonymiseSsid = prefs.getBoolean(Preferences.KEY_ANONYMISE_SSID, Preferences.VAL_ANONYMISE_SSID); 
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        final String user = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_USER, null);
+        final String password = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
+        final String targetPath = getActivity().getExternalFilesDir(null).getAbsolutePath() + File.separator;
+        final boolean skipUpload = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_SKIP_UPLOAD, Preferences.VAL_SKIP_UPLOAD);
+        final boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_SKIP_DELETE, Preferences.VAL_SKIP_DELETE);
+        final boolean anonymiseSsid = prefs.getBoolean(Preferences.KEY_ANONYMISE_SSID, Preferences.VAL_ANONYMISE_SSID);
 
-		mExportTask = new UploadTask(getActivity(), this, session,
-				targetPath, user, password, anonymiseSsid);
+        mExportDataTask = new ExportDataTask(getActivity(), this, session,
+                targetPath, user, password, anonymiseSsid);
 
-		mExportTask.setExportCells(true);
-		mExportTask.setExportWifis(true);
-		// currently deactivated to prevent crashes
-		mExportTask.setUpdateWifiCatalog(false);
+        mExportDataTask.setExportCells(true);
+        mExportDataTask.setExportWifis(true);
+        // currently deactivated to prevent crashes
+        mExportDataTask.setUpdateWifiCatalog(false);
 
-		// debug settings
-		mExportTask.setSkipUpload(skipUpload);
-		mExportTask.setSkipDelete(skipDelete);
+        // debug settings
+        mExportDataTask.setSkipUpload(skipUpload);
+        mExportDataTask.setSkipDelete(skipDelete);
 
-		mExportTask.execute((Void[]) null);
-	}
+        mExportDataTask.execute((Void[]) null);
+    }
 
-	/**
-	 * Are openbmap credentials available
-	 * @return true if credentials are available
-	 */
-	private boolean areCredentialsProvided() {
-		// TODO verify whether credentials are valid
-		// http://code.google.com/p/openbmap/issues/detail?id=40
+    /**
+     * First round: validate local version vs. server
+     */
+    private void stageVersionCheck() {
+        if (serverReply == CheckResult.UNKNOWN) {
+            // will call {@Link ServerCheckerListener} on completion
+            final String user = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_USER, null);
+            final String password = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
 
-		// checks credentials available?
-		final String user = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_USER, null);
-		final String password = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
+            final String[] params = {RadioBeacon.VERSION_COMPATIBILITY, user, password};
+            new ServerCheckTask(getActivity(), this).execute(params);
+        } else if (serverReply == CheckResult.PASSED) {
+            stageLocalChecks();
+        }
+    }
 
-		if (!isValidLogin(user, password)) {
-			Log.e(TAG, "User credentials missing");
-			return false;
-		} else {
-			Log.i(TAG, "Good: User and password provided");
-			return true;
-		}
-	}
+    /**
+     * Second round: check whether local device is ready
+     */
+    private void stageLocalChecks() {
+        if (sdCardWritable == CheckResult.UNKNOWN) {
+            sdCardWritable = (FileUtils.isSdCardWritable() ? CheckResult.PASSED : CheckResult.FAILED);
+        }
+        summarizeChecks();
+    }
 
-	/**
-	 * First round: validate local version vs. server
-	 */
-	private void stageVersionCheck() {
-		if (allowedVersion == CheckResult.UNKNOWN) {
-			// will call onServerCheckGood()/onServerCheckBad() upon completion
-			new ServerValidation(getActivity(), this).execute(RadioBeacon.VERSION_COMPATIBILITY);
-		} else if (allowedVersion == CheckResult.GOOD) {
-			stageLocalChecks();
-		}
-	}
+    /**
+     * Validate everything (first + second round) is good, before starting export
+     */
+    private void summarizeChecks() {
+        // so now it's time to decide whether we start or not..
+        if (serverReply == CheckResult.PASSED && sdCardWritable == CheckResult.PASSED) {
+            looper();
+        } else if (serverReply == CheckResult.FAILED) {
+            // version is outdated or wrong credentials
+            if (mBadPasswordFlag) {
+                final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
+                onUploadFailed(id, getResources().getString(R.string.warning_bad_password));
+            } else {
+                final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
+                onUploadFailed(id, getResources().getString(R.string.warning_outdated_client));
+            }
+        } else if (serverReply == CheckResult.UNKNOWN) {
+            // couldn't verify online version
+            final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
+            onUploadFailed(id, getResources().getString(R.string.warning_client_version_not_checked));
+        } else if (sdCardWritable == CheckResult.FAILED) {
+            final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
+            onUploadFailed(id, getResources().getString(R.string.warning_sd_not_writable));
+        } else {
+            final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
+            onUploadFailed(id, "Unknown error");
+        }
 
-	/**
-	 * Second round: check whether local device is ready
-	 */
-	private void stageLocalChecks() {
-		if (sdCardWritable == CheckResult.UNKNOWN) {
-			sdCardWritable = (FileUtils.isSdCardWritable() ? CheckResult.GOOD : CheckResult.BAD);
-		}
+    }
 
-		if (credentialsProvided == CheckResult.UNKNOWN) {
-			credentialsProvided =  (areCredentialsProvided() ? CheckResult.GOOD : CheckResult.BAD);
-		}
-		stageFinalCheck();
-	}
+    /* (non-Javadoc)
+     * @see org.openbmap.soapclient.ServerValidation.ServerReply#onServerAllowsUpload()
+     */
+    @Override
+    public void onServerAllowsUpload() {
+        serverReply = CheckResult.PASSED;
+        stageLocalChecks();
+    }
 
-	/**
-	 * Validate everything (first + second round) is good, before starting export
-	 */
-	private void stageFinalCheck() {
-		// so now it's time to decide whether we start or not..
-		if (allowedVersion == CheckResult.GOOD && sdCardWritable == CheckResult.GOOD && credentialsProvided == CheckResult.GOOD) {
-			looper();
-		}
-		else if(allowedVersion == CheckResult.BAD) {
-			// version is outdated
-			final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
-			onUploadFailed(id, getResources().getString(R.string.warning_outdated_client));
-		} else if(allowedVersion == CheckResult.UNKNOWN) {
-			// couldn't check version
-			final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
-			onUploadFailed(id, getResources().getString(R.string.warning_client_version_not_checked));
-		} else if (credentialsProvided == CheckResult.BAD) {
-			final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
-			onUploadFailed(id, getResources().getString(R.string.user_or_password_missing));
-		} else if(sdCardWritable == CheckResult.BAD) {
-			final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
-			onUploadFailed(id, getResources().getString(R.string.warning_sd_not_writable));
-		} else {
-			final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
-			onUploadFailed(id, "Unknown error");
-		}
+    /* (non-Javadoc)
+     * @see org.openbmap.soapclient.ServerValidation.ServerReply#onServerDeclinesUpload(java.lang.String)
+     */
+    @Override
+    public void onServerDeclinesUpload(final ServerAnswer code, final String description) {
+        Log.e(TAG, description);
+        serverReply = CheckResult.FAILED;
+        if (code == ServerAnswer.BAD_PASSWORD) {
+            mBadPasswordFlag = true;
+        }
+        // skip local checks, server can't be reached anyways
+        summarizeChecks();
+    }
 
-	}
+    /* (non-Javadoc)
+     * @see org.openbmap.soapclient.ServerValidation.ServerReply#onServerCheckFailed()
+     */
+    @Override
+    public void onServerCheckFailed() {
+        serverReply = CheckResult.UNKNOWN;
+        // skip local checks, server can't be reached anyways
+        summarizeChecks();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.openbmap.soapclient.ServerValidation.ServerReply#onServerGood()
-	 */
-	@Override
-	public void onServerGood() {
-		allowedVersion = CheckResult.GOOD;
-		stageLocalChecks();
-	}
+    /* (non-Javadoc)
+     * @see org.openbmap.soapclient.ExportSessionTask.ExportTaskListener#onExportCompleted(int)
+     */
+    @Override
+    public void onUploadCompleted(final int id) {
+        // forward to activity
+        ((UploadTaskListener) getActivity()).onUploadCompleted(id);
 
-	/* (non-Javadoc)
-	 * @see org.openbmap.soapclient.ServerValidation.ServerReply#onServerBad(java.lang.String)
-	 */
-	@Override
-	public void onServerBad(final String text) {
-		Log.e(TAG, text);
-		allowedVersion = CheckResult.BAD;
-		// skip local checks, server can't be reached anyways
-		stageFinalCheck();
-	}
+        Log.i(TAG, "Export completed. Processing next");
+        toExport.remove(Integer.valueOf(id));
+        looper();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.openbmap.soapclient.ServerValidation.ServerReply#onServerCheckFailed()
-	 */
-	@Override
-	public void onServerCheckFailed() {
-		allowedVersion = CheckResult.UNKNOWN;
-		//stageLocalChecks();
-		// skip local checks, server can't be reached anyways
-		stageFinalCheck();
-	}
+    @Override
+    public void onDryRunCompleted(final int id) {
+        // forward to activity
+        ((UploadTaskListener) getActivity()).onDryRunCompleted(id);
 
-	/**
-	 * Checks whether user name and password has been set
-	 * @param user
-	 * @param password 
-	 * @return true if user as well as password have been provided
-	 */
-	private boolean isValidLogin(final String user, final String password) {
-		return (user != null && password != null);
-	}
+        Log.i(TAG, "Export simulated. Processing next");
+        toExport.remove(Integer.valueOf(id));
+        looper();
+    }
 
-	/**
-	 * Saves progress dialog state for later restore (e.g. on device rotation)
-	 * @param title
-	 * @param message
-	 * @param progress
-	 */
-	public void retainProgress(final String title, final String message, final int progress) {
-		mTitle = title;
-		mMessage = message;
-		mProgress = progress;
-	}
+    /* (non-Javadoc)
+     * @see org.openbmap.soapclient.ExportSessionTask.ExportTaskListener#onExportFailed(java.lang.String)
+     */
+    @Override
+    public void onUploadFailed(final int id, final String error) {
+        // forward to activity
+        ((UploadTaskListener) getActivity()).onUploadFailed(id, error);
 
-	/**
-	 * Restores previously retained progress dialog state
-	 * @param progressDialog
-	 */
-	public void restoreProgress(final ProgressDialog progressDialog) {
-		progressDialog.setTitle(mTitle);
-		progressDialog.setMessage(mMessage);
-		progressDialog.setProgress(mProgress);
-	}
+        Log.e(TAG, "Error exporting session " + id + ": " + error);
+        toExport.remove(Integer.valueOf(id));
+        looper();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.openbmap.soapclient.ExportSessionTask.ExportTaskListener#onExportCompleted(int)
-	 */
-	@Override
-	public void onUploadCompleted(final int id) {
-		// forward to activity
-		((UploadTaskListener) getActivity()).onUploadCompleted(id);
-
-		Log.i(TAG, "Export completed. Processing next");
-		toExport.remove(Integer.valueOf(id));
-		looper();
-	}
-
-	@Override
-	public void onDryRunCompleted(final int id) {
-		// forward to activity
-		((UploadTaskListener) getActivity()).onDryRunCompleted(id);
-
-		Log.i(TAG, "Export simulated. Processing next");
-		toExport.remove(Integer.valueOf(id));
-		looper();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openbmap.soapclient.ExportSessionTask.ExportTaskListener#onExportFailed(java.lang.String)
-	 */
-	@Override
-	public void onUploadFailed(final int id, final String error) {
-		// forward to activity
-		((UploadTaskListener) getActivity()).onUploadFailed(id, error);
-
-		Log.e(TAG, "Error exporting session " + id + ": " + error);
-		toExport.remove(Integer.valueOf(id));
-		looper();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openbmap.soapclient.ExportSessionTask.ExportTaskListener#onProgressUpdate(java.lang.Object[])
-	 */
-	@Override
-	public void onUploadProgressUpdate(final Object... values) {
-		// forward to activity
-		((UploadTaskListener) getActivity()).onUploadProgressUpdate(values);
-	}
+    /* (non-Javadoc)
+     * @see org.openbmap.soapclient.ExportSessionTask.ExportTaskListener#onProgressUpdate(java.lang.Object[])
+     */
+    @Override
+    public void onUploadProgressUpdate(final Object... values) {
+        // forward to activity
+        ((UploadTaskListener) getActivity()).onUploadProgressUpdate(values);
+    }
 }

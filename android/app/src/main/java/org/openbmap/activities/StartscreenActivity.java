@@ -40,7 +40,7 @@ import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.Session;
 import org.openbmap.soapclient.ExportGpxTask.ExportGpxTaskListener;
-import org.openbmap.soapclient.UploadTask.UploadTaskListener;
+import org.openbmap.soapclient.ExportDataTask.UploadTaskListener;
 import org.openbmap.utils.AlertDialogUtils;
 import org.openbmap.utils.OnAlertClickInterface;
 import org.openbmap.utils.TabManager;
@@ -65,7 +65,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	private static final String UPLOAD_TASK = "upload_task";
 	private static final String EXPORT_GPX_TASK = "export_gpx_task";
 
-	private static final String	WIFILOCK_NAME	= "UploadLock";
+	private static final String	WIFILOCK_NAME = "UploadLock";
 
 	// alert builder ids
 	private static final int ID_REPAIR_WIFI	= 2;
