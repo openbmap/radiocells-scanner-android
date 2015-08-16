@@ -40,9 +40,9 @@ import java.util.ArrayList;
 /**
  * Exports wifis to xml format for later upload.
  */
-public class WifiExporter  {
+public class WifiXmlWriter {
 
-	private static final String TAG = WifiExporter.class.getSimpleName();
+	private static final String TAG = WifiXmlWriter.class.getSimpleName();
 
 	/**
 	 * Cursor windows size, to prevent running out of mem on to large cursor
@@ -212,7 +212,7 @@ public class WifiExporter  {
 	 * @param tempPath (full) path where temp files are saved. Will be created, if not existing.
 	 * @param exportVersion current Radiobeacon version (can differ from Radiobeacon version used for tracking) 
 	 */
-	public WifiExporter(final Context context, final int session, String tempPath, final String exportVersion, final boolean anonymise) {
+	public WifiXmlWriter(final Context context, final int session, String tempPath, final String exportVersion, final boolean anonymise) {
 		this.mContext = context;
 		this.mSession = session;
 		if (tempPath != null && !tempPath.endsWith(File.separator)) {

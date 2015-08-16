@@ -23,7 +23,6 @@ import android.util.Base64;
 import android.util.Log;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.mime.MultipartEntity;
@@ -42,15 +41,20 @@ import java.net.URL;
 /**
  * Uploads xml files as multipart message to webservice.
  */
-public class FileUploader extends AsyncTask<String, Integer, Boolean> {
+public class AsyncUploader extends AsyncTask<String, Integer, Boolean> {
 
+    private UploadResult mResult;
+
+    public enum UploadResult {
+		UNDEFINED, OK, ERROR, WRONG_PASSWORD
+	}
 	/**
 	 * Socket and connection parameters for http upload
 	 */
 	//private static final int SOCKET_TIMEOUT = 30000;
 	//private static final int CONNECTION_TIMEOUT = 30000;
 
-	private static final String TAG = FileUploader.class.getSimpleName();
+	private static final String TAG = AsyncUploader.class.getSimpleName();
 
 	/**
 	 * Field for multipart message: username
@@ -103,6 +107,9 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 
 	private final String mUser;
 	private final String mPassword;
+
+    private boolean passwordValidated = false;
+
 	private final String mServer;
 	private String mFile;
 
@@ -124,7 +131,7 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 	 * Reference:
 	 * http://code.google.com/p/openbmap/issues/detail?id=40
 	 */
-	private final boolean	mValidateServerSide;
+	private final boolean mValidateServerSide;
 
 	/**
 	 * Remote folder, in which uploaded files are searched upon validation
@@ -141,7 +148,7 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 	 * @param validateServerSide	additional check, whether file is actually uploaded (more safe than just relying on server response 200)
 	 * @param validationBaseUrl		base URL for additional check 
 	 */
-	public FileUploader(final FileUploadListener listener, final String user, final String password, final String server, final boolean validateServerSide, final String validationBaseUrl) {
+	public AsyncUploader(final FileUploadListener listener, final String user, final String password, final String server, final boolean validateServerSide, final String validationBaseUrl) {
 		mListener = listener;
 		mUser = user;
 		mPassword = password;
@@ -162,10 +169,14 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 		Log.i(TAG, "Uploading " + params[0]);
 		mFile = params[0];
         long beforeTime = System.currentTimeMillis();
-		final Boolean httpResponseGood = upload(mFile);
 
-		// perform additional checks if needed
-		if (mValidateServerSide && httpResponseGood && !fileFoundOnline(mFile)) {
+        mResult = upload(mFile);
+        if (mResult == UploadResult.WRONG_PASSWORD) {
+            return false;
+        }
+
+        // perform additional checks if needed
+		if (mValidateServerSide && mResult == UploadResult.OK && !fileFoundOnline(mFile)) {
 			final String filename = mUser + "_" + mFile.substring(mFile.lastIndexOf(File.separator) + 1, mFile.length());
 			
 			lastErrorMsg = "Server reported code 200 on " + filename + ", but the file's not there..";
@@ -175,21 +186,21 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 		}
         mSpeed = calcSpeed(System.currentTimeMillis(), beforeTime, mSize);
 
-		return httpResponseGood;
+		return (mResult == UploadResult.OK);
 	}
 
 	@Override
 	protected final void onPostExecute(final Boolean success) {
-		if (success) {
-			if (mListener != null) {
-				mListener.onUploadCompleted(mFile, mSize, mSpeed);
-			}
-			return;
-		} else {
-			if (mListener != null) {
-				Log.e(TAG, "Upload failed " + lastErrorMsg);
-				mListener.onUploadFailed(mFile, lastErrorMsg);
-			}
+        if (mListener == null) {
+            Log.e(TAG, "Listener is null!");
+        }
+
+		if (mResult == UploadResult.OK) {
+			mListener.onUploadCompleted(mFile, mSize, mSpeed);
+            return;
+        } else {
+            Log.e(TAG, "Upload failed " + lastErrorMsg);
+            mListener.onUploadFailed(mFile, lastErrorMsg);
 			return;
 		}
 	}
@@ -200,7 +211,7 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
      * @param file File to upload (full path)
      * @return true on response code 200, false otherwise
      */
-    private boolean httpPostRequest(final String file) {
+    private UploadResult httpPostRequest(final String file) {
         // TODO check network state
         // @see http://developer.android.com/training/basics/network-ops/connecting.html
 
@@ -234,24 +245,26 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 
             final int reply = response.getStatusLine().getStatusCode();
             if (reply == 200) {
+                // everything is ok if we receive HTTP 200
                 mSize = entity.getContentLength();
                 Log.i(TAG, "Uploaded " + file + ": Server reply " + reply);
+                return UploadResult.OK;
             } else if (reply == 401) {
                 Log.e(TAG, "Wrong username or password");
+                return UploadResult.WRONG_PASSWORD;
             }
 			else {
                 Log.w(TAG, "Error while uploading" + file + ": Server reply " + reply);
+                return UploadResult.ERROR;
             }
-            // everything is ok if we receive HTTP 200
             // TODO: redirects (301, 302) are NOT handled here
             // thus if something changes on the server side we're dead here
-            return (reply == HttpStatus.SC_OK);
         } catch (final ClientProtocolException e) {
             Log.e(TAG, e.getMessage());
         } catch (final IOException e) {
             Log.e(TAG, "I/O exception on file " + file);
         }
-        return false;
+        return UploadResult.UNDEFINED;
     }
 
 	/**
@@ -297,23 +310,23 @@ public class FileUploader extends AsyncTask<String, Integer, Boolean> {
 	 * @param file File to upload (full path).
 	 * @return true on success, false on error
 	 */
-	private boolean upload(final String file) {
-		boolean success = httpPostRequest(file);
+	private UploadResult upload(final String file) {
+        UploadResult result = httpPostRequest(file);
 
 		// simple resume upload mechanism on failed upload
 		int i = 0;
-		while (!success && i < MAX_RETRIES) {
+		while (result != UploadResult.OK && i < MAX_RETRIES) {
 			Log.w(TAG, "Upload failed: Retry " + i + ": " + file);
-			success = httpPostRequest(file);
+            result = httpPostRequest(file);
 			i++;
 		}
 
-		if (!success) {
+		if (result != UploadResult.OK) {
 			lastErrorMsg = "Upload failed after " + i + " retries";
 			Log.e(TAG, "Upload failed after " + i + " retries");
 		}
 
-		return success;
+		return result;
 	}
 
     /**

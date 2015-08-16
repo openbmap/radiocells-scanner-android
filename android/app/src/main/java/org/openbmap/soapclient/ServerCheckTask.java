@@ -23,8 +23,13 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.NetworkInfo.State;
 import android.os.AsyncTask;
+import android.util.Base64;
 import android.util.Log;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.openbmap.Preferences;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -43,48 +48,49 @@ import javax.xml.parsers.SAXParserFactory;
  * Allowed client version is retrieved from openbmap server
  */
 
-public final class ServerValidation extends AsyncTask<String, Object, Object[]> {
+public final class ServerCheckTask extends AsyncTask<String, Object, Object[]> {
 
-	private static final String	TAG	= ServerValidation.class.getSimpleName();
+    private static final String	TAG	= ServerCheckTask.class.getSimpleName();
 
-	public interface ServerReply {
-		void onServerGood();
-		void onServerBad(String text);
+    public interface ServerCheckerListener {
+		void onServerAllowsUpload();
+		void onServerDeclinesUpload(ServerAnswer code, String description);
 		void onServerCheckFailed();
 	}
-	
-	/**
+
+    public enum ServerAnswer {
+        OK,
+        BAD_PASSWORD,
+        OUTDATED,
+        NO_REPLY,
+        UNKNOWN_ERROR
+    };
+
+    /**
 	 * 
 	 */
-	private static final int	CONNECTION_TIMEOUT	= 10000;
+	private static final int CONNECTION_TIMEOUT	= 10000;
 
 	/**
 	 * Especially after wifi sleep / wifi repair, it takes a couple of seconds before
 	 * device goes into connecting state
 	 * How many seconds should we wait for state connecting?
 	 */
-	private static final int	WAIT_FOR_CONNECTING	= 10;
+	private static final int WAIT_FOR_CONNECTING	= 10;
 
 	/**
 	 * After device is in connecting state, it takes a couple of seconds to final connect
 	 * How many seconds should we wait for state connected?
 	 */
-	private static final int	WAIT_FOR_CONNECTED	= 5;
-	
-	public enum ServerAnswer {
-		OK,
-		OUTDATED,
-		NO_REPLY,
-		UNKNOWN_ERROR
-	};
+	private static final int WAIT_FOR_CONNECTED	= 5;
 
 	private String serverVersion = "";
 
-	private final Context	mContext;
+	private final Context mContext;
 	
-	private final ServerReply	mListener;
+	private final ServerCheckerListener mListener;
 
-	public ServerValidation(final Context context, final ServerReply listener) {
+	public ServerCheckTask(final Context context, final ServerCheckerListener listener) {
 		mListener = listener;
 		mContext = context;
 	}
@@ -95,14 +101,14 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 	@Override
 	protected Object[] doInBackground(final String... params) {
 		try {
-			final Object[]  result = new Object[2];
+			final Object[] result = new Object[2];
 			result[0] = ServerAnswer.UNKNOWN_ERROR;
 			result[1] = "Uninitialized";
 
 			//check whether we have a connection to openbmap.org
 			if (!isOnline()) {
 				// if not, check whether connecting, if so wait
-				Log.i(TAG, "Offline! Device migth just been switched on, so wait a bit");
+				Log.i(TAG, "Offline! Device might just been switched on, so wait a bit");
 				waitForConnect();
 				if (!isOnline()) {
 					Log.i(TAG, "Waiting didn't help. Still no connection");
@@ -148,8 +154,13 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 
 			if (serverVersion.equals(params[0])) {
 				Log.i(TAG, "Client version is up-to-date: " + params[0]);
-				result[0] = ServerAnswer.OK;
-				result[1] = "Everything fine! You're using the most up-to-date version!";
+                if (credentialsAccepted(params[1], params[2])) {
+                    result[0] = ServerAnswer.OK;
+                    result[1] = "Everything fine! You're using the most up-to-date version!";
+                } else {
+                    result[0] = ServerAnswer.BAD_PASSWORD;
+                    result[1] = "Server reports bad user or password!";
+                }
 				return result;
 			} else {
 				Log.i(TAG, "Client version is outdated: server " + serverVersion + " client " + params[0]);
@@ -169,25 +180,64 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 		}
 	}
 
-	@Override
+    /**
+     * Sends a http request to website to check if server accepts user name and password
+     * @return true if server confirms credentials
+     */
+    private boolean credentialsAccepted(String user, String password) {
+
+        if (user == null || password == null) {
+            return false;
+        }
+
+        final DefaultHttpClient httpclient = new DefaultHttpClient();
+        final HttpPost httppost = new HttpPost(Preferences.PASSWORD_VALIDATION_URL);
+        try {
+            final String authorizationString = "Basic " + Base64.encodeToString(
+                    (user + ":" + password).getBytes(), Base64.NO_WRAP);
+            httppost.setHeader("Authorization", authorizationString);
+            final HttpResponse response = httpclient.execute(httppost);
+
+            final int reply = response.getStatusLine().getStatusCode();
+            if (reply == 200) {
+                Log.v(TAG, "Server accepted credentials");
+                return true;
+            } else if (reply == 401) {
+                Log.e(TAG, "Server authentication failed");
+                return false;
+            }
+            else {
+                Log.w(TAG, "Generic error: server reply " + reply);
+                return false;
+            }
+            // TODO: redirects (301, 302) are NOT handled here
+            // thus if something changes on the server side we're dead here
+        } catch (final ClientProtocolException e) {
+            Log.e(TAG, e.getMessage());
+        } catch (final IOException e) {
+            Log.e(TAG, "I/O exception while checking credentials");
+        }
+        return false;
+    }
+
+    @Override
 	protected void onPostExecute(final Object[] result) {
 
 		if (result.length == 2) {
-			//ServerAnswer version = s.isAllowedVersion(RadioBeacon.SW_VERSION);
-			final ServerAnswer version = (ServerAnswer) result[0];
-			final String text = (String) result[1];
+			final ServerAnswer code = (ServerAnswer) result[0];
+			final String description = (String) result[1];
 
-			if (version == ServerAnswer.OK) {
+			if (code == ServerAnswer.OK) {
 				if (mListener != null) {
-					mListener.onServerGood();
+					mListener.onServerAllowsUpload();
 				}
 
-			} else if (version == ServerAnswer.OUTDATED) {
-				// cancel, if client version to old
+			} else if (code == ServerAnswer.OUTDATED || code == ServerAnswer.BAD_PASSWORD) {
+				// cancel, if client version to old or bad credentials
 				if (mListener != null) {
-					mListener.onServerBad(text);
+					mListener.onServerDeclinesUpload(code, description);
 				}
-			} else if (version == ServerAnswer.NO_REPLY || version == ServerAnswer.UNKNOWN_ERROR) {
+			} else if (code == ServerAnswer.NO_REPLY || code == ServerAnswer.UNKNOWN_ERROR) {
 				Log.e(TAG, "Couldn't verify server version. Are you offline?");
 				// cancel, if client version couldn't be verified
 				if (mListener != null) {
@@ -198,7 +248,7 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 	}
 
 	/**
-	 * 
+	 * Gives system some time to initialize network adapter and connections
 	 */
 	private void waitForConnect() {
 		final ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -251,7 +301,6 @@ public final class ServerValidation extends AsyncTask<String, Object, Object[]> 
 	 * @return true on successful http connection
 	 */
 	private boolean isOnline() {
-		// try to connect openbmap.org
 		try {
 			final URL url = new URL(Preferences.VERSION_CHECK_URL);
 			final HttpURLConnection connection = (HttpURLConnection) url.openConnection();

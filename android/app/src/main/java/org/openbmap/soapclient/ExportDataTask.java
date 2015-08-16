@@ -21,13 +21,12 @@ package org.openbmap.soapclient;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
-import org.openbmap.soapclient.FileUploader.FileUploadListener;
+import org.openbmap.soapclient.AsyncUploader.FileUploadListener;
 import org.openbmap.utils.MediaScanner;
 import org.openbmap.utils.WifiCatalogUpdater;
 
@@ -37,9 +36,9 @@ import java.util.ArrayList;
 /**
  * Manages export and upload processes
  */
-public class UploadTask extends AsyncTask<Void, Object, Boolean> implements FileUploadListener {
+public class ExportDataTask extends AsyncTask<Void, Object, Boolean> implements FileUploadListener {
 
-	private static final String TAG = UploadTask.class.getSimpleName();
+	private static final String TAG = ExportDataTask.class.getSimpleName();
 
 	/**
 	 * Max. number of parallel uploads
@@ -149,7 +148,7 @@ public class UploadTask extends AsyncTask<Void, Object, Boolean> implements File
 	/**
 	 * List of all successfully uploaded files. For the moment no differentiation between cells and wifis
 	 */
-	private ArrayList<String>	mUploadedFiles;
+	private ArrayList<String> mUploadedFiles;
     private long mSpeed = -1;
 
     public interface UploadTaskListener {
@@ -169,14 +168,14 @@ public class UploadTask extends AsyncTask<Void, Object, Boolean> implements File
 	 * @param user
 	 * @param password
 	 */
-	public UploadTask(final Context context, final UploadTaskListener listener, final int session,
-			final String targetPath, final String user, final String password, final boolean anonymiseSsid) {
-		this.mAppContext = context.getApplicationContext();
-		this.mSession = session;
-		this.mTargetPath = targetPath;
-		this.mUser = user;
-		this.mPassword = password;
-		this.mListener = listener;
+	public ExportDataTask(final Context context, final UploadTaskListener listener, final int session,
+                          final String targetPath, final String user, final String password, final boolean anonymiseSsid) {
+		mAppContext = context.getApplicationContext();
+		mSession = session;
+		mTargetPath = targetPath;
+		mUser = user;
+		mPassword = password;
+		mListener = listener;
 
 		this.mAnonymiseSsid = anonymiseSsid;
 
@@ -203,29 +202,11 @@ public class UploadTask extends AsyncTask<Void, Object, Boolean> implements File
 			Log.i(TAG, "Exporting cells");
 			// export cells
 			publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.exporting_cells), 0);
-			cellFiles = new CellExporter(mAppContext, mSession, mTargetPath, RadioBeacon.SW_VERSION).export();
+			cellFiles = new CellXmlWriter(mAppContext, mSession, mTargetPath, RadioBeacon.SW_VERSION).export();
 
 			// upload
 			if (!getSkipUpload()) {
-				for (int i = 0; i < cellFiles.size(); i++) {
-					// thread control for the poor: spawn only MAX_THREADS tasks
-					while (mActiveUploads >= allowedThreads()) {
-						Log.i(TAG, "Number of upload threads exceeds max parallel threads (" + mActiveUploads + "/" +  allowedThreads() + "). Waiting..");
-						try {
-							Thread.sleep(100);
-						} catch (final InterruptedException e) {
-						}
-					}
-					publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.uploading_cells) + "(" + "Files" + ": " + String.valueOf(cellFiles.size() -i) +")" , 0);
-					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-						// enforce parallel execution on HONEYCOMB
-						new FileUploader(this, mUser, mPassword, CELL_WEBSERVICE, VALIDATE_UPLOAD, CELL_TARGET_FOLDER).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, cellFiles.get(i));
-						mActiveUploads += 1;
-					} else {
-						new FileUploader(this, mUser, mPassword, CELL_WEBSERVICE, VALIDATE_UPLOAD, CELL_TARGET_FOLDER).execute(cellFiles.get(i));
-						mActiveUploads += 1;
-					}
-				}		
+				uploadAllCells(cellFiles);
 			}
 		} else {
 			Log.i(TAG, "Cell export skipped");
@@ -235,28 +216,11 @@ public class UploadTask extends AsyncTask<Void, Object, Boolean> implements File
 			Log.i(TAG, "Exporting wifis");
 			// export wifis
 			publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.exporting_wifis), 50);
-			wifiFiles = new WifiExporter(mAppContext, mSession, mTargetPath, RadioBeacon.SW_VERSION, mAnonymiseSsid).export();
+			wifiFiles = new WifiXmlWriter(mAppContext, mSession, mTargetPath, RadioBeacon.SW_VERSION, mAnonymiseSsid).export();
 
 			// upload
 			if (!getSkipUpload()) {
-				for (int i = 0; i < wifiFiles.size(); i++) {
-					while (mActiveUploads >= allowedThreads()) {
-						Log.i(TAG, "Maximum number of upload threads reached. Waiting..");
-						try {
-							Thread.sleep(50);
-						} catch (final InterruptedException e) {
-						}
-					}
-					publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.uploading_wifis) + "(Files: " + String.valueOf(wifiFiles.size() -i ) + ")", 50);
-					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-						// enforce parallel execution on HONEYCOMB
-						new FileUploader(this, mUser, mPassword, WIFI_WEBSERVICE, VALIDATE_UPLOAD, WIFI_TARGET_FOLDER).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, wifiFiles.get(i));
-						mActiveUploads += 1;
-					} else {
-						new FileUploader(this, mUser, mPassword, WIFI_WEBSERVICE, VALIDATE_UPLOAD, WIFI_TARGET_FOLDER).execute(wifiFiles.get(i));
-						mActiveUploads += 1;
-					}	
-				}
+				uploadAllWifis(wifiFiles);
 			}
 		} else {
 			Log.i(TAG, "Wifi export skipped");
@@ -264,22 +228,12 @@ public class UploadTask extends AsyncTask<Void, Object, Boolean> implements File
 
 		if (!getSkipUpload()) {
 			// wait max 30s for all upload tasks to finish
-			final long startGrace = System.currentTimeMillis(); 
-			while (mActiveUploads > 0 ) {
-				Log.i(TAG, "Waiting for uploads to complete. (Active " + String.valueOf(mActiveUploads) + ")");
-				try {
-					Thread.sleep(50);
-				} catch (final InterruptedException e) {
-				}
-				if (System.currentTimeMillis() - startGrace > GRACE_TIME) {
-					Log.i(TAG, "Timeout reached");
-					break;
-				}
-			}
+			final long startGrace = System.currentTimeMillis();
+			sleepTillCompleted(startGrace);
 
 			// check, whether all files are uploaded
 			if (mUploadedFiles.size() != (wifiFiles.size() + cellFiles.size())) {
-				Log.w(TAG, "Problem: Not all files have been uploaded!");
+				Log.e(TAG, "Not all files have been uploaded!");
 				// set state to failed on upload problems
 				success = false;
 			} else {
@@ -290,12 +244,7 @@ public class UploadTask extends AsyncTask<Void, Object, Boolean> implements File
 			if (!getSkipDelete()) {
 				// delete only successfully uploaded files
 				Log.i(TAG, "Deleting uploaded files");
-				for (int i = 0; i < mUploadedFiles.size(); i++) {
-					final File temp = new File(mUploadedFiles.get(i));
-					if (!temp.delete()) {
-						Log.e(TAG, "Error deleting " + mUploadedFiles.get(i));
-					}	
-				}
+				deleteTempFiles(mUploadedFiles);
 			} else {
 				Log.i(TAG, "Deleting files skipped");
 			}
@@ -314,7 +263,64 @@ public class UploadTask extends AsyncTask<Void, Object, Boolean> implements File
 		return success;
 	}
 
-    /**
+	private void deleteTempFiles(ArrayList<String> files) {
+		for (int i = 0; i < files.size(); i++) {
+            final File temp = new File(files.get(i));
+            if (!temp.delete()) {
+				Log.w(TAG, "Couldn't delete " + temp.getAbsolutePath());
+            }
+        }
+	}
+
+	private void sleepTillCompleted(long startGrace) {
+		while (mActiveUploads > 0 ) {
+            Log.i(TAG, "Waiting for uploads to complete. (Active " + String.valueOf(mActiveUploads) + ")");
+            try {
+                Thread.sleep(50);
+            } catch (final InterruptedException e) {
+            }
+            if (System.currentTimeMillis() - startGrace > GRACE_TIME) {
+                Log.i(TAG, "Timeout reached");
+                break;
+            }
+        }
+	}
+
+	private void uploadAllCells(ArrayList<String> cellFiles) {
+		for (int i = 0; i < cellFiles.size(); i++) {
+            // thread control for the poor: spawn only MAX_THREADS tasks
+            while (mActiveUploads >= allowedThreads()) {
+                Log.i(TAG, "Number of upload threads exceeds max parallel threads (" + mActiveUploads + "/" + allowedThreads() + "). Waiting..");
+                try {
+                    Thread.sleep(100);
+                } catch (final InterruptedException e) {
+                }
+            }
+            publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.uploading_cells) + "(" + "Files" + ": " + String.valueOf(cellFiles.size() -i) +")" , 0);
+                // enforce parallel execution on HONEYCOMB
+                new AsyncUploader(this, mUser, mPassword, CELL_WEBSERVICE, VALIDATE_UPLOAD, CELL_TARGET_FOLDER).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, cellFiles.get(i));
+                mActiveUploads += 1;
+
+        }
+	}
+
+	private void uploadAllWifis(ArrayList<String> wifiFiles) {
+		for (int i = 0; i < wifiFiles.size(); i++) {
+            while (mActiveUploads >= allowedThreads()) {
+                Log.i(TAG, "Maximum number of upload threads reached. Waiting..");
+                try {
+                    Thread.sleep(50);
+                } catch (final InterruptedException e) {
+                }
+            }
+            publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.uploading_wifis) + "(" + mAppContext.getString(R.string.files) + ": " + String.valueOf(wifiFiles.size() -i ) + ")", 50);
+            // enforce parallel execution on HONEYCOMB
+            new AsyncUploader(this, mUser, mPassword, WIFI_WEBSERVICE, VALIDATE_UPLOAD, WIFI_TARGET_FOLDER).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, wifiFiles.get(i));
+            mActiveUploads += 1;
+        }
+	}
+
+	/**
      * Returns number of parallel uploads threads
      * @return 1 if no speed measurement available yet
      */
@@ -344,16 +350,13 @@ public class UploadTask extends AsyncTask<Void, Object, Boolean> implements File
 		}
 	}
 
-	@SuppressLint("NewApi")
 	@Override
 	protected final void onPostExecute(final Boolean success) {
 
 		// rescan SD card on honeycomb devices
 		// Otherwise files may not be visible when connected to desktop pc (MTP cache problem)
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-			Log.i(TAG, "Re-indexing SD card temp folder");
-			new MediaScanner(mAppContext, new File(mTargetPath));
-		}
+		Log.i(TAG, "Re-indexing SD card temp folder");
+		new MediaScanner(mAppContext, new File(mTargetPath));
 
 		if (mSkipUpload) {
 			// upload simulated only
@@ -376,14 +379,6 @@ public class UploadTask extends AsyncTask<Void, Object, Boolean> implements File
 			return;
 		}
 	}
-
-	/*
-	@Override 
-	protected final void onCanceled() {
-		if (mCallbacks != null) {
-			mCallbacks.onCancelled();
-		}
-	}*/
 
 	/**
 	 * Enables or disables cells export
@@ -439,14 +434,7 @@ public class UploadTask extends AsyncTask<Void, Object, Boolean> implements File
 	}
 
 	/**
-	 * @param sessionActivity
-	 */
-	public void setContext(final Context context) {
-		mAppContext = context;
-	}
-
-	/**
-	 * @param b
+	 * @param updateCatalog
 	 */
 	public void setUpdateWifiCatalog(final boolean updateCatalog) {
 		mUpdateWifiCatalog = updateCatalog;

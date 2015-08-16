@@ -39,9 +39,9 @@ import java.util.ArrayList;
 /**
  * Exports cells to xml format for later upload.
  */
-public class CellExporter {
+public class CellXmlWriter {
 
-	private static final String TAG = CellExporter.class.getSimpleName();
+	private static final String TAG = CellXmlWriter.class.getSimpleName();
 
 	/**
 	 * Initial size wifi StringBuffer
@@ -226,7 +226,7 @@ public class CellExporter {
 	 * @param exportVersion current Radiobeacon version (can differ from Radiobeacon version used for tracking) 
 
 	 */
-	public CellExporter(final Context context, final int session, String tempPath, final String exportVersion) {
+	public CellXmlWriter(final Context context, final int session, String tempPath, final String exportVersion) {
 		this.mContext = context;
 		this.mSession = session;
 		if (tempPath != null && !tempPath.endsWith(File.separator)) {

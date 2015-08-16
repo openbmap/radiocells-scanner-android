@@ -245,7 +245,7 @@
 	<string name="cleaning_database">Reorganising..</string>
 	<string name="database_lock_error">Couldn\'t lock database. Try again later</string>
 	<string name="please_stay_patient">Please stay patient..</string>
-	<string name="export_error_title">Export error!</string>
+	<string name="export_error_title">Export error</string>
 	<string name="export_error">Try again later. If problem persists, please file a
 		bug at\nhttp://code.google.com/p/openbmap/issues/list
 	</string>
@@ -305,4 +305,6 @@
 	<string name="show_only_free">Show only free</string>
 	<string name="show_all">Show all</string>
 	<string name="empty">--</string>
+	<string name="files">Files</string>
+	<string name="warning_bad_password">Wrong username or password!</string>
 </resources>

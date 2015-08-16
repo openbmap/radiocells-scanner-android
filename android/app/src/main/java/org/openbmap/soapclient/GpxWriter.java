@@ -42,9 +42,9 @@ import java.util.TimeZone;
  * Inspired by Nicolas Guillaumin
  */
 // TODO: refactor to AsyncTask
-public class GpxExporter {
+public class GpxWriter {
 
-	private static final String TAG = GpxExporter.class.getSimpleName();
+	private static final String TAG = GpxWriter.class.getSimpleName();
 
 	/**
 	 * Cursor windows size, to prevent running out of mem on to large cursor
@@ -124,7 +124,7 @@ public class GpxExporter {
 
 	private DatabaseHelper	mDbHelper;
 
-	public GpxExporter(final Context context, final int session) {
+	public GpxWriter(final Context context, final int session) {
 		mSession = session;
 		mContext = context;
 	}
