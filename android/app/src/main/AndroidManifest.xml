@@ -5,7 +5,7 @@
     android:versionName="0.8.8" >
 
     <uses-sdk
-        android:minSdkVersion="9"
+        android:minSdkVersion="14"
         android:targetSdkVersion="19" />
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -21,26 +21,64 @@
     <application
         android:name="org.openbmap.RadiobeaconApplication"
         android:allowBackup="true"
-        android:icon="@drawable/radiobeacon"
+        android:icon="@drawable/icon"
         android:label="@string/app_name"
         android:theme="@style/Theme.AppCompat" >
         <activity
-            android:name="org.openbmap.activities.HostActivity"
-            android:label="@string/app_name" >
+            android:name=".activities.HostActivity"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.AppCompat">
         </activity>
         <activity
-            android:name="org.openbmap.activities.StartscreenActivity"
+            android:name=".activities.StartscreenActivity"
             android:label="Radiobeacon"
             android:uiOptions="splitActionBarWhenNarrow" >
             <meta-data
                 android:name="android.support.UI_OPTIONS"
                 android:value="splitActionBarWhenNarrow" />
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".activities.StatsActivity"
+            android:label="Overview" >
+        </activity>
+        <activity
+            android:name=".activities.WifiListContainer"
+            android:label="Wifis" >
+        </activity>
+        <activity
+            android:name=".activities.WifiDetailsActivity"
+            android:label="Wifi Details" >
+        </activity>
+        <activity
+            android:name=".activities.CellsListContainer"
+            android:label="Cells" >
+        </activity>
+        <activity
+            android:name=".activities.CellDetailsActivity"
+            android:label="Cell Details" >
+        </activity>
+        <activity
+            android:name=".activities.MapViewActivity"
+            android:label="Maps" >
+        </activity>
+        <activity
+            android:name=".activities.SettingsActivity"
+            android:label="Preferences" >
+        </activity>
+        <activity
+            android:name=".activities.AdvancedSettingsActivity"
+            android:label="@string/advanced_settings" >
+        </activity>
+        <activity
+            android:name=".activities.CreditsActivity"
+            android:label="Credits" >
+        </activity>
+
+        <!-- Exported activities, which can be used to automate Radiobeacon-->
         <activity android:name=".commands.StartTracking" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -56,55 +94,33 @@
                 <action android:name="android.intent.action.VIEW" />
             </intent-filter>
         </activity>
-        <activity
-            android:name="org.openbmap.activities.StatsActivity"
-            android:label="Overview" >
-        </activity>
-        <activity
-            android:name="org.openbmap.activities.WifiListContainer"
-            android:label="Wifis" >
-        </activity>
-        <activity
-            android:name="org.openbmap.activities.WifiDetailsActivity"
-            android:label="Wifi Details" >
-        </activity>
-        <activity
-            android:name="org.openbmap.activities.CellsListContainer"
-            android:label="Cells" >
-        </activity>
-        <activity
-            android:name="org.openbmap.activities.CellDetailsActivity"
-            android:label="Cell Details" >
-        </activity>
-        <activity
-            android:name="org.openbmap.activities.MapViewActivity"
-            android:label="Maps" >
-        </activity>
-        <activity
-            android:name="org.openbmap.activities.SettingsActivity"
-            android:label="Preferences" >
-        </activity>
-        <activity
-            android:name="org.openbmap.activities.AdvancedSettingsActivity"
-            android:label="@string/advanced_settings" >
-        </activity>
-        <activity
-            android:name="org.openbmap.activities.CreditsActivity"
-            android:label="Credits" >
-        </activity>
 
+        <!-- Master service controlling all other services -->
         <service
-            android:name="org.openbmap.services.position.PositioningService"
+            android:name=".services.MasterBrainService" >
+            <intent-filter>
+                <action android:name=".intent.START_TRACKING" />
+                <action android:name=".intent.STOP_TRACKING" />
+            </intent-filter>
+        </service>
+
+        <!-- GPS receiver service -->
+        <service
+            android:name=".services.position.PositioningService"
             android:exported="false" >
             <intent-filter>
                 <action android:name=".intent.GPS_SERVICE" />
             </intent-filter>
         </service>
+
+        <!-- Wireless (cell, wifi) logger service -->
         <service
-            android:name="org.openbmap.services.position.GpxLoggerService" >
+            android:name=".services.wireless.WirelessLoggerService" >
         </service>
+
+        <!-- GPX logger service -->
         <service
-            android:name="org.openbmap.services.wireless.WirelessLoggerService" >
+            android:name=".services.position.GpxLoggerService" >
         </service>
 
         <provider
