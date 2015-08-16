@@ -21,7 +21,6 @@ package org.openbmap.soapclient;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.util.Log;
 
 import org.openbmap.R;
@@ -76,7 +75,8 @@ public class ExportGpxTask extends AsyncTask<Void, Object, Boolean> {
 	 * @param context
 	 * @param listener
 	 * @param session
-	 * @param targetPath
+	 * @param path
+	 * @param filename
 	 */
 	public ExportGpxTask(final Context context, final ExportGpxTaskListener listener, final int session,
 			final String path, final String filename) {
@@ -90,13 +90,12 @@ public class ExportGpxTask extends AsyncTask<Void, Object, Boolean> {
 	/**
 	 * Builds cell xml files and saves/uploads them
 	 */
-	@SuppressLint("NewApi")
 	@Override
 	protected final Boolean doInBackground(final Void... params) {
 		Boolean success = false;
 		
 		publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.exporting_gpx), 0);
-		final GpxExporter gpx = new GpxExporter(mAppContext, mSession);
+		final GpxWriter gpx = new GpxWriter(mAppContext, mSession);
 		final File target = new File(mPath, mFilename);
 		try {
 			gpx.doExport(mFilename, target);
@@ -112,7 +111,7 @@ public class ExportGpxTask extends AsyncTask<Void, Object, Boolean> {
 	 * Updates progress bar.
 	 * @param values[0] contains title (as string)
 	 * @param values[1] contains message (as string)
-	 * @param values[1] contains progress (as int)
+	 * @param values[2] contains progress (as int)
 	 */
 	@Override
 	protected final void onProgressUpdate(final Object... values) {
@@ -145,7 +144,7 @@ public class ExportGpxTask extends AsyncTask<Void, Object, Boolean> {
 	}
 
 	/**
-	 * @param sessionActivity
+	 * @param context
 	 */
 	public void setContext(final Context context) {
 		mAppContext = context;

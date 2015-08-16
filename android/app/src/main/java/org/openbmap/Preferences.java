@@ -246,13 +246,18 @@ public final class Preferences {
 	/**
 	 * Filename catalog database
 	 */
-	public static final String	WIFI_CATALOG_FILE = "openbmap.sqlite";
+	public static final String WIFI_CATALOG_FILE = "openbmap.sqlite";
 	
 	/**
 	 * URL, which is called to check whether this client version is up-to-date
-	 * old address: "http://www.openbmap.org/current_version.xml";
 	 */
-	public static final String	VERSION_CHECK_URL = "http://radiocells.org/uploads/version.xml";
+	public static final String VERSION_CHECK_URL = "http://radiocells.org/uploads/version.xml";
+
+    /**
+     * URL, which is called to validate user credentials
+     */
+	public static final String PASSWORD_VALIDATION_URL = "http://radiocells.org/uploads/check_login";
+
 
 	/**
 	 * Private dummy constructor
