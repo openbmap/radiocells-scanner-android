@@ -762,8 +762,9 @@ public class WirelessLoggerService extends AbstractService {
 					final CellRecord cell = processCellInfo(info, pos);
 					if (cell != null) {
 						cells.add(cell);
+                        broadcastCellInfos(cell);
 					}
-					broadcastCellInfos(cell);
+
 					broadcastCellUpdate();
 				}
 			}
