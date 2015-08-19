@@ -351,6 +351,7 @@ public class SettingsActivity extends PreferenceActivity {
                     try {
                         // try to download to target. If target isn't below Environment.getExternalStorageDirectory(),
                         // e.g. on second SD card a security exception is thrown
+                        Log.i(TAG, "Downloading " + Preferences.WIFI_CATALOG_DOWNLOAD_URL);
                         final Request request = new Request(
                                 Uri.parse(Preferences.WIFI_CATALOG_DOWNLOAD_URL));
                         request.setDestinationUri(Uri.fromFile(target));

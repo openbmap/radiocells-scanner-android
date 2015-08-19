@@ -41,6 +41,7 @@ import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.GridLabelRenderer;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
+import com.jjoe64.graphview.series.PointsGraphSeries;
 
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
@@ -79,7 +80,7 @@ public class StatsActivity extends Fragment {
 	private ImageView ivAlert;
 	private GraphView graphView;
     private LineGraphSeries measurements;
-    private LineGraphSeries highlight;
+    private PointsGraphSeries highlight;
 
 	private Session mSession;
 
@@ -409,9 +410,9 @@ public class StatsActivity extends Fragment {
 		}
 
         if (highlight == null) {
-            highlight = new LineGraphSeries<DataPoint>();
-            highlight.setDrawBackground(true);
-            highlight.setBackgroundColor(Color.argb(100, 255, 255, 0));
+            highlight = new PointsGraphSeries<DataPoint>();
+            //highlight.setDrawBackground(true);
+            highlight.setColor(Color.argb(100, 255, 255, 0));
             /*
             final Paint paint = new Paint();
             paint.setStyle(Paint.Style.STROKE);
@@ -423,15 +424,15 @@ public class StatsActivity extends Fragment {
         }
 
 		if (mCurrentStrength != -1) {
-			measurements.appendData(new DataPoint(graph2LastXValue , mCurrentStrength), true, 30);
+			measurements.appendData(new DataPoint(graph2LastXValue , mCurrentStrength), true, 60);
 		} else {
-			measurements.appendData(new DataPoint(graph2LastXValue, -100d), true, 30);
+			measurements.appendData(new DataPoint(graph2LastXValue, -100d), true, 60);
 		}
 
         if (mCurrentStrength > -60 && mCurrentStrength < -1) {
-            highlight.appendData(new DataPoint(graph2LastXValue, mCurrentStrength), true, 30);
+            highlight.appendData(new DataPoint(graph2LastXValue, mCurrentStrength), true, 60);
         } else {
-            highlight.appendData(new DataPoint(graph2LastXValue, -105d), true, 30);
+            highlight.appendData(new DataPoint(graph2LastXValue, -105d), true, 60);
         }
         graph2LastXValue += 1d;
 		mCurrentStrength = -1;
