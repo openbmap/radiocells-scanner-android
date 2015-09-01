@@ -38,11 +38,10 @@ public class DataHelper {
 	/**
 	 * Constructor
 	 * 
-	 * @param mContext
-	 *            Application mContext used for acquiring content resolver
+	 * @param context (Application) context used for acquiring content resolver
 	 */
 	public DataHelper(final Context context) {
-		contentResolver = context.getContentResolver();
+		contentResolver = context.getApplicationContext().getContentResolver();
 	}
 
 	/**
@@ -121,37 +120,37 @@ public class DataHelper {
 	public final ArrayList<WifiRecord> loadWifisBySession(final int session, final String sort) {
 		final ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>();
 
-		final Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
+		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
 				RadioBeaconContentProvider.CONTENT_URI_WIFI, RadioBeaconContentProvider.CONTENT_URI_SESSION_SUFFIX), session),
 				null, null, null, sort);
 
 		// Performance tweaking: don't call ca.getColumnIndex on each iteration 
-		final int columnIndex = ca.getColumnIndex(Schema.COL_BSSID);
-		final int columnIndex2 = ca.getColumnIndex(Schema.COL_SSID);
-		final int columnIndex3 = ca.getColumnIndex(Schema.COL_CAPABILITIES);
-		final int columnIndex4 = ca.getColumnIndex(Schema.COL_FREQUENCY);
-		final int columnIndex5 = ca.getColumnIndex(Schema.COL_LEVEL);
-		final int columnIndex6 = ca.getColumnIndex(Schema.COL_TIMESTAMP);
-		final int columnIndex7 = ca.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
-		final int columnIndex8 = ca.getColumnIndex(Schema.COL_END_POSITION_ID);
-		final int columnIndex9 = ca.getColumnIndex(Schema.COL_KNOWN_WIFI);
+		final int columnIndex = cursor.getColumnIndex(Schema.COL_BSSID);
+		final int columnIndex2 = cursor.getColumnIndex(Schema.COL_SSID);
+		final int columnIndex3 = cursor.getColumnIndex(Schema.COL_CAPABILITIES);
+		final int columnIndex4 = cursor.getColumnIndex(Schema.COL_FREQUENCY);
+		final int columnIndex5 = cursor.getColumnIndex(Schema.COL_LEVEL);
+		final int columnIndex6 = cursor.getColumnIndex(Schema.COL_TIMESTAMP);
+		final int columnIndex7 = cursor.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
+		final int columnIndex8 = cursor.getColumnIndex(Schema.COL_END_POSITION_ID);
+		final int columnIndex9 = cursor.getColumnIndex(Schema.COL_KNOWN_WIFI);
 
-		while (ca.moveToNext()) {
+		while (cursor.moveToNext()) {
 			final WifiRecord wifi = new WifiRecord();
-			wifi.setBssid(ca.getString(columnIndex));
-			wifi.setSsid(ca.getString(columnIndex2));
-			wifi.setCapabilities(ca.getString(columnIndex3));
-			wifi.setFrequency(ca.getInt(columnIndex4));
-			wifi.setLevel(ca.getInt(columnIndex5));
-			wifi.setOpenBmapTimestamp(ca.getLong(columnIndex6));
+			wifi.setBssid(cursor.getString(columnIndex));
+			wifi.setSsid(cursor.getString(columnIndex2));
+			wifi.setCapabilities(cursor.getString(columnIndex3));
+			wifi.setFrequency(cursor.getInt(columnIndex4));
+			wifi.setLevel(cursor.getInt(columnIndex5));
+			wifi.setOpenBmapTimestamp(cursor.getLong(columnIndex6));
 
-			wifi.setBeginPosition(loadPositionById(ca.getString(columnIndex7)));
-			wifi.setEndPosition(loadPositionById(ca.getString(columnIndex8)));
+			wifi.setBeginPosition(loadPositionById(cursor.getString(columnIndex7)));
+			wifi.setEndPosition(loadPositionById(cursor.getString(columnIndex8)));
 			//wifi.setNew(ca.getInt(columnIndex9) == 1);
-			wifi.setCatalogStatus(CatalogStatus.values()[ca.getInt(columnIndex9)]);
+			wifi.setCatalogStatus(CatalogStatus.values()[cursor.getInt(columnIndex9)]);
 			wifis.add(wifi);
 		}
-		ca.close();
+		cursor.close();
 		return wifis;
 	}
 
@@ -161,11 +160,12 @@ public class DataHelper {
 	 * @return number of wifis
 	 */
 	public final int countWifis(final int session) {
-		final Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
+        //Log.d(TAG, "countWifis called");
+		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
 				RadioBeaconContentProvider.CONTENT_URI_WIFI, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
 				new String[]{Schema.COL_ID}, null, null, null);
-		final int count = ca.getCount();
-		ca.close();
+		final int count = cursor.getCount();
+		cursor.close();
 		return count;
 	}
 
@@ -175,11 +175,12 @@ public class DataHelper {
 	 * @return number of wifis
 	 */
 	public final int countNewWifis(final int session) {
-		final Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
+        //Log.d(TAG, "countNewWifis called");
+		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
 				RadioBeaconContentProvider.CONTENT_URI_WIFI, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
 				new String[]{Schema.COL_ID}, Schema.COL_KNOWN_WIFI + " = ?", new String[]{"0"}, null);
-		final int count = ca.getCount();
-		ca.close();
+		final int count = cursor.getCount();
+		cursor.close();
 		return count;
 	}
 
@@ -190,25 +191,26 @@ public class DataHelper {
 	 * @return WifiRecord
 	 */
 	public final WifiRecord loadWifiById(final int id) {
+        // Log.d(TAG, "loadWifiById called");
 		WifiRecord wifi = null;
 
-		final Cursor ca = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_WIFI, id) , null, null, null, null);
+		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_WIFI, id) , null, null, null, null);
 		//Log.d(TAG, "getWifiMeasurement returned " + ca.getCount() + " records");
-		if (ca.moveToNext()) {
+		if (cursor.moveToNext()) {
 			wifi = new WifiRecord(
-					ca.getString(ca.getColumnIndex(Schema.COL_BSSID)),
-					ca.getString(ca.getColumnIndex(Schema.COL_SSID)),
-					ca.getString(ca.getColumnIndex(Schema.COL_CAPABILITIES)),
-					ca.getInt(ca.getColumnIndex(Schema.COL_FREQUENCY)),
-					ca.getInt(ca.getColumnIndex(Schema.COL_LEVEL)),
-					ca.getLong(ca.getColumnIndex(Schema.COL_TIMESTAMP)),
+					cursor.getString(cursor.getColumnIndex(Schema.COL_BSSID)),
+					cursor.getString(cursor.getColumnIndex(Schema.COL_SSID)),
+					cursor.getString(cursor.getColumnIndex(Schema.COL_CAPABILITIES)),
+					cursor.getInt(cursor.getColumnIndex(Schema.COL_FREQUENCY)),
+					cursor.getInt(cursor.getColumnIndex(Schema.COL_LEVEL)),
+					cursor.getLong(cursor.getColumnIndex(Schema.COL_TIMESTAMP)),
 
-					loadPositionById(ca.getString(ca.getColumnIndex(Schema.COL_BEGIN_POSITION_ID))),
-					loadPositionById(ca.getString(ca.getColumnIndex(Schema.COL_END_POSITION_ID))),
+					loadPositionById(cursor.getString(cursor.getColumnIndex(Schema.COL_BEGIN_POSITION_ID))),
+					loadPositionById(cursor.getString(cursor.getColumnIndex(Schema.COL_END_POSITION_ID))),
 					//ca.getInt(ca.getColumnIndex(Schema.COL_IS_NEW_WIFI)) == 1);
-					CatalogStatus.values()[ca.getInt(ca.getColumnIndex(Schema.COL_KNOWN_WIFI))]);
+					CatalogStatus.values()[cursor.getInt(cursor.getColumnIndex(Schema.COL_KNOWN_WIFI))]);
 		}
-		ca.close();
+		cursor.close();
 		return wifi;
 	}
 
@@ -219,6 +221,7 @@ public class DataHelper {
 	 * @return Array (of measurements) for that BSSID
 	 */
 	public final ArrayList<WifiRecord> loadWifisByBssid(final String bssid, final Integer session) {
+        //Log.d(TAG, "loadWifisByBssid called");
 		final ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>();
 
 		String selectSql;
@@ -228,41 +231,39 @@ public class DataHelper {
 			selectSql = Schema.COL_BSSID + " = \"" + bssid + "\"";
 		}
 
-		final Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_WIFI, null, selectSql, null, null);
+		final Cursor cursor = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_WIFI, null, selectSql, null, null);
 
 		// Performance tweaking: don't call ca.getColumnIndex on each iteration 
-		final int columnIndex = ca.getColumnIndex(Schema.COL_BSSID);
-		final int columnIndex2 = ca.getColumnIndex(Schema.COL_SSID);
-		final int columnIndex3 = ca.getColumnIndex(Schema.COL_CAPABILITIES);
-		final int columnIndex4 = ca.getColumnIndex(Schema.COL_FREQUENCY);
-		final int columnIndex5 = ca.getColumnIndex(Schema.COL_LEVEL);
-		final int columnIndex6 = ca.getColumnIndex(Schema.COL_TIMESTAMP);
-		final int columnIndex7 = ca.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
-		final int columnIndex8 = ca.getColumnIndex(Schema.COL_END_POSITION_ID);
-		final int columnIndex9 = ca.getColumnIndex(Schema.COL_KNOWN_WIFI);
+		final int columnIndex = cursor.getColumnIndex(Schema.COL_BSSID);
+		final int columnIndex2 = cursor.getColumnIndex(Schema.COL_SSID);
+		final int columnIndex3 = cursor.getColumnIndex(Schema.COL_CAPABILITIES);
+		final int columnIndex4 = cursor.getColumnIndex(Schema.COL_FREQUENCY);
+		final int columnIndex5 = cursor.getColumnIndex(Schema.COL_LEVEL);
+		final int columnIndex6 = cursor.getColumnIndex(Schema.COL_TIMESTAMP);
+		final int columnIndex7 = cursor.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
+		final int columnIndex8 = cursor.getColumnIndex(Schema.COL_END_POSITION_ID);
+		final int columnIndex9 = cursor.getColumnIndex(Schema.COL_KNOWN_WIFI);
 
-		while (ca.moveToNext()) {
+		while (cursor.moveToNext()) {
 			final WifiRecord wifi = new WifiRecord();
-			wifi.setBssid(ca.getString(columnIndex));
-			wifi.setSsid(ca.getString(columnIndex2));
-			wifi.setCapabilities(ca.getString(columnIndex3));
-			wifi.setFrequency(ca.getInt(columnIndex4));
-			wifi.setLevel(ca.getInt(columnIndex5));
-			wifi.setOpenBmapTimestamp(ca.getLong(columnIndex6));
+			wifi.setBssid(cursor.getString(columnIndex));
+			wifi.setSsid(cursor.getString(columnIndex2));
+			wifi.setCapabilities(cursor.getString(columnIndex3));
+			wifi.setFrequency(cursor.getInt(columnIndex4));
+			wifi.setLevel(cursor.getInt(columnIndex5));
+			wifi.setOpenBmapTimestamp(cursor.getLong(columnIndex6));
 
 			// TODO: not too safe ..
-			wifi.setBeginPosition(loadPositionById(ca.getString(columnIndex7)));
+			wifi.setBeginPosition(loadPositionById(cursor.getString(columnIndex7)));
 			// TODO: not too safe ..
-			wifi.setEndPosition(loadPositionById(ca.getString(columnIndex8)));
+			wifi.setEndPosition(loadPositionById(cursor.getString(columnIndex8)));
 			//wifi.setNew(ca.getInt(columnIndex9) == 1);
-			wifi.setCatalogStatus(CatalogStatus.values()[ca.getInt(columnIndex9)]);
+			wifi.setCatalogStatus(CatalogStatus.values()[cursor.getInt(columnIndex9)]);
 			wifis.add(wifi);
 		}
-		ca.close();
+		cursor.close();
 		return wifis;
 	}
-
-
 
 	/**
 	 * Returns strongest measurement for each wifi from TBL_WIFIS.
@@ -278,6 +279,7 @@ public class DataHelper {
 	 * @return Arraylist<WifiRecord>
 	 */
 	public final ArrayList<WifiRecord> loadWifisOverviewWithin(final int session, final Double minLon, final Double maxLon, final Double minLat, final Double maxLat) {
+        // Log.d(TAG, "loadWifisOverviewWithin called");
 		//long start = System.currentTimeMillis();
 		final ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>();
 
@@ -292,39 +294,39 @@ public class DataHelper {
 			selectionArgs = new String[]{String.valueOf(minLon), String.valueOf(maxLon), String.valueOf(minLat), String.valueOf(maxLat)};
 		}
 
-		final Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(RadioBeaconContentProvider.CONTENT_URI_WIFI,
+		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(RadioBeaconContentProvider.CONTENT_URI_WIFI,
 				RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
 				null, selection, selectionArgs, null);
 
 		// Performance tweaking: don't call ca.getColumnIndex on each iteration 
-		final int columnIndex = ca.getColumnIndex(Schema.COL_BSSID);
-		final int columnIndex2 = ca.getColumnIndex(Schema.COL_SSID);
-		final int columnIndex3 = ca.getColumnIndex(Schema.COL_CAPABILITIES);
-		final int columnIndex4 = ca.getColumnIndex(Schema.COL_FREQUENCY);
-		final int columnIndex5 = ca.getColumnIndex(Schema.COL_MAX_LEVEL);
-		final int columnIndex6 = ca.getColumnIndex(Schema.COL_TIMESTAMP);
-		final int columnIndex7 = ca.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
-		final int columnIndex8 = ca.getColumnIndex(Schema.COL_END_POSITION_ID);
-		final int columnIndex9 = ca.getColumnIndex(Schema.COL_KNOWN_WIFI);
+		final int columnIndex = cursor.getColumnIndex(Schema.COL_BSSID);
+		final int columnIndex2 = cursor.getColumnIndex(Schema.COL_SSID);
+		final int columnIndex3 = cursor.getColumnIndex(Schema.COL_CAPABILITIES);
+		final int columnIndex4 = cursor.getColumnIndex(Schema.COL_FREQUENCY);
+		final int columnIndex5 = cursor.getColumnIndex(Schema.COL_MAX_LEVEL);
+		final int columnIndex6 = cursor.getColumnIndex(Schema.COL_TIMESTAMP);
+		final int columnIndex7 = cursor.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
+		final int columnIndex8 = cursor.getColumnIndex(Schema.COL_END_POSITION_ID);
+		final int columnIndex9 = cursor.getColumnIndex(Schema.COL_KNOWN_WIFI);
 
-		while (ca.moveToNext()) {	
+		while (cursor.moveToNext()) {
 			final WifiRecord wifi = new WifiRecord();
-			wifi.setBssid(ca.getString(columnIndex));
-			wifi.setSsid(ca.getString(columnIndex2));
-			wifi.setCapabilities(ca.getString(columnIndex3));
-			wifi.setFrequency(ca.getInt(columnIndex4));
-			wifi.setLevel(ca.getInt(columnIndex5));
-			wifi.setOpenBmapTimestamp(ca.getLong(columnIndex6));
+			wifi.setBssid(cursor.getString(columnIndex));
+			wifi.setSsid(cursor.getString(columnIndex2));
+			wifi.setCapabilities(cursor.getString(columnIndex3));
+			wifi.setFrequency(cursor.getInt(columnIndex4));
+			wifi.setLevel(cursor.getInt(columnIndex5));
+			wifi.setOpenBmapTimestamp(cursor.getLong(columnIndex6));
 
-			wifi.setBeginPosition(loadPositionById(ca.getString(columnIndex7)));
-			wifi.setEndPosition(loadPositionById(ca.getString(columnIndex8)));
+			wifi.setBeginPosition(loadPositionById(cursor.getString(columnIndex7)));
+			wifi.setEndPosition(loadPositionById(cursor.getString(columnIndex8)));
 
 			//wifi.setNew(ca.getInt(columnIndex9) == 1);
-			wifi.setCatalogStatus(CatalogStatus.values()[ca.getInt(columnIndex9)]);
+			wifi.setCatalogStatus(CatalogStatus.values()[cursor.getInt(columnIndex9)]);
 			wifis.add(wifi);
 		}
 
-		ca.close();
+		cursor.close();
 		//Log.d(TAG, "loadWifisOverviewWithiny executed (" + (System.currentTimeMillis() - start) + " ms)");
 		return wifis;
 	}
@@ -336,20 +338,21 @@ public class DataHelper {
 	 * @return On success session is returned, otherwise null.
 	 */
 	public final Session loadSession(final int id) {
+        // Log.d(TAG, "loadSession called");
 		Session session = null;
-		final Cursor ca = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_SESSION, id), null, null, null, null);
-		if (ca.moveToNext()) {
+		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_SESSION, id), null, null, null, null);
+		if (cursor.moveToNext()) {
 			session = new Session(
-					ca.getInt(ca.getColumnIndex(Schema.COL_ID)), 
-					ca.getLong(ca.getColumnIndex(Schema.COL_CREATED_AT)),
-					ca.getLong(ca.getColumnIndex(Schema.COL_LAST_UPDATED)),
-					ca.getString(ca.getColumnIndex(Schema.COL_DESCRIPTION)),
-					ca.getInt(ca.getColumnIndex(Schema.COL_HAS_BEEN_EXPORTED)),
-					ca.getInt(ca.getColumnIndex(Schema.COL_IS_ACTIVE)),
-					ca.getInt(ca.getColumnIndex(Schema.COL_NUMBER_OF_CELLS)),
-					ca.getInt(ca.getColumnIndex(Schema.COL_NUMBER_OF_WIFIS)));
+					cursor.getInt(cursor.getColumnIndex(Schema.COL_ID)),
+					cursor.getLong(cursor.getColumnIndex(Schema.COL_CREATED_AT)),
+					cursor.getLong(cursor.getColumnIndex(Schema.COL_LAST_UPDATED)),
+					cursor.getString(cursor.getColumnIndex(Schema.COL_DESCRIPTION)),
+					cursor.getInt(cursor.getColumnIndex(Schema.COL_HAS_BEEN_EXPORTED)),
+					cursor.getInt(cursor.getColumnIndex(Schema.COL_IS_ACTIVE)),
+					cursor.getInt(cursor.getColumnIndex(Schema.COL_NUMBER_OF_CELLS)),
+					cursor.getInt(cursor.getColumnIndex(Schema.COL_NUMBER_OF_WIFIS)));
 		} 
-		ca.close();
+		cursor.close();
 		return session;
 	}
 
@@ -373,10 +376,10 @@ public class DataHelper {
 		}
 
 		// check, whether session already exists, then update, otherwise save new session
-		final Cursor ca = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_SESSION, session.getId()), null, null, null, null);
-		if (!ca.moveToNext()) {
+		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_SESSION, session.getId()), null, null, null, null);
+		if (!cursor.moveToNext()) {
 			storeSession(session);
-			ca.close();
+			cursor.close();
 			return 1;
 		} else {
 			Log.d(TAG, "Updating existing session " + session.getId());
@@ -388,7 +391,7 @@ public class DataHelper {
 			values.put(Schema.COL_IS_ACTIVE, session.isActive());
 			values.put(Schema.COL_NUMBER_OF_CELLS, session.getNumberOfCells());
 			values.put(Schema.COL_NUMBER_OF_WIFIS, session.getNumberOfWifis());
-			ca.close();
+			cursor.close();
 			return contentResolver.update(RadioBeaconContentProvider.CONTENT_URI_SESSION, values,
 					Schema.COL_ID + " = ?", new String[]{String.valueOf(session.getId())});
 		}
@@ -439,22 +442,23 @@ public class DataHelper {
 	 * @return active session if any, null otherwise
 	 */
 	public final Session loadActiveSession() {
+        // Log.d(TAG, "loadActiveSession called");
 		Session session = null;
-		final Cursor ca = contentResolver.query(Uri.withAppendedPath(RadioBeaconContentProvider.CONTENT_URI_SESSION, "active"), null, null, null, null);
-		if (ca.moveToFirst()) {
+		final Cursor cursor = contentResolver.query(Uri.withAppendedPath(RadioBeaconContentProvider.CONTENT_URI_SESSION, "active"), null, null, null, null);
+		if (cursor.moveToFirst()) {
 			session = new Session(
-					ca.getInt(ca.getColumnIndex(Schema.COL_ID)), 
-					ca.getLong(ca.getColumnIndex(Schema.COL_CREATED_AT)),
-					ca.getLong(ca.getColumnIndex(Schema.COL_LAST_UPDATED)),
-					ca.getString(ca.getColumnIndex(Schema.COL_DESCRIPTION)),
-					ca.getInt(ca.getColumnIndex(Schema.COL_HAS_BEEN_EXPORTED)),
-					ca.getInt(ca.getColumnIndex(Schema.COL_IS_ACTIVE)),
-					ca.getInt(ca.getColumnIndex(Schema.COL_NUMBER_OF_CELLS)),
-					ca.getInt(ca.getColumnIndex(Schema.COL_NUMBER_OF_WIFIS)));
-			ca.close();
+					cursor.getInt(cursor.getColumnIndex(Schema.COL_ID)),
+					cursor.getLong(cursor.getColumnIndex(Schema.COL_CREATED_AT)),
+					cursor.getLong(cursor.getColumnIndex(Schema.COL_LAST_UPDATED)),
+					cursor.getString(cursor.getColumnIndex(Schema.COL_DESCRIPTION)),
+					cursor.getInt(cursor.getColumnIndex(Schema.COL_HAS_BEEN_EXPORTED)),
+					cursor.getInt(cursor.getColumnIndex(Schema.COL_IS_ACTIVE)),
+					cursor.getInt(cursor.getColumnIndex(Schema.COL_NUMBER_OF_CELLS)),
+					cursor.getInt(cursor.getColumnIndex(Schema.COL_NUMBER_OF_WIFIS)));
+			cursor.close();
 			return session;
 		} else {
-			ca.close();
+			cursor.close();
 			return null;
 		}
 	}
@@ -464,12 +468,13 @@ public class DataHelper {
 	 * @return ArrayList with session ids
 	 */
 	public final ArrayList<Integer> getSessionList() {
+        // Log.d(TAG, "getSessionList called");
 		final ArrayList<Integer> sessions = new ArrayList<Integer>();
-		final Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_SESSION, new String[]{Schema.COL_ID}, null, null, null);
-		while (ca.moveToNext()) {
-			sessions.add(ca.getInt(ca.getColumnIndex(Schema.COL_ID)));
+		final Cursor cursor = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_SESSION, new String[]{Schema.COL_ID}, null, null, null);
+		while (cursor.moveToNext()) {
+			sessions.add(cursor.getInt(cursor.getColumnIndex(Schema.COL_ID)));
 		} 
-		ca.close();
+		cursor.close();
 		return sessions;
 	}
 
@@ -478,10 +483,14 @@ public class DataHelper {
 	 * @return session id if any active session, RadioBeacon.SESSION_NOT_TRACKING else
 	 */
 	public final int getActiveSessionId() {
-		final Cursor ca = contentResolver.query(Uri.withAppendedPath(RadioBeaconContentProvider.CONTENT_URI_SESSION, "active"), null, null, null, null);
-		if (ca.moveToFirst()) {
-			return ca.getInt(ca.getColumnIndex(Schema.COL_ID));
+        // Log.d(TAG, "getActiveSessionId called");
+		final Cursor cursor = contentResolver.query(Uri.withAppendedPath(RadioBeaconContentProvider.CONTENT_URI_SESSION, "active"), null, null, null, null);
+		if (cursor.moveToFirst()) {
+            int session = cursor.getInt(cursor.getColumnIndex(Schema.COL_ID));
+            cursor.close();
+			return session;
 		}
+        cursor.close();
 		return RadioBeacon.SESSION_NOT_TRACKING;
 	}
 
@@ -490,10 +499,10 @@ public class DataHelper {
 	 * @return
 	 */
 	public int countPendingExports() {
-		final Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_SESSION, new String[]{Schema.COL_ID}, Schema.COL_HAS_BEEN_EXPORTED + "= 0", null, null);
-
-		final int count = ca.getCount();
-		ca.close();
+        // Log.d(TAG, "countPendingExports called");
+		final Cursor cursor = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_SESSION, new String[]{Schema.COL_ID}, Schema.COL_HAS_BEEN_EXPORTED + "= 0", null, null);
+		final int count = cursor.getCount();
+		cursor.close();
 		return count;
 	}
 
@@ -607,20 +616,20 @@ public class DataHelper {
 		}
 	}
 
-
 	/**
 	 * Loads CellRecord from database.
 	 * @param id
 	 * @return
 	 */
 	public final CellRecord loadCellById(final int id) {
+        // Log.d(TAG, "loadCellById called");
 		CellRecord cell = null;
 
-		final Cursor ca = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_CELL, id) , null, null, null, null);
-		if (ca.moveToNext()) {
-			cell = cursorToCell(ca);
+		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_CELL, id) , null, null, null, null);
+		if (cursor.moveToNext()) {
+			cell = cursorToCell(cursor);
 		}
-		ca.close();
+		cursor.close();
 		return cell;
 	}
 
@@ -633,15 +642,15 @@ public class DataHelper {
 	public final ArrayList<CellRecord> loadCellsBySession(final long session, final String sort) {
 		final ArrayList<CellRecord> cells = new ArrayList<CellRecord>();
 
-		final Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
+		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
 				RadioBeaconContentProvider.CONTENT_URI_CELL, RadioBeaconContentProvider.CONTENT_URI_SESSION_SUFFIX), session),
 				null, null, null, sort);
 
-		while (ca.moveToNext()) {
-			cells.add(cursorToCell(ca));
+		while (cursor.moveToNext()) {
+			cells.add(cursorToCell(cursor));
 		}
 
-		ca.close();
+		cursor.close();
 		return cells;
 	}
 
@@ -708,11 +717,12 @@ public class DataHelper {
 	 * @return number of wifis
 	 */
 	public final int countCells(final long session) {
-		final Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
+        // Log.d(TAG, "countCells called");
+		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
 				RadioBeaconContentProvider.CONTENT_URI_CELL, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
 				new String[]{Schema.COL_ID}, null, null, null);
-		final int count = ca.getCount();
-		ca.close();
+		final int count = cursor.getCount();
+		cursor.close();
 		return count;
 	}
 
@@ -723,6 +733,7 @@ public class DataHelper {
 	 * @return ArrayList<PositionRecord>
 	 */
 	public final PositionRecord loadPositionById(final String id) {
+        // Log.d(TAG, "loadPositionById called");
 
 		if (id == null) {
 			throw new IllegalArgumentException("Position id is null");
@@ -736,14 +747,14 @@ public class DataHelper {
 		selection = Schema.COL_ID + " = ?";
 		selectionArgs = new String[]{id};
 
-		final Cursor ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_POSITION, null, selection, selectionArgs, null);
+		final Cursor cursor = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_POSITION, null, selection, selectionArgs, null);
 
 		PositionRecord position = new PositionRecord();
-		if (ca.moveToNext()) {
-			position = positionFromCursor(ca);
+		if (cursor.moveToNext()) {
+			position = positionFromCursor(cursor);
 		}
 
-		ca.close();
+		cursor.close();
 		//Log.d(TAG, "loadPositionById executed (" + (System.currentTimeMillis() - start) + " ms)");
 		return position;
 	}
@@ -758,10 +769,11 @@ public class DataHelper {
 	 * @return
 	 */
 	public final ArrayList<PositionRecord> loadPositions(final int session, final Double minLat, final Double maxLat, final Double minLon, final Double maxLon) {
+        // Log.d(TAG, "loadPositions called");
 		final ArrayList<PositionRecord> positions = new ArrayList<PositionRecord>();
 		String selection = Schema.COL_SESSION_ID + " = ?";
 
-		Cursor ca = null;
+		Cursor cursor = null;
 		List<String> selectionArgs = null; 
 		if (minLat != null & maxLat != null && minLon != null && maxLon != null) {
 			// if boundaries provided..
@@ -776,21 +788,20 @@ public class DataHelper {
 
 			selection +=  "AND (" + Schema.COL_LATITUDE + " > ? AND " + Schema.COL_LATITUDE + " < ?) AND ("
 					+ Schema.COL_LONGITUDE + " > ? AND " + Schema.COL_LONGITUDE + " < ?)";
-			ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_POSITION, null, selection, (String[]) selectionArgs.toArray(new String[0]), Schema.COL_TIMESTAMP);
+			cursor = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_POSITION, null, selection, (String[]) selectionArgs.toArray(new String[0]), Schema.COL_TIMESTAMP);
 
 		} else {
 			Log.v(TAG, "No boundaries provided, loading all positions");
-			ca = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_POSITION, null, null, null, Schema.COL_TIMESTAMP);
+			cursor = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_POSITION, null, null, null, Schema.COL_TIMESTAMP);
 		}
 
 
-		while (ca.moveToNext()) {
-			positions.add(positionFromCursor(ca));
+		while (cursor.moveToNext()) {
+			positions.add(positionFromCursor(cursor));
 		}
 
-		ca.close();
+		cursor.close();
 		return positions;
-
 	}
 
 	/**
@@ -799,7 +810,6 @@ public class DataHelper {
 	 * @return
 	 */
 	private PositionRecord positionFromCursor(final Cursor cursor) {
-
 		// Performance tweaking: don't call ca.getColumnIndex on each iteration 
 		final int columnIndex = cursor.getColumnIndex(Schema.COL_LATITUDE);
 		final int columnIndex2 = cursor.getColumnIndex(Schema.COL_LONGITUDE);
@@ -832,23 +842,25 @@ public class DataHelper {
 	 * @return LogFile
 	 */
 	public final LogFile loadLogFileBySession(final long id) {
+        // Log.d(TAG, "loadLogFileBySession called");
+
 		LogFile logFile = null;
 
-		final Cursor ca = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
+		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
 				RadioBeaconContentProvider.CONTENT_URI_LOGFILE, RadioBeaconContentProvider.CONTENT_URI_SESSION_SUFFIX), id),
 				null, null, null, null);
 
-		if (ca.moveToNext()) {
+		if (cursor.moveToNext()) {
 			logFile = new LogFile(
-					ca.getString(ca.getColumnIndex(Schema.COL_MANUFACTURER)),
-					ca.getString(ca.getColumnIndex(Schema.COL_MODEL)),
-					ca.getString(ca.getColumnIndex(Schema.COL_REVISION)),
-					ca.getString(ca.getColumnIndex(Schema.COL_SWID)),
-					ca.getString(ca.getColumnIndex(Schema.COL_SWVER)),
-					ca.getInt(ca.getColumnIndex(Schema.COL_SESSION_ID)));
+					cursor.getString(cursor.getColumnIndex(Schema.COL_MANUFACTURER)),
+					cursor.getString(cursor.getColumnIndex(Schema.COL_MODEL)),
+					cursor.getString(cursor.getColumnIndex(Schema.COL_REVISION)),
+					cursor.getString(cursor.getColumnIndex(Schema.COL_SWID)),
+					cursor.getString(cursor.getColumnIndex(Schema.COL_SWVER)),
+					cursor.getInt(cursor.getColumnIndex(Schema.COL_SESSION_ID)));
 		}
 
-		ca.close();
+		cursor.close();
 		return logFile;
 	}
 
@@ -903,5 +915,4 @@ public class DataHelper {
 
 		return contentResolver.insert(RadioBeaconContentProvider.CONTENT_URI_POSITION, values);
 	}
-
 }

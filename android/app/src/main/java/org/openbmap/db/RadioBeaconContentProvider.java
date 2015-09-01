@@ -296,7 +296,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	 */
 	@Override
 	public final Cursor query(final Uri uri, final String[] projection, final String selectionIn, final String[] selectionArgsIn, final String sortOrder) {
-		//Log.d(TAG, "Query uri " + uri.toString());
+		Log.v(TAG, "query called, uri " + uri.toString());
 		//String groupBy = null;
 		//String limit = null;
 
@@ -444,24 +444,6 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	}
 
 	/**
-	 * Performs a raw SQL query
-	 * @param rawQuery
-	 *   SQL statement
-	 * @param notifyUri
-	 *   URI being notified on change
-	 */
-	private Cursor queryRaw(final String rawQuery, final Uri notifyUri) {
-		// long start = System.currentTimeMillis();
-		Cursor newCursor = null;
-		newCursor = mDbHelper.getReadableDatabase().rawQuery(rawQuery, null);
-		// Log.d(TAG, "Raw query executed (" + (System.currentTimeMillis() - start) + " ms):" + rawQuery);
-
-		newCursor.setNotificationUri(getContext().getContentResolver(), notifyUri);
-		getContext().getContentResolver().notifyChange(notifyUri, null);
-		return newCursor;
-	}
-
-	/**
 	 * Adds column as first statement to selection string.
 	 * Always remember to include column in SelectionArgs also
 	 * @param colName
@@ -601,6 +583,4 @@ public class RadioBeaconContentProvider extends ContentProvider {
 				throw new IllegalArgumentException("Unknown URI: " + uri);
 		}
 	}
-
-
 }

@@ -54,7 +54,6 @@ public class WifiCatalogUpdater extends AsyncTask<Void, Void, Void> {
 	private Context	mContext;
 
 	public WifiCatalogUpdater(final Context context) {
-
 		mContext = context;
 		// dialog = new ProgressDialog(mContext);
 		// get shared preferences

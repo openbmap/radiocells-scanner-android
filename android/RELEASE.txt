@@ -16,6 +16,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 History
 
+Current branch
+    - Refactored service architecture
+    - Added error message on wrong username/password, thanks @ Xevib
+    - Updated mapsforge and GraphView references
+    - Added upload button to menu bar
+    
 0.8.6
     - Fix issue 77: no LTE cell logging, thanks @ ybe.rehpotsirhc
     - changed to Gradle Build for better F-Droid compatibility

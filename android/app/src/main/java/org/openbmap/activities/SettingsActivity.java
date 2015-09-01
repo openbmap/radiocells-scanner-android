@@ -36,12 +36,14 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
 
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.utils.FileUtils;
+import org.openbmap.utils.MapUtils;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -81,12 +83,10 @@ public class SettingsActivity extends PreferenceActivity {
         }
 
         initWifiCatalogDownloadControl();
-        initActiveWifiCatalogControl(PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
-                this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_SUBDIR));
+        initActiveWifiCatalogControl();
 
         initMapDownloadControl();
-        initActiveMapControl(PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_MAP_FOLDER,
-                this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.MAPS_SUBDIR));
+        initActiveMapControl();
 
 
         initGpsLogIntervalControl();
@@ -195,7 +195,6 @@ public class SettingsActivity extends PreferenceActivity {
         lf.setEntryValues(values);
 
         lf.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            @SuppressLint("NewApi")
             public boolean onPreferenceChange(final Preference preference, final Object newValue) {
                 if (currentMapDownloadId > -1) {
                     Toast.makeText(SettingsActivity.this, getString(R.string.other_download_active), Toast.LENGTH_LONG).show();
@@ -203,9 +202,8 @@ public class SettingsActivity extends PreferenceActivity {
                 }
 
                 // try to create directory
-                final File folder = new File(PreferenceManager.getDefaultSharedPreferences(SettingsActivity.this).getString(
-                        Preferences.KEY_MAP_FOLDER,
-                        SettingsActivity.this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.MAPS_SUBDIR));
+                final File folder = MapUtils.getMapFolder(SettingsActivity.this);
+                Log.d(TAG, "Download destination" + folder.getAbsolutePath());
 
                 boolean folderAccessible = false;
                 if (folder.exists() && folder.canWrite()) {
@@ -251,21 +249,18 @@ public class SettingsActivity extends PreferenceActivity {
 
     /**
      * Populates the active map list preference by scanning available map files.
-     *
-     * @param mapFolder Folder for maps
      */
-    private void initActiveMapControl(final String mapFolder) {
+    private void initActiveMapControl() {
         String[] entries;
         String[] values;
 
-        Log.d(TAG, "Scanning for map files");
-
         // Check for presence of maps directory
-        final File mapsDir = new File(mapFolder);
+        final File folder = MapUtils.getMapFolder(SettingsActivity.this);
+        Log.d(TAG, "Listing maps in " + folder.getAbsolutePath());
 
         // List each map file
-        if (mapsDir.exists() && mapsDir.canRead()) {
-            final String[] mapFiles = mapsDir.list(new FilenameFilter() {
+        if (folder.exists() && folder.canRead()) {
+            final String[] mapFiles = folder.list(new FilenameFilter() {
                 @Override
                 public boolean accept(final File dir, final String filename) {
                     return filename.endsWith(org.openbmap.Preferences.MAP_FILE_EXTENSION);
@@ -289,6 +284,8 @@ public class SettingsActivity extends PreferenceActivity {
             entries = new String[]{getResources().getString(R.string.prefs_map_none)};
             values = new String[]{org.openbmap.Preferences.VAL_MAP_NONE};
         }
+
+        Log.d(TAG, "Found " + entries.length + " files");
 
         final ListPreference lf = (ListPreference) findPreference(Preferences.KEY_MAP_FILE);
         lf.setEntries(entries);
@@ -328,10 +325,9 @@ public class SettingsActivity extends PreferenceActivity {
                     Toast.makeText(SettingsActivity.this, getString(R.string.other_download_active), Toast.LENGTH_LONG).show();
                     return true;
                 }
+
                 // try to create directory
-                final File folder = new File(PreferenceManager.getDefaultSharedPreferences(SettingsActivity.this).getString(
-                        Preferences.KEY_WIFI_CATALOG_FOLDER,
-                        SettingsActivity.this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_SUBDIR));
+                final File folder = getCatalogFolder();
 
                 boolean folderAccessible = false;
                 if (folder.exists() && folder.canWrite()) {
@@ -375,17 +371,27 @@ public class SettingsActivity extends PreferenceActivity {
     }
 
     /**
-     * Populates the wifi catalog list preference by scanning catalog folder.
-     *
-     * @param catalogFolder Root folder for WIFI_CATALOG_SUBDIR
+     * Gets a file reference for wifi catalog folder
+     * @return map folder
      */
-    private void initActiveWifiCatalogControl(final String catalogFolder) {
+    @NonNull
+    private File getCatalogFolder() {
+        return new File(PreferenceManager.getDefaultSharedPreferences(SettingsActivity.this).getString(
+                Preferences.KEY_WIFI_CATALOG_FOLDER,
+                SettingsActivity.this.getExternalFilesDir(null) + File.separator + Preferences.WIFI_CATALOG_SUBDIR));
+    }
+
+    /**
+     * Populates the wifi catalog list preference by scanning catalog folder.
+     */
+    private void initActiveWifiCatalogControl() {
 
         String[] entries;
         String[] values;
 
         // Check for presence of database directory
-        final File folder = new File(catalogFolder);
+        final File folder = MapUtils.getCatalogFolder(SettingsActivity.this);
+        Log.d(TAG, "Listing catalogs in " + folder.getAbsolutePath());
 
         if (folder.exists() && folder.canRead()) {
             // List each map file
@@ -415,6 +421,7 @@ public class SettingsActivity extends PreferenceActivity {
             values = new String[]{org.openbmap.Preferences.VAL_WIFI_CATALOG_NONE};
         }
 
+        Log.d(TAG, "Found " + entries.length + " files");
         final ListPreference lf = (ListPreference) findPreference(org.openbmap.Preferences.KEY_WIFI_CATALOG_FILE);
         lf.setEntries(entries);
         lf.setEntryValues(values);
@@ -457,27 +464,22 @@ public class SettingsActivity extends PreferenceActivity {
 
         if (extension.equals(org.openbmap.Preferences.MAP_FILE_EXTENSION)) {
             currentMapDownloadId = -1;
-            final String mapFolder = PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_MAP_FOLDER,
-                    SettingsActivity.this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.MAPS_SUBDIR);
             if (file.indexOf(SettingsActivity.this.getExternalCacheDir().getPath()) > -1) {
                 // file has been downloaded to cache folder, so move..
-                file = moveToFolder(file, mapFolder);
+                file = moveToFolder(file, MapUtils.getMapFolder(SettingsActivity.this).getAbsolutePath());
             }
 
-            initActiveMapControl(mapFolder);
+            initActiveMapControl();
             // handling map files
             activateMap(file);
         } else if (extension.equals(org.openbmap.Preferences.WIFI_CATALOG_FILE_EXTENSION)) {
             currentCatalogDownloadId = -1;
-            final String catalogFolder = PreferenceManager.getDefaultSharedPreferences(this).getString(
-                    Preferences.KEY_WIFI_CATALOG_FOLDER,
-                    SettingsActivity.this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_SUBDIR);
             if (file.indexOf(SettingsActivity.this.getExternalCacheDir().getPath()) > -1) {
                 // file has been downloaded to cache folder, so move..
-                file = moveToFolder(file, catalogFolder);
+                file = moveToFolder(file, getCatalogFolder().getAbsolutePath());
             }
 
-            initActiveWifiCatalogControl(catalogFolder);
+            initActiveWifiCatalogControl();
             // handling wifi catalog files
             activateWifiCatalog(file);
         }

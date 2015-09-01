@@ -68,7 +68,6 @@ import org.mapsforge.map.util.MapPositionUtil;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
-import org.openbmap.db.Schema;
 import org.openbmap.db.models.PositionRecord;
 import org.openbmap.db.models.WifiRecord;
 import org.openbmap.utils.GeometryUtils;
@@ -79,8 +78,8 @@ import org.openbmap.utils.MapUtils.onLongPressHandler;
 import org.openbmap.utils.SessionLatLong;
 import org.openbmap.utils.SessionMapObjectsLoader;
 import org.openbmap.utils.SessionMapObjectsLoader.OnSessionLoadedListener;
-import org.openbmap.utils.WifiCatalogMapObjectsLoader;
-import org.openbmap.utils.WifiCatalogMapObjectsLoader.OnCatalogLoadedListener;
+import org.openbmap.utils.WifiCatalogObjectsLoader;
+import org.openbmap.utils.WifiCatalogObjectsLoader.OnCatalogLoadedListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -126,11 +125,6 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	 * Keeps the SharedPreferences.
 	 */
 	private SharedPreferences prefs = null;
-
-	/**
-	 * Database helper for retrieving session wifi scan results.
-	 */
-	private DataHelper dbHelper;
 
 	/**
 	 *  Minimum time (in millis) between automatic layer refresh
@@ -184,8 +178,6 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	private MapView mMapView;
 
 	//[end]
-
-	private DataHelper mDataHelper;
 
 	// [start] Map styles
 	/**
@@ -366,21 +358,13 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	public final void onResume() {
 		super.onResume();
 
-		initDb();
+		getSession();
 
 		if (mapDownloadLayer != null) {
 			mapDownloadLayer.onResume();
 		}
 		
 		registerReceiver();
-
-		if (getActivity().getIntent().hasExtra(Schema.COL_ID)) {
-			final int focusWifi = getActivity().getIntent().getExtras().getInt(Schema.COL_ID);
-			Log.d(TAG, "Zooming onto " + focusWifi);
-			if (focusWifi != 0) {
-				loadSingleObject(focusWifi);
-			}
-		}
 	}
 
 	@Override
@@ -402,12 +386,11 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	@Override
 	public final void onDestroy() {
 		releaseMap();
-		mDataHelper = null;
 		super.onDestroy();
 	}
 
-	private void initDb() {
-		dbHelper = new DataHelper(getActivity());
+	private void getSession() {
+		final DataHelper dbHelper = new DataHelper(getActivity().getApplicationContext());
 		mSessionId = dbHelper.getActiveSessionId();
 
 		if (mSessionId != RadioBeacon.SESSION_NOT_TRACKING) {
@@ -422,7 +405,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	 */
 	private void initMap(final View view) {
 
-		final SharedPreferences sharedPreferences = getActivity().getSharedPreferences(getPersistableId(), /*MODE_PRIVATE*/ 0);
+		final SharedPreferences sharedPreferences = getActivity().getApplicationContext().getSharedPreferences(getPersistableId(), /*MODE_PRIVATE*/ 0);
 		preferencesFacade = new AndroidPreferences(sharedPreferences);
 
 		this.mMapView = (MapView) view.findViewById(R.id.map);
@@ -437,7 +420,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 			this.mMapView.getModel().mapViewPosition.setZoomLevel((byte) 15);
 		}
 
-		if (MapUtils.isMapSelected(this.getActivity())) {
+		if (MapUtils.isMapSelected(this.getActivity().getApplicationContext())) {
 			// remove all layers including base layer
 			this.mMapView.getLayerManager().getLayers().clear();
 			final Layer offlineLayer = MapUtils.createTileRendererLayer(
@@ -576,7 +559,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 		if (!mRefreshCatalogPending) {
 			Log.d(TAG, "Updating wifi catalog layer");
 			mRefreshCatalogPending = true;
-			proceedAfterCatalogLoaded();
+			triggerCatalogObjectsUpdate();
 			catalogObjectsRefreshedAt = location;
 			catalogObjectsRefreshTime = System.currentTimeMillis();
 		} else {
@@ -628,7 +611,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	 * Loads reference wifis around location from openbmap wifi catalog.
 	 * Callback function, upon completion onCatalogLoaded is called for drawing
 	 */
-	private void proceedAfterCatalogLoaded() {
+	private void triggerCatalogObjectsUpdate() {
 
 		final BoundingBox bbox = MapPositionUtil.getBoundingBox(
 				mMapView.getModel().mapViewPosition.getMapPosition(),
@@ -648,7 +631,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 			minLongitude -= lonSpan * 0.5;
 			maxLongitude += lonSpan * 0.5;
 		}
-		final WifiCatalogMapObjectsLoader task = new WifiCatalogMapObjectsLoader(getActivity(), this);
+		final WifiCatalogObjectsLoader task = new WifiCatalogObjectsLoader(getActivity(), this);
 		task.execute(minLatitude, maxLatitude, minLongitude, maxLongitude);
 
 	}
@@ -705,7 +688,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 		if (!mRefreshSessionPending) {
 			Log.d(TAG, "Updating session layer");
 			mRefreshSessionPending = true;
-			proceedAfterSessionObjectsLoaded(null);
+			triggerSessionObjectsUpdate(null);
 			sessionObjectsRefreshTime = System.currentTimeMillis();
 			sessionObjectsRefreshedAt = location;
 		} else {
@@ -735,7 +718,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	 * @param highlight
 	 *    If highlight is specified only this wifi is displayed
 	 */
-	private void proceedAfterSessionObjectsLoaded(final WifiRecord highlight) {
+	private void triggerSessionObjectsUpdate(final WifiRecord highlight) {
 		final BoundingBox bbox = MapPositionUtil.getBoundingBox(
 				mMapView.getModel().mapViewPosition.getMapPosition(),
 				mMapView.getDimension(), mMapView.getModel().displayModel.getTileSize());
@@ -765,14 +748,14 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 				maxLongitude += lonSpan * 0.5;
 			}
 
-			final SessionMapObjectsLoader task = new SessionMapObjectsLoader(getActivity(), this, sessions);
-			task.execute(minLatitude, maxLatitude, minLongitude, maxLatitude, null);
+			final SessionMapObjectsLoader task = new SessionMapObjectsLoader(getActivity().getApplicationContext(), this, sessions);
+			task.execute(minLatitude, maxLatitude, minLongitude, maxLongitude, null);
 		} else {
 			// draw specific wifi
 			final ArrayList<Integer> sessions = new ArrayList<Integer>();
 			sessions.add(mSessionId);
 
-			final SessionMapObjectsLoader task = new SessionMapObjectsLoader(getActivity(), this, sessions);
+			final SessionMapObjectsLoader task = new SessionMapObjectsLoader(getActivity().getApplicationContext(), this, sessions);
 			task.execute(bbox.minLatitude, bbox.maxLatitude, bbox.minLongitude, bbox.maxLatitude, highlight.getBssid());
 		}
 	}
@@ -865,7 +848,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 		if (!mRefreshGpxPending) {
 			Log.d(TAG, "Updating gpx layer");
 			mRefreshGpxPending = true;
-			proceedAfterGpxObjectsLoaded();
+			triggerGpxObjectsUpdate();
 			mGpxRefreshTime = System.currentTimeMillis();
 		} else {
 			Log.v(TAG, "Gpx layer refreshing. Skipping refresh..");
@@ -883,11 +866,11 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	/*
 	 * Loads gpx points in visible range.
 	 */
-	private void proceedAfterGpxObjectsLoaded() {
+	private void triggerGpxObjectsUpdate() {
 		final BoundingBox bbox = MapPositionUtil.getBoundingBox(
 				mMapView.getModel().mapViewPosition.getMapPosition(),
 				mMapView.getDimension(), mMapView.getModel().displayModel.getTileSize());
-		final GpxMapObjectsLoader task = new GpxMapObjectsLoader(getActivity(), this);
+		final GpxMapObjectsLoader task = new GpxMapObjectsLoader(getActivity().getApplicationContext(), this);
 		// query with some extra space
 		task.execute(mSessionId, bbox.minLatitude - 0.01, bbox.maxLatitude + 0.01, bbox.minLongitude - 0.15, bbox.maxLatitude + 0.15);
 	}
@@ -897,7 +880,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	 */
 	@Override
 	public final void onGpxLoaded(final ArrayList<LatLong> points) {
-		Log.d(TAG, "Loaded gpx objects");
+		Log.d(TAG, "Loading " + points.size()  + " gpx objects");
 
 		if (gpxObjects != null) {
 			synchronized (this) {
@@ -918,20 +901,6 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 		}
 
 		mRefreshGpxPending = false;
-	}
-
-	/**
-	 * Highlights single wifi on map.
-	 * @param id wifi id to highlight
-	 */
-	public final void loadSingleObject(final int id) {
-		Log.d(TAG, "Adding selected wifi to layer: " + id);
-
-		final WifiRecord wifi = dbHelper.loadWifiById(id);
-
-		if (wifi != null) {
-			proceedAfterSessionObjectsLoaded(wifi);
-		}
 	}
 
 	/**
@@ -1000,7 +969,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	 * @return a map file
 	 */
 	protected final MapFile getMapFile() {
-		return MapUtils.getMapFile(getActivity());
+		return MapUtils.getMapFile(getActivity().getApplicationContext());
 	}
 
 	/**
@@ -1009,7 +978,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	 */
 	protected XmlRenderTheme getRenderTheme() {
 		try {
-			return new AssetsRenderTheme(this.getActivity(), "", "renderthemes/rendertheme-v4.xml");
+			return new AssetsRenderTheme(this.getActivity().getApplicationContext(), "", "renderthemes/rendertheme-v4.xml");
 		} catch (final IOException e) {
 			Log.e(TAG, "Render theme failure " + e.toString());
 		}
@@ -1021,7 +990,7 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	 * @return
 	 */
 	protected final TileCache createTileCache() {
-		return AndroidUtil.createTileCache(this.getActivity(), "mapcache", mMapView.getModel().displayModel.getTileSize(), 1f, this.mMapView.getModel().frameBufferModel.getOverdrawFactor());	
+		return AndroidUtil.createTileCache(this.getActivity().getApplicationContext(), "mapcache", mMapView.getModel().displayModel.getTileSize(), 1f, this.mMapView.getModel().frameBufferModel.getOverdrawFactor());
 	}
 
 	/**
@@ -1071,17 +1040,11 @@ ActionBar.OnNavigationListener, onLongPressHandler {
 	public void onLongPress(final LatLong tapLatLong, final Point thisXY, final Point tapXY) {
 		Toast.makeText(this.getActivity(), this.getActivity().getString(R.string.saved_waypoint) + this.getActivity().getString(R.string.at) + "\n" + tapLatLong.toString(), Toast.LENGTH_LONG).show();
 
-		if (mDataHelper == null) {
-			/*
-			 * Setting up database connection
-			 */
-			mDataHelper = new DataHelper(this.getActivity());
-		}
+        final DataHelper dbHelper = new DataHelper(getActivity().getApplicationContext());
 
 		final PositionRecord pos = new PositionRecord(GeometryUtils.toLocation(tapLatLong), mSessionId, RadioBeacon.PROVIDER_USER_DEFINED, true);
-
 		// so far we set end position = begin position 
-		mDataHelper.storePosition(pos);
+        dbHelper.storePosition(pos);
 
         // beep once point has been saved
 		ToneGenerator toneG = new ToneGenerator(AudioManager.STREAM_ALARM, 100);

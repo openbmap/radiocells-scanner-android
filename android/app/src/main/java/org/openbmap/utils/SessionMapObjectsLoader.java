@@ -43,11 +43,11 @@ public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<S
 	 */
 	public enum Arguments { MIN_LAT_COL, MAX_LAT_COL, MIN_LON_COL, MIN_MAX_COL }
 
-	private static final int	MIN_LAT_COL	= 0;
-	private static final int	MAX_LAT_COL	= 1;
-	private static final int	MIN_LON_COL	= 2;
-	private static final int	MAX_LON_COL	= 3;
-	private static final int	HIGHLIGHT_WIFI_COL	= 4;
+	private static final int MIN_LAT_COL = 0;
+	private static final int MAX_LAT_COL = 1;
+	private static final int MIN_LON_COL = 2;
+	private static final int MAX_LON_COL = 3;
+	private static final int HIGHLIGHT_WIFI_COL	= 4;
 
 	/**
 	 * Interface for activity.
@@ -56,7 +56,7 @@ public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<S
 		void onSessionLoaded(ArrayList<SessionLatLong> points);
 	}
 
-	private final Context	mContext;
+	private final Context mContext;
 
 	private OnSessionLoadedListener mListener;
 	
@@ -77,7 +77,7 @@ public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<S
 	}
 
 	/**
-	 * Queries reference database for all wifis in specified range around map centre.
+	 * Queries reference database for all wifis within specified range around map centre.
 	 * @param args
 	 * 			Args is an object array containing
 	 * 			MIN_LAT_COL, MAX_LAT_COL, MIN_LON_COL, MIN_MAX_COL
@@ -87,13 +87,11 @@ public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<S
 		Log.d(TAG, "Loading session wifis");
 		final ArrayList<SessionLatLong> points = new ArrayList<SessionLatLong>();
 
-		final DataHelper dbHelper = new DataHelper(mContext);
-
 		if (args[HIGHLIGHT_WIFI_COL] == null) {
 			// Draw either all session wifis ...
 			
 			//long start = System.currentTimeMillis();
-			final DatabaseHelper mDbHelper = new DatabaseHelper(mContext);
+			final DatabaseHelper mDbHelper = new DatabaseHelper(mContext.getApplicationContext());
 			
 			final StringBuilder selected = new StringBuilder();
 			for (int i = 0; i < mToLoad.size(); i++) {
@@ -113,21 +111,23 @@ public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<S
 					+ " b.longitude >= " + (Double) args[MIN_LON_COL] + " AND "
 					+ " b.longitude <= " + (Double) args[MAX_LON_COL] + " AND " 
 					+ " b.latitude >= " + (Double) args[MIN_LAT_COL] + " AND "
-					+ " b.latitude <= " + (Double) args[MAX_LAT_COL] + " GROUP BY w." + Schema.COL_BSSID + ", w." + Schema.COL_MD5_SSID;
+					+ " b.latitude <= " + (Double) args[MAX_LAT_COL] + " GROUP BY w." + Schema.COL_BSSID;
 			
-			final Cursor ca = mDbHelper.getReadableDatabase().rawQuery(query, null);
-			final int colLat = ca.getColumnIndex(Schema.COL_LATITUDE);
-			final int colLon = ca.getColumnIndex(Schema.COL_LONGITUDE);
-			final int colSession = ca.getColumnIndex(Schema.COL_SESSION_ID);
+			final Cursor cursor = mDbHelper.getReadableDatabase().rawQuery(query, null);
+			final int colLat = cursor.getColumnIndex(Schema.COL_LATITUDE);
+			final int colLon = cursor.getColumnIndex(Schema.COL_LONGITUDE);
+			final int colSession = cursor.getColumnIndex(Schema.COL_SESSION_ID);
 
-			while (ca.moveToNext()) {
-				points.add(new SessionLatLong(ca.getDouble(colLat), ca.getDouble(colLon), ca.getInt(colSession)));
+			while (cursor.moveToNext()) {
+				points.add(new SessionLatLong(cursor.getDouble(colLat), cursor.getDouble(colLon), cursor.getInt(colSession)));
 			}
-			ca.close();
+			Log.d(TAG, cursor.getCount() + " session points loaded");
+			cursor.close();
 			
 			//Log.d(TAG, "loaded wifi overlay in (" + (System.currentTimeMillis() - start) + " ms)");
 		} else {
-			// ... or only selected	
+			// ... or only selected
+            final DataHelper dbHelper = new DataHelper(mContext.getApplicationContext());
 			final ArrayList<WifiRecord> candidates = dbHelper.loadWifisByBssid((String) args[HIGHLIGHT_WIFI_COL], mToLoad.get(0));
 			if (candidates.size() > 0) {
 				points.add(new SessionLatLong(candidates.get(0).getBeginPosition().getLatitude(),

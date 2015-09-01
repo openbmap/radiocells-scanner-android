@@ -22,7 +22,9 @@ import android.content.SharedPreferences;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -70,7 +72,6 @@ public final class MapUtils {
 			a.getActionBar().setDisplayHomeAsUpEnabled(true);
 		}
 	}
-
 
 	public static interface onLongPressHandler{
 		void onLongPress(LatLong tapLatLong, Point thisXY, Point tapXY);
@@ -195,6 +196,47 @@ public final class MapUtils {
 	}
 
 	/**
+	 * Gets a file reference for map folder
+	 * @return map folder
+	 */
+	@NonNull
+	public static File getMapFolder(final Context context) {
+        externalStorageWritable();
+		return new File(PreferenceManager.getDefaultSharedPreferences(context).getString(Preferences.KEY_MAP_FOLDER,
+				context.getExternalFilesDir(null) + File.separator + Preferences.MAPS_SUBDIR + File.separator));
+	}
+
+    /**
+     * Gets a file reference for catalog folder
+     * @return map folder
+     */
+    @NonNull
+    public static File getCatalogFolder(final Context context) {
+        externalStorageWritable();
+        return new File(PreferenceManager.getDefaultSharedPreferences(context).getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
+                context.getExternalFilesDir(null) + File.separator + Preferences.WIFI_CATALOG_SUBDIR + File.separator));
+    }
+
+    private static boolean externalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            // We can read and write the media
+            Log.d(TAG, "External storage properly mounted");
+            return true;
+        } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+            // We can only read the media
+            Log.d(TAG, "External storage mounted readonly");
+            return false;
+        } else {
+            // Something else is wrong. It may be one of many other states, but all we need
+            //  to know is we can neither read nor write
+            Log.d(TAG, "External storage not available");
+            return false;
+        }
+    }
+
+	/**
 	 * Opens map file
 	 * @param context
 	 * @return
@@ -202,8 +244,7 @@ public final class MapUtils {
 	 */
 	public static MapFile getMapFile(final Context context) {
 		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		File file = new File(prefs.getString(Preferences.KEY_MAP_FOLDER,
-				context.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.MAPS_SUBDIR), 
+		File file = new File(getMapFolder(context).getAbsolutePath(),
 				prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE));
 		
 		if (file.exists()) {

@@ -34,6 +34,7 @@ import org.openbmap.RadioBeacon;
 import org.openbmap.utils.CurrentLocationHelper;
 import org.openbmap.utils.CurrentLocationHelper.LocationResult;
 import org.openbmap.utils.DirectoryChooserDialog;
+import org.openbmap.utils.MapUtils;
 import org.openbmap.utils.MediaScanner;
 import org.openbmap.utils.VacuumCleaner;
 import org.openbmap.utils.WifiCatalogUpdater;
@@ -132,9 +133,7 @@ public class AdvancedSettingsActivity extends PreferenceActivity {
 	private void initMapFolderControl() {
 		final Preference button = (Preference) findPreference(Preferences.KEY_MAP_FOLDER);
 		button.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-			private String mChosenDir = PreferenceManager.getDefaultSharedPreferences(AdvancedSettingsActivity.this).getString(Preferences.KEY_MAP_FOLDER,
-					AdvancedSettingsActivity.this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.MAPS_SUBDIR);
-
+			private String mChosenDir = MapUtils.getMapFolder(AdvancedSettingsActivity.this).getAbsolutePath();
 			private boolean mNewFolderEnabled = false;
 
 			@Override
@@ -182,8 +181,7 @@ public class AdvancedSettingsActivity extends PreferenceActivity {
 	private void initWifiCatalogFolderControl() {
 		final Preference button = (Preference) findPreference(Preferences.KEY_WIFI_CATALOG_FOLDER);
 		button.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-			private String mChosenDir = PreferenceManager.getDefaultSharedPreferences(AdvancedSettingsActivity.this).getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
-					AdvancedSettingsActivity.this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_SUBDIR);
+			private String mChosenDir = MapUtils.getCatalogFolder(AdvancedSettingsActivity.this).getAbsolutePath();
 
 			private boolean mNewFolderEnabled = false;
 
