@@ -22,7 +22,7 @@
     </item>
     <item
         android:id="@+id/menu_upload_session"
-        android:icon="@drawable/ic_action_upload"
+        android:icon="@android:drawable/ic_menu_upload"
         app:showAsAction="always"
         android:title="@string/upload">
     </item>

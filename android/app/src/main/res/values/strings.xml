@@ -188,7 +188,7 @@
 	<string name="warning_sd_not_writable">Can\'t write to SD card. Perhaps mounted on desktop
 		pc?
 	</string>
-	<string name="error_save_file_failed">Error: Couldn\'t save wifi catalog! Check SD card /
+	<string name="error_save_file_failed">Download failed! Check SD card /
 		permissions!
 	</string>
 	<string name="error_create_directory_failed">Couldn\'t create data directory</string>

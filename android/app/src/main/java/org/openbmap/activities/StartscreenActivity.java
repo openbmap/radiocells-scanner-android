@@ -431,6 +431,9 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 				// Start settings activity
 				startActivity(new Intent(this, SettingsActivity.class));
 				break;
+			case R.id.menu_upload_all:
+				uploadAllCommand();
+				break;
 			case R.id.menu_credits:
 				// Start settings activity
 				startActivity(new Intent(this, CreditsActivity.class));
