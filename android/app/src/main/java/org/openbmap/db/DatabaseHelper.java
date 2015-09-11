@@ -299,6 +299,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+  Schema.COL_LONGITUDE + ""
 			+  ")";
 
+	/**
+	 * SQL for creating index on Positions
+	 */
+	private static final String	SQL_CREATE_IDX_POSITIONS_TIMESTAMP	= ""
+			+  "CREATE INDEX idx_positions_timestamp"
+			+  Schema.TBL_POSITIONS + "("
+			+  Schema.COL_TIMESTAMP
+			+  ")";
 
 	private SQLiteDatabase mDataBase;
 
@@ -475,6 +483,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		if (oldVersion <= 9) {
 			moveFilesToAndroidDefaultFolders();
 		}
+
+        if (oldVersion <= 10) {
+            try {
+                db.execSQL("DROP INDEX IF EXISTS idx_positions_timestamp");
+                db.execSQL(SQL_CREATE_IDX_POSITIONS_TIMESTAMP);
+            } catch (final SQLException e) {
+                Log.w(TAG, "Couldn't create cell position timestamp index");
+            }
+        }
 	}
 
 	@Override

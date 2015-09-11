@@ -22,7 +22,7 @@ package org.openbmap.db;
  * Data schemes: Table names, column names, URI
  */
 public final class Schema {
-	// [start] Tables
+	// Tables
 	/**
 	 * Table names.
 	 */
@@ -34,12 +34,10 @@ public final class Schema {
 	public static final String TBL_WIFI_POSITIONS = "wifi_zone";
 	public static final String TBL_LOGS = "logs";
 	public static final String TBL_SESSIONS = "sessions";
-	// [end]
 	
-	// [start] Views
+	// Views
 	public static final String	VIEW_WIFIS_EXTENDED	= "wifis_positions";
 	public static final String	VIEW_CELLS_EXTENDED	= "cells_positions";
-	// [end]
 	
 	/**
 	 * General columns used in several tables.

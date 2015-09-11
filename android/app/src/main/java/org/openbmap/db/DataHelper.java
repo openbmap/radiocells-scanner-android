@@ -788,13 +788,15 @@ public class DataHelper {
 
 			selection +=  "AND (" + Schema.COL_LATITUDE + " > ? AND " + Schema.COL_LATITUDE + " < ?) AND ("
 					+ Schema.COL_LONGITUDE + " > ? AND " + Schema.COL_LONGITUDE + " < ?)";
-			cursor = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_POSITION, null, selection, (String[]) selectionArgs.toArray(new String[0]), Schema.COL_TIMESTAMP);
+			cursor = contentResolver.query(
+					RadioBeaconContentProvider.CONTENT_URI_POSITION,
+                    null, selection,
+                    selectionArgs.toArray(new String[0]), Schema.COL_TIMESTAMP);
 
 		} else {
 			Log.v(TAG, "No boundaries provided, loading all positions");
 			cursor = contentResolver.query(RadioBeaconContentProvider.CONTENT_URI_POSITION, null, null, null, Schema.COL_TIMESTAMP);
 		}
-
 
 		while (cursor.moveToNext()) {
 			positions.add(positionFromCursor(cursor));

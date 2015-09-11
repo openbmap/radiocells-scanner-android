@@ -40,11 +40,11 @@ public class GpxMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatLo
 	 */
 	public enum Arguments { SESSION_ID, MIN_LAT_COL, MAX_LAT_COL, MIN_LON_COL, MIN_MAX_COL }
 
-	private static final int    SESSION_ID = 0;
-	private static final int	MIN_LAT_COL	= 1;
-	private static final int	MAX_LAT_COL	= 2;
-	private static final int	MIN_LON_COL	= 3;
-	private static final int	MAX_LON_COL	= 4;
+	private static final int SESSION_ID = 0;
+	private static final int MIN_LAT_COL = 1;
+	private static final int MAX_LAT_COL = 2;
+	private static final int MIN_LON_COL = 3;
+	private static final int MAX_LON_COL = 4;
 
 	/**
 	 * Interface for activity.
@@ -83,7 +83,7 @@ public class GpxMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatLo
 
 		DataHelper dbHelper = new DataHelper(mContext);
 
-		ArrayList<PositionRecord> positions = dbHelper.loadPositions((Integer) args[SESSION_ID],
+		final ArrayList<PositionRecord> positions = dbHelper.loadPositions((Integer) args[SESSION_ID],
 				(Double) args[MIN_LAT_COL], (Double) args[MAX_LAT_COL], (Double) args[MIN_LON_COL], (Double) args[MAX_LON_COL]);
 
 		for (PositionRecord position : positions) {
