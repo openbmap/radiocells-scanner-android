@@ -235,7 +235,7 @@ public class WirelessLoggerService extends AbstractService {
 	/**
 	 * Wifi catalog database (used for checking if new wifi)
 	 */
-	private SQLiteDatabase	mRefDb;
+	private SQLiteDatabase mRefDb;
 
 	/**
 	 * Receives location updates as well as wifi scan result updates
@@ -540,11 +540,18 @@ public class WirelessLoggerService extends AbstractService {
 	 */
 	private void performWifiUpdate() {
 
-		// cancel if wifi is disabled
-		if (!mWifiManager.isWifiEnabled()) {
-			Log.i(TAG, "Wifi disabled, can't initiate scan");
-			return;
-		}
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            // cancel if wifi is disabled
+            if (!mWifiManager.isWifiEnabled() &&  !mWifiManager.isScanAlwaysAvailable()) {
+                Log.i(TAG, "Wifi disabled or is scan always available off, skipping wifi scan");
+                return;
+            }
+        } else {
+            if (!mWifiManager.isWifiEnabled()) {
+                Log.i(TAG, "Wifi disabled, skipping wifi scan");
+                return;
+            }
+        }
 
 		// only start new scan if previous scan results have already been processed
 		if (!pendingWifiScanResults) {
