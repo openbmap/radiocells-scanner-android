@@ -315,7 +315,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public DatabaseHelper(final Context context) {
 		super(context, DB_NAME, null, RadioBeacon.DATABASE_VERSION);
 		Log.i(TAG, "Database scheme version " + RadioBeacon.DATABASE_VERSION);
-		mContext = context;
+		mContext = context.getApplicationContext();
 	}
 
 	@Override

@@ -47,8 +47,6 @@ import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.db.models.Session;
 
-import java.util.Random;
-
 /**
  * Activity for displaying basic session infos (# of cells, wifis, etc.)
  */
@@ -102,6 +100,7 @@ public class StatsActivity extends Fragment {
 
 	private Runnable mFadeFreeTask;
 	private final Handler mFadeFreeHandler = new Handler();
+
 	/**
 	 * Update certain infos at periodic intervals
 	 */
@@ -111,6 +110,8 @@ public class StatsActivity extends Fragment {
     private int mCurrentStrength;
 
     private String mLastTechnology;
+
+    private double graph2LastXValue;
 
 	/**
 	 * Receives cell / wifi news
@@ -259,7 +260,7 @@ public class StatsActivity extends Fragment {
 							}
 		}
 	};
-    private double graph2LastXValue;
+
 
     @Override
 	public final void onCreate(final Bundle savedInstanceState) {
@@ -437,28 +438,6 @@ public class StatsActivity extends Fragment {
         graph2LastXValue += 1d;
 		mCurrentStrength = -1;
 	}
-
-
-    private DataPoint[] generateData() {
-        int count = 30;
-        DataPoint[] values = new DataPoint[count];
-        for (int i=0; i<count; i++) {
-            double x = i;
-            double f = mRand.nextDouble()*0.15+0.3;
-            double y = Math.sin(i*f+2) + mRand.nextDouble()*0.3;
-            DataPoint v = new DataPoint(x, y);
-            values[i] = v;
-        }
-        return values;
-    }
-
-    double mLastRandom = 2;
-    Random mRand = new Random();
-    private double getRandom() {
-        return mLastRandom += mRand.nextDouble()*0.5 - 0.25;
-    }
-
-
 
 	/**
 	 * Returns time since base value as human-readable string

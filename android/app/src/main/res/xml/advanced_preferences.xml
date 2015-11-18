@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
-
-    <CheckBoxPreference
-        android:key="ignore_battery"
-        android:summary="@string/prefs_ignore_battery_summary"
-        android:title="@string/prefs_ignore_battery_title"
+    <PreferenceCategory android:title="@string/prefs_folder_various">
+        <CheckBoxPreference
+            android:key="ignore_battery"
+            android:summary="@string/prefs_ignore_battery_summary"
+            android:title="@string/prefs_ignore_battery_title"
         />
-
+        <CheckBoxPreference
+            android:key="delete_tracks"
+            android:summary="@string/prefs_delete_tracks_summary"
+            android:title="@string/prefs_delete_tracks_title"
+            />
+    </PreferenceCategory>
     <PreferenceCategory android:title="@string/prefs_privacy" >
         <Preference
             android:key="privacy.block_homezone"

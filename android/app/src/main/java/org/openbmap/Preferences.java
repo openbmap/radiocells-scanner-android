@@ -26,6 +26,7 @@ public final class Preferences {
 	public static final String KEY_ADVANCED_SETTINGS = "advanced_settings";
 
 	public static final String KEY_GPS_LOGGING_INTERVAL = "gps.interval";
+
 	// TODO add support for external (e.g. bluetooth gps provider)
 	public static final String KEY_GPS_PROVIDER = "gps.provider";
 	
@@ -110,7 +111,7 @@ public final class Preferences {
 	/**
 	 * Keep local temp files after upload?
 	 */
-	public static final String KEY_SKIP_DELETE = "debug.keep_export_files";
+	public static final String KEY_KEEP_XML = "debug.keep_export_files";
 	
 	/**
 	 * Blocks wifi and cell scan around current location
@@ -127,6 +128,10 @@ public final class Preferences {
      */
     public static final String KEY_IGNORE_BATTERY = "ignore_battery";
 
+    /**
+     * Delete tracks after successfull upload
+     */
+    public static final String KEY_DELETE_TRACKS = "delete_tracks";
 	/*
 	 * Default values following ..
 	 */
@@ -136,6 +141,10 @@ public final class Preferences {
      */
     public static final boolean VAL_IGNORE_BATTERY = false;
 
+    /**
+     * Default: don't delete tracks after successful upload
+     */
+    public static final boolean VAL_DELETE_TRACKS = false;
 
     /**
 	 * No map set
@@ -185,7 +194,7 @@ public final class Preferences {
 	/**
 	 * By default delete local temp files after upload
 	 */
-	public static final boolean	VAL_SKIP_DELETE = false;
+	public static final boolean VAL_KEEP_XML = false;
 	
 	/**
 	 * Save cells by default
@@ -241,7 +250,7 @@ public final class Preferences {
 	/**
 	 * URL, where wifi catalog with openbmap's preprocessed wifi positions can be downloaded
 	 */
-	public static final String	WIFI_CATALOG_DOWNLOAD_URL = "http://www.radiocells.org/static/openbmap.sqlite";
+	public static final String WIFI_CATALOG_DOWNLOAD_URL = "http://www.radiocells.org/static/openbmap.sqlite";
 	
 	/**
 	 * Filename catalog database

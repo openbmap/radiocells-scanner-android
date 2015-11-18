@@ -360,7 +360,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
 		mDataHelper.deleteSession(id);
 
-		final boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_SKIP_DELETE, Preferences.VAL_SKIP_DELETE);
+		final boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_KEEP_XML, Preferences.VAL_KEEP_XML);
 
 		if (!skipDelete) {
 			// delete all temp files (.xml)
@@ -606,12 +606,16 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 						String.valueOf(id), true).show(getSupportFragmentManager(), "failed");
 			} else {
 				// if everything is ok, offer to delete
-				String candidates = "";
-				for (final int one : pendingExports){
-					candidates += one + ";";
-				}
-				AlertDialogUtils.newInstance(ID_DELETE_PROCESSED, getResources().getString(R.string.delete), getResources().getString(R.string.do_you_want_to_delete_processed_sessions),
-						candidates, false).show(getSupportFragmentManager(), "failed");
+                if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_DELETE_TRACKS, Preferences.VAL_DELETE_TRACKS)) {
+                    deleteBatchCommand(pendingExports);
+                } else {
+                    String candidates = "";
+                    for (final int one : pendingExports){
+                        candidates += one + ";";
+                    }
+                    AlertDialogUtils.newInstance(ID_DELETE_PROCESSED, getResources().getString(R.string.delete), getResources().getString(R.string.do_you_want_to_delete_processed_sessions),
+                            candidates, false).show(getSupportFragmentManager(), "failed");
+                }
 			}
 
 			pendingExports.clear();
@@ -634,7 +638,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
 		completedExports += 1;
 		Log.i(TAG, "Session " + id + " exported");
-		Log.i(TAG, "Exported " + completedExports + "/" + pendingExports.size() + " sessions");
+        Log.i(TAG, "Exported " + completedExports + "/" + pendingExports.size() + " sessions");
 
 		if (pendingExports.size() == 1) {
 			Log.i(TAG, "Export simulated");

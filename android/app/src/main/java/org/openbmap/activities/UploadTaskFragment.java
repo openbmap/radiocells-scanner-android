@@ -28,12 +28,12 @@ import android.util.Log;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
-import org.openbmap.soapclient.ServerCheckTask;
-import org.openbmap.soapclient.ServerCheckTask.ServerCheckerListener;
 import org.openbmap.soapclient.ExportDataTask;
 import org.openbmap.soapclient.ExportDataTask.UploadTaskListener;
-import org.openbmap.utils.FileUtils;
+import org.openbmap.soapclient.ServerCheckTask;
 import org.openbmap.soapclient.ServerCheckTask.ServerAnswer;
+import org.openbmap.soapclient.ServerCheckTask.ServerCheckerListener;
+import org.openbmap.utils.FileUtils;
 
 import java.io.File;
 import java.util.Vector;
@@ -144,7 +144,7 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
         final String password = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
         final String targetPath = getActivity().getExternalFilesDir(null).getAbsolutePath() + File.separator;
         final boolean skipUpload = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_SKIP_UPLOAD, Preferences.VAL_SKIP_UPLOAD);
-        final boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_SKIP_DELETE, Preferences.VAL_SKIP_DELETE);
+        final boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_KEEP_XML, Preferences.VAL_KEEP_XML);
         final boolean anonymiseSsid = prefs.getBoolean(Preferences.KEY_ANONYMISE_SSID, Preferences.VAL_ANONYMISE_SSID);
 
         mExportDataTask = new ExportDataTask(getActivity(), this, session,
@@ -157,7 +157,7 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
 
         // debug settings
         mExportDataTask.setSkipUpload(skipUpload);
-        mExportDataTask.setSkipDelete(skipDelete);
+        mExportDataTask.setKeepXml(skipDelete);
 
         mExportDataTask.execute((Void[]) null);
     }

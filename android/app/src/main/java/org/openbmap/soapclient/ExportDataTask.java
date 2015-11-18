@@ -133,7 +133,7 @@ public class ExportDataTask extends AsyncTask<Void, Object, Boolean> implements 
 	/**
 	 * Skip cleanup?
 	 */
-	private boolean	mSkipDelete;
+	private boolean mKeepXml;
 
 	/**
 	 * Update wifi catalog with new wifis?
@@ -181,7 +181,7 @@ public class ExportDataTask extends AsyncTask<Void, Object, Boolean> implements 
 
 		// by default: upload and delete local temp files afterward
 		this.setSkipUpload(false);
-		this.setSkipDelete(false);
+		this.setKeepXml(false);
 
 		this.setUpdateWifiCatalog(false);
 
@@ -241,10 +241,10 @@ public class ExportDataTask extends AsyncTask<Void, Object, Boolean> implements 
 			}
 
 			// and cleanup
-			if (!getSkipDelete()) {
+			if (!keepXml()) {
 				// delete only successfully uploaded files
 				Log.i(TAG, "Deleting uploaded files");
-				deleteTempFiles(mUploadedFiles);
+				deleteXmlFiles(mUploadedFiles);
 			} else {
 				Log.i(TAG, "Deleting files skipped");
 			}
@@ -257,13 +257,13 @@ public class ExportDataTask extends AsyncTask<Void, Object, Boolean> implements 
 
 		if (mUpdateWifiCatalog) {
 			Log.i(TAG, "Updating wifi catalog");
-			new WifiCatalogUpdater(mAppContext).execute((Void[]) null);			
+			new WifiCatalogUpdater(mAppContext).execute((Void[]) null);
 		}
 
 		return success;
 	}
 
-	private void deleteTempFiles(ArrayList<String> files) {
+	private void deleteXmlFiles(ArrayList<String> files) {
 		for (int i = 0; i < files.size(); i++) {
             final File temp = new File(files.get(i));
             if (!temp.delete()) {
@@ -404,12 +404,12 @@ public class ExportDataTask extends AsyncTask<Void, Object, Boolean> implements 
 		this.mSkipUpload = skipUpload;
 	}
 
-	public final boolean getSkipDelete() {
-		return mSkipDelete;
+	public final boolean keepXml() {
+		return mKeepXml;
 	}
 
-	public final void setSkipDelete(final boolean skipDelete) {
-		this.mSkipDelete = skipDelete;
+	public final void setKeepXml(final boolean keepXml) {
+		this.mKeepXml = keepXml;
 	}
 
 	/* (non-Javadoc)
