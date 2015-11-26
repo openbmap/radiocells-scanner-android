@@ -23,20 +23,29 @@ android {
     }
 }
 
+/*
+repositories {
+    maven {
+        url "https://s3.amazonaws.com/repo.commonsware.com"
+    }
+}
+*/
+
 dependencies {
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:support-v4:22.2.1'
-    compile 'com.android.support:appcompat-v7:22.2.1'
-    compile 'com.android.support:support-v13:22.2.1'
+    compile 'com.android.support:support-v4:22.1.1'
+    compile 'com.android.support:appcompat-v7:22.1.1'
+    compile 'com.android.support:support-v13:22.1.1'
     compile 'com.caverock:androidsvg:1.2.1'
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'com.jjoe64:graphview:4.0.1'
     compile 'org.apache.httpcomponents:httpmime:4.2.3'
-    compile 'org.mapsforge:mapsforge-core:0.5.2'
-    compile 'org.mapsforge:mapsforge-map:0.5.2'
-    compile 'org.mapsforge:mapsforge-map-android:0.5.2'
-    compile 'org.mapsforge:mapsforge-map-reader:0.5.2'
+    compile 'org.mapsforge:mapsforge-core:0.6.0'
+    compile 'org.mapsforge:mapsforge-map:0.6.0'
+    compile 'org.mapsforge:mapsforge-map-android:0.6.0'
+    compile 'org.mapsforge:mapsforge-map-reader:0.6.0'
     compile 'org.mapsforge:mapsforge:0.5.2'
+    //compile 'com.commonsware.cwac:merge:1.1.+'
 }
 
 task writeVersionInfo {

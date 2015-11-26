@@ -66,7 +66,7 @@ public class SettingsActivity extends PreferenceActivity {
     /*
      * Id of the active map download or -1 if no active download
      */
-    private long currentMapDownloadId = -1;
+    private long mCurrentMapDownloadId = -1;
 
     private BroadcastReceiver mReceiver = null;
 
@@ -85,13 +85,14 @@ public class SettingsActivity extends PreferenceActivity {
         initWifiCatalogDownloadControl();
         initActiveWifiCatalogControl();
 
-        initMapDownloadControl();
         initActiveMapControl();
 
 
         initGpsLogIntervalControl();
 
         initAdvancedSettingsButton();
+
+        DialogPreferenceMaps maps = (DialogPreferenceMaps) findPreference(Preferences.KEY_MAPS_DIALOG);
     }
 
     /**
@@ -180,74 +181,6 @@ public class SettingsActivity extends PreferenceActivity {
     }
 
     /**
-     * Populates the download list with links to mapsforge downloads.
-     */
-    private void initMapDownloadControl() {
-        String[] entries;
-        String[] values;
-
-        // No map found, populate values with just the default entry.
-        entries = getResources().getStringArray(R.array.listDisplayWord);
-        values = getResources().getStringArray(R.array.listReturnValue);
-
-        final ListPreference lf = (ListPreference) findPreference(Preferences.KEY_DOWNLOAD_MAP);
-        lf.setEntries(entries);
-        lf.setEntryValues(values);
-
-        lf.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            public boolean onPreferenceChange(final Preference preference, final Object newValue) {
-                if (currentMapDownloadId > -1) {
-                    Toast.makeText(SettingsActivity.this, getString(R.string.other_download_active), Toast.LENGTH_LONG).show();
-                    return true;
-                }
-
-                // try to create directory
-                final File folder = MapUtils.getMapFolder(SettingsActivity.this);
-                Log.d(TAG, "Download destination" + folder.getAbsolutePath());
-
-                boolean folderAccessible = false;
-                if (folder.exists() && folder.canWrite()) {
-                    folderAccessible = true;
-                }
-
-                if (!folder.exists()) {
-                    folderAccessible = folder.mkdirs();
-                }
-                if (folderAccessible) {
-                    final String filename = newValue.toString().substring(newValue.toString().lastIndexOf('/') + 1);
-
-                    final File target = new File(folder.getAbsolutePath() + File.separator + filename);
-                    if (target.exists()) {
-                        Log.i(TAG, "Map file " + filename + " already exists. Overwriting..");
-                        target.delete();
-                    }
-
-                    try {
-                        // try to download to target. If target isn't below Environment.getExternalStorageDirectory(),
-                        // e.g. on second SD card a security exception is thrown
-                        final Request request = new Request(Uri.parse(newValue.toString()));
-                        request.setDestinationUri(Uri.fromFile(target));
-                        currentMapDownloadId = mDownloadManager.enqueue(request);
-                    } catch (final SecurityException sec) {
-                        // download to temp dir and try to move to target later
-                        Log.w(TAG, "Security exception, can't write to " + target + ", using " + SettingsActivity.this.getExternalCacheDir());
-                        final File tempFile = new File(SettingsActivity.this.getExternalCacheDir() + File.separator + filename);
-
-                        final Request request = new Request(Uri.parse(newValue.toString()));
-                        request.setDestinationUri(Uri.fromFile(tempFile));
-                        currentMapDownloadId = mDownloadManager.enqueue(request);
-                    }
-                } else {
-                    Toast.makeText(preference.getContext(), R.string.error_save_file_failed, Toast.LENGTH_SHORT).show();
-                }
-
-                return false;
-            }
-        });
-
-    }
-
-    /**
      * Populates the active map list preference by scanning available map files.
      */
     private void initActiveMapControl() {
@@ -290,27 +223,6 @@ public class SettingsActivity extends PreferenceActivity {
         final ListPreference lf = (ListPreference) findPreference(Preferences.KEY_MAP_FILE);
         lf.setEntries(entries);
         lf.setEntryValues(values);
-    }
-
-    /**
-     * Changes map preference item to given filename.
-     * Helper method to activate map after successful download
-     *
-     * @param absoluteFile absolute filename (including path)
-     */
-    private void activateMap(final String absoluteFile) {
-        final ListPreference lf = (ListPreference) findPreference(org.openbmap.Preferences.KEY_MAP_FILE);
-
-        // get filename
-        final String[] filenameArray = absoluteFile.split("\\/");
-        final String file = filenameArray[filenameArray.length - 1];
-
-        final CharSequence[] values = lf.getEntryValues();
-        for (int i = 0; i < values.length; i++) {
-            if (file.equals(values[i].toString())) {
-                lf.setValueIndex(i);
-            }
-        }
     }
 
     /**
@@ -450,7 +362,6 @@ public class SettingsActivity extends PreferenceActivity {
 
     /**
      * Selects downloaded file either as wifi catalog / active map (based on file extension).
-     *
      * @param file
      */
     public final void handleDownloads(String file) {
@@ -462,17 +373,7 @@ public class SettingsActivity extends PreferenceActivity {
         // replace prefix file:// in filename string
         file = file.replace("file://", "");
 
-        if (extension.equals(org.openbmap.Preferences.MAP_FILE_EXTENSION)) {
-            currentMapDownloadId = -1;
-            if (file.indexOf(SettingsActivity.this.getExternalCacheDir().getPath()) > -1) {
-                // file has been downloaded to cache folder, so move..
-                file = moveToFolder(file, MapUtils.getMapFolder(SettingsActivity.this).getAbsolutePath());
-            }
-
-            initActiveMapControl();
-            // handling map files
-            activateMap(file);
-        } else if (extension.equals(org.openbmap.Preferences.WIFI_CATALOG_FILE_EXTENSION)) {
+        if (extension.equals(org.openbmap.Preferences.WIFI_CATALOG_FILE_EXTENSION)) {
             currentCatalogDownloadId = -1;
             if (file.indexOf(SettingsActivity.this.getExternalCacheDir().getPath()) > -1) {
                 // file has been downloaded to cache folder, so move..
@@ -487,7 +388,6 @@ public class SettingsActivity extends PreferenceActivity {
 
     /**
      * Moves file to specified folder
-     *
      * @param file
      * @param folder
      * @return new file name

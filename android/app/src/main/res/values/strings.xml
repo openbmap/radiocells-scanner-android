@@ -39,12 +39,7 @@
 	<string name="prefs_save_wifis_summary">Activate to scan for wifis</string>
 	<string name="prefs_save_wifis">Save Wifis</string>
 	<string name="prefs_data_map">Offline map</string>
-	<string name="prefs_data_map_summary">If you don\'t have a map yet, select \'Download
-		map\'
-	</string>
-	<string name="prefs_data_download">Download map</string>
-	<string name="prefs_data_download_summary">Alternatively copy maps in your data/maps directory
-		manually
+	<string name="prefs_data_map_summary">Browse your offline map repository
 	</string>
 	<string name="prefs_data_ref_database">Select Wifi Catalog</string>
 	<string name="prefs_data_ref_database_summary">Install a wifi catalog to see all known openbmap
@@ -311,4 +306,6 @@
 	<string name="prefs_folder_various">Various</string>
 	<string name="prefs_delete_tracks_title">Delete tracks</string>
 	<string name="prefs_delete_tracks_summary">Delete tracks after successful upload</string>
+	<string name="prefs_get_maps_title">Get offline map</string>
+	<string name="prefs_get_maps_summary">Download offline map</string>
 </resources>

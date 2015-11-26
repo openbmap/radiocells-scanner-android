@@ -25,6 +25,9 @@ public final class Preferences {
 	// 'Button id' Advanced settings
 	public static final String KEY_ADVANCED_SETTINGS = "advanced_settings";
 
+	// 'Button id' Maps preference
+	public static final String KEY_MAPS_DIALOG = "maps_dialog";
+
 	public static final String KEY_GPS_LOGGING_INTERVAL = "gps.interval";
 
 	// TODO add support for external (e.g. bluetooth gps provider)

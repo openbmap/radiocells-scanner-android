@@ -64,17 +64,18 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/prefs_maps">
+        <org.openbmap.activities.DialogPreferenceMaps
+            android:selectable="true"
+            android:enabled="true"
+            android:title="@string/prefs_get_maps_title"
+            android:summary="@string/prefs_get_maps_summary"
+            android:key="maps_dialog">
+        </org.openbmap.activities.DialogPreferenceMaps>
         <ListPreference
             android:defaultValue="none"
             android:key="data.map"
             android:summary="@string/prefs_data_map_summary"
             android:title="@string/prefs_data_map"/>
-        <ListPreference
-            android:defaultValue="none"
-            android:key="data.download"
-            android:summary="@string/prefs_data_download_summary"
-            android:title="@string/prefs_data_download"/>
-
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="ui.keep_screen_on"
