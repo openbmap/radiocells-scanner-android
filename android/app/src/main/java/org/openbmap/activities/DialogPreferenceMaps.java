@@ -20,6 +20,7 @@ package org.openbmap.activities;
 
 import android.annotation.SuppressLint;
 import android.app.DownloadManager;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -72,6 +73,8 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
     private List<MapDownload> mOnlineResults;
     private DownloadManager mDownloadManager;
 
+    private ProgressDialog checkDialog;
+
     /*
      * Id of the active map download or -1 if no active download
      */
@@ -96,6 +99,9 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
         mAdapter = new DialogPreferenceMapsListAdapter(getContext(), groups, this);
         listView.setAdapter(mAdapter);
 
+        if (checkDialog == null || !checkDialog.isShowing()) {
+            checkDialog = new ProgressDialog(getContext());
+        }
         // retrieve online maps
         GetAvailableMapsTask data = new GetAvailableMapsTask();
         data.execute();
@@ -103,7 +109,10 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
 
     @Override
     protected void onDialogClosed(boolean positiveResult) {
-        // nada
+        if (checkDialog.isShowing()) {
+            checkDialog.dismiss();
+        }
+        checkDialog = null;
     }
 
     /**
@@ -224,12 +233,17 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
 
     @Override
     public void onItemClicked(MapDownload map) {
-        Toast.makeText(mContext, map.getUrl(), Toast.LENGTH_SHORT).show();
         if (mCurrentMapDownloadId > -1) {
             Toast.makeText(getContext(), getContext().getString(R.string.other_download_active), Toast.LENGTH_LONG).show();
             return;
         }
 
+        if (map.getUrl() == null) {
+            Toast.makeText(getContext(), R.string.invalid_download, Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        Toast.makeText(getContext(), getContext().getString(R.string.downloading) + " " + map.getUrl(), Toast.LENGTH_LONG).show();
         // try to create directory
         final File folder = MapUtils.getMapFolder(getContext());
         Log.d(TAG, "Download destination" + folder.getAbsolutePath());
@@ -270,10 +284,19 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
         } else {
             Toast.makeText(getContext(), R.string.error_save_file_failed, Toast.LENGTH_SHORT).show();
         }
-
+        getDialog().dismiss();
     }
 
     private class GetAvailableMapsTask extends AsyncTask<String, Void, List<MapDownload>> {
+
+        @Override
+        protected void onPreExecute() {
+            checkDialog.setTitle(mContext.getString(R.string.prefs_check_map_repo));
+            checkDialog.setMessage(mContext.getString(R.string.please_stay_patient));
+            checkDialog.setCancelable(false);
+            checkDialog.setIndeterminate(true);
+            checkDialog.show();
+        }
 
         @Override
         protected List<MapDownload> doInBackground(String... params) {
@@ -281,7 +304,6 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
 
             DefaultHttpClient httpclient = new DefaultHttpClient(new BasicHttpParams());
             HttpGet httpGet = new HttpGet(LIST_DOWNLOADS_URL);
-            // Depends on your web service
             httpGet.setHeader("Content-type", "application/json");
 
             InputStream inputStream = null;
@@ -323,6 +345,10 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
         @Override
         protected void onPostExecute(List<MapDownload> result) {
             super.onPostExecute(result);
+
+            if (checkDialog.isShowing()) {
+                checkDialog.dismiss();
+            }
 
             mOnlineResults = result;
             populateListView();

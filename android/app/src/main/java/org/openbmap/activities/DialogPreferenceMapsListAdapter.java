@@ -72,8 +72,6 @@ public class DialogPreferenceMapsListAdapter extends BaseExpandableListAdapter{
                 if (mCallback != null) {
                     mCallback.onItemClicked(children);
                 }
-
-                // Toast.makeText(mContext, children.getUrl(), Toast.LENGTH_SHORT).show();
             }
         });
         return convertView;
