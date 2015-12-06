@@ -11,6 +11,12 @@
             android:summary="@string/prefs_delete_tracks_summary"
             android:title="@string/prefs_delete_tracks_title"
             />
+        <ListPreference android:title="@string/prefs_gpx_verbosity_title"
+            android:summary="@string/prefs_gpx_verbosity_summary"
+            android:key="gpx.verbosity"
+            android:defaultValue="1"
+            android:entries="@array/gpxVerbosityEntries"
+            android:entryValues="@array/gpxVerbosityValues" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/prefs_privacy" >
         <Preference

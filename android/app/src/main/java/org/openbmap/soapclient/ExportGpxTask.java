@@ -51,7 +51,7 @@ public class ExportGpxTask extends AsyncTask<Void, Object, Boolean> {
 	 */
 	private final ExportGpxTaskListener mListener;
 
-	private Context mAppContext;
+    private Context mAppContext;
 
 	/**
 	 * Folder where GPX file is created
@@ -62,6 +62,8 @@ public class ExportGpxTask extends AsyncTask<Void, Object, Boolean> {
 	 * GPX filename
 	 */
 	private final String mFilename;
+
+    private final int mVerbosity;
 	
 	public interface ExportGpxTaskListener {
 		void onExportGpxProgressUpdate(Object[] values);
@@ -71,20 +73,21 @@ public class ExportGpxTask extends AsyncTask<Void, Object, Boolean> {
 
 	//http://stackoverflow.com/questions/9573855/second-instance-of-activity-after-orientation-change
 	/**
-	 * 
-	 * @param context
+	 *  @param context
 	 * @param listener
 	 * @param session
 	 * @param path
 	 * @param filename
+	 * @param verbosity
 	 */
 	public ExportGpxTask(final Context context, final ExportGpxTaskListener listener, final int session,
-			final String path, final String filename) {
+						 final String path, final String filename, int verbosity) {
 		this.mAppContext = context.getApplicationContext();
 		this.mSession = session;
 		this.mPath = path;
 		this.mFilename = filename;
 		this.mListener = listener;
+		this.mVerbosity = verbosity;
 	}
 
 	/**
@@ -98,7 +101,7 @@ public class ExportGpxTask extends AsyncTask<Void, Object, Boolean> {
 		final GpxWriter gpx = new GpxWriter(mAppContext, mSession);
 		final File target = new File(mPath, mFilename);
 		try {
-			gpx.doExport(mFilename, target);
+			gpx.doExport(mFilename, target, mVerbosity);
 			success = true;
 		} catch (final IOException e) {
 			Log.e(TAG, "Can't write gpx file " + mPath + File.separator + mFilename);

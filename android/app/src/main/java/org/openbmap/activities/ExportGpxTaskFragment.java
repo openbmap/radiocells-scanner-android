@@ -18,9 +18,12 @@
 package org.openbmap.activities;
 
 import android.app.ProgressDialog;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 
+import org.openbmap.Preferences;
 import org.openbmap.soapclient.ExportGpxTask;
 import org.openbmap.soapclient.ExportGpxTask.ExportGpxTaskListener;
 
@@ -50,15 +53,19 @@ public class ExportGpxTaskFragment extends Fragment implements ExportGpxTaskList
 	 * @param session
 	 */
 
+
 	public void execute(final int session, final String path, final String filename) {
 
 		if (path == null || filename == null) {
 			throw new IllegalArgumentException("Path and file must not be null");
 		}
-		
+
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        final int verbosity = Integer.parseInt(prefs.getString(Preferences.KEY_GPX_VERBOSITY, Preferences.VAL_GPX_VERBOSITY));
+
 		mIsExecuting = true;
 		// Create and execute the background task.
-		mTask = new ExportGpxTask(this.getActivity(), this, session, path, filename);
+		mTask = new ExportGpxTask(this.getActivity(), this, session, path, filename, verbosity);
 		mTask.execute();
 	}
 

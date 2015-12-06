@@ -312,4 +312,6 @@
 	<string name="prefs_check_map_repo">Checking server...</string>
 	<string name="downloading">Downloading</string>
 	<string name="invalid_download">Invalid download</string>
+	<string name="prefs_gpx_verbosity_title">GPX verbosity</string>
+	<string name="prefs_gpx_verbosity_summary">Select which details are exported to GPX files</string>
 </resources>

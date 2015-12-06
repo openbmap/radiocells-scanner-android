@@ -135,6 +135,12 @@ public final class Preferences {
      * Delete tracks after successfull upload
      */
     public static final String KEY_DELETE_TRACKS = "delete_tracks";
+
+    /**
+     * Level of detail for GPX exports (track + waypoints, waypoints only, track + waypoints + wifis/cells
+     */
+	public static final String KEY_GPX_VERBOSITY = "gpx.verbosity";
+
 	/*
 	 * Default values following ..
 	 */
@@ -148,6 +154,11 @@ public final class Preferences {
      * Default: don't delete tracks after successful upload
      */
     public static final boolean VAL_DELETE_TRACKS = false;
+
+    /**
+     * Default: export track and waypoints
+     */
+    public static final String VAL_GPX_VERBOSITY = "1";
 
     /**
 	 * No map set
@@ -269,7 +280,6 @@ public final class Preferences {
      * URL, which is called to validate user credentials
      */
 	public static final String PASSWORD_VALIDATION_URL = "http://radiocells.org/uploads/check_login";
-
 
 	/**
 	 * Private dummy constructor

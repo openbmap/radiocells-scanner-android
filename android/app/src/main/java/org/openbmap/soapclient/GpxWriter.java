@@ -118,11 +118,18 @@ public class GpxWriter {
 	 */
 	private static final SimpleDateFormat GPX_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
 
-	private final int	mSession;
+    /**
+     * Levels of detail for GPX export
+     */
+    private static final int VERBOSITY_TRACK_AND_WAYPOINTS = 1;
+    private static final int VERBOSITY_WAYPOINTS_ONLY = 2;
+    private static final int VERBOSITY_ALL = 3;
 
-	private final Context	mContext;
+    private final int mSession;
 
-	private DatabaseHelper	mDbHelper;
+	private final Context mContext;
+
+	private DatabaseHelper mDbHelper;
 
 	public GpxWriter(final Context context, final int session) {
 		mSession = session;
@@ -132,12 +139,11 @@ public class GpxWriter {
 	/**
 	 * Writes the GPX file
 	 * @param trackName Name of the GPX track (metadata)
-	 * @param cTrackPoints Cursor to track points.
-	 * @param cWayPoints Cursor to way points.
 	 * @param target Target GPX file
-	 * @throws IOException 
+	 * @param verbosity GPX verbosity (see constants above)
+	 * @throws IOException
 	 */
-	public final void doExport(final String trackName, final File target) throws IOException {
+	public final void doExport(final String trackName, final File target, int verbosity) throws IOException {
 		Log.i(TAG, "Exporting gpx file" + target.getAbsolutePath());
 		mDbHelper = new DatabaseHelper(mContext);
 
@@ -145,15 +151,22 @@ public class GpxWriter {
 
 		bw.write(XML_HEADER);
 		bw.write(TAG_GPX);
-		
-		writeWaypoints(mSession, bw);
-		writeTrackpoints(mSession, trackName, bw);
+
+		if (verbosity == VERBOSITY_TRACK_AND_WAYPOINTS || verbosity == VERBOSITY_WAYPOINTS_ONLY || verbosity == VERBOSITY_ALL ) {
+            writeWaypoints(mSession, bw);
+        }
+
+        if (verbosity == VERBOSITY_TRACK_AND_WAYPOINTS || verbosity == VERBOSITY_ALL) {
+            writeTrackpoints(mSession, trackName, bw);
+        }
 		bw.flush();
 
-		writeWifis(bw);
-		bw.flush();
-		writeCells(bw);
-		bw.flush();
+        if (verbosity == VERBOSITY_ALL) {
+            writeWifis(bw);
+            bw.flush();
+            writeCells(bw);
+            bw.flush();
+        }
 
 		bw.write(TAG_GPX_CLOSE);
 		bw.close();
@@ -164,9 +177,7 @@ public class GpxWriter {
 
 	/**
 	 * Iterates on track points and write them.
-	 * @param trackName Name of the track (metadata).
 	 * @param bw Writer to the target file.
-	 * @param c Cursor to track points.
 	 * @throws IOException
 	 */
 	private void writeWaypoints(final int session, final BufferedWriter bw) throws IOException {
