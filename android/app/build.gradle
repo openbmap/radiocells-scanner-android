@@ -23,14 +23,6 @@ android {
     }
 }
 
-/*
-repositories {
-    maven {
-        url "https://s3.amazonaws.com/repo.commonsware.com"
-    }
-}
-*/
-
 dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:support-v4:22.1.1'
@@ -45,7 +37,6 @@ dependencies {
     compile 'org.mapsforge:mapsforge-map-android:0.6.0'
     compile 'org.mapsforge:mapsforge-map-reader:0.6.0'
     compile 'org.mapsforge:mapsforge:0.5.2'
-    //compile 'com.commonsware.cwac:merge:1.1.+'
 }
 
 task writeVersionInfo {
