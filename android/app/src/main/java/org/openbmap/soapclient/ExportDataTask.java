@@ -216,7 +216,7 @@ public class ExportDataTask extends AsyncTask<Void, Object, Boolean> implements 
 			Log.i(TAG, "Exporting wifis");
 			// export wifis
 			publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.exporting_wifis), 50);
-			wifiFiles = new WifiXmlWriter(mAppContext, mSession, mTargetPath, RadioBeacon.SW_VERSION, mAnonymiseSsid).export();
+			wifiFiles = new WifiXmlWrier(mAppContext, mSession, mTargetPath, RadioBeacon.SW_VERSION, mAnonymiseSsid).export();
 
 			// upload
 			if (!getSkipUpload()) {
