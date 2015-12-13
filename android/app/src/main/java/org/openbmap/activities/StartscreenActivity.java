@@ -593,7 +593,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 			hideUploadTaskDialog();
 			releaseWifiLock();
 
-            if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_DELETE_TRACKS, Preferences.VAL_DELETE_TRACKS)) {
+            if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_DELETE_SESSIONS, Preferences.VAL_DELETE_SESSIONS)) {
                 deleteConfirmed(id);
             } else {
                 deleteCommand(id);
@@ -607,7 +607,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 						String.valueOf(id), true).show(getSupportFragmentManager(), "failed");
 			} else {
 				// if everything is ok, offer to delete
-                if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_DELETE_TRACKS, Preferences.VAL_DELETE_TRACKS)) {
+                if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_DELETE_SESSIONS, Preferences.VAL_DELETE_SESSIONS)) {
                     deleteBatchCommand(pendingExports);
                 } else {
                     String candidates = "";

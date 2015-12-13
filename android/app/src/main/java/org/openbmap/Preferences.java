@@ -132,9 +132,9 @@ public final class Preferences {
     public static final String KEY_IGNORE_BATTERY = "ignore_battery";
 
     /**
-     * Delete tracks after successfull upload
+     * Delete tracks after successful upload
      */
-    public static final String KEY_DELETE_TRACKS = "delete_tracks";
+    public static final String KEY_DELETE_SESSIONS = "delete_tracks";
 
     /**
      * Level of detail for GPX exports (track + waypoints, waypoints only, track + waypoints + wifis/cells
@@ -151,9 +151,9 @@ public final class Preferences {
     public static final boolean VAL_IGNORE_BATTERY = false;
 
     /**
-     * Default: don't delete tracks after successful upload
+     * Default: don't delete sessions after successful upload
      */
-    public static final boolean VAL_DELETE_TRACKS = false;
+    public static final boolean VAL_DELETE_SESSIONS = false;
 
     /**
      * Default: export track and waypoints
