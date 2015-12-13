@@ -60,7 +60,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	private static final String TAG = StartscreenActivity.class.getSimpleName();
 
 	/**
-	 * 
+	 *
 	 */
 	private static final String UPLOAD_TASK = "upload_task";
 	private static final String EXPORT_GPX_TASK = "export_gpx_task";
@@ -219,7 +219,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		super.onDestroy();
 	}
 
-	/* 
+	/*
 	 * Creates a new session record and starts HostActivity ("tracking" mode)
 	 */
 	@Override
@@ -234,7 +234,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	}
 
 
-	/* 
+	/*
 	 * Resumes existing session
 	 * @param id session id to resume
 	 */
@@ -271,7 +271,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		updateUI();
 	}
 
-	/* 
+	/*
 	 * Exports all sessions, which haven't been uploaded yet
 	 */
 	@Override
@@ -310,7 +310,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		mExportGpxTaskFragment.execute(id, path, filename);
 	}
 
-	/* 
+	/*
 	 * Stops all active session
 	 */
 	@Override
@@ -327,7 +327,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * Deletes session.
 	 * @param id
 	 * 		session id
-	 */		
+	 */
 	public final void deleteCommand(final int id) {
 		AlertDialogUtils.newInstance(ID_DELETE_SESSION,
 				getResources().getString(R.string.delete), getResources().getString(R.string.do_you_want_to_delete_this_session),
@@ -439,7 +439,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 				startActivity(new Intent(this, CreditsActivity.class));
 				break;
 			default:
-				break; 
+				break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -455,7 +455,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		if (sessionFrag != null) {
 			// TODO check if this is really necessary. Adapter should be able to handle updates automatically
 			sessionFrag.refreshAdapter();
-		} 
+		}
 	}
 
 	/**
@@ -478,7 +478,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * Toggles wifi enabled (to trigger reconnect)
 	 */
 	private void repairWifiConnection() {
-		Log.i(TAG, "Reparing wifi connection");
+		Log.i(TAG, "Repairing wifi connection");
 		final WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
 		wifiManager.setWifiEnabled(false);
 		wifiManager.setWifiEnabled(true);
@@ -486,7 +486,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
 	/**
 	 * Inits Ui controls
-	 * @param savedInstanceState 
+	 * @param savedInstanceState
 	 */
 	private void initUi(final Bundle savedInstanceState) {
 		setContentView(R.layout.startscreen);
@@ -508,9 +508,6 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		if (savedInstanceState != null) {
 			mTabHost.setCurrentTabByTag(savedInstanceState.getString("tab"));
 		}
-
-		//SessionListFragment detailsFragment = (SessionListFragment) getSupportFragmentManager().findFragmentById(R.id.sessionListFragment);	
-		//detailsFragment.setOnSessionSelectedListener(this);
 	}
 
 	/* (non-Javadoc)
@@ -566,7 +563,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	public void onUploadProgressUpdate(final Object... values) {
 		if (mUploadProgress != null) {
 			mUploadProgress.setTitle((CharSequence) values[0]);
-			mUploadProgress.setMessage((CharSequence) values[1]);	
+			mUploadProgress.setMessage((CharSequence) values[1]);
 			mUploadProgress.setProgress((Integer) values[2]);
 		}
 		mUploadTaskFragment.retainProgress((String) values[0], (String) values[1], (Integer) values[2]);
@@ -596,7 +593,11 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 			hideUploadTaskDialog();
 			releaseWifiLock();
 
-			deleteCommand(id);
+            if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_DELETE_TRACKS, Preferences.VAL_DELETE_TRACKS)) {
+                deleteConfirmed(id);
+            } else {
+                deleteCommand(id);
+            }
 		} else if (pendingExports.size() == completedExports + failedExports) {
 			Log.i(TAG, "All exports finished");
 
@@ -633,6 +634,9 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		}
 	}
 
+	/**
+	 *   Called when upload is only simulated
+	 **/
 	@Override
 	public void onDryRunCompleted(final int id) {
 
@@ -654,10 +658,10 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
 			if (failedExports > 0) {
 				// at least one export failed
-				AlertDialogUtils.newInstance(ID_EXPORT_FAILED, 
+				AlertDialogUtils.newInstance(ID_EXPORT_FAILED,
 						getResources().getString(R.string.export_error_title), getResources().getString(R.string.export_error),
 						String.valueOf(id), true).show(getSupportFragmentManager(), "failed");
-			} 
+			}
 
 			pendingExports.clear();
 			completedExports = 0;
@@ -706,7 +710,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 			mExportGpxProgress.setTitle(defaultTitle);
 			mExportGpxProgress.setMessage(defaultMessage);
 
-			mUploadTaskFragment.retainProgress(defaultTitle, defaultMessage, (int) mExportGpxProgress.getProgress());	
+			mUploadTaskFragment.retainProgress(defaultTitle, defaultMessage, (int) mExportGpxProgress.getProgress());
 		} else {
 			mExportGpxProgress = new ProgressDialog(this);
 			mExportGpxProgress.setCancelable(false);
@@ -854,10 +858,10 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	public void onExportGpxProgressUpdate(final Object[] values) {
 		if (mExportGpxProgress != null) {
 			mExportGpxProgress.setTitle((CharSequence) values[0]);
-			mExportGpxProgress.setMessage((CharSequence) values[1]);	
+			mExportGpxProgress.setMessage((CharSequence) values[1]);
 			mExportGpxProgress.setProgress((Integer) values[2]);
 		}
 		mExportGpxTaskFragment.retainProgress((String) values[0], (String) values[1], (Integer) values[2]);
-		
+
 	}
 }

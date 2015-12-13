@@ -434,7 +434,6 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 			stop(id);
 			((SessionFragementListener) getActivity()).uploadAllCommand();
 		}
-		
 	}
 
 	/* (non-Javadoc)

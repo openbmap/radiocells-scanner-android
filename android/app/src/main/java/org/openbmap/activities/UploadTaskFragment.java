@@ -74,7 +74,6 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
 
     /**
      * Saves progress dialog state for later restore (e.g. on device rotation)
-     *
      * @param title
      * @param message
      * @param progress
@@ -97,10 +96,18 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
     }
 
 
+    /**
+     * Returns number of sessions to export
+     * @return # sessions
+     */
     public int size() {
         return toExport.size();
     }
 
+    /**
+     * Adds a sessions to the upload queue
+     * @param id session id
+     */
     public void add(final int id) {
         toExport.add(id);
     }
@@ -163,7 +170,7 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
     }
 
     /**
-     * First round: validate local version vs. server
+     * Sanity check - first round: validate local version vs. server
      */
     private void stageVersionCheck() {
         if (serverReply == CheckResult.UNKNOWN) {
@@ -179,7 +186,7 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
     }
 
     /**
-     * Second round: check whether local device is ready
+     * Sanity check - second round: check whether local device is ready
      */
     private void stageLocalChecks() {
         if (sdCardWritable == CheckResult.UNKNOWN) {
@@ -189,7 +196,7 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
     }
 
     /**
-     * Validate everything (first + second round) is good, before starting export
+     * Evaluates whether sanity checks (first + second round) are good, before starting export
      */
     private void summarizeChecks() {
         // so now it's time to decide whether we start or not..
