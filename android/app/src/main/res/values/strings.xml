@@ -216,7 +216,7 @@
 	<string name="app_description">Openbmap.org wifi and cell logger</string>
 	<string name="error">Error</string>
 	<string name="no_data_connection">No data connection!</string>
-	<string name="link_repository">http://code.google.com/p/openbmap/</string>
+	<string name="link_repository">https://github.com/wish7code/openbmap/</string>
 	<string name="radiobeacon_licence_caption">Client licence</string>
 	<string name="session_uploaded">Session uploaded</string>
 	<string name="do_you_want_to_delete_this_session">Do you want to delete this session?</string>
@@ -314,4 +314,5 @@
 	<string name="invalid_download">Invalid download</string>
 	<string name="prefs_gpx_verbosity_title">GPX verbosity</string>
 	<string name="prefs_gpx_verbosity_summary">Select which details are exported to GPX files</string>
+	<string name="wifi_catalog_up_to_date">Already have the latest version ({0}) installed</string>
 </resources>
