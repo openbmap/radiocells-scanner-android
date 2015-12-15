@@ -25,8 +25,7 @@
 	<string name="prefs_ui">User interface</string>
 	<string name="prefs_map_none">None</string>
 	<string name="prefs_ui_keep_screen_on">Keep screen on</string>
-	<string name="prefs_ui_keep_screen_on_summary">Activate to prevent phone from locking screen after
-		idle time
+	<string name="prefs_ui_keep_screen_on_summary">Prevent screen locking after idle time
 	</string>
 	<string name="prefs_credentials">Credentials</string>
 	<string name="prefs_credentials_user">Login</string>
@@ -314,5 +313,5 @@
 	<string name="invalid_download">Invalid download</string>
 	<string name="prefs_gpx_verbosity_title">GPX verbosity</string>
 	<string name="prefs_gpx_verbosity_summary">Select which details are exported to GPX files</string>
-	<string name="wifi_catalog_up_to_date">Already have the latest version ({0}) installed</string>
+	<string name="wifi_catalog_up_to_date">Already have the latest version installed!</string>
 </resources>

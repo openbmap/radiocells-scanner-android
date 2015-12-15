@@ -205,17 +205,17 @@ public final class RadioBeacon {
 	/**
 	 * Default ssid blacklist's filename
 	 */
-	public static final String	DEFAULT_SSID_BLOCK_FILE	= "default_ssid.xml";
+	public static final String DEFAULT_SSID_BLOCK_FILE	= "default_ssid.xml";
 
 	/**
 	 * User-defined ssid blacklist's filename
 	 */
-	public static final String	CUSTOM_SSID_BLOCK_FILE	= "custom_ssid.xml";
+	public static final String CUSTOM_SSID_BLOCK_FILE	= "custom_ssid.xml";
 
 	/**
 	 * Location blacklist's filename
 	 */
-	public static final String	DEFAULT_LOCATION_BLOCK_FILE	= "custom_location.xml";
+	public static final String DEFAULT_LOCATION_BLOCK_FILE	= "custom_location.xml";
 	
 	
 	/**
@@ -229,7 +229,7 @@ public final class RadioBeacon {
      * 			- If you change client version, check whether you need to adjust current_version.xml on server and VERSION_COMPATIBILITY
      * 			- Also consider updating android:versionCode="x+1" android:versionName="XYZ" in AndroidManifest.xml (e.g. for automatic F-Droid updates)
 	 */
-	public static final String SW_VERSION = "0.8.11";
+	public static final String SW_VERSION = "0.8.12";
 	
 	/**
 	 * ServerValidation compares server version against VERSION_COMPATIBILITY to check whether client is outdated.

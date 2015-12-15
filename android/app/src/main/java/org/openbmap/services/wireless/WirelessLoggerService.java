@@ -316,10 +316,10 @@ public class WirelessLoggerService extends AbstractService {
 		// get shared preferences
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-		if (!prefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_WIFI_CATALOG_FILE).equals(Preferences.VAL_WIFI_CATALOG_NONE)) {
+		if (!prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_FILE).equals(Preferences.VAL_CATALOG_NONE)) {
 			final String catalogPath = prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
-					getApplicationContext().getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_SUBDIR)
-					+ File.separator + prefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_WIFI_CATALOG_FILE);
+					getApplicationContext().getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.CATALOG_SUBDIR)
+					+ File.separator + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_FILE);
 
 			if (!(new File(catalogPath)).exists()) {
                 Log.w(TAG, "Selected catalog doesn't exist");

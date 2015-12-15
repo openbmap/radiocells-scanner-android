@@ -66,7 +66,7 @@ public class WifiCatalogUpdater extends AsyncTask<Void, Void, Void> {
 
 		try {
 			// skipping if no reference database set 
-			if (prefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_WIFI_CATALOG_NONE).equals(Preferences.VAL_WIFI_CATALOG_NONE)) {
+			if (prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_NONE).equals(Preferences.VAL_CATALOG_NONE)) {
 				Log.w(TAG, "Nothing to update: no wifi catalog set");
 				return null;
 			}
@@ -79,8 +79,8 @@ public class WifiCatalogUpdater extends AsyncTask<Void, Void, Void> {
 
 			// Open catalog database
 			String file = prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER, 
-					mContext.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_SUBDIR)
-					+ File.separator + prefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_WIFI_CATALOG_FILE);
+					mContext.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.CATALOG_SUBDIR)
+					+ File.separator + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_FILE);
 
 			SQLiteDatabase catalogDb = null;
 			try {

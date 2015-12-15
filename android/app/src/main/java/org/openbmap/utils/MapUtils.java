@@ -214,7 +214,7 @@ public final class MapUtils {
     public static File getCatalogFolder(final Context context) {
         externalStorageWritable();
         return new File(PreferenceManager.getDefaultSharedPreferences(context).getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
-                context.getExternalFilesDir(null) + File.separator + Preferences.WIFI_CATALOG_SUBDIR + File.separator));
+                context.getExternalFilesDir(null) + File.separator + Preferences.CATALOG_SUBDIR + File.separator));
     }
 
     private static boolean externalStorageWritable() {

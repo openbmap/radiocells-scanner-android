@@ -119,11 +119,11 @@ public class WifiDetailsActivity extends FragmentActivity {
 			return;
 		}
 
-			if (!prefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_WIFI_CATALOG_NONE).equals(Preferences.VAL_WIFI_CATALOG_NONE)) {
+			if (!prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_NONE).equals(Preferences.VAL_CATALOG_NONE)) {
 				// Open catalog database
 				final String file = prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
-						this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.WIFI_CATALOG_SUBDIR)
-						+ File.separator + prefs.getString(Preferences.KEY_WIFI_CATALOG_FILE, Preferences.VAL_WIFI_CATALOG_FILE);
+						this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.CATALOG_SUBDIR)
+						+ File.separator + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_FILE);
 				final SQLiteDatabase mCatalog = SQLiteDatabase.openDatabase(file, null, SQLiteDatabase.OPEN_READONLY);
 
 				Cursor cur = null;

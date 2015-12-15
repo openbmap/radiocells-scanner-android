@@ -34,6 +34,7 @@ public final class Preferences {
 	public static final String KEY_GPS_PROVIDER = "gps.provider";
 	
 	public static final String KEY_MAP_FOLDER = "data.folder_map";
+
 	public static final String KEY_WIFI_CATALOG_FOLDER = "data.folder_catalog";
 	
 	/**
@@ -50,11 +51,16 @@ public final class Preferences {
 	 * Wifi catalog download button
 	 */
 	public static final String KEY_DOWNLOAD_WIFI_CATALOG = "data.download_wifi_catalog";
+
+    /**
+     * Catalog download date
+     */
+    public static final String KEY_CATALOG_VERSION = "data.ref_database_version";
 	
 	/**
 	 * Selected wifi catalog file
 	 */
-	public static final String KEY_WIFI_CATALOG_FILE = "data.ref_database";
+	public static final String KEY_CATALOG_FILE = "data.ref_database";
 	
 	/**
 	 * Keeps screen on during logging?
@@ -173,13 +179,23 @@ public final class Preferences {
 	/**
 	 * Default reference database filename
 	 */
-	public static final String VAL_WIFI_CATALOG_FILE = "openbmap.sqlite";
+	public static final String VAL_CATALOG_FILE = "openbmap.sqlite";
 	
 	/**
 	 * Reference database not set 
 	 */
-	public static final String VAL_WIFI_CATALOG_NONE = "none";
-	
+	public static final String VAL_CATALOG_NONE = "none";
+
+    /**
+     * Dummy response, if server doesn't provide version info
+     */
+    public static final String SERVER_CATALOG_VERSION_NONE = "unknown";
+
+    /**
+     * Reference database version not set
+     */
+    public static final String CATALOG_VERSION_NONE = "not yet downloaded";
+
 	/**
 	 * Default minimum distance cells
 	 */
@@ -240,13 +256,14 @@ public final class Preferences {
 	 * Default wifi catalog folder name, relative to application root dir.
 	 * Can be overwritten in settings by specifying KEY_WIFI_CATALOG_FOLDER
 	 */
-	public static final String WIFI_CATALOG_SUBDIR = "databases";
+	public static final String CATALOG_SUBDIR = "databases";
 	
 	/**
 	 * Directory containing wifi blacklists, relative to application root dir.
 	 */
 	public static final String BLACKLIST_SUBDIR = "blacklists";
-	/**
+
+    /**
 	 * File extension for maps
 	 */
 	public static final String MAP_FILE_EXTENSION = ".map";
@@ -254,7 +271,7 @@ public final class Preferences {
 	/**
 	 * File extension for wifi catalog
 	 */
-	public static final String WIFI_CATALOG_FILE_EXTENSION = ".sqlite";
+	public static final String CATALOG_FILE_EXTENSION = ".sqlite";
 	
 	/**
 	 * File extension for wifi and cell log files
@@ -264,17 +281,22 @@ public final class Preferences {
 	/**
 	 * URL, where wifi catalog with openbmap's preprocessed wifi positions can be downloaded
 	 */
-	public static final String WIFI_CATALOG_DOWNLOAD_URL = "http://www.radiocells.org/static/openbmap.sqlite";
+	public static final String CATALOG_DOWNLOAD_URL = "http://www.radiocells.org/static/openbmap.sqlite";
 	
 	/**
 	 * Filename catalog database
 	 */
-	public static final String WIFI_CATALOG_FILE = "openbmap.sqlite";
+	public static final String CATALOG_FILE = "openbmap.sqlite";
 	
 	/**
 	 * URL, which is called to check whether this client version is up-to-date
 	 */
 	public static final String VERSION_CHECK_URL = "http://radiocells.org/uploads/version.xml";
+
+    /**
+     * URL to check for newer catalog files
+     */
+    public static final String CATALOG_VERSION_URL = "http://radiocells.org/default/database_version.json";
 
     /**
      * URL, which is called to validate user credentials
