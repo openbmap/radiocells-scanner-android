@@ -168,6 +168,8 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 			mUploadTaskFragment = new UploadTaskFragment();
             // was commitAllowingStateLoss()
 			fm.beginTransaction().add(mUploadTaskFragment, UPLOAD_TASK).commit();
+            // https://stackoverflow.com/questions/7469082/getting-exception-illegalstateexception-can-not-perform-this-action-after-onsa
+            fm.executePendingTransactions();
 
 			initUploadTaskDialog(true);
 		} else {
@@ -182,6 +184,8 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 			mExportGpxTaskFragment = new ExportGpxTaskFragment();
             // was commitAllowingStateLoss()
             fm.beginTransaction().add(mExportGpxTaskFragment, EXPORT_GPX_TASK).commit();
+            // https://stackoverflow.com/questions/7469082/getting-exception-illegalstateexception-can-not-perform-this-action-after-onsa
+			fm.executePendingTransactions();
 
 			initExportGpxTaskDialog(true);
 		} else {
@@ -193,8 +197,8 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
 	@Override
 	protected void onSaveInstanceState(final Bundle outState) {
+        outState.putString("tab", mTabHost.getCurrentTabTag());
 		super.onSaveInstanceState(outState);
-		outState.putString("tab", mTabHost.getCurrentTabTag());
 	}
 
 	@Override
@@ -204,8 +208,6 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		// force an fragment refresh
 		reloadListFragment();
 	}
-
-
 
 	@Override
 	public final void onPause() {
@@ -232,7 +234,6 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		activity.putExtra("new_session", true);
 		startActivity(activity);
 	}
-
 
 	/*
 	 * Resumes existing session
@@ -329,9 +330,14 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * 		session id
 	 */
 	public final void deleteCommand(final int id) {
-		AlertDialogUtils.newInstance(ID_DELETE_SESSION,
-				getResources().getString(R.string.delete), getResources().getString(R.string.do_you_want_to_delete_this_session),
-				String.valueOf(id), false).show(getSupportFragmentManager(), "delete");
+        try {
+            AlertDialogUtils.newInstance(ID_DELETE_SESSION,
+                    getResources().getString(R.string.delete), getResources().getString(R.string.do_you_want_to_delete_this_session),
+                    String.valueOf(id), false).show(getSupportFragmentManager(), "delete");
+        } catch (IllegalStateException e) {
+            // Crashes when app has been sent to background
+            // quick fix don' display dialog when in background
+        }
 	}
 
 	/**
@@ -603,8 +609,13 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
 			if (failedExports > 0) {
 				// at least one export failed
-				AlertDialogUtils.newInstance(ID_EXPORT_FAILED, getResources().getString(R.string.export_error_title), getResources().getString(R.string.export_error),
-						String.valueOf(id), true).show(getSupportFragmentManager(), "failed");
+                try {
+                    AlertDialogUtils.newInstance(ID_EXPORT_FAILED, getResources().getString(R.string.export_error_title), getResources().getString(R.string.export_error),
+                            String.valueOf(id), true).show(getSupportFragmentManager(), "failed");
+                } catch (IllegalStateException e) {
+                    // Crashes when app has been sent to background
+                    // quick fix don' display dialog when in background
+                }
 			} else {
 				// if everything is ok, offer to delete
                 if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_DELETE_SESSIONS, Preferences.VAL_DELETE_SESSIONS)) {
@@ -614,8 +625,13 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
                     for (final int one : pendingExports){
                         candidates += one + ";";
                     }
-                    AlertDialogUtils.newInstance(ID_DELETE_PROCESSED, getResources().getString(R.string.delete), getResources().getString(R.string.do_you_want_to_delete_processed_sessions),
-                            candidates, false).show(getSupportFragmentManager(), "failed");
+                    try {
+                        AlertDialogUtils.newInstance(ID_DELETE_PROCESSED, getResources().getString(R.string.delete), getResources().getString(R.string.do_you_want_to_delete_processed_sessions),
+                                candidates, false).show(getSupportFragmentManager(), "failed");
+                    } catch (IllegalStateException e ) {
+                        // Crashes when app has been sent to background
+                        // quick fix don' display dialog when in background
+                    }
                 }
 			}
 
@@ -658,9 +674,14 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
 			if (failedExports > 0) {
 				// at least one export failed
-				AlertDialogUtils.newInstance(ID_EXPORT_FAILED,
-						getResources().getString(R.string.export_error_title), getResources().getString(R.string.export_error),
-						String.valueOf(id), true).show(getSupportFragmentManager(), "failed");
+                try {
+                    AlertDialogUtils.newInstance(ID_EXPORT_FAILED,
+                            getResources().getString(R.string.export_error_title), getResources().getString(R.string.export_error),
+                            String.valueOf(id), true).show(getSupportFragmentManager(), "failed");
+                } catch (IllegalStateException e) {
+                    // Crashes when app has been sent to background
+                    // quick fix don' display dialog when in background
+                }
 			}
 
 			pendingExports.clear();
@@ -689,9 +710,14 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		hideUploadTaskDialog();
 
 		final String errorText = (error == null || error.length() == 0) ? getResources().getString(R.string.export_error) : error;
-		AlertDialogUtils.newInstance(ID_EXPORT_FAILED,
-				getResources().getString(R.string.export_error_title), errorText,
-				String.valueOf(id), true).show(getSupportFragmentManager(), "failed");
+		try {
+            AlertDialogUtils.newInstance(ID_EXPORT_FAILED,
+                    getResources().getString(R.string.export_error_title), errorText,
+                    String.valueOf(id), true).show(getSupportFragmentManager(), "failed");
+        } catch (IllegalStateException e) {
+            // Crashes when app has been sent to background
+            // quick fix don' display dialog when in background
+        }
 	}
 
 	/**
