@@ -142,7 +142,8 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 				Schema.COL_IS_ACTIVE,
 				Schema.COL_HAS_BEEN_EXPORTED,
 				Schema.COL_NUMBER_OF_CELLS,
-				Schema.COL_NUMBER_OF_WIFIS
+				Schema.COL_NUMBER_OF_WIFIS,
+				Schema.COL_NUMBER_OF_WAYPOINTS
 		};
 
 		final int[] to = new int[] {
@@ -151,7 +152,9 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 				R.id.sessionlistfragment_statusicon,
 				R.id.sessionlistfragment_uploadicon,
 				R.id.sessionlistfragment_no_cells,
-				R.id.sessionlistfragment_no_wifis};
+				R.id.sessionlistfragment_no_wifis,
+                R.id.sessionlistfragment_no_waypoints
+        };
 
 		mAdapter = new SimpleCursorAdapter(getActivity().getBaseContext(),
 				R.layout.sessionlistfragment, null, from, to, 0);
@@ -240,7 +243,8 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 				Schema.COL_IS_ACTIVE, 
 				Schema.COL_HAS_BEEN_EXPORTED, 
 				Schema.COL_NUMBER_OF_CELLS,
-				Schema.COL_NUMBER_OF_WIFIS
+				Schema.COL_NUMBER_OF_WIFIS,
+                Schema.COL_NUMBER_OF_WAYPOINTS
 		};
 		final CursorLoader cursorLoader = new CursorLoader(getActivity().getBaseContext(),
 				RadioBeaconContentProvider.CONTENT_URI_SESSION, projection, null, null, Schema.COL_CREATED_AT + " DESC");

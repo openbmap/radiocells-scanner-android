@@ -1043,7 +1043,6 @@ ActionBar.OnNavigationListener, onLongPressHandler {
         final DataHelper dbHelper = new DataHelper(getActivity().getApplicationContext());
 
 		final PositionRecord pos = new PositionRecord(GeometryUtils.toLocation(tapLatLong), mSessionId, RadioBeacon.PROVIDER_USER_DEFINED, true);
-		// so far we set end position = begin position 
         dbHelper.storePosition(pos);
 
         // beep once point has been saved

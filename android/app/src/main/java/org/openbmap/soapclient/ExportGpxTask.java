@@ -91,7 +91,7 @@ public class ExportGpxTask extends AsyncTask<Void, Object, Boolean> {
 	}
 
 	/**
-	 * Builds cell xml files and saves/uploads them
+	 * Builds GPX file (not uploaded in any case)
 	 */
 	@Override
 	protected final Boolean doInBackground(final Void... params) {

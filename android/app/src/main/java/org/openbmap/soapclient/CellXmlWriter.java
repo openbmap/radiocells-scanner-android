@@ -64,7 +64,7 @@ public class CellXmlWriter {
 
 	private static final String POSITION_XML = "\n\t<gps time=\"%s\" lng=\"%s\" lat=\"%s\" alt=\"%s\" hdg=\"%s\" spe=\"%s\" accuracy=\"%s\" type=\"%s\" />";
 
-	
+
 	/**
 	 * XML template closing logfile
 	 */

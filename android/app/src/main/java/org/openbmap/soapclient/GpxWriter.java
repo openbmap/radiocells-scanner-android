@@ -82,15 +82,6 @@ public class GpxWriter {
 			+ " AND source = '" + RadioBeacon.PROVIDER_USER_DEFINED + "' " 
 			+ " ORDER BY " + Schema.COL_TIMESTAMP + " LIMIT " + CURSOR_SIZE
 			+ " OFFSET ?";
-
-	/*
-	private static final String WIFI_POINTS_SQL_QUERY = "SELECT " + Schema.COL_LATITUDE + ", " + Schema.COL_LONGITUDE + ", "
-			+ Schema.COL_ALTITUDE + ", " + Schema.COL_ACCURACY + ", " + Schema.COL_TIMESTAMP + ", \"WIFI \"||" + Schema.COL_SSID + " AS name "
-			+ " FROM " + Schema.TBL_POSITIONS + " AS p LEFT JOIN " 
-			+ " (SELECT " + Schema.COL_ID + ", " + Schema.COL_SSID + ", " + Schema.COL_BEGIN_POSITION_ID + " FROM " + Schema.TBL_WIFIS + " )"
-			+ " AS w ON w." + Schema.COL_BEGIN_POSITION_ID + " = p._id WHERE w._id IS NOT NULL AND p." + Schema.COL_SESSION_ID + " = ?"
-			+ " ORDER BY " + Schema.COL_TIMESTAMP
-			+ " LIMIT " + CURSOR_SIZE + " OFFSET ?";*/
 	
 	private static final String WIFI_POINTS_SQL_QUERY = "SELECT w.rowid as " + Schema.COL_ID + ", w." + Schema.COL_BSSID + ", w." + Schema.COL_SSID + ", " 
 			+ " MAX(" + Schema.COL_LEVEL + "), w." + Schema.COL_TIMESTAMP + ", "

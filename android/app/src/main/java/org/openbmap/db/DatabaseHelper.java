@@ -40,7 +40,7 @@ import java.io.IOException;
  * 
  * Reminder:
  * In an earlier version, database has been provisioned via sdcard
- * @see http://www.reigndesign.com/blog/using-your-own-sqlite-database-in-android-applications/
+ * @link http://www.reigndesign.com/blog/using-your-own-sqlite-database-in-android-applications/
  */
 
 public class DatabaseHelper extends SQLiteOpenHelper {
@@ -230,7 +230,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+ Schema.COL_HAS_BEEN_EXPORTED + " INTEGER, "
 			+ Schema.COL_IS_ACTIVE + " INTEGER,"
 			+ Schema.COL_NUMBER_OF_WIFIS + " INTEGER,"
-			+ Schema.COL_NUMBER_OF_CELLS + " INTEGER"
+			+ Schema.COL_NUMBER_OF_CELLS + " INTEGER,"
+			+ Schema.COL_NUMBER_OF_WAYPOINTS + " INTEGER"
 			+ ")";
 
 	/**
@@ -488,6 +489,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             try {
                 db.execSQL("DROP INDEX IF EXISTS idx_positions_timestamp");
                 db.execSQL(SQL_CREATE_IDX_POSITIONS_TIMESTAMP);
+            } catch (final SQLException e) {
+                Log.w(TAG, "Couldn't create cell position timestamp index");
+            }
+        }
+
+        if (oldVersion <= 11) {
+            try {
+                db.execSQL("ALTER TABLE " + Schema.TBL_SESSIONS + " ADD COLUMN " + Schema.COL_NUMBER_OF_WAYPOINTS + " INTEGER DEFAULT 0");
             } catch (final SQLException e) {
                 Log.w(TAG, "Couldn't create cell position timestamp index");
             }

@@ -33,6 +33,13 @@
         android:gravity="right"
         android:text="" />
 
+    <TextView
+        android:id="@+id/sessionlistfragment_no_waypoints"
+        android:layout_width="40dp"
+        android:layout_height="48dp"
+        android:gravity="right"
+        android:text="" />
+
     <ImageView
         android:id="@+id/sessionlistfragment_uploadicon"
         android:layout_width="30dp"

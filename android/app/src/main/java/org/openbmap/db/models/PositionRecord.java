@@ -37,6 +37,7 @@ public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 	private double mLongitude = 0.0;
 	private double mAltitude = 0.0;
 	private double mAccuracy = 0.0;
+
 	/**
 	 * Timestamp in openbmap format: YYYYMMDDHHMMSS
 	 */
@@ -55,7 +56,6 @@ public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 
 	/**
 	 * Creates position record from Android Location.
-	 * @param mLocation
 	 */
 	public PositionRecord(final Location location, final int session, final String source) {
 		if (!GeometryUtils.isValidLocation(location)) {
@@ -104,41 +104,33 @@ public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 		return mLatitude;
 	}
 
-
 	public final void setLatitude(final double latitude) {
 		this.mLatitude = latitude;
 	}
-
 
 	public final double getLongitude() {
 		return mLongitude;
 	}
 
-
 	public final void setLongitude(final double longitude) {
 		this.mLongitude = longitude;
 	}
-
 
 	public final double getAltitude() {
 		return mAltitude;
 	}
 
-
 	public final void setAltitude(final double altitude) {
 		this.mAltitude = altitude;
 	}
-
 
 	public final double getAccuracy() {
 		return mAccuracy;
 	}
 
-
 	public final void setAccuracy(final double accuracy) {
 		this.mAccuracy = accuracy;
 	}
-
 
 	/**
 	 * Gets time stamp in OpenBmap format: YYYYMMDDHHMMSS

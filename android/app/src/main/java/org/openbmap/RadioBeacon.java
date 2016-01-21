@@ -246,9 +246,9 @@ public final class RadioBeacon {
 	public static final String VERSION_COMPATIBILITY = "00.8.00";
 
 	/**
-	 * Database scheme version
+	 * Database scheme version, increment to trigger database update
 	 */
-	public static final int DATABASE_VERSION = 11;
+	public static final int DATABASE_VERSION = 12;
 
     /**
 	 * Private dummy constructor

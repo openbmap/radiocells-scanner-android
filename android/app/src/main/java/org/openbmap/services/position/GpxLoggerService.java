@@ -165,7 +165,6 @@ public class GpxLoggerService extends AbstractService {
 	 * @param gpsLocation
 	 */
 	private void performGpsUpdate(final Location gpsLocation, final String source) {
-		// Do we have gps?
 		if 	(gpsLocation == null) {
 			Log.e(TAG, "No GPS position available");
 			return;
@@ -175,7 +174,6 @@ public class GpxLoggerService extends AbstractService {
 
 		// so far we set end position = begin position 
 		mDataHelper.storePosition(pos);
-
 	}
 
 	@Override

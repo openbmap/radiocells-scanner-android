@@ -160,10 +160,9 @@ public class DataHelper {
 	 * @return number of wifis
 	 */
 	public final int countWifis(final int session) {
-        //Log.d(TAG, "countWifis called");
 		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
-				RadioBeaconContentProvider.CONTENT_URI_WIFI, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
-				new String[]{Schema.COL_ID}, null, null, null);
+                        RadioBeaconContentProvider.CONTENT_URI_WIFI, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
+                new String[]{Schema.COL_ID}, null, null, null);
 		final int count = cursor.getCount();
 		cursor.close();
 		return count;
@@ -194,7 +193,7 @@ public class DataHelper {
         // Log.d(TAG, "loadWifiById called");
 		WifiRecord wifi = null;
 
-		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_WIFI, id) , null, null, null, null);
+		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(RadioBeaconContentProvider.CONTENT_URI_WIFI, id), null, null, null, null);
 		//Log.d(TAG, "getWifiMeasurement returned " + ca.getCount() + " records");
 		if (cursor.moveToNext()) {
 			wifi = new WifiRecord(
@@ -350,7 +349,8 @@ public class DataHelper {
 					cursor.getInt(cursor.getColumnIndex(Schema.COL_HAS_BEEN_EXPORTED)),
 					cursor.getInt(cursor.getColumnIndex(Schema.COL_IS_ACTIVE)),
 					cursor.getInt(cursor.getColumnIndex(Schema.COL_NUMBER_OF_CELLS)),
-					cursor.getInt(cursor.getColumnIndex(Schema.COL_NUMBER_OF_WIFIS)));
+					cursor.getInt(cursor.getColumnIndex(Schema.COL_NUMBER_OF_WIFIS)),
+                    cursor.getInt(cursor.getColumnIndex(Schema.COL_NUMBER_OF_WAYPOINTS)));
 		} 
 		cursor.close();
 		return session;
@@ -389,8 +389,9 @@ public class DataHelper {
 			values.put(Schema.COL_DESCRIPTION, session.getDescription());
 			values.put(Schema.COL_HAS_BEEN_EXPORTED, session.hasBeenExported());
 			values.put(Schema.COL_IS_ACTIVE, session.isActive());
-			values.put(Schema.COL_NUMBER_OF_CELLS, session.getNumberOfCells());
-			values.put(Schema.COL_NUMBER_OF_WIFIS, session.getNumberOfWifis());
+			values.put(Schema.COL_NUMBER_OF_CELLS, session.getCellsCount());
+			values.put(Schema.COL_NUMBER_OF_WIFIS, session.getWifisCount());
+            values.put(Schema.COL_NUMBER_OF_WAYPOINTS, session.getWaypointsCount());
 			cursor.close();
 			return contentResolver.update(RadioBeaconContentProvider.CONTENT_URI_SESSION, values,
 					Schema.COL_ID + " = ?", new String[]{String.valueOf(session.getId())});
@@ -454,7 +455,8 @@ public class DataHelper {
 					cursor.getInt(cursor.getColumnIndex(Schema.COL_HAS_BEEN_EXPORTED)),
 					cursor.getInt(cursor.getColumnIndex(Schema.COL_IS_ACTIVE)),
 					cursor.getInt(cursor.getColumnIndex(Schema.COL_NUMBER_OF_CELLS)),
-					cursor.getInt(cursor.getColumnIndex(Schema.COL_NUMBER_OF_WIFIS)));
+					cursor.getInt(cursor.getColumnIndex(Schema.COL_NUMBER_OF_WIFIS)),
+					cursor.getInt(cursor.getColumnIndex(Schema.COL_NUMBER_OF_WAYPOINTS)));
 			cursor.close();
 			return session;
 		} else {
@@ -535,16 +537,16 @@ public class DataHelper {
 
 		// saving end position
 		operations.add(ContentProviderOperation.newInsert(RadioBeaconContentProvider.CONTENT_URI_POSITION)
-				.withValue(Schema.COL_LATITUDE, end.getLatitude())
-				.withValue(Schema.COL_LONGITUDE, end.getLongitude())
-				.withValue(Schema.COL_ALTITUDE, end.getAltitude())
-				.withValue(Schema.COL_TIMESTAMP, end.getOpenBmapTimestamp())
-				.withValue(Schema.COL_ACCURACY, end.getAccuracy())
-				.withValue(Schema.COL_BEARING, end.getBearing())
-				.withValue(Schema.COL_SPEED, end.getSpeed())
-				.withValue(Schema.COL_SESSION_ID, end.getSession())
-				.withValue(Schema.COL_SOURCE, end.getSource())
-				.build());
+                .withValue(Schema.COL_LATITUDE, end.getLatitude())
+                .withValue(Schema.COL_LONGITUDE, end.getLongitude())
+                .withValue(Schema.COL_ALTITUDE, end.getAltitude())
+                .withValue(Schema.COL_TIMESTAMP, end.getOpenBmapTimestamp())
+                .withValue(Schema.COL_ACCURACY, end.getAccuracy())
+                .withValue(Schema.COL_BEARING, end.getBearing())
+                .withValue(Schema.COL_SPEED, end.getSpeed())
+                .withValue(Schema.COL_SESSION_ID, end.getSession())
+                .withValue(Schema.COL_SOURCE, end.getSource())
+                .build());
 
 		for (final CellRecord cell: cells) {
 			if (!cell.isCdma()) {
@@ -717,7 +719,6 @@ public class DataHelper {
 	 * @return number of wifis
 	 */
 	public final int countCells(final long session) {
-        // Log.d(TAG, "countCells called");
 		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
 				RadioBeaconContentProvider.CONTENT_URI_CELL, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
 				new String[]{Schema.COL_ID}, null, null, null);
@@ -725,6 +726,20 @@ public class DataHelper {
 		cursor.close();
 		return count;
 	}
+
+    /**
+     * Counts session's number of waypoints.
+     * @param session
+     * @return number of wifis
+     */
+    public final int countWaypoints(final long session) {
+		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
+						RadioBeaconContentProvider.CONTENT_URI_POSITION, RadioBeaconContentProvider.CONTENT_URI_SESSION_SUFFIX), session),
+				new String[]{Schema.COL_ID}, null, null, null);
+		final int count = cursor.getCount();
+		cursor.close();
+		return count;
+    }
 
 	/**
 	 * Loads positions from database.
@@ -897,12 +912,13 @@ public class DataHelper {
 				Schema.COL_IS_ACTIVE + " > 0" , null);
 	}
 
-	/**
-	 * Stores position.
-	 * This method is only used for separate positions. Wifi and cell positions are added in batch mode
-	 * in storeCellsScanResults and storeWifiScanResults
-	 * @param mLocation
-	 */
+    /**
+     * Stores position.
+     * This method is only used for separate positions. Wifi and cell positions are added in batch mode
+     * in storeCellsScanResults and storeWifiScanResults
+     * @param pos
+     * @return
+     */
 	public final Uri storePosition(final PositionRecord pos) {
 		final ContentValues values = new ContentValues();
 		values.put(Schema.COL_LATITUDE, pos.getLatitude());

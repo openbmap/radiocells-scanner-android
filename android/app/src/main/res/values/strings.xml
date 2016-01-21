@@ -314,4 +314,5 @@
 	<string name="prefs_gpx_verbosity_title">GPX verbosity</string>
 	<string name="prefs_gpx_verbosity_summary">Select which details are exported to GPX files</string>
 	<string name="wifi_catalog_up_to_date">Already have the latest version installed!</string>
+	<string name="wp">WP</string>
 </resources>

@@ -481,8 +481,9 @@ public class MasterBrainService extends Service {
     private void updateSessionStats() {
         final Session active = mDataHelper.loadActiveSession();
         if (active != null) {
-            active.setNumberOfWifis(mDataHelper.countWifis(active.getId()));
-            active.setNumberOfCells(mDataHelper.countCells(active.getId()));
+            active.setWifisCount(mDataHelper.countWifis(active.getId()));
+            active.setCellsCount(mDataHelper.countCells(active.getId()));
+            active.setWaypointsCount(mDataHelper.countWaypoints(active.getId()));
             mDataHelper.storeSession(active, false);
         }
     }

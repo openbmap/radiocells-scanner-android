@@ -134,7 +134,8 @@ public class RadioBeaconContentProvider extends ContentProvider {
 
 
 		uriMatcher.addURI(AUTHORITY, Schema.TBL_POSITIONS, Schema.URI_CODE_POSITIONS);
-		uriMatcher.addURI(AUTHORITY, Schema.TBL_POSITIONS + "/#", Schema.URI_CODE_POSITION_ID);  
+		uriMatcher.addURI(AUTHORITY, Schema.TBL_POSITIONS + "/#", Schema.URI_CODE_POSITION_ID);
+        uriMatcher.addURI(AUTHORITY, Schema.TBL_POSITIONS + "/" + CONTENT_URI_SESSION_SUFFIX + "/#", Schema.URI_CODE_WAYPOINTS_BY_SESSION);
 	}
 
 	/**
@@ -297,10 +298,8 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	@Override
 	public final Cursor query(final Uri uri, final String[] projection, final String selectionIn, final String[] selectionArgsIn, final String sortOrder) {
 		Log.v(TAG, "query called, uri " + uri.toString());
-		//String groupBy = null;
-		//String limit = null;
 
-		// Select which datatype was requested
+		// Select which URI/datatype was requested
 		switch (uriMatcher.match(uri)) {
 			case Schema.URI_CODE_WIFIS:
 				// Returns all recorded wifis.
@@ -355,9 +354,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 				// returns wifis for given session.
 				return queryTable(RadioBeaconContentProvider.CONTENT_URI_WIFI, Schema.TBL_WIFIS, projection, addColumntoSelection(Schema.COL_SESSION_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);
 			case Schema.URI_CODE_CELLS:
-				/**
-				 *  Returns all recorded cells.
-				 */
+				//  returns all recorded cells.
 				return queryTable(RadioBeaconContentProvider.CONTENT_URI_CELL, Schema.TBL_CELLS, projection, selectionIn, selectionArgsIn, sortOrder, null, null);
 			case Schema.URI_CODE_CELL_OVERVIEW:
 				/**
@@ -402,20 +399,6 @@ public class RadioBeaconContentProvider extends ContentProvider {
                         groupByCells,
                         null);
 
-				// get gsm cells as well as neigbor gsm cells (gsm cell: cell id > -1
-				// String cellOverviewQuery = "SELECT " + cellFields + " FROM cells "
-				//		+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 1 AND " + Schema.COL_LOGICAL_CELLID + " > -1 GROUP BY " + Schema.COL_LOGICAL_CELLID
-				//		+ " UNION SELECT " + cellFields  + " FROM cells "
-				//		+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 0 AND " + Schema.COL_LOGICAL_CELLID + " > -1 GROUP BY " + Schema.COL_LOGICAL_CELLID;
-
-				// add umts / cdma cells
-				//cellOverviewQuery += " UNION SELECT " + cellFields  + " FROM cells "
-				//		+ " WHERE session_id = " + uri.getLastPathSegment() + " AND " + Schema.COL_IS_SERVING + " = 0 AND " + Schema.COL_LOGICAL_CELLID + " = -1 GROUP BY "
-				//		+ Schema.COL_PSC + ", " + Schema.COL_CDMA_SYSTEMID + ", " + Schema.COL_CDMA_NETWORKID + ", " + Schema.COL_CDMA_BASEID;
-
-				// cellOverviewQuery += " ORDER BY " + Schema.COL_IS_SERVING + " DESC";
-
-				// return queryRaw(cellOverviewQuery, RadioBeaconContentProvider.CONTENT_URI_CELL);
 			case Schema.URI_CODE_CELL_ID:
 				//  Returns given cell.
 				return queryTable(RadioBeaconContentProvider.CONTENT_URI_CELL, Schema.TBL_CELLS, projection, addColumntoSelection(Schema.COL_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);
@@ -427,8 +410,15 @@ public class RadioBeaconContentProvider extends ContentProvider {
 				return queryTable(RadioBeaconContentProvider.CONTENT_URI_POSITION, Schema.TBL_POSITIONS, projection, selectionIn, selectionArgsIn, sortOrder, null, null);
 			case Schema.URI_CODE_POSITION_ID:
 				// returns given position
-				return queryTable(RadioBeaconContentProvider.CONTENT_URI_POSITION, Schema.TBL_POSITIONS, projection, addColumntoSelection(Schema.COL_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);   
-			case Schema.URI_CODE_LOGS_BY_SESSION:
+				return queryTable(RadioBeaconContentProvider.CONTENT_URI_POSITION, Schema.TBL_POSITIONS, projection, addColumntoSelection(Schema.COL_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);
+            case Schema.URI_CODE_WAYPOINTS_BY_SESSION:
+                // returns session's trackpoints (i.e long press points).
+                String column = addColumntoSelection(Schema.COL_SESSION_ID, selectionIn);
+                column = addColumntoSelection(Schema.COL_SOURCE, column);
+                String[] args = addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn);
+                args = addtoSelectionArgs(RadioBeacon.PROVIDER_USER_DEFINED, args);
+       		    return queryTable(RadioBeaconContentProvider.CONTENT_URI_POSITION, Schema.TBL_POSITIONS, projection, column, args, sortOrder, null, null);
+            case Schema.URI_CODE_LOGS_BY_SESSION:
 				// Returns all log files for given session.
 				return queryTable(RadioBeaconContentProvider.CONTENT_URI_LOGFILE, Schema.TBL_LOGS, projection, addColumntoSelection(Schema.COL_SESSION_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);
 			case Schema.URI_CODE_SESSIONS:
@@ -445,11 +435,9 @@ public class RadioBeaconContentProvider extends ContentProvider {
 
 	/**
 	 * Adds column as first statement to selection string.
-	 * Always remember to include column in SelectionArgs also
-	 * @param colName
-	 *     column name
-	 * @param selectionIn
-	 *     selection string, to which column query will be added
+	 * Always remember to include column in selectionArgs also
+	 * @param colName  column name
+	 * @param selectionIn selection string, to which column query will be added
 	 * @return SQL select statement
 	 */
 	private String addColumntoSelection(final String colName, final String selectionIn) {
@@ -497,7 +485,8 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	 * @param groupBy 
 	 * @return
 	 */
-	private Cursor queryTable(final Uri notifyUri,
+	private Cursor queryTable(
+            final Uri notifyUri,
 			final String tableName,
 			final String[] projection,
 			final String selectionIn,

@@ -10,28 +10,41 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:padding="2dp"
-        android:text="@string/id" />
+        android:text="@string/id"
+        android:layout_gravity="top"
+        android:layout_marginTop="6dp" />
 
     <TextView
         android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:padding="2dp"
-        android:text="@string/date" />
+        android:text="@string/date"
+        android:layout_gravity="top"
+        android:layout_marginTop="6dp" />
 
     <ImageView
         android:layout_width="40dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal|center_vertical|right"
+        android:layout_gravity="center_vertical|center_horizontal|right|top"
         android:src="@drawable/ic_menu_wifi"
         tools:ignore="ContentDescription" />
 
     <ImageView
         android:layout_width="40dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal|center_vertical"
+        android:layout_gravity="center_vertical|center_horizontal|top"
         android:src="@drawable/ic_menu_cell"
-        tools:ignore="ContentDescription" />
+        tools:ignore="ContentDescription"
+        android:layout_marginTop="3dp" />
+
+    <TextView
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:padding="3dp"
+        android:text="@string/wp"
+        android:layout_marginTop="6dp"
+        android:gravity="center" />
 
     <ImageView
         android:layout_width="30dp"

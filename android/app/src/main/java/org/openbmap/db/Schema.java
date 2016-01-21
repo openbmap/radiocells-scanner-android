@@ -117,7 +117,8 @@ public final class Schema {
 	public static final String COL_IS_ACTIVE = "is_active";
 	public static final String COL_NUMBER_OF_WIFIS = "no_wifis";
 	public static final String COL_NUMBER_OF_CELLS = "no_cells";
-	
+	public static final String COL_NUMBER_OF_WAYPOINTS = "no_waypoints";
+
 	public static final int URI_CODE_CELLS = 0;
 	public static final int URI_CODE_CELL_ID = 1;
 	public static final int URI_CODE_CELL_OVERVIEW = 2;
@@ -130,6 +131,7 @@ public final class Schema {
 	 * Get only strongest measurement for each bssid
 	 */
 	public static final int URI_CODE_WIFI_OVERVIEW = 22;
+
 	/**
 	 * Get all session wifis
 	 */
@@ -147,6 +149,7 @@ public final class Schema {
 	
 	public static final int URI_CODE_POSITIONS = 30;
 	public static final int URI_CODE_POSITION_ID = 31;
+    public static final int	URI_CODE_WAYPOINTS_BY_SESSION = 32;
 	
 	public static final int URI_CODE_LOGS = 50;
 	public static final int URI_CODE_LOG_ID = 51;
