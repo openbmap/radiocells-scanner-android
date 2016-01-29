@@ -45,7 +45,7 @@
 		wifis on the map. This helps you, when you\'re looking for new wifis
 	</string>
 	<string name="prefs_download_wifi_catalog">Download Wifi Catalog</string>
-	<string name="prefs_download_wifi_catalog_summary">Current size (~200 MB)</string>
+	<string name="prefs_download_wifi_catalog_summary">Current size (~1 GB)</string>
 	<string name="prefs_min_cell_distance">Cell log interval</string>
 	<string name="prefs_min_cell_distance_hint">Minimum distance between two cell scans (in meters)
 	</string>
@@ -287,7 +287,7 @@
 	<string name="gpx_export_failed">GPX export failed</string>
 	<string name="info_using_online_map">No offline map available. Using online map</string>
 	<string name="select_folder">Select folder</string>
-	<string name="advanced_settings">Advanced settings</string>
+	<string name="activity_advanced_settings_activity">Advanced settings</string>
 	<string name="vacuuming">Vacuuming</string>
 	<string name="prefs_ignore_battery_summary">Continue scanning even with low battery (only recommended if you have external battery supply)</string>
 	<string name="prefs_ignore_battery_title">Ignore low battery</string>
@@ -315,4 +315,13 @@
 	<string name="prefs_gpx_verbosity_summary">Select which details are exported to GPX files</string>
 	<string name="wifi_catalog_up_to_date">Already have the latest version installed!</string>
 	<string name="wp">WP</string>
+	<string name="activity_stats_activity">Overview</string>
+	<string name="activity_wifi_list_container">Wifis</string>
+	<string name="activity_wifi_details_activity">Wifi Details</string>
+	<string name="activity_cells_list_container">Cells</string>
+	<string name="activity_cell_details">Cell Details</string>
+	<string name="activity_map_view_activity">Maps</string>
+	<string name="activity_settings_activity">Preferences</string>
+	<string name="activity_credits_activity">Credits</string>
+	<string name="error_opening_wifi_catalog">Error while opening wifi catalog</string>
 </resources>
