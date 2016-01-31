@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openbmap.services.position.providers;
+package org.openbmap.services.positioning.providers;
 
 import android.content.Context;
 import android.location.GpsSatellite;
@@ -30,9 +30,9 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.openbmap.Preferences;
-import org.openbmap.services.position.LocationService;
-import org.openbmap.services.position.LocationServiceFactory;
-import org.openbmap.services.position.PositioningService;
+import org.openbmap.services.positioning.LocationService;
+import org.openbmap.services.positioning.LocationServiceFactory;
+import org.openbmap.services.positioning.PositioningService;
 
 public class GpsProvider extends LocationProviderImpl implements Listener, LocationListener {
 
@@ -149,7 +149,7 @@ public class GpsProvider extends LocationProviderImpl implements Listener, Locat
 			locationService.updateLocation(location);
 
 			if (mListener != null) {
-				mListener.onLocationChange(location);
+				mListener.onLocationChanged(location);
 			}
 		}
 	}

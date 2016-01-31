@@ -19,11 +19,11 @@
 /**
    Inspirations from Paul Woelfel, Email: frig@frig.at
  */
-package org.openbmap.services.position;
+package org.openbmap.services.positioning;
 
 import android.location.Location;
 
-import org.openbmap.services.position.providers.LocationProvider;
+import org.openbmap.services.positioning.providers.LocationProvider;
 
 import java.util.List;
 

@@ -16,19 +16,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/**
- * Idea to communicate between Activity and Service comes from:
- * @Author: Philipp C. Heckel; based on code by Lance Lefebure 
- * @see: http://stackoverflow.com/questions/4300291/example-communication-between-activity-and-service-using-messaging         
- * @see: https://code.launchpad.net/~binwiederhier/+junk/android-service-example
- *
- * 1. Implement a service by inheriting from AbstractService
- * 2. Add a ServiceManager to your activity
- *   - Control the service with ServiceManager.start() and .stop()
- *   - Send messages to the service via ServiceManager.send() 
- *   - Receive messages with by passing a Handler in the constructor
- * 3. Send and receive messages on the service-side using send() and onReceiveMessage()
- */
 package org.openbmap.services;
 
 import android.app.Notification;
@@ -36,16 +23,18 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
+import android.os.PowerManager;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -54,33 +43,36 @@ import android.widget.Toast;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
-import org.openbmap.activities.HostActivity;
+import org.openbmap.activities.TabHostActivity;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.Session;
-import org.openbmap.services.position.GpxLoggerService;
-import org.openbmap.services.position.PositioningService;
-import org.openbmap.services.position.PositioningService.State;
+import org.openbmap.events.onStartGpx;
+import org.openbmap.events.onStartLocation;
+import org.openbmap.events.onStartTracking;
+import org.openbmap.events.onStartWireless;
+import org.openbmap.events.onStopTracking;
+import org.openbmap.services.positioning.GpxLoggerService;
+import org.openbmap.services.positioning.PositioningService;
+import org.openbmap.services.positioning.PositioningService.ProviderType;
 import org.openbmap.services.wireless.WirelessLoggerService;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
+import de.greenrobot.event.EventBus;
+
+/**
+ * MasterBrainService is the service coordinator, starting other sub-services as required
+ * It's started as soon as Radiobeacon app starts and runs in the application context
+ * It listens to StartTrackingEvent and StopTrackingEvent on the message bus as well as system's
+ * low battery events
+ */
 public class MasterBrainService extends Service {
     private static final String TAG = MasterBrainService.class.getSimpleName();
 
     /** For showing and hiding our notification. */
-    NotificationManager mNM;
+    NotificationManager mNotificationManager;
     /** Keeps track of all current registered clients. */
     ArrayList<Messenger> mClients = new ArrayList<Messenger>();
-    /** Holds last value set by a client. */
-    int mValue = 0;
-
-    /**
-     * Command to service to set a new value.  This can be sent to the
-     * service to supply a new value, and will be sent by the service to
-     * any registered clients with the new value.
-     */
-    public static final int MSG_SET_VALUE = 3;
 
     /**
      * System notification id.
@@ -90,7 +82,12 @@ public class MasterBrainService extends Service {
     /**
      * Selected navigation provider, default GPS
      */
-    private PositioningService.State mSelectedProvider = PositioningService.State.GPS;
+    private ProviderType mSelectedProvider = ProviderType.GPS;
+
+    /**
+     * Unique powerlock id
+     */
+    private static final String	POWERLOCKNAME	= "WakeLock.Position";
 
     /**
      * Keeps the SharedPreferences.
@@ -99,36 +96,20 @@ public class MasterBrainService extends Service {
 
     private DataHelper mDataHelper;
 
-    /** Messenger for communicating with service. */
-    Messenger mPositioningService = null;
+    private PositioningService mPositioningService;
+    private WirelessLoggerService mWirelessService;
+    private GpxLoggerService mGpxService;
+    private boolean mPositioningBound;
+    private boolean mWirelessBound;
+    private boolean mGpxBound;
 
-    /** Messenger for communicating with service. */
-    Messenger mGpxService = null;
-
-    /** Messenger for communicating with service. */
-    Messenger mWirelessService = null;
-
-    /** Messenger for communicating with service. */
-    Messenger mService = null;
-    private boolean mIsPositioningBound;
-    private boolean mIsGpxBound;
-    private boolean mIsWirelessBound;
+    private PowerManager.WakeLock mWakeLock;
 
     /**
-     * Background service collecting cell and wifi infos.
+     * Current session
      */
-    private DownstreamConnection mWirelessServiceManager;
-
-    /**
-     * Background gps location service.
-     */
-    private DownstreamConnection mPositioningServiceManager;
-
-    /**
-     * Background gpx logger server
-     */
-    private DownstreamConnection mGpxLoggerServiceManager;
-    private DownstreamHandler mDownstreamHandler;
+    private int mSession = RadioBeacon.SESSION_NOT_TRACKING;
+    private int mShutdownReason;
 
     /**
      * Handler of incoming messages from clients.
@@ -143,70 +124,59 @@ public class MasterBrainService extends Service {
                 case RadioBeacon.MSG_UNREGISTER_CLIENT:
                     mClients.remove(msg.replyTo);
                     break;
-                /*
-                case RadioBeacon.MSG_SET_VALUE:
-                    mValue = msg.arg1;
-                    for (int i=mClients.size()-1; i>=0; i--) {
-                        try {
-                            mClients.get(i).send(Message.obtain(null,
-                                    MSG_SET_VALUE, mValue, 0));
-                        } catch (RemoteException e) {
-                            // The client is dead.  Remove it from the list;
-                            // we are going through the list from back to front
-                            // so this is safe to do inside the loop.
-                            mClients.remove(i);
-                        }
-                    }
-                    break;*/
                 default:
                     super.handleMessage(msg);
             }
         }
     }
 
-    /**
-     * Reacts on messages from gps location service
-     */
-    private static class DownstreamHandler extends Handler {
-        private final WeakReference<MasterBrainService> mService;
-
-        DownstreamHandler(final MasterBrainService activity) {
-            mService = new WeakReference<MasterBrainService>(activity);
+    private ServiceConnection mPositioningConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            AbstractService.LocalBinder binder = (AbstractService.LocalBinder) service;
+            mPositioningService = (PositioningService) binder.getService();
+            mPositioningBound = true;
+            Log.d(TAG, "REQ StartPositioningEvent");
+            EventBus.getDefault().post(new onStartLocation());
         }
 
         @Override
-        public void handleMessage(final Message msg) {
-            switch (msg.what) {
-                case RadioBeacon.MSG_SERVICE_READY:
-                    // start tracking immediately after service is ready
-
-                    if (mService != null) {
-                        final MasterBrainService master =  mService.get();
-                        if (msg.getData() != null) {
-                            // start updates as soon as services are ready
-                            final String service = msg.getData().getString("service");
-                            if (service.equals(".services.position.PositioningService")) {
-                                Log.d(TAG, "Positioning service ready. Requesting position updates");
-                                master.requestPositionUpdates(State.GPS);
-                            } else if (service.equals(".services.wireless.WirelessLoggerService")) {
-                                Log.d(TAG, "Wireless logger service ready. Requesting wireless updates");
-                                master.requestWirelessUpdates();
-                            } else if (service.equals(".services.position.GpxLoggerService")) {
-                                Log.d(TAG, "GPX logger service ready. Requesting gpx tracking");
-                                master.requestGpxTracking();
-                            } else {
-                                Log.w(TAG, "Unknown service " + service);
-                            }
-                        }
-                    }
-                    break;
-
-                default:
-                    super.handleMessage(msg);
-            }
+        public void onServiceDisconnected(ComponentName arg0) {
+            mPositioningBound = false;
         }
-    }
+    };
 
+    private ServiceConnection mWirelessConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            AbstractService.LocalBinder binder = (AbstractService.LocalBinder) service;
+            mWirelessService = (WirelessLoggerService) binder.getService();
+            mWirelessBound = true;
+            Log.d(TAG, "REQ StartWirelessEvent");
+            EventBus.getDefault().post(new onStartWireless(mSession));
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mWirelessBound = false;
+        }
+    };
+
+    private ServiceConnection mGpxConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            AbstractService.LocalBinder binder = (AbstractService.LocalBinder) service;
+            mGpxService = (GpxLoggerService) binder.getService();
+            mGpxBound = true;
+            Log.d(TAG, "REQ StartGpxEvent");
+            EventBus.getDefault().post(new onStartGpx(mSession));
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mGpxBound = false;
+        }
+    };
 
     /**
      * Target we publish for clients to send messages to IncomingHandler.
@@ -217,200 +187,30 @@ public class MasterBrainService extends Service {
     public void onCreate() {
         Log.d(TAG, "MasterBrainService created");
 
+        EventBus.getDefault().register(this);
+
         mDataHelper = new DataHelper(this);
-        mDownstreamHandler = new DownstreamHandler(this);
-        
+
         // get shared preferences
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        mNotificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         registerReceiver();
-        // We want this service to continue running until it is explicitly
-        // stopped, so return sticky.
+        // We want this service to continue running until it is explicitly stopped, so return sticky.
         return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
-        // Cancel the persistent notification.
-        mNM.cancel(NOTIFICATION_ID);
         unregisterReceiver();
+        hideNotification();
+        EventBus.getDefault().unregister(this);
 
-        stopServices();
+        unbindAll();
     }
-
-    /**
-     * When binding to the service, we return an interface to our messenger
-     * for sending messages to the service.
-     */
-    @Override
-    public IBinder onBind(Intent intent) {
-        return mUpstreamMessenger.getBinder();
-    }
-
-    /**
-     * Show a notification while this service is running.
-     */
-    private void showNotification() {
-
-        // Set the icon, scrolling text and timestamp
-        Notification notification = new Notification(R.drawable.icon_greyed_25x25, getString(R.string.notification_caption),
-                System.currentTimeMillis());
-
-        // The PendingIntent to launch our activity if the user selects this notification
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
-                new Intent(this, HostActivity.class), 0);
-
-        // Set the info for the views that show in the notification panel.
-        notification.setLatestEventInfo(this, getString(R.string.app_name), getString(R.string.notification_caption), contentIntent);
-
-        // Send the notification.
-        // We use a string id because it is a unique number.  We use it later to cancel.
-        mNM.notify(NOTIFICATION_ID, notification);
-    }
-
-    /**
-     * Receives GPS location updates
-     */
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-
-        /**
-         * Handles start and stop service requests.
-         */
-        @Override
-        public void onReceive(final Context context, final Intent intent) {
-			if (RadioBeacon.INTENT_START_TRACKING.equals(intent.getAction())) {
-                Log.d(TAG, "INTENT_START_TRACKING received");
-				startServices();
-                int current_id = RadioBeacon.SESSION_NOT_TRACKING;
-                if (intent.hasExtra("_id")) {
-                    current_id = intent.getIntExtra("_id", RadioBeacon.SESSION_NOT_TRACKING);
-                    resumeSessionCommand(current_id);
-                } else {
-                    current_id = newSessionCommand();
-                }
-                requestPositionUpdates(State.GPS);
-                requestWirelessUpdates();
-                requestGpxTracking();
-                showNotification();
-            } else if (RadioBeacon.INTENT_STOP_TRACKING.equals(intent.getAction())) {
-                Log.d(TAG, "INTENT_STOP_TRACKING received");
-
-                updateSessionStats();
-                closeActiveSession();
-                // stops background services
-                stopServices();
-
-                mValue = RadioBeacon.SHUTDOWN_REASON_NORMAL;
-                for (int i = mClients.size() - 1; i >= 0; i--) {
-                    try {
-                        mClients.get(i).send(Message.obtain(null,
-                                RadioBeacon.MSG_SERVICE_SHUTDOWN, mValue, 0));
-                    } catch (RemoteException e) {
-                        // The client is dead.  Remove it from the list;
-                        // we are going through the list from back to front
-                        // so this is safe to do inside the loop.
-                        mClients.remove(i);
-                    }
-                }
-
-                mNM.cancel(NOTIFICATION_ID);
-
-            } else if (Intent.ACTION_BATTERY_LOW.equals(intent.getAction())) {
-                Log.d(TAG, "ACTION_BATTERY_LOW received");
-                final boolean ignoreBattery = mPrefs.getBoolean(Preferences.KEY_IGNORE_BATTERY, Preferences.VAL_IGNORE_BATTERY);
-                if (!ignoreBattery) {
-                    Toast.makeText(context, getString(R.string.battery_warning), Toast.LENGTH_LONG).show();
-                    updateSessionStats();
-                    // invalidates active track
-                    closeActiveSession();
-                    // stops background services
-                    stopServices();
-
-                    mValue = RadioBeacon.SHUTDOWN_REASON_LOW_POWER;
-                    for (int i = mClients.size() - 1; i >= 0; i--) {
-                        try {
-                            mClients.get(i).send(Message.obtain(null,
-                                    RadioBeacon.MSG_SERVICE_SHUTDOWN, mValue, 0));
-                        } catch (RemoteException e) {
-                            // The client is dead.  Remove it from the list;
-                            // we are going through the list from back to front
-                            // so this is safe to do inside the loop.
-                            mClients.remove(i);
-                        }
-                    }
-                } else {
-                  Log.i(TAG, "Battery low but ignoring due to settings");
-                }
-            } else {
-                Log.d(TAG, "Received intent " + intent.getAction().toString() + " but ignored");
-            }
-
-        }
-    };
-
-    /**
-     * Setups services. Any running services will be restart.
-     */
-    private void startServices() {
-        stopServices();
-
-        Log.d(TAG, "Starting Services");
-        if (mPositioningServiceManager == null) {
-            mPositioningServiceManager = new DownstreamConnection(this, PositioningService.class, mDownstreamHandler);
-        }
-        mPositioningServiceManager.bindAndStart();
-
-        if (mWirelessServiceManager == null) {
-            mWirelessServiceManager = new DownstreamConnection(this, WirelessLoggerService.class, mDownstreamHandler);
-        }
-        mWirelessServiceManager.bindAndStart();
-
-        if (mGpxLoggerServiceManager == null) {
-            mGpxLoggerServiceManager = new DownstreamConnection(this, GpxLoggerService.class, mDownstreamHandler);
-        }
-        mGpxLoggerServiceManager.bindAndStart();
-    }
-
-    /**
-     * Stops GPS und wireless logger services.
-     */
-    private void stopServices() {
-        Log.d(TAG, "Stopping Services");
-        // Brute force: specific ServiceManager can be null, if service hasn't been started
-        // Service status is ignored, stop message is send regardless of whether started or not
-        try {
-            mPositioningServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
-            // deactivated: let's call this from the service itself
-            // positionServiceManager.unbindAndStop();
-        } catch (final Exception e) {
-            Log.w(TAG, "Failed to stop gpsPositionServiceManager. Is service runnign?" /*+ e.getMessage()*/);
-            //e.printStackTrace();
-        }
-
-        try {
-            mWirelessServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
-            // deactivated: let's call this from the service itself
-            // wirelessServiceManager.unbindAndStop();
-        } catch (final Exception e) {
-            Log.w(TAG, "Failed to stop wirelessServiceManager. Is service running?" /*+ e.getMessage()*/);
-            //e.printStackTrace();
-        }
-
-        try {
-            mGpxLoggerServiceManager.sendAsync(Message.obtain(null, RadioBeacon.MSG_STOP_TRACKING));
-            // deactivated: let's call this from the service itself
-            // gpxLoggerServiceManager.unbindAndStop();
-        } catch (final Exception e) {
-            Log.w(TAG, "Failed to stop gpxLoggerServiceManager. Is service running?" /*+ e.getMessage()*/);
-            //e.printStackTrace();
-        }
-    }
-
 
     /**
      * Registers broadcast receiver
@@ -418,8 +218,6 @@ public class MasterBrainService extends Service {
     private void registerReceiver() {
         Log.i(TAG, "Registering broadcast receivers");
         final IntentFilter filter = new IntentFilter();
-        filter.addAction(RadioBeacon.INTENT_START_TRACKING);
-        filter.addAction(RadioBeacon.INTENT_STOP_TRACKING);
         filter.addAction(Intent.ACTION_BATTERY_LOW);
         registerReceiver(mReceiver, filter);
     }
@@ -438,9 +236,161 @@ public class MasterBrainService extends Service {
     }
 
     /**
+     * When binding to the service, we return an interface to our messenger
+     * for sending messages to the service.
+     */
+    @Override
+    public IBinder onBind(Intent intent) {
+        return mUpstreamMessenger.getBinder();
+    }
+
+    /**
+     * Called when start tracking is requested on the message bus
+     * @param event
+     */
+    public void onEvent(onStartTracking event){
+        Log.d(TAG, "Received StartTracking event");
+        mSession = event.session;
+        requirePowerLock();
+        startTracking(mSession);
+    }
+
+    /**
+     * Called when stop tracking is requested on the message bus
+     * @param event
+     */
+    public void onEvent(onStopTracking event){
+        Log.d(TAG, "Received StopTrackingEvent event");
+        stopTracking(RadioBeacon.SHUTDOWN_REASON_NORMAL);
+        mSession = RadioBeacon.SESSION_NOT_TRACKING;
+        releasePowerLock();
+    }
+
+    /**
+     * Setups wakelock
+     */
+    private void requirePowerLock() {
+        final PowerManager mgr = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        try {
+            mWakeLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, POWERLOCKNAME);
+            mWakeLock.setReferenceCounted(true);
+        } catch (final Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Releases wakelock
+     */
+    private void releasePowerLock() {
+        if (mWakeLock != null && mWakeLock.isHeld()) {
+            mWakeLock.release();
+        }
+        mWakeLock = null;
+    }
+
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        /**
+         * Handles start and stop service requests.
+         */
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            // remove till here
+            if (Intent.ACTION_BATTERY_LOW.equals(intent.getAction())) {
+                Log.d(TAG, "ACTION_BATTERY_LOW received");
+                final boolean ignoreBattery = mPrefs.getBoolean(Preferences.KEY_IGNORE_BATTERY, Preferences.VAL_IGNORE_BATTERY);
+                if (!ignoreBattery) {
+                    Toast.makeText(context, getString(R.string.battery_warning), Toast.LENGTH_LONG).show();
+                    stopTracking(RadioBeacon.SHUTDOWN_REASON_LOW_POWER);
+                } else {
+                  Log.i(TAG, "Battery low but ignoring due to settings");
+                }
+            } else {
+                Log.d(TAG, "Received intent " + intent.getAction().toString() + " but ignored");
+            }
+        }
+    };
+
+    /**
+     * Prepares database and sub-services to start tracking
+     * @param session
+     */
+    private void startTracking(final int session) {
+        if (session != RadioBeacon.SESSION_NOT_TRACKING) {
+            Log.d(TAG, "Preparing session " + session);
+            mSession = session;
+            resumeSession(session);
+        } else {
+            Log.d(TAG, "Preparing new session");
+            mSession = setupNewSession();
+        }
+        bindAll();
+        showNotification();
+    }
+
+    /**
+     * Updates database and stops sub-services after stop request
+     * @param reason
+     */
+    private void stopTracking(int reason) {
+        unbindAll();
+
+        updateDatabase();
+
+        for (int i = mClients.size() - 1; i >= 0; i--) {
+            try {
+                mClients.get(i).send(Message.obtain(null, RadioBeacon.MSG_SERVICE_SHUTDOWN, reason, 0));
+            } catch (RemoteException e) {
+                // The client is dead.  Remove it from the list;
+                // we are going through the list from back to front
+                // so this is safe to do inside the loop.
+                mClients.remove(i);
+            }
+        }
+
+        hideNotification();
+    }
+
+    /**
+     * Binds all sub-services
+     */
+    private void bindAll() {
+        Log.d(TAG, "Binding services");
+        Intent i1 = new Intent(this, PositioningService.class);
+        bindService(i1, mPositioningConnection, Context.BIND_AUTO_CREATE);
+
+        Intent i2 = new Intent(this, WirelessLoggerService.class);
+        bindService(i2, mWirelessConnection, Context.BIND_AUTO_CREATE);
+
+        Intent i3 = new Intent(this, GpxLoggerService.class);
+        bindService(i3, mGpxConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    /**
+     * Unbinds all sub-services
+     */
+    private void unbindAll() {
+        // Unbind from the service
+        if (mPositioningBound) {
+            unbindService(mPositioningConnection);
+            mPositioningBound = false;
+        }
+
+        if (mWirelessBound) {
+            unbindService(mWirelessConnection);
+            mWirelessBound = false;
+        }
+
+        if (mGpxBound) {
+            unbindService(mGpxConnection);
+            mGpxBound = false;
+        }
+    }
+
+    /**
      * Opens new session
      */
-    private int newSessionCommand() {
+    private int setupNewSession() {
         // invalidate all active session
         mDataHelper.invalidateActiveSessions();
         // Create a new session and activate it
@@ -462,8 +412,7 @@ public class MasterBrainService extends Service {
      * Resumes specific session
      * @param id
      */
-    private void resumeSessionCommand(final int id) {
-        // TODO: check whether we need a INTENT_START_SERVICE here
+    private void resumeSession(final int id) {
         final Session resume = mDataHelper.loadSession(id);
 
         if (resume == null) {
@@ -476,9 +425,9 @@ public class MasterBrainService extends Service {
     }
 
     /**
-     * Updates number of cells and wifis.
+     * Updates number of cells and wifis and closes active session
      */
-    private void updateSessionStats() {
+    private void updateDatabase() {
         final Session active = mDataHelper.loadActiveSession();
         if (active != null) {
             active.setWifisCount(mDataHelper.countWifis(active.getId()));
@@ -486,97 +435,33 @@ public class MasterBrainService extends Service {
             active.setWaypointsCount(mDataHelper.countWaypoints(active.getId()));
             mDataHelper.storeSession(active, false);
         }
-    }
-
-    /**
-     * Closes active session
-     */
-    private void closeActiveSession() {
         mDataHelper.invalidateActiveSessions();
     }
 
     /**
-     * Starts broadcasting GPS position.
-     * @param provider
-     * @return false on error, otherwise true
+     * Shows Android notification while this service is running.
      */
-    public final boolean requestPositionUpdates(final PositioningService.State provider) {
-        // TODO check whether services have already been connected (i.e. received MSG_SERVICE_READY signal)
-        Log.d(TAG, "Requesting position updates");
-        final Bundle bundle = new Bundle();
-        bundle.putString("provider", provider.toString());
-        return requestUpdates(mPositioningServiceManager, bundle);
+    private void showNotification() {
+        // Set the icon, scrolling text and timestamp
+        final Notification notification = new Notification(R.drawable.icon_greyed_25x25, getString(R.string.notification_caption),
+                System.currentTimeMillis());
+
+        // The PendingIntent to launch our activity if the user selects this notification
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(this, TabHostActivity.class), 0);
+        // Set the info for the views that show in the notification panel.
+        notification.setLatestEventInfo(this, getString(R.string.app_name), getString(R.string.notification_caption), contentIntent);
+
+        /**
+         * TODO display additional infos / actions
+         */
+        mNotificationManager.notify(NOTIFICATION_ID, notification);
     }
 
     /**
-     * Starts GPX tracking.
-     * @return false on error, otherwise true
+     * Hides Android notification
      */
-    public final boolean requestGpxTracking() {
-        // TODO check whether services have already been connected (i.e. received MSG_SERVICE_READY signal)
-        Log.d(TAG, "Requesting gpx tracking");
-        return requestUpdates(mPositioningServiceManager, null);
+    private void hideNotification() {
+        mNotificationManager.cancel(NOTIFICATION_ID);
     }
 
-    /**
-     * Starts wireless tracking.
-     * @return false on error, otherwise true
-     */
-    public final boolean requestWirelessUpdates() {
-        // TODO check whether services have already been connected (i.e. received MSG_SERVICE_READY signal)
-        Log.d(TAG, "Requesting wireless updates");
-        return requestUpdates(mWirelessServiceManager, null);
-    }
-
-    public final boolean requestUpdates(DownstreamConnection service, Bundle bundle){
-        try {
-            if (service == null) {
-                Log.w(TAG, "Service is null. No message will be sent");
-                return false;
-            }
-
-            final int session = mDataHelper.getActiveSessionId();
-
-            if (session == RadioBeacon.SESSION_NOT_TRACKING) {
-                Log.e(TAG, "Couldn't start tracking, no active session");
-                return false;
-            }
-
-            if (bundle == null) {
-                bundle = new Bundle();
-            }
-            bundle.putInt(RadioBeacon.MSG_KEY, session);
-
-            final Message msg = new Message();
-            msg.what = RadioBeacon.MSG_START_TRACKING;
-            msg.setData(bundle);
-
-            service.sendAsync(msg);
-
-            updateUI();
-            return true;
-        } catch (final RemoteException e) {
-            // service communication failed
-            e.printStackTrace();
-            return false;
-        } catch (final NumberFormatException e) {
-            e.printStackTrace();
-            return false;
-        } catch (final Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-
-
-    /**
-     * Broadcasts requests for UI refresh on wifi and cell info.
-     */
-    private void updateUI() {
-        final Intent intent1 = new Intent(RadioBeacon.INTENT_WIFI_UPDATE);
-        sendBroadcast(intent1);
-        final Intent intent2 = new Intent(RadioBeacon.INTENT_CELL_UPDATE);
-        sendBroadcast(intent2);
-    }
 }

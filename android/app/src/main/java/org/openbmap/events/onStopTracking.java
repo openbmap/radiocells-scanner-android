@@ -16,33 +16,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openbmap.commands;
+package org.openbmap.events;
 
-import android.app.Activity;
-import android.widget.Toast;
+public class onStopTracking {
+        public onStopTracking() {
 
-import org.openbmap.R;
-import org.openbmap.events.onStopTracking;
-
-import de.greenrobot.event.EventBus;
-
-/**
- * Dispatcher for external 'stop tracking' command
- * E.g. sent by external NFC apps like https://play.google.com/store/apps/details?id=com.jwsoft.nfcactionlauncher
- *
- * Don't use internally within Radiobeacon!
- */
-public class StopTracking  extends Activity {
-
-	@Override
-	protected final void onResume() {
-		super.onResume();
-
-        EventBus.getDefault().post(new onStopTracking());
-		Toast.makeText(this, R.string.stopped_tracking, Toast.LENGTH_SHORT).show();
-		this.finish();
-	}
-
-
-
-}
+        }
+    }

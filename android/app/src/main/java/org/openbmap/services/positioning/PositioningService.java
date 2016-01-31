@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openbmap.services.position;
+package org.openbmap.services.positioning;
 
 import android.content.Intent;
 import android.location.Location;
@@ -25,9 +25,14 @@ import android.os.Message;
 import android.util.Log;
 
 import org.openbmap.RadioBeacon;
+import org.openbmap.events.onLocationUpdate;
+import org.openbmap.events.onStartLocation;
+import org.openbmap.events.onStopTracking;
 import org.openbmap.services.AbstractService;
-import org.openbmap.services.position.providers.GpsProvider;
-import org.openbmap.services.position.providers.LocationChangeListener;
+import org.openbmap.services.positioning.providers.GpsProvider;
+import org.openbmap.services.positioning.providers.LocationChangeListener;
+
+import de.greenrobot.event.EventBus;
 
 /**
  * GPS position service.
@@ -36,9 +41,9 @@ public class PositioningService extends AbstractService implements LocationChang
 
 	private static final String TAG = PositioningService.class.getSimpleName();
 
-	public enum State { OFF, GPS, INERTIAL };
+	public enum ProviderType { OFF, GPS, INERTIAL };
 	
-	private State providerState;
+	private ProviderType providerProviderType;
 	/**
 	 * Are we currently tracking ?
 	 */
@@ -74,7 +79,7 @@ public class PositioningService extends AbstractService implements LocationChang
 	@Override
 	public final void onCreate() {	
 		super.onCreate();
-		providerState = State.OFF;
+		providerProviderType = ProviderType.OFF;
 	}
 
 	@Override
@@ -100,10 +105,10 @@ public class PositioningService extends AbstractService implements LocationChang
 		super.onDestroy();
 	}
 
-	public final void startTracking(final State newState) throws Exception {
+	public final void startTracking(final ProviderType newProviderType) throws Exception {
 
-		if (newState.equals(providerState)) {
-			Log.i(TAG, "Didn't change provider state: already in state (" + providerState + ")");
+		if (newProviderType.equals(providerProviderType)) {
+			Log.i(TAG, "Didn't change provider state: already in state (" + providerProviderType + ")");
 			return;
 		}
 
@@ -112,16 +117,16 @@ public class PositioningService extends AbstractService implements LocationChang
 			stopTracking();
 		}
 
-		if (newState.equals(State.OFF)) {
+		if (newProviderType.equals(ProviderType.OFF)) {
 			stopTracking();
 			return;
-		} else if (newState.equals(State.GPS)) {
+		} else if (newProviderType.equals(ProviderType.GPS)) {
 			// activate gps by default
 			gpsProvider = new GpsProvider(this);
 			gpsProvider.setLocationChangeListener(this);
 			gpsProvider.start(this);
 
-			providerState = State.GPS;
+			providerProviderType = ProviderType.GPS;
 		} else { 
 			mIsTracking = false;
 			throw new Exception("Unknown state");
@@ -138,8 +143,7 @@ public class PositioningService extends AbstractService implements LocationChang
 			gpsProvider = null;
 		}
 
-
-		providerState = State.OFF;
+		providerProviderType = ProviderType.OFF;
 	}
 
 	/**
@@ -158,77 +162,58 @@ public class PositioningService extends AbstractService implements LocationChang
 		return isGpsEnabled;
 	}
 
-	/**
-	 * Controls position provider startup / stop
-	 */
-	@Override
-	public final void onReceiveMessage(final Message msg) {
-		switch(msg.what) {
-			case RadioBeacon.MSG_START_TRACKING: 
-				Log.d(TAG, "GPS logger received MSG_START_TRACKING signal");
-				try {
-					Bundle aBundle = msg.getData();
-					String providerString = aBundle.getString("provider"); 
-					State provider = null;
-					if (providerString != null) {
-						provider = State.valueOf(providerString);
-					} else {
-						Log.w(TAG, "No provider selected, using GPS as default");
-						provider = State.GPS;
-					}
-
-					Log.i(TAG, "Received request to start provider " + providerString + "(" + provider.toString() + ")");
-					startTracking(provider);
-				} catch (Exception e) {
-					Log.e(TAG, "Error starting provider: " + e.getLocalizedMessage());
-				}
-				break;
-			case RadioBeacon.MSG_STOP_TRACKING:
-				Log.d(TAG, "GPS logger received MSG_STOP_TRACKING signal");
-				stopTracking();
-				
-				// before manager stopped the service
-				PositioningService.this.stopSelf();
-				break;
-			default:
-				Log.d(TAG, "Unrecognized message received: " + msg.what);
-		}
+	public void onEvent(onStartLocation event) {
+		Log.d(TAG, "ACK StartPositioningEvent event");
+        try {
+            /*
+            NOT IMPLEMENTED YET, OTHER PROVIDERS...
+            Bundle aBundle = msg.getData();
+            String providerString = aBundle.getString("provider");
+            State provider = null;
+            if (providerString != null) {
+                provider = State.valueOf(providerString);
+            } else {
+                Log.w(TAG, "No provider selected, using GPS as default");
+                provider = State.GPS;
+            }
+            */
+            final ProviderType provider = ProviderType.GPS;
+            startTracking(provider);
+        } catch (Exception e) {
+            Log.e(TAG, "Error starting provider: " + e.getLocalizedMessage());
+        }
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openbmap.services.AbstractService#onStartService()
-	 */
+	public void onEvent(onStopTracking event){
+		Log.d(TAG, "ACK StopTrackingEvent event");
+        stopTracking();
+
+        // before manager stopped the service
+        this.stopSelf();
+	}
+
 	@Override
 	public void onStartService() {
-
+        Log.d(TAG, "Starting PositioningService");
+        EventBus.getDefault().register(this);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openbmap.services.AbstractService#onStopService()
-	 */
 	@Override
 	public void onStopService() {
-
+        Log.d(TAG, "Stopping PositioningService");
+        EventBus.getDefault().unregister(this);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openbmap.stepdetection.LocationChangeListener#onLocationChange(android.location.Location)
-	 */
 	@Override
-	public final void onLocationChange(final Location location) {
-		// Log.i(TAG, "Broadcasting position: lat " + location.getLatitude() + " lon " + location.getLongitude());
+	public final void onLocationChanged(final Location location) {
+        Log.d(TAG, "Broadcasting position: lat " + location.getLatitude() + " lon " + location.getLongitude());
 		// first of all we check if the time from the last used fix to the current fix is greater than the logging interval
 		if (mIsTracking) {
 			if ((mLastTimestamp + gpsLoggingInterval) < System.currentTimeMillis()) {
 				mLastTimestamp = System.currentTimeMillis(); // save the time of this fix
 
-				// broadcast GPS location, so wireless logger can use it
-				Intent intent = new Intent(RadioBeacon.INTENT_POSITION_UPDATE);
-				Bundle bundle = new Bundle();
-				bundle.putParcelable("android.location.Location", location);
-				intent.putExtras(bundle);
+				EventBus.getDefault().post(new onLocationUpdate(location));
 
-				sendBroadcast(intent);
 
 				mLastTimestamp = location.getTime();
 				mLastLocation = location;
@@ -236,9 +221,6 @@ public class PositioningService extends AbstractService implements LocationChang
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openbmap.services.position.providers.LocationChangeListener#onStatusChanged(java.lang.String, int, android.os.Bundle)
-	 */
 	@Override
 	public void onStatusChanged(String provider, int status, Bundle extras) {
 		switch (status) {
@@ -280,5 +262,14 @@ public class PositioningService extends AbstractService implements LocationChang
 		i.putExtras(b);
 		sendBroadcast(i);	
 	}
+
+    /**
+     * TODO: remove, not needed with greenrobot
+     * @param msg
+     */
+    @Override
+    public void onReceiveMessage(Message msg) {
+
+    }
 
 }

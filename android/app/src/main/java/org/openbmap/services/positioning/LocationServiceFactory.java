@@ -20,7 +20,7 @@
  *  Inspirations from Paul Woelfel, Email: frig@frig.at
  */
 
-package org.openbmap.services.position;
+package org.openbmap.services.positioning;
 
 public final class LocationServiceFactory {
 	

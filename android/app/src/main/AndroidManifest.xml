@@ -27,7 +27,7 @@
         android:hardwareAccelerated="false"
         >
         <activity
-            android:name=".activities.HostActivity"
+            android:name=".activities.TabHostActivity"
             android:label="@string/app_name"
             android:theme="@style/Theme.AppCompat">
         </activity>
@@ -108,7 +108,7 @@
 
         <!-- GPS receiver service -->
         <service
-            android:name=".services.position.PositioningService"
+            android:name=".services.positioning.PositioningService"
             android:exported="false" >
             <intent-filter>
                 <action android:name=".intent.GPS_SERVICE" />
@@ -122,7 +122,7 @@
 
         <!-- GPX logger service -->
         <service
-            android:name=".services.position.GpxLoggerService" >
+            android:name=".services.positioning.GpxLoggerService" >
         </service>
 
         <provider

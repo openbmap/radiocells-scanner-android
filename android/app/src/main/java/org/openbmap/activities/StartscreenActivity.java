@@ -39,8 +39,10 @@ import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.Session;
-import org.openbmap.soapclient.ExportGpxTask.ExportGpxTaskListener;
+import org.openbmap.events.onStartTracking;
+import org.openbmap.events.onStopTracking;
 import org.openbmap.soapclient.ExportDataTask.UploadTaskListener;
+import org.openbmap.soapclient.ExportGpxTask.ExportGpxTaskListener;
 import org.openbmap.utils.AlertDialogUtils;
 import org.openbmap.utils.OnAlertClickInterface;
 import org.openbmap.utils.TabManager;
@@ -50,6 +52,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+
+import de.greenrobot.event.EventBus;
 
 /**
  * Parent screen for hosting main screen
@@ -226,13 +230,12 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 */
 	@Override
 	public final void startCommand() {
-        // bring up service
-        final Intent intent = new Intent(RadioBeacon.INTENT_START_TRACKING);
-        sendBroadcast(intent);
+        EventBus.getDefault().post(new onStartTracking());
+
         // bring up UI
-		final Intent activity = new Intent(this, HostActivity.class);
-		activity.putExtra("new_session", true);
-		startActivity(activity);
+		final Intent hostActivity = new Intent(this, TabHostActivity.class);
+		hostActivity.putExtra("new_session", true);
+		startActivity(hostActivity);
 	}
 
 	/*
@@ -241,12 +244,9 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 */
 	@Override
 	public final void resumeCommand(final int id) {
-        // bring up service
-        final Intent intent = new Intent(RadioBeacon.INTENT_START_TRACKING);
-        intent.putExtra("_id", id);
-        sendBroadcast(intent);
+		EventBus.getDefault().post(new onStartTracking(id));
 
-		final Intent activity = new Intent(this, HostActivity.class);
+		final Intent activity = new Intent(this, TabHostActivity.class);
 		activity.putExtra("_id", id);
 		startActivity(activity);
 	}
@@ -318,8 +318,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	public final void stopCommand(final int id) {
 		mDataHelper.invalidateActiveSessions();
 		// Signalling host activity to stop services
-		final Intent intent = new Intent(RadioBeacon.INTENT_STOP_TRACKING);
-		sendBroadcast(intent);
+        EventBus.getDefault().post(new onStopTracking());
 
 		updateUI();
 	}
@@ -361,8 +360,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		Log.i(TAG, "Deleting session " + id);
 
 		// Signalling service stop request
-		final Intent intent = new Intent(RadioBeacon.INTENT_STOP_TRACKING);
-		sendBroadcast(intent);
+        EventBus.getDefault().post(new onStopTracking());
 
 		mDataHelper.deleteSession(id);
 
@@ -390,9 +388,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
 	public final void deleteAllConfirmed() {
 		// Signalling service stop request
-		final Intent intent = new Intent(RadioBeacon.INTENT_STOP_TRACKING);
-		sendBroadcast(intent);
-
+        EventBus.getDefault().post(new onStopTracking());
 		mDataHelper.deleteAllSession();
 
 		updateUI();
@@ -497,7 +493,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	private void initUi(final Bundle savedInstanceState) {
 		setContentView(R.layout.startscreen);
 
-		getSupportActionBar().setTitle(R.string.title);
+		getSupportActionBar().setTitle(R.string.app_name);
 		getSupportActionBar().setSubtitle(R.string.subtitle);
 
 		mTabHost = (TabHost) findViewById(android.R.id.tabhost);

@@ -16,33 +16,26 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openbmap.commands;
+package org.openbmap.events;
 
-import android.app.Activity;
-import android.widget.Toast;
+import org.openbmap.RadioBeacon;
 
-import org.openbmap.R;
-import org.openbmap.events.onStopTracking;
+public class onStartLocation {
+    public final int session;
 
-import de.greenrobot.event.EventBus;
+    /**
+     * Default constructor: no session id provided, database will auto-assign session id
+     */
+     public onStartLocation() {
+        this.session = RadioBeacon.SESSION_NOT_TRACKING;
+     }
 
-/**
- * Dispatcher for external 'stop tracking' command
- * E.g. sent by external NFC apps like https://play.google.com/store/apps/details?id=com.jwsoft.nfcactionlauncher
- *
- * Don't use internally within Radiobeacon!
- */
-public class StopTracking  extends Activity {
-
-	@Override
-	protected final void onResume() {
-		super.onResume();
-
-        EventBus.getDefault().post(new onStopTracking());
-		Toast.makeText(this, R.string.stopped_tracking, Toast.LENGTH_SHORT).show();
-		this.finish();
-	}
-
-
+    /**
+     * Constructor to resume an existing session
+     * @param session session id to resume
+     */
+    public onStartLocation(int session) {
+        this.session = session;
+    }
 
 }

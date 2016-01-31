@@ -297,7 +297,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 	 */
 	@Override
 	public final Cursor query(final Uri uri, final String[] projection, final String selectionIn, final String[] selectionArgsIn, final String sortOrder) {
-		Log.v(TAG, "query called, uri " + uri.toString());
+		// Log.v(TAG, "query called, uri " + uri.toString());
 
 		// Select which URI/datatype was requested
 		switch (uriMatcher.match(uri)) {

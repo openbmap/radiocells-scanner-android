@@ -100,7 +100,6 @@ public class SettingsActivity extends PreferenceActivity {
 
         initActiveMapControl();
 
-
         initGpsLogIntervalControl();
 
         initAdvancedSettingsButton();
@@ -111,9 +110,7 @@ public class SettingsActivity extends PreferenceActivity {
     /**
      * Initialises download manager for GINGERBREAD and newer
      */
-    @SuppressLint("NewApi")
     private void initDownloadManager() {
-
         mDownloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
 
         mReceiver = new BroadcastReceiver() {
@@ -127,11 +124,15 @@ public class SettingsActivity extends PreferenceActivity {
                     query.setFilterById(downloadId);
                     final Cursor c = mDownloadManager.query(query);
                     if (c.moveToFirst()) {
-                        final int columnIndex = c.getColumnIndex(DownloadManager.COLUMN_STATUS);
-                        if (DownloadManager.STATUS_SUCCESSFUL == c.getInt(columnIndex)) {
+                        final int statusCol = c.getColumnIndex(DownloadManager.COLUMN_STATUS);
+                        final int reasonCol = c.getColumnIndex(DownloadManager.COLUMN_REASON);
+                        Log.i(TAG, "Download status:" + c.getInt(statusCol));
+                        if (DownloadManager.STATUS_SUCCESSFUL == c.getInt(statusCol)) {
                             // we're not checking download id here, that is done in handleDownloads
                             final String uriString = c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
                             handleDownloads(uriString);
+                        } else if (DownloadManager.STATUS_FAILED == c.getInt(statusCol)) {
+                            Log.e(TAG, "Download failed:" + c.getString(reasonCol));
                         }
                     }
                 }
@@ -251,10 +252,10 @@ public class SettingsActivity extends PreferenceActivity {
                     Toast.makeText(SettingsActivity.this, getString(R.string.wifi_catalog_up_to_date), Toast.LENGTH_LONG).show();
                     return true;
                 } else {
-                    Log.v(TAG, "Local version, downloading");
+                    Log.v(TAG, "Local version " + getLocalCatalogVersion() + ", downloading newer version");
                 }
 
-                if (mCurrentCatalogDownloadId > -1) {
+                if (mCurrentCatalogDownloadId > -1  ) {
                     Toast.makeText(SettingsActivity.this, getString(R.string.other_download_active), Toast.LENGTH_LONG).show();
                     return true;
                 }
@@ -264,10 +265,12 @@ public class SettingsActivity extends PreferenceActivity {
 
                 boolean folderAccessible = false;
                 if (folder.exists() && folder.canWrite()) {
+                    Log.i(TAG, "Folder writable " + folder);
                     folderAccessible = true;
                 }
 
                 if (!folder.exists()) {
+                    Log.i(TAG, "Creating folder" + folder);
                     folderAccessible = folder.mkdirs();
                 }
                 if (folderAccessible) {
@@ -275,7 +278,7 @@ public class SettingsActivity extends PreferenceActivity {
 
                     final File target = new File(folder.getAbsolutePath() + File.separator + Preferences.CATALOG_FILE);
                     if (target.exists()) {
-                        Log.i(TAG, "Catalog file already exists. Overwriting..");
+                        Log.i(TAG, "Catalog already exists. Overwriting..");
                         target.delete();
                     }
 
@@ -283,18 +286,17 @@ public class SettingsActivity extends PreferenceActivity {
                         // try to download to target. If target isn't below Environment.getExternalStorageDirectory(),
                         // e.g. on second SD card a security exception is thrown
                         Log.i(TAG, "Downloading " + Preferences.CATALOG_DOWNLOAD_URL);
-                        final Request request = new Request(
-                                Uri.parse(Preferences.CATALOG_DOWNLOAD_URL));
+                        final Request request = new Request(Uri.parse(Preferences.CATALOG_DOWNLOAD_URL));
                         request.setDestinationUri(Uri.fromFile(target));
                         mCurrentCatalogDownloadId = mDownloadManager.enqueue(request);
                     } catch (final SecurityException sec) {
+                        Log.e(TAG, "Security exception: " + sec.getMessage());
                         mCurrentCatalogDownloadId = -1;
                         // download to temp dir and try to move to target later
                         Log.w(TAG, "Security exception, can't write to " + target + ", using " + SettingsActivity.this.getExternalCacheDir()
                                 + File.separator + Preferences.CATALOG_FILE);
                         final File tempFile = new File(SettingsActivity.this.getExternalCacheDir() + File.separator + Preferences.CATALOG_FILE);
-                        final Request request = new Request(
-                                Uri.parse(Preferences.CATALOG_DOWNLOAD_URL));
+                        final Request request = new Request(Uri.parse(Preferences.CATALOG_DOWNLOAD_URL));
                         request.setDestinationUri(Uri.fromFile(tempFile));
                         mDownloadManager.enqueue(request);
                     }
@@ -395,7 +397,6 @@ public class SettingsActivity extends PreferenceActivity {
      * Populates the wifi catalog list preference by scanning catalog folder.
      */
     private void initActiveCatalogControl() {
-
         String[] entries;
         String[] values;
 
@@ -463,6 +464,7 @@ public class SettingsActivity extends PreferenceActivity {
      * @param file
      */
     public final void handleDownloads(String file) {
+        Log.i(TAG, "Download completed " + file);
         // get current file extension
         final String[] filenameArray = file.split("\\.");
         final String extension = "." + filenameArray[filenameArray.length - 1];
@@ -473,7 +475,7 @@ public class SettingsActivity extends PreferenceActivity {
         if (extension.equals(org.openbmap.Preferences.CATALOG_FILE_EXTENSION)) {
             mCurrentCatalogDownloadId = -1;
             if (file.indexOf(SettingsActivity.this.getExternalCacheDir().getPath()) > -1) {
-                // file has been downloaded to cache folder, so move..
+                Log.i(TAG, "Moving file to " + getCatalogFolder().getAbsolutePath());
                 file = moveToFolder(file, getCatalogFolder().getAbsolutePath());
             }
 

@@ -42,7 +42,7 @@
         android:layout_width="60dp"
         android:layout_height="wrap_content"
         android:padding="3dp"
-        android:text="@string/wp"
+        android:text="@string/waypoint"
         android:layout_marginTop="6dp"
         android:gravity="center" />
 

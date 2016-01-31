@@ -24,7 +24,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.location.Location;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -35,8 +34,11 @@ import android.widget.TextView;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
+import org.openbmap.events.onLocationUpdate;
 
 import java.text.DecimalFormat;
+
+import de.greenrobot.event.EventBus;
 
 /**
  * Layout for the GPS status bar
@@ -65,7 +67,7 @@ public class StatusBar extends LinearLayout {
 	/**
 	 * Containing activity
 	 */
-	private Context ctx;
+	private Context mContext;
 
 	/**
 	 * Is GPS active ?
@@ -98,10 +100,13 @@ public class StatusBar extends LinearLayout {
 		imgSatIndicator = (ImageView) findViewById(R.id.gpsstatus_sat_indicator);
 		imgSatIndicator.setImageResource(R.drawable.sat_indicator_unknown);
 
-		if (context instanceof HostActivity) {
-			ctx = context;
+		if (context instanceof TabHostActivity) {
+			mContext = context;
 			registerReceiver();
-		}		
+            EventBus.getDefault().register(this);
+		} else {
+            Log.e(TAG, "Not called from TabHostActivity");
+        }
 	}
 
 	/**
@@ -110,20 +115,8 @@ public class StatusBar extends LinearLayout {
 	private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
-			// handling GPS broadcasts
-			if (RadioBeacon.INTENT_POSITION_UPDATE.equals(intent.getAction())) {
-				final Location location = intent.getExtras().getParcelable(LOCATION_PARCEL);
-
-				if (location == null) {
-					return;
-				}
-
-				if (location.hasAccuracy()) {
-					tvAccuracy.setText(ACCURACY_FORMAT.format(location.getAccuracy()) + getResources().getString(R.string.meter));
-				} else {
-					tvAccuracy.setText(getResources().getString(R.string.empty));
-				}
-			} else if (RadioBeacon.INTENT_POSITION_SAT_INFO.equals(intent.getAction())) {
+			// handle everything except location broadcasts
+			 if (RadioBeacon.INTENT_POSITION_SAT_INFO.equals(intent.getAction())) {
 
 				final String status = intent.getExtras().getString("STATUS");
 				final int satCount = intent.getExtras().getInt("SAT_COUNT");
@@ -166,10 +159,22 @@ public class StatusBar extends LinearLayout {
 		}
 	};
 
+    public void onEvent(onLocationUpdate event) {
+            if (event.location == null) {
+                return;
+            }
+
+            if (event.location.hasAccuracy()) {
+                tvAccuracy.setText(ACCURACY_FORMAT.format(event.location.getAccuracy()) + getResources().getString(R.string.meter));
+            } else {
+                tvAccuracy.setText(getResources().getString(R.string.empty));
+            }
+    }
+
 	@Override 
 	protected void onAttachedToWindow() {
 		super.onAttachedToWindow();
-		dataHelper = new DataHelper(ctx);
+		dataHelper = new DataHelper(mContext);
 		registerReceiver();
 	}
 
@@ -181,31 +186,31 @@ public class StatusBar extends LinearLayout {
 	}
 
 	private void registerReceiver() {
-		if (ctx == null) {
+		if (mContext == null) {
 			Log.e(TAG, "Can't register for gps status updates: context is null");
 			return;
 		}
 		final IntentFilter filter = new IntentFilter();
-		filter.addAction(RadioBeacon.INTENT_POSITION_UPDATE);
 		filter.addAction(RadioBeacon.INTENT_POSITION_SAT_INFO);
 		filter.addAction(RadioBeacon.INTENT_NEW_WIFI);
 		filter.addAction(RadioBeacon.INTENT_NEW_CELL);
-		ctx.registerReceiver(mReceiver, filter);  
+		mContext.registerReceiver(mReceiver, filter);
 	}
 
 	/**
-	 * Unregisters receivers for GPS and wifi scan results.
+	 * Unregisters receivers for GPS and wifi updates
 	 */
 	private void unregisterReceiver() {
-		if (ctx == null) {
+		if (mContext == null) {
 			Log.e(TAG, "Can't unregister gps status updates: context is null");
 			return;
 		}
 
 		try {
-			ctx.unregisterReceiver(mReceiver);
+			mContext.unregisterReceiver(mReceiver);
 		} catch (final IllegalArgumentException e) {
 			// do nothing here {@see http://stackoverflow.com/questions/2682043/how-to-check-if-mReceiver-is-registered-in-android}
 		}
+        EventBus.getDefault().unregister(this);
 	}
 }

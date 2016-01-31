@@ -236,7 +236,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/isServingCellCaption" />
+                android:text="@string/is_serving_cell_caption" />
 
             <ImageView
                 android:id="@+id/celldetails_serving"

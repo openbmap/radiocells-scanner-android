@@ -21,7 +21,7 @@ package org.openbmap.commands;
 import android.app.Activity;
 import android.content.Intent;
 
-import org.openbmap.activities.HostActivity;
+import org.openbmap.activities.TabHostActivity;
 
 /**
  * Dispatcher for external 'start tracking' command
@@ -35,7 +35,7 @@ public class StartTracking extends Activity {
 	protected final void onResume() {
 		super.onResume();
 		
-		final Intent intent = new Intent(this, HostActivity.class);
+		final Intent intent = new Intent(this, TabHostActivity.class);
 		
 		startActivity(intent);
 		this.finish();

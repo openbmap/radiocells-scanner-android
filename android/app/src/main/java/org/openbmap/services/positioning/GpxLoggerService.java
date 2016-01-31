@@ -16,31 +16,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.openbmap.services.position;
+package org.openbmap.services.positioning;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.location.Location;
-import android.os.Bundle;
 import android.os.Message;
-import android.os.PowerManager;
-import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.PositionRecord;
+import org.openbmap.events.onLocationUpdate;
+import org.openbmap.events.onStartGpx;
+import org.openbmap.events.onStopTracking;
 import org.openbmap.services.AbstractService;
 
+import de.greenrobot.event.EventBus;
 
 /**
- * Saves positions to database. This is mainly for debugging purposes and functionally not needed for wifi tracking.
+ * Saves GPX track. This is mainly for debugging purposes and functionally not needed for wifi tracking.
  */
-
 public class GpxLoggerService extends AbstractService {
 
 	/**
@@ -54,8 +50,6 @@ public class GpxLoggerService extends AbstractService {
 	 * Keeps the SharedPreferences
 	 */
 	private SharedPreferences prefs = null;
-
-	private static final String	POWERLOCKNAME	= "WakeLock.Position";
 
 	/*
 	 * last known location
@@ -73,43 +67,16 @@ public class GpxLoggerService extends AbstractService {
 	 */
 	private int mSessionId = RadioBeacon.SESSION_NOT_TRACKING;
 
-	private WakeLock myPowerLock;
-
 	/*
 	 * DataHelper for persisting recorded information in database
 	 */
 	private DataHelper mDataHelper;
 
-	/**
-	 * Receives GPS location updates as well as wifi scan result updates
-	 */
-	private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-
-		@Override
-		public void onReceive(final Context context, final Intent intent) {
-			//Log.d(TAG, "Received intent " + intent.getAction());
-			// handling gps broadcasts
-			if (RadioBeacon.INTENT_POSITION_UPDATE.equals(intent.getAction())) {
-				if (!mIsTracking) {
-					return;
-				}
-
-				final Location location = intent.getExtras().getParcelable("android.location.Location");
-				final String source = intent.getExtras().getString("position_provider_type");
-
-				if (location.distanceTo(mMostCurrentLocation) > MIN_TRACKPOINT_DISTANCE) {
-					performGpsUpdate(location, source);
-				}
-				mMostCurrentLocation = location;
-			} 
-
-		}
-	};
-
 	@Override
-	public final void onCreate() {		
-		Log.d(TAG, "GpxLoggerService created");
+	public final void onCreate() {
 		super.onCreate();
+        Log.d(TAG, "GpxLoggerService created");
+
 		// get shared preferences
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -117,36 +84,6 @@ public class GpxLoggerService extends AbstractService {
 		 * Setting up database connection
 		 */
 		mDataHelper = new DataHelper(this);
-
-		final PowerManager mgr = (PowerManager) getSystemService(Context.POWER_SERVICE);
-		try {
-			myPowerLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, POWERLOCKNAME);
-			myPowerLock.setReferenceCounted(true);
-		} catch (final Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-
-	/**
-	 * Registers receivers for GPS and wifi scan results.
-	 */
-	private void registerReceiver() {
-		final IntentFilter filter = new IntentFilter();
-		// Register our gps broadcast mReceiver
-		filter.addAction(RadioBeacon.INTENT_POSITION_UPDATE);
-		registerReceiver(mReceiver, filter);
-	}
-
-	/**
-	 * Unregisters receivers for GPS and wifi scan results.
-	 */
-	private void unregisterReceiver() {
-		try {
-			unregisterReceiver(mReceiver);
-		} catch (final IllegalArgumentException e) {
-			// do nothing here {@see http://stackoverflow.com/questions/2682043/how-to-check-if-receiver-is-registered-in-android}
-		}
 	}
 
 	@Override
@@ -156,7 +93,6 @@ public class GpxLoggerService extends AbstractService {
 			stopTracking();
 		}
 
-		unregisterReceiver();
 		super.onDestroy();
 	}
 
@@ -165,7 +101,7 @@ public class GpxLoggerService extends AbstractService {
 	 * @param gpsLocation
 	 */
 	private void performGpsUpdate(final Location gpsLocation, final String source) {
-		if 	(gpsLocation == null) {
+		if (gpsLocation == null) {
 			Log.e(TAG, "No GPS position available");
 			return;
 		}
@@ -178,18 +114,16 @@ public class GpxLoggerService extends AbstractService {
 
 	@Override
 	public final void onStartService() {
-		registerReceiver();
-
+		EventBus.getDefault().register(this);
 	}
 
 	@Override
 	public final void onStopService() {
 		Log.d(TAG, "OnStopService called");
-		unregisterReceiver();
-
+        EventBus.getDefault().unregister(this);
 	}
 
-	/**
+    /**
 	 * Starts gps logging .
 	 * @param sessionId 
 	 */
@@ -217,30 +151,38 @@ public class GpxLoggerService extends AbstractService {
 		return mIsTracking;
 	}
 
-	/**
-	 * Message mReceiver
-	 */
-	@Override
-	public final void onReceiveMessage(final Message msg) {
-		switch(msg.what) {
-			case RadioBeacon.MSG_START_TRACKING: 
-				Log.d(TAG, "GPX logger received MSG_START_TRACKING signal");
+    public void onEvent(onStartGpx event) {
+        Log.d(TAG, "ACK onStartGpx event");
+        startTracking(event.session);
+    }
 
-				final Bundle aBundle = msg.getData();
-				final int sessionId = aBundle.getInt(RadioBeacon.MSG_KEY, RadioBeacon.SESSION_NOT_TRACKING); 
+    public void onEvent(onStopTracking event){
+        Log.d(TAG, "ACK onStopTracking event");
+        stopTracking();
+        this.stopSelf();
+    }
 
-				startTracking(sessionId);
-				break;
-			case RadioBeacon.MSG_STOP_TRACKING:
-				Log.d(TAG, "GPX logger received MSG_STOP_TRACKING signal");
-				stopTracking();
-				
-				// before manager stopped the service
-				GpxLoggerService.this.stopSelf();
-				break;
-			default:
-				Log.d(TAG, "Unrecognized message received: " + msg.what);
-		}
+	public void onEvent(onLocationUpdate event){
+		//Log.d(TAG, "ACK onLocationUpdate event");
+        if (!mIsTracking) {
+            return;
+        }
+
+        final Location location = event.location;
+        final String source = event.source;
+
+        if (location.distanceTo(mMostCurrentLocation) > MIN_TRACKPOINT_DISTANCE) {
+            performGpsUpdate(location, source);
+        }
+        mMostCurrentLocation = location;
 	}
 
+    /**
+     * TODO: remove, not needed with greenrobot
+     * @param msg
+     */
+    @Override
+    public void onReceiveMessage(Message msg) {
+
+    }
 }

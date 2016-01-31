@@ -16,12 +16,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package org.openbmap.services.position;
+package org.openbmap.services.positioning;
 
 import android.location.Location;
 import android.util.Log;
 
-import org.openbmap.services.position.providers.LocationProvider;
+import org.openbmap.services.positioning.providers.LocationProvider;
 import org.openbmap.utils.GeometryUtils;
 
 import java.util.Iterator;

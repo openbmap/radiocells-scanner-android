@@ -33,58 +33,24 @@ package org.openbmap.services;
 
 import android.app.Service;
 import android.content.Intent;
-import android.os.Handler;
+import android.os.Binder;
 import android.os.IBinder;
 import android.os.Message;
-import android.os.Messenger;
-import android.os.RemoteException;
 import android.util.Log;
-
-import org.openbmap.RadioBeacon;
-
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 
 public abstract class AbstractService extends Service {
 
 	private static final String TAG = AbstractService.class.getSimpleName();
 
-	private final ArrayList<Messenger> mClients = new ArrayList<Messenger>(); // Keeps track of all current registered clients.
-	private final Messenger mMessenger = new Messenger(new ServiceManagerHandler(this)); // Target we publish for clients to send messages to ServiceManagerHandler.
-
-	/**
-	 * Handles incoming messages from service manager.
-	 */
-	private static class ServiceManagerHandler extends Handler {
-		private final WeakReference<AbstractService> mWeakRef;
-
-		public ServiceManagerHandler(final AbstractService activity) {
-			mWeakRef = new WeakReference<AbstractService>(activity);
-		}
-
-		@Override
-		public void handleMessage(final Message msg) {
-			final AbstractService service = mWeakRef.get();
-			if (service != null) {
-
-				switch (msg.what) {
-					case RadioBeacon.MSG_REGISTER_CLIENT:
-						Log.i(TAG, "Client registered: " + msg.replyTo);
-						service.mClients.add(msg.replyTo);
-						break;
-					case RadioBeacon.MSG_UNREGISTER_CLIENT:
-						Log.i(TAG, "Client un-registered: " + msg.replyTo);
-						service.mClients.remove(msg.replyTo);
-						break;            
-					default:
-						//super.handleMessage(msg);
-						service.onReceiveMessage(msg);
-				}
-			}
+	public class LocalBinder extends Binder {
+        AbstractService getService() {
+			return AbstractService.this;
 		}
 	}
 
-	@Override
+    private final IBinder mBinder = new LocalBinder();
+
+    @Override
 	public void onCreate() {
 		super.onCreate();
 		onStartService();
@@ -97,28 +63,14 @@ public abstract class AbstractService extends Service {
 
 	@Override
 	public final IBinder onBind(final Intent intent) {
-		return mMessenger.getBinder();
+		return mBinder;
 	}
 
 	@Override
 	public void onDestroy() {
-		onStopService();
-		super.onDestroy();
+        onStopService();
+        super.onDestroy();
 		Log.i(TAG, "Service stopped");
-	}    
-
-	protected final void send(final Message msg) {
-		Log.d(TAG, "Broadcasting message " + msg.toString() + " to " + mClients.size() + " clients");
-		for (int i = mClients.size() - 1; i >= 0; i--) {
-			try {
-				Log.i(TAG, "Sending message to clients: " + msg);
-				mClients.get(i).send(msg);
-			} catch (final RemoteException e) {
-				// The client is dead. Remove it from the list; we are going through the list from back to front so this is safe to do inside the loop.
-				Log.e(TAG , "Client is dead. Removing from list: " + i);
-				mClients.remove(i);
-			}
-		}    	
 	}
 
 	public abstract void onStartService();

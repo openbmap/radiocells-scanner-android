@@ -33,21 +33,6 @@ public final class RadioBeacon {
 	public static final String PACKAGE_NAME = RadioBeacon.class.getPackage().getName();
 
 	/**
-	 * Intent to start services
-	 */
-	public static final String INTENT_START_TRACKING = RadioBeacon.PACKAGE_NAME + ".intent.START_TRACKING";
-
-	/**
-	 * Intent to stop tracking and kill the services.
-	 */
-	public static final String INTENT_STOP_TRACKING = RadioBeacon.PACKAGE_NAME + ".intent.STOP_TRACKING";
-
-	/**
-	 * Intent to broadcast new GPS position
-	 */
-	public static final String INTENT_POSITION_UPDATE = RadioBeacon.PACKAGE_NAME + ".intent.POSITION_UPDATE";
-	
-	/**
 	 * Intent to update GPS status
 	 */
 	public static final String INTENT_POSITION_SAT_INFO = RadioBeacon.PACKAGE_NAME + ".intent.POSITION_SAT_INFO";

@@ -96,5 +96,5 @@
 
     <Preference
         android:key="advanced_settings"
-        android:title="@string/advanced_settings" />
+        android:title="@string/activity_advanced_settings_activity" />
 </PreferenceScreen>

@@ -8,8 +8,8 @@
         />
         <CheckBoxPreference
             android:key="delete_tracks"
-            android:summary="@string/prefs_delete_tracks_summary"
-            android:title="@string/prefs_delete_tracks_title"
+            android:summary="@string/prefs_auto_delete_tracks_summary"
+            android:title="@string/prefs_auto_delete_sessions_title"
             />
         <ListPreference android:title="@string/prefs_gpx_verbosity_title"
             android:summary="@string/prefs_gpx_verbosity_summary"

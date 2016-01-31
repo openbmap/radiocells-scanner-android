@@ -14,35 +14,15 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+*/
 
-package org.openbmap.commands;
+package org.openbmap.services.positioning.providers;
 
-import android.app.Activity;
-import android.widget.Toast;
+import android.location.Location;
+import android.os.Bundle;
 
-import org.openbmap.R;
-import org.openbmap.events.onStopTracking;
-
-import de.greenrobot.event.EventBus;
-
-/**
- * Dispatcher for external 'stop tracking' command
- * E.g. sent by external NFC apps like https://play.google.com/store/apps/details?id=com.jwsoft.nfcactionlauncher
- *
- * Don't use internally within Radiobeacon!
- */
-public class StopTracking  extends Activity {
-
-	@Override
-	protected final void onResume() {
-		super.onResume();
-
-        EventBus.getDefault().post(new onStopTracking());
-		Toast.makeText(this, R.string.stopped_tracking, Toast.LENGTH_SHORT).show();
-		this.finish();
-	}
-
-
-
+public interface LocationChangeListener {
+	void onLocationChanged(Location loc);
+	void onStatusChanged(String provider, int status, Bundle extras);
+	public void onSatInfo(int satCount);
 }

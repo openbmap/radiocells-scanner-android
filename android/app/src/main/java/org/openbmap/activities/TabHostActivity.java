@@ -21,12 +21,10 @@ package org.openbmap.activities;
 import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.FragmentManager;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.location.LocationManager;
@@ -48,18 +46,18 @@ import android.widget.Toast;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
+import org.openbmap.events.onStopTracking;
 import org.openbmap.services.MasterBrainService;
 import org.openbmap.utils.ActivityUtils;
 
+import de.greenrobot.event.EventBus;
+
 /**
- * HostActity for "tracking" mode. It hosts the tabs "Stats", "Wifi Overview", "Cell Overview" and "Map".
- * HostActity is also in charge of service communication. 
- * Services are automatically started onCreate() and onResume()
- * They can be manually stopped by calling INTENT_STOP_TRACKING.
- * 
+ * TabHostActivity for "tracking" mode. It hosts the tabs "Stats", "Wifi Overview", "Cell Overview" and "Map".
+ * TabHostActivity is also in charge of service communication.
  */
-public class HostActivity extends AppCompatActivity {
-	private static final String	TAG	= HostActivity.class.getSimpleName();
+public class TabHostActivity extends AppCompatActivity {
+	private static final String	TAG	= TabHostActivity.class.getSimpleName();
 
 	/**
 	 * Tab pager
@@ -79,8 +77,6 @@ public class HostActivity extends AppCompatActivity {
     /** Flag indicating whether we have called bind on the service. */
     boolean mIsBound;
 
-    private CustomViewPagerAdapter mTabsAdapter;
-
     /**
      * Handler of incoming messages from service.
      */
@@ -92,11 +88,11 @@ public class HostActivity extends AppCompatActivity {
                     int reason = msg.arg1;
 
                     if (reason == RadioBeacon.SHUTDOWN_REASON_LOW_POWER) {
-                        Toast.makeText(HostActivity.this, getString(R.string.battery_warning), Toast.LENGTH_LONG).show();
+                        Toast.makeText(TabHostActivity.this, getString(R.string.battery_warning), Toast.LENGTH_LONG).show();
                     }
 
                     doUnbindService();
-                    HostActivity.this.finish();
+                    TabHostActivity.this.finish();
                     break;
                 default:
                     super.handleMessage(msg);
@@ -161,10 +157,8 @@ public class HostActivity extends AppCompatActivity {
      * applications replace our component.
      */
     void doBindService() {
-
-        bindService(new Intent(HostActivity.this, MasterBrainService.class), mConnection, Context.BIND_AUTO_CREATE);
+        bindService(new Intent(TabHostActivity.this, MasterBrainService.class), mConnection, Context.BIND_AUTO_CREATE);
         mIsBound = true;
-        //mCallbackText.setText("Binding.");
     }
 
     void doUnbindService() {
@@ -189,20 +183,6 @@ public class HostActivity extends AppCompatActivity {
         }
     }
 
-	/**
-	 * Receives GPS location updates 
-	 */
-	private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-
-		/**
-		 * Handles start and stop service requests.
-		 */
-		@Override
-		public void onReceive(final Context context, final Intent intent) {
-			Log.d(TAG, "Received intent " + intent.getAction().toString());
-		}
-	};
-
 	/** Called when the activity is first created. */
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
@@ -210,8 +190,6 @@ public class HostActivity extends AppCompatActivity {
 
 		// get shared preferences
 		mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-		// UI related stuff
 
 		initUi();
 
@@ -225,41 +203,30 @@ public class HostActivity extends AppCompatActivity {
 	@Override
 	protected final void onResume() {
 		super.onResume();
-
         doBindService();
-		setupBroadcastReceiver();
 	}
 
 	@Override
 	protected final void onPause() {
         doUnbindService();
+        // ?? stopTracking();
 		super.onPause();
 	}
 
 	@Override
 	protected final void onStop() {
-		// TODO: if receivers are unregistered on stop, there is no way to start/stop services via receivers from outside
-		unregisterReceiver();
+        doUnbindService();
+        // ?? stopTracking();
 		super.onStop();
 	}
 
 	@Override
 	protected final void onDestroy() {
-		unregisterReceiver();
+        Log.d(TAG, "Destroying TabHost");
+    //    EventBus.getDefault().unregister(this);
+        doUnbindService();
+        // ?? stopTracking();
 		super.onDestroy();
-	}
-
-	/**
-	 * Unregisters receivers for GPS and wifi scan results.
-	 */
-	private void unregisterReceiver() {
-		try {
-			Log.i(TAG, "Unregistering broadcast receivers");
-			unregisterReceiver(mReceiver);
-		} catch (final IllegalArgumentException e) {
-			// do nothing here {@see http://stackoverflow.com/questions/2682043/how-to-check-if-receiver-is-registered-in-android}
-			return;
-		}
 	}
 
 	/**
@@ -281,13 +248,7 @@ public class HostActivity extends AppCompatActivity {
 	public final boolean onOptionsItemSelected(final MenuItem item) {
 		switch (item.getItemId()) {
 			case R.id.menu_stoptracking:
-				final Intent stop = new Intent(RadioBeacon.INTENT_STOP_TRACKING);
-				sendBroadcast(stop);
-
-				final Intent intent = new Intent(this, StartscreenActivity.class);
-				intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-				startActivity(intent);
-				this.finish();
+                stopTracking();
 				break;
 			default:
 				break; 
@@ -295,7 +256,17 @@ public class HostActivity extends AppCompatActivity {
 		return super.onOptionsItemSelected(item);
 	}
 
-	/**
+    private void stopTracking() {
+        Log.d(TAG, "REQ StopTrackingEvent");
+                EventBus.getDefault().post(new onStopTracking());
+
+        final Intent intent = new Intent(this, StartscreenActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        this.finish();
+    }
+
+    /**
 	 * Checks whether GPS is enabled.
 	 * If not, user is asked whether to activate GPS.
 	 */
@@ -307,7 +278,7 @@ public class HostActivity extends AppCompatActivity {
 			.setTitle(R.string.no_gps)
 			.setIcon(android.R.drawable.ic_dialog_alert)
 			.setMessage(
-					R.string.turnOnGpsQuestion)
+					R.string.turn_on_gps_question)
 					.setCancelable(true)
 					.setPositiveButton(android.R.string.yes,
 							new DialogInterface.OnClickListener() {
@@ -327,15 +298,6 @@ public class HostActivity extends AppCompatActivity {
 						}
 					}).create().show();
 		}
-	}
-
-	/**
-	 * Setups receiver for STOP_TRACKING and ACTION_BATTERY_LOW messages
-	 */
-	private void setupBroadcastReceiver() {
-		final IntentFilter filter = new IntentFilter();
-		filter.addAction(RadioBeacon.INTENT_STOP_TRACKING);
-		registerReceiver(mReceiver, filter);		
 	}
 
 	/**
@@ -366,39 +328,5 @@ public class HostActivity extends AppCompatActivity {
         mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.wifis)), WifiListContainer.class, null);
         mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.cells)), CellsListContainer.class, null);
         mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.map)), MapViewActivity.class, null);
-
-
- /*
-        final ActionBar.TabListener tabListener = new ActionBar.TabListener() {
-            @Override
-            public void onTabSelected(final Tab tab, final FragmentTransaction ft) {
-                // Highlight actionbar
-                Object tag = tab.getTag();
-                for (int i=0; i < getSupportActionBar().getTabCount(); i++) {
-                    if (getSupportActionBar().getTabAt(i).getTag() == tag) {
-                        mPager.setCurrentItem(0);
-                        mPager.setCurrentItem(i);
-                    }
-                }
-				//mPager.setCurrentItem(tab.getPosition());
-            }
-
-            @Override
-            public void  onTabUnselected(final Tab tab, final FragmentTransaction ft) {
-                // TODO Auto-generated method stub
-            }
-
-            @Override
-            public void onTabReselected(final Tab tab, final FragmentTransaction ft) {
-                // TODO Auto-generated method stub
-            }
-        };
-*/
-        // set contents
-
-
-
-
-
 	}
 }

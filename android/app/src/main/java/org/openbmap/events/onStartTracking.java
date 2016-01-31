@@ -14,15 +14,28 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
-package org.openbmap.services.position.providers;
+package org.openbmap.events;
 
-import android.location.Location;
-import android.os.Bundle;
+import org.openbmap.RadioBeacon;
 
-public interface LocationChangeListener {
-	void onLocationChange(Location loc);
-	void onStatusChanged(String provider, int status, Bundle extras);
-	public void onSatInfo(int satCount);
+public class onStartTracking {
+    public final int session;
+
+    /**
+     * Default constructor: no session id provided, database will auto-assign session id
+     */
+     public onStartTracking() {
+        this.session = RadioBeacon.SESSION_NOT_TRACKING;
+     }
+
+    /**
+     * Constructor to resume an existing session
+     * @param session session id to resume
+     */
+    public onStartTracking(int session) {
+        this.session = session;
+    }
+
 }
