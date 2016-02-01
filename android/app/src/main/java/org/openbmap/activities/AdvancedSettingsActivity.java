@@ -78,7 +78,7 @@ public class AdvancedSettingsActivity extends PreferenceActivity {
 				final LocationResult locationResult = new LocationResult() {
 					@Override
 					public void gotLocation(final Location location) {
-						final String blacklistPath = AdvancedSettingsActivity.this.getExternalFilesDir(null).getAbsolutePath() + Preferences.BLACKLIST_SUBDIR;
+						final String blacklistPath = AdvancedSettingsActivity.this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.BLACKLIST_SUBDIR;
 						final String filename = blacklistPath + File.separator + RadioBeacon.DEFAULT_LOCATION_BLOCK_FILE;
 						final String blocker = String.format("<ignorelist>"
 								+ "<location comment=\"homezone\">"
