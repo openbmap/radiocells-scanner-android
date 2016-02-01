@@ -106,14 +106,22 @@ public class AdvancedSettingsActivity extends PreferenceActivity {
 								bw.append(blocker);
 								bw.close();
 								Log.i(TAG, "Created default location blacklist");
-								Toast.makeText(AdvancedSettingsActivity.this, getResources().getString(R.string.location_blacklist_saved), Toast.LENGTH_LONG).show();
+                                AdvancedSettingsActivity.this.runOnUiThread(new Runnable() {
+                                    public void run() {
+                                        Toast.makeText(AdvancedSettingsActivity.this, getResources().getString(R.string.location_blacklist_saved), Toast.LENGTH_LONG).show();
+                                    }
+                                });
 								new MediaScanner(AdvancedSettingsActivity.this, folder);
 							} catch (final IOException e) {
 								Log.e(TAG, "Error writing blacklist");
 							}
 						} else {
 							Log.e(TAG, "Folder not accessible: can't write blacklist");
-							Toast.makeText(AdvancedSettingsActivity.this, getResources().getString(R.string.error_writing_location_blacklist), Toast.LENGTH_LONG).show();
+                            AdvancedSettingsActivity.this.runOnUiThread(new Runnable() {
+                                public void run() {
+                                    Toast.makeText(AdvancedSettingsActivity.this, getResources().getString(R.string.error_writing_location_blacklist), Toast.LENGTH_LONG).show();
+                                }
+                            });
 						}
 					}
 				};
