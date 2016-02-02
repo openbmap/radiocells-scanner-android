@@ -1,4 +1,117 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="app_name">Radiobeacon</string>
-</resources>
+<string name="prefs">Ajustes</string>
+	<string name="prefs_wifi_catalog">Catálogo WiFi</string>
+	<string name="prefs_maps">Mapas</string>
+	<string name="prefs_gps">GPS</string>
+	<string name="prefs_gps_os_settings">Ajustes del GPS del teléfono</string>
+	<string name="prefs_gps_os_settings_summary">Pulse para ver los ajustes de su teléfono</string>
+	<string name="prefs_check_gps_startup">Comprobar GPS al iniciar</string>
+	<string name="prefs_gps_logging_interval">Intervalo de registro del GPS</string>
+	<string name="prefs_gps_logging_interval_seconds">segundos</string>
+	<string name="prefs_save_gps_track">Guardar traza GPX</string>
+	<string name="prefs_save_gps_track_summary">"Crear un archivo GPX para cada subida de sesión. Encontrar traza de GPX en el directorio de dato.\n(Nota: las mismas trazas GPX nunca se cargan) "</string>
+	<string name="prefs_ui">Interfaz de usuario</string>
+	<string name="prefs_map_none">Ninguno</string>
+	<string name="prefs_ui_keep_screen_on">Mantener la pantalla encendida</string>
+	<string name="prefs_credentials">Credenciales</string>
+	<string name="prefs_ui_keep_screen_on_summary">"Prevenir el bloqueo de la pantalla luego de un tiempo de inactividad "</string>
+	<string name="prefs_credentials_user">Inicio de sesión</string>
+	<string name="prefs_credentials_password">Contraseña</string>
+	<string name="prefs_save_wifis_summary">Activar para analizar WiFis</string>
+	<string name="prefs_save_wifis">Guardar WiFis</string>
+	<string name="prefs_data_map">Mapa sin conexión</string>
+	<string name="prefs_data_map_summary">"Busca en el repositorio de tu mapa sin conexión "</string>
+	<string name="prefs_data_ref_database">Selecciona el catálogo de WiFi</string>
+	<string name="prefs_download_wifi_catalog">Descargar catálogo de WiFi</string>
+	<string name="prefs_data_ref_database_summary">"Instalar un catálogo de WiFi para ver todos los WiFis conocidos en el mapa de openbmap. Esto le ayuda, cuando busca nuevos WiFis "</string>
+	<string name="prefs_download_wifi_catalog_summary">Tamaño actual (~1 GB)</string>
+	<string name="prefs_min_wifi_distance">Intervalo de registro de WiFi</string>
+	<string name="prefs_min_wifi_distance_hint">"Distancia mínima entre dos análisis de WiFi (en metros) "</string>
+	<string name="prefs_req_gps_accuracy">Se requiere la precisión del GPS</string>
+	<string name="prefs_display_always_on">Pantalla siempre encendida</string>
+	<string name="prefs_display_always_on_summary">"La pantalla estará siempre encendida mientras registra. Desactive para ahorrar batería "</string>
+	<string name="prefs_gps_provider">Proveedor de GPS</string>
+	<string name="prefs_gps_provider_summary">Seleccionar fuente del GPS</string>
+
+	<string name="prefs_debug">Ajustes de depuración</string>
+	<string name="prefs_simulate_upload_summary">No subir al servidor</string>
+	<string name="prefs_simulate_upload">Saltear el subir a openbmap.org</string>
+	<string name="prefs_privacy">Privacidad</string>
+	<string name="prefs_folder_settings">Ajustes de carpeta</string>
+
+	<string name="prefs_anonymise_ssid">Anonimizar SSID al subir archivos</string>
+
+	<string name="prefs_map_folder">Carpeta del mapa</string>
+	<string name="prefs_data_map_folder_summary">Seleccionar carpeta del mapa</string>
+
+	<string name="prefs_wifi_catalog_folder">Carpeta del catálogo de WiFi</string>
+	<string name="prefs_wifi_catalog_folder_summary">"Seleccionar carpeta del catálogo de WiFi "</string>
+	<string name="operator">Operador</string>
+	<string name="type">Tipo</string>
+	<string name="level">Nivel</string>
+	<string name="na">S/D</string>
+	<string name="turnOnGpsQuestion">¡El GPS está apagado! ¿Desea activarlo ahora?</string>
+	<string name="networkTypeCaption">Tecnología</string>
+	<string name="baseIdCaption">ID de base</string>
+	<string name="operatorCaption">Operador</string>
+	<string name="strenghtDbmCaption">Fuerza (dbm)</string>
+	<string name="radiobeacon_licence">Licenciado bajo AGPL v3</string>
+	<string name="openbmap_licence_caption">Datos: OpenBmap</string>
+	<string name="openbmap_license">CC-by-SA 3.0 / Licencia Odbl</string>
+	<string name="mapsforge_source">Librería de mapas: Librería Mapsforge</string>
+	<string name="mapsforge_license">Licencia GNU LGPL3</string>
+	<string name="credits">Créditos</string>
+	<string name="map_data_source">Datos del mapa: OpenStreetMap</string>
+	<string name="map_data_license">Licencia Odbl</string>
+	<string name="sessions">Sesiones</string>
+	<string name="n_a">S/D</string>
+	<string name="frequency">Frecuencia</string>
+	<string name="channel">Canal</string>
+	<string name="capabilities">Capacidades</string>
+	<string name="date">Fecha</string>
+	<string name="please_select_map">¡Seleccione un archivo de mapa primero!</string>
+	<string name="error_dowload_error">"Error: Descarga fallida. ¿Quizás se interrumpió la conexión? "</string>
+	<string name="warning_outdated_client">Su versión de cliente es muy vieja.\n¡Por favor, actualice!</string>
+	<string name="prefs_logging">Registro</string>
+	<string name="prefs_check_gps_startup_summary">"Advertir si el GPS está desactivado y ofrecer activarlo "</string>
+	<string name="prefs_gps_logging_interval_summary">"Utilizar 0 para el más corto posible (afecta la vida de la batería) "</string>
+	<string name="prefs_credentials_user_summary">Si no tienes una cuenta todavía, créala en http://radiocells.org (Requerido sólo para subidas)</string>
+	<string name="prefs_save_cells">Guardar redes móviles</string>
+	<string name="prefs_save_cells_summary">"Activar para analizar redes móviles "</string>
+	<string name="prefs_min_cell_distance">Intervalo de registro de redes móviles</string>
+	<string name="prefs_min_cell_distance_hint">"Distancia mínima entre dos análisis de redes móviles (en metros) "</string>
+	<string name="prefs_req_gps_accuracy_hint">"Si la precisión del GPS es peor que el umbral, los resultados analizados se descartan (en metros) "</string>
+	<string name="prefs_keep_export_files_summary">"Mantener una copia local de archivos subidos.\nEncontrar archivos en el directorio de datos.\n(Útil para depurar) "</string>
+	<string name="prefs_keep_export_files">Mantener archivos subidos</string>
+	<string name="prefs_clean_database_summary">"La base de datos crece con el tiempo. Pulse para liberar espacio no utilizado para reorganizar la base de datos "</string>
+	<string name="prefs_clean_database_title">Reorganizar base de datos</string>
+	<string name="prefs_block_homezone_summary">"Bloques de registro en 500m cerca de la posición actual. Puede editar custom_location.xml directamente en la tarjeta SD "</string>
+	<string name="prefs_block_homezone_title">No analizar mi patio trasero</string>
+	<string name="prefs_anonymise_ssid_summary">"Reemplazar SSIDs en subidas con un hash MD5 para mitigar problemas de privacidad (el SSID \'John Does Wifi\' se convertiría en algo así como \'FD33531\') "</string>
+	<string name="cell">Red móvil</string>
+	<string name="dbm">dBm</string>
+	<string name="ssid">SSID</string>
+	<string name="gsm">GSM</string>
+	<string name="edge">EDGE</string>
+	<string name="umts">UMTS</string>
+	<string name="cdma">CDMA</string>
+	<string name="edvo_0">EDVO0</string>
+	<string name="edvo_a">EDVOA</string>
+	<string name="onexrtt">1xRTT</string>
+	<string name="hsdpa">HSDPA</string>
+	<string name="hsupa">HSUPA</string>
+	<string name="hspa">HSPA</string>
+	<string name="iden">IDEN</string>
+
+	<string name="edvo_b">EDVOB</string>
+	<string name="lte">LTE</string>
+	<string name="ehrpd">eHRPD</string>
+	<string name="hspa_p">HSPA+</string>
+
+	<string name="cellIdCaption">ID de red móvil</string>
+	<string name="isServingCellCaption">¿La red móvil está operando?</string>
+	<string name="id">#</string>
+	<string name="total_empty">(--)</string>
+	</resources>
