@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <!-- Preferences -->
-    <string name="prefs">Settings</string>
+    <string name="prefs">Instellingen</string>
     <string name="prefs_logging">Logging</string>
     <string name="prefs_wifi_catalog">Wifi Catalog</string>
-    <string name="prefs_maps">Maps</string>
+    <string name="prefs_maps">Kaarten</string>
     <string name="prefs_gps_os_settings">Phone\'s GPS settings</string>
     <string name="prefs_gps_os_settings_summary">Click to see your phone\'s GPS settings</string>
     <string name="prefs_check_gps_startup">Check GPS at startup</string>
@@ -12,31 +12,29 @@
 		enable it
 	</string>
     <string name="prefs_gps_logging_interval">GPS logging interval</string>
-	<string name="prefs_gps_logging_interval_summary">Use 0 for the shortest possible (affects battery
-		life)
-	</string>
-    <string name="prefs_gps_logging_interval_seconds">seconds</string>
-    <string name="prefs_save_gps_track">Save GPX track</string>
+	<string name="prefs_gps_logging_interval_summary">"Gebruik 0 voor de kortst mogelijke (invloed op de levensduur van de batterij) "</string>
+    <string name="prefs_gps_logging_interval_seconds">seconden</string>
+    <string name="prefs_save_gps_track">GPX track opslaan</string>
 	<string name="prefs_save_gps_track_summary">Create a GPX file for each uploaded session.Find
 		gpx tracks in data directory.\n(Note: GPX tracks themselves are never
 		uploaded)
 	</string>
     <string name="prefs_ui">User interface</string>
-    <string name="prefs_map_none">None</string>
+    <string name="prefs_map_none">Geen</string>
     <string name="prefs_ui_keep_screen_on">Keep screen on</string>
 	<string name="prefs_ui_keep_screen_on_summary">Prevent screen locking after idle time
 	</string>
     <string name="prefs_credentials">Credentials</string>
     <string name="prefs_credentials_user">Login</string>
     <string name="prefs_credentials_user_summary">If you don\'t have an account yet, create on at http://radiocells.org (Required for upload only)</string>
-    <string name="prefs_credentials_password">Password</string>
-    <string name="prefs_credentials_password_summary" translatable="false"></string>
-    <string name="prefs_save_cells">Save Cells</string>
+    <string name="prefs_credentials_password">Wachtwoord</string>
+    <string name="prefs_credentials_password_summary" translatable="false"/>
+    <string name="prefs_save_cells">Cellen opslaan</string>
 	<string name="prefs_save_cells_summary">Activate to scan for cells
 	</string>
     <string name="prefs_save_wifis_summary">Activate to scan for wifis</string>
-    <string name="prefs_save_wifis">Save Wifis</string>
-    <string name="prefs_data_map">Offline map</string>
+    <string name="prefs_save_wifis">Wifis opslaan</string>
+    <string name="prefs_data_map">Offline kaart</string>
 	<string name="prefs_data_map_summary">Browse your offline map repository
 	</string>
     <string name="prefs_data_ref_database">Select Wifi Catalog</string>
@@ -45,9 +43,9 @@
 	</string>
     <string name="prefs_download_wifi_catalog">Download Wifi Catalog</string>
     <string name="prefs_download_wifi_catalog_summary">Current size (~1 GB)</string>
-    <string name="prefs_min_cell_distance">Cell log interval</string>
-    <string name="prefs_min_cell_distance_hint">Minimum distance between two cell scans (in meter)</string>
-    <string name="prefs_min_wifi_distance">Wifi log interval</string>
+    <string name="prefs_min_cell_distance">Interval voor het logboek van cel</string>
+    <string name="prefs_min_cell_distance_hint">"Minimum distance between two cell scans (in meter) "</string>
+    <string name="prefs_min_wifi_distance">Interval voor het logboek van WiFi</string>
 	<string name="prefs_min_wifi_distance_hint">Minimum distance between two wifi scans (in
 		meters)
 	</string>
@@ -278,8 +276,9 @@
     <string name="activity_wifi_details_activity">Wifi Details</string>
     <string name="activity_cells_list_container">Cells</string>
     <string name="activity_cell_details">Cell Details</string>
-    <string name="activity_map_view_activity">Maps</string>
+    <string name="activity_map_view_activity">Kaarten</string>
     <string name="activity_settings_activity">Preferences</string>
     <string name="activity_credits_activity">Credits</string>
     <string name="error_opening_wifi_catalog">Error while opening wifi catalog</string>
-</resources>
+<string name="prefs_gps"/>
+	</resources>
