@@ -54,7 +54,7 @@
 	<string name="na">S/D</string>
 	<string name="turnOnGpsQuestion">¡El GPS está apagado! ¿Desea activarlo ahora?</string>
 	<string name="networkTypeCaption">Tecnología</string>
-	<string name="baseIdCaption">ID de base</string>
+	<string name="baseIdCaption">Base ID</string>
 	<string name="operatorCaption">Operador</string>
 	<string name="strenghtDbmCaption">Fuerza (dbm)</string>
 	<string name="radiobeacon_licence">Licenciado bajo AGPL v3</string>
@@ -110,8 +110,10 @@
 	<string name="ehrpd">eHRPD</string>
 	<string name="hspa_p">HSPA+</string>
 
-	<string name="cellIdCaption">ID de red móvil</string>
+	<string name="cellIdCaption">Cell Id</string>
 	<string name="isServingCellCaption">¿La red móvil está operando?</string>
 	<string name="id">#</string>
 	<string name="total_empty">(--)</string>
+	<string name="activity_settings_activity">Preferencias</string>
+	<string name="activity_map_view_activity"></string>
 	</resources>
