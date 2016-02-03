@@ -9,16 +9,14 @@
 	<string name="prefs_gps_os_settings">Phone\'s GPS settings</string>
 	<string name="prefs_gps_os_settings_summary">Click to see your phone\'s GPS settings</string>
 	<string name="prefs_check_gps_startup">Check GPS at startup</string>
-	<string name="prefs_check_gps_startup_summary">Warn if GPS is disabled at startup, and offer to
-		enable it
-	</string>
+	<string name="prefs_check_gps_startup_summary">Warn if GPS is disabled at startup</string>
 	<string name="prefs_gps_logging_interval">GPS logging interval</string>
 	<string name="prefs_gps_logging_interval_summary">Use 0 for the shortest possible (affects battery
 		life)
 	</string>
 	<string name="prefs_gps_logging_interval_seconds">seconds</string>
 	<string name="prefs_save_gps_track">Save GPX track</string>
-	<string name="prefs_save_gps_track_summary">Create a GPX file for each uploaded session.Find
+	<string name="prefs_save_gps_track_summary">Create a GPX file for each uploaded session. Find
 		gpx tracks in data directory.\n(Note: GPX tracks themselves are never
 		uploaded)
 	</string>
@@ -234,7 +232,7 @@
 	<string name="please_stay_patient">Please stay patient..</string>
 	<string name="export_error_title">Export error</string>
 	<string name="export_error">Try again later. If problem persists, please file a
-		bug at\nhttp://code.google.com/p/openbmap/issues/list
+		bug at\nhttps://github.com/wish7code/openbmap/issues
 	</string>
 	<string name="location_blacklist_saved">Location blacklist saved!</string>
 	<string name="error_writing_location_blacklist">Error writing location blacklist</string>
@@ -274,7 +272,6 @@
 	<string name="chart_library_license" translatable="false">GNU Lesser General Public License (LGPL)</string>
 	<string name="no_map_file_selected">No map file selected!</string>
 	<string name="saved_waypoint">Saved waypoint</string>
-	<string name="at">" at "</string>
 	<string name="yes">Yes</string>
 	<string name="no">No</string>
 	<string name="gpx_export_failed">GPX export failed</string>
@@ -287,7 +284,7 @@
 	<string name="other_download_active">Please wait for current download to complete!</string>
 	<string name="meter" translatable="false">m</string>
 	<string name="sort_by_timestamp">Sort by timestamp</string>
-	<string name="sort_by_ssid">Sort by SSID</string>
+	<string name="sort_by_ssid">Sort A-Z</string>
 	<string name="show_only_new">Show only new</string>
 	<string name="show_only_free">Show only free</string>
 	<string name="show_all">Show all</string>
@@ -317,4 +314,5 @@
 	<string name="activity_settings_activity">Preferences</string>
 	<string name="activity_credits_activity">Credits</string>
 	<string name="error_opening_wifi_catalog">Error while opening wifi catalog</string>
+	<string name="error_accessing_wifi_catalog">Error accessing wifi catalog</string>
 </resources>

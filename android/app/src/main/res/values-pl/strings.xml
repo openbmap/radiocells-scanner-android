@@ -192,8 +192,6 @@
     <string name="chart_library">Biblioteka dla wykresu: GraphView</string>
     <string name="no_map_file_selected">Nie wybrano pliku mapy!</string>
     <string name="saved_waypoint">Zapisano waypoint</string>
-    <string name="at">" na "</string>
-    <!-- (at) @ is called monkey=małpa in polish. i guess its not? this -->
     <string name="yes">Tak</string>
     <string name="no">Nie</string>
     <string name="gpx_export_failed">Eksport GPX nie powiódł się</string>

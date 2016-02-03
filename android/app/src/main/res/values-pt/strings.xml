@@ -241,7 +241,6 @@
     <string name="chart_library">Chart library: GraphView</string>
     <string name="no_map_file_selected">No map file selected!</string>
     <string name="saved_waypoint">Saved waypoint</string>
-    <string name="at">" at "</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="gpx_export_failed">GPX export failed</string>

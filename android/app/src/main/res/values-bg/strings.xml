@@ -206,8 +206,7 @@
     <string name="database_lock_error">Couldn\'t lock database. Try again later..</string>
     <string name="please_stay_patient">Please stay patient..</string>
     <string name="export_error_title">Export error</string>
-	<string name="export_error">Try again later. If problem persists, please file a
-		bug at\nhttp://code.google.com/p/openbmap/issues/list
+	<string name="export_error">Try again later. If problem persists, please file a bug at\nhttps://github.com/wish7code/openbmap/issues
 	</string>
     <string name="location_blacklist_saved">Location blacklist saved!</string>
     <string name="error_writing_location_blacklist">Error writing location blacklist</string>
@@ -241,7 +240,6 @@
     <string name="chart_library">Chart library: GraphView</string>
     <string name="no_map_file_selected">No map file selected!</string>
     <string name="saved_waypoint">Saved waypoint</string>
-    <string name="at">" at "</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="gpx_export_failed">GPX export failed</string>
