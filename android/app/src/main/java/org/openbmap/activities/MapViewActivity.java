@@ -1048,7 +1048,7 @@ public class MapViewActivity extends Fragment implements
      */
     @Override
     public void onLongPress(final LatLong tapLatLong, final Point thisXY, final Point tapXY) {
-        Toast.makeText(this.getActivity(), this.getActivity().getString(R.string.saved_waypoint) + this.getActivity().getString(R.string.at) + "\n" + tapLatLong.toString(), Toast.LENGTH_LONG).show();
+        Toast.makeText(this.getActivity(), this.getActivity().getString(R.string.saved_waypoint)  + "\n" + tapLatLong.toString(), Toast.LENGTH_LONG).show();
 
         final DataHelper dbHelper = new DataHelper(getActivity().getApplicationContext());
 

@@ -22,6 +22,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
@@ -138,8 +139,13 @@ public class WifiDetailsActivity extends FragmentActivity {
                     final String manufactor = cur.getString(cur.getColumnIndex("manufactor"));
                     tvManufactor.setText(manufactor);
                 }
-            } catch (SQLiteCantOpenDatabaseException e) {
+            } catch (SQLiteCantOpenDatabaseException e1) {
+                Log.e(TAG, e1.getMessage());
                 Toast.makeText(this, getString(R.string.error_opening_wifi_catalog), Toast.LENGTH_LONG).show();
+                return;
+            } catch (SQLiteException e2) {
+                Log.e(TAG, e2.getMessage());
+                Toast.makeText(this, R.string.error_accessing_wifi_catalog, Toast.LENGTH_LONG).show();
                 return;
             }
         }
