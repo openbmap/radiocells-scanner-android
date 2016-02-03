@@ -1,13 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <!-- Preferences -->
-    <string name="prefs">Settings</string>
     <string name="prefs_logging">Logging</string>
-    <string name="prefs_wifi_catalog">Wifi Catalog</string>
-    <string name="prefs_maps">Maps</string>
     <string name="prefs_gps_os_settings">Phone\'s GPS settings</string>
     <string name="prefs_gps_os_settings_summary">Click to see your phone\'s GPS settings</string>
-    <string name="prefs_check_gps_startup">Check GPS at startup</string>
 	<string name="prefs_check_gps_startup_summary">Warn if GPS is disabled at startup, and offer to
 		enable it
 	</string>
@@ -15,8 +11,6 @@
 	<string name="prefs_gps_logging_interval_summary">Use 0 for the shortest possible (affects battery
 		life)
 	</string>
-    <string name="prefs_gps_logging_interval_seconds">seconds</string>
-    <string name="prefs_save_gps_track">Save GPX track</string>
 	<string name="prefs_save_gps_track_summary">Create a GPX file for each uploaded session.Find
 		gpx tracks in data directory.\n(Note: GPX tracks themselves are never
 		uploaded)
@@ -279,7 +273,15 @@
     <string name="activity_cells_list_container">Cells</string>
     <string name="activity_cell_details">Cell Details</string>
     <string name="activity_map_view_activity">Maps</string>
-    <string name="activity_settings_activity">Preferences</string>
-    <string name="activity_credits_activity">Credits</string>
-    <string name="error_opening_wifi_catalog">Error while opening wifi catalog</string>
-</resources>
+    <string name="app_name">Radiobeacon</string>
+<string name="prefs">Paramètres</string>
+	<string name="prefs_wifi_catalog">Catalogue de WiFi</string>
+	<string name="prefs_maps">Cartes</string>
+	<string name="prefs_gps">GPS</string>
+	<string name="prefs_check_gps_startup">Vérifier le GPS au démarrage</string>
+	<string name="prefs_gps_logging_interval_seconds">secondes</string>
+	<string name="prefs_save_gps_track">Créer un fichier GPX</string>
+	<string name="activity_credits_activity">Crédits</string>
+	<string name="error_opening_wifi_catalog"/>
+<string name="activity_settings_activity">Préférences</string>
+	</resources>
