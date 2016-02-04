@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <resources>
     <string name="activity_settings_activity">Einstellungen</string>
     <string name="accuracy">Genauigkeit</string>
@@ -97,7 +97,7 @@
     <string name="prefs_simulate_upload_summary">Daten nur exportieren, nicht hochladen</string>
     <string name="prefs_ui_keep_screen_on_summary">Verhindert, dass der Bildschirm automatisch ausgeschaltet wird</string>
     <string name="prefs_wifi_catalog_folder">Ordner WLAN-Verzeichnis</string>
-    <string name="prefs_wifi_catalog_folder_summary">WLAN-Verzeichnis auswählen</string>
+    <string name="prefs_wifi_catalog_folder_summary">"Wähle den Order, in dem WLAN-Verzeichnisse gespeichert werden "</string>
     <string name="preparing_export">Export vorbereiten</string>
     <string name="warning_outdated_client">Deine Version ist veraltet.\nBitte aktualisiere!</string>
     <string name="warning_session_closed">Fortsetzen nicht möglich! Session wurde bereits hochgeladen</string>
@@ -114,7 +114,7 @@
     <string name="overview">Übersicht</string>
     <string name="please_select_map">Bitte zuerst eine Karte auswählen!</string>
     <string name="prefs_check_gps_startup">Prüfe bei Start, ob GPS aktiviert</string>
-    <string name="prefs_data_ref_database">WLAN-Verzeichnis auswählen</string>
+    <string name="prefs_data_ref_database">WLAN-Verzeichnis</string>
     <string name="prefs_min_cell_distance_hint">Mindestabstand zwischen Funkzellen-Scans (in Meter)</string>
     <string name="session_uploaded">Session hochgeladen</string>
     <string name="session_already_uploaded">Session wurde bereits hochgeladen</string>
@@ -146,7 +146,7 @@
     <string name="prefs_check_map_repo">Prüfe Server...</string>
     <string name="prefs_data_map_folder_summary">Karten-Ordner auswählen</string>
     <string name="prefs_data_map_summary">Eine lokal gespeicherte Karte auswählen</string>
-    <string name="prefs_data_ref_database_summary">Lade das WLAN-Verzeichnis herunter, um alle bereits bekannten WLANSs auf der Karte anzuzeigen. Dies hilft dir, noch unerschlossene Gebiete zu entdecken</string>
+    <string name="prefs_data_ref_database_summary">"Wähle ein WLAN-Verzeichnis, um alle bereits bekannten WLANSs auf der Karte anzuzeigen. Dies hilft dir, noch unerschlossene Gebiete zu entdecken "</string>
     <string name="prefs_display_always_on_summary">Lässt den Bildschirm dauerhaft an. Deaktiviere diese Option, um Energie zu sparen</string>
     <string name="prefs_get_maps_summary">Offline-Karten</string>
     <string name="prefs_get_maps_title">Offline-Karte herunterladen</string>
@@ -211,4 +211,5 @@
     <string name="warning_client_version_not_checked">Server nicht erreichbar. Entweder bist Du offline oder wir haben ein Server-Problem!</string>
     <string name="warning_no_server_connection">Server nicht erreichbar. Bist Du online?</string>
     <string name="warning_sd_not_writable">Fehler beim Zugriff auf die SD-Karte. Hast Du sie zufällig mit Deinem Desktop-PC im Zugriff?</string>
+<string name="error_accessing_wifi_catalog">Fehler beim Zugriff auf das WLAN-Verzeichnis</string>
 </resources>
