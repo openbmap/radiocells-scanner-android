@@ -1,2 +1,12 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<?xml version='1.0' encoding='utf-8'?>
+<resources><string name="prefs">設定</string>
+	<string name="prefs_logging">日誌記錄</string>
+	<string name="prefs_wifi_catalog">Wifi 索引</string>
+	<string name="prefs_maps">地圖</string>
+	<string name="prefs_gps">GPS</string>
+	<string name="prefs_gps_os_settings">手機 GPS 設定</string>
+	<string name="prefs_gps_os_settings_summary">點一下以查看您的手機 GPS 設定</string>
+	<string name="prefs_check_gps_startup">在啟動時檢查 GPS</string>
+	<string name="prefs_check_gps_startup_summary">"如果在啟動時 GPS 是停用，發出警告並且給予啟用 "</string>
+	<string name="prefs_gps_logging_interval">GPS 日誌記錄間隔</string>
+	</resources>
