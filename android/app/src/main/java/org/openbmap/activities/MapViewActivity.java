@@ -270,6 +270,7 @@ public class MapViewActivity extends Fragment implements
 
     @Override
     public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView called");
         final View view = inflater.inflate(R.layout.mapview, container, false);
 
         // Register our gps broadcast mReceiver
@@ -488,7 +489,6 @@ public class MapViewActivity extends Fragment implements
      * Receives GPS location updates.
      */
     public void onEvent(onLocationUpdate event) {
-
         // handling GPS broadcasts
         Location location = event.location;
 
@@ -557,17 +557,18 @@ public class MapViewActivity extends Fragment implements
      * @param location
      */
     protected final void refreshCatalogLayer(final Location location) {
-        if (!mRefreshCatalogPending) {
+        if (!mRefreshCatalogPending && isVisible()) {
             Log.d(TAG, "Updating wifi catalog layer");
             mRefreshCatalogPending = true;
             triggerCatalogObjectsUpdate();
             catalogObjectsRefreshedAt = location;
             catalogObjectsRefreshTime = System.currentTimeMillis();
+        } else if (!isVisible()){
+            Log.v(TAG, "Not visible, skipping refresh");
         } else {
             Log.v(TAG, "Wifi catalog layer is refreshing. Skipping refresh..");
         }
     }
-
     /**
      *
      */
@@ -688,12 +689,14 @@ public class MapViewActivity extends Fragment implements
      * @param location
      */
     protected final void refreshSessionLayer(final Location location) {
-        if (!mRefreshSessionPending) {
+        if (!mRefreshSessionPending && isVisible()) {
             Log.d(TAG, "Updating session layer");
             mRefreshSessionPending = true;
             triggerSessionObjectsUpdate(null);
             sessionObjectsRefreshTime = System.currentTimeMillis();
             sessionObjectsRefreshedAt = location;
+        } else if (!isVisible()) {
+            Log.v(TAG, "Not visible, skipping refresh");
         } else {
             Log.v(TAG, "Session layer is refreshing. Skipping refresh..");
         }
@@ -849,12 +852,14 @@ public class MapViewActivity extends Fragment implements
      * @param location
      */
     private void refreshGpxTrace(final Location location) {
-        if (!mRefreshGpxPending) {
+        if (!mRefreshGpxPending && isVisible()) {
             Log.d(TAG, "Updating gpx layer");
             mRefreshGpxPending = true;
             triggerGpxObjectsUpdate();
             mGpxRefreshTime = System.currentTimeMillis();
-        } else {
+        } else if (!isVisible()) {
+            Log.v(TAG, "Not visible, skipping refresh");
+        }  else {
             Log.v(TAG, "Gpx layer refreshing. Skipping refresh..");
         }
     }
@@ -914,6 +919,10 @@ public class MapViewActivity extends Fragment implements
      */
     private void refreshCompass(final Location location) {
         if (location == null) {
+            return;
+        }
+
+        if (!isVisible()) {
             return;
         }
 
