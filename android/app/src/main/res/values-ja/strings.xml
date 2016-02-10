@@ -1,2 +1,44 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<?xml version='1.0' encoding='UTF-8'?>
+<resources><string name="prefs">設定</string>
+	<string name="prefs_logging">ログ</string>
+	<string name="prefs_wifi_catalog">Wifi カタログ</string>
+	<string name="prefs_maps">マップ</string>
+	<string name="prefs_gps_os_settings">電話の GPS 設定</string>
+	<string name="prefs_gps_os_settings_summary">クリックすると、お使いの電話の GPS 設定を参照します</string>
+	<string name="prefs_check_gps_startup">起動時に GPS をチェック</string>
+	<string name="prefs_check_gps_startup_summary">起動時に GPS が無効になっている場合に警告します</string>
+	<string name="prefs_gps_logging_interval">GPS ログ間隔</string>
+	<string name="prefs_gps_logging_interval_summary">"最短は 0 を使用してください (バッテリーの寿命に影響を与えます) "</string>
+	<string name="prefs_gps_logging_interval_seconds">秒</string>
+	<string name="prefs_save_gps_track">GPX 追跡を保存</string>
+	<string name="prefs_save_gps_track_summary">"アップロード セッションごとに GPX ファイルを作成します。データ ディレクトリで gpx 追跡を見つけます。\n(注: GPX 追跡自体がアップロードされることはありません) "</string>
+	<string name="prefs_ui">ユーザー インターフェイス</string>
+	<string name="prefs_map_none">なし</string>
+	<string name="prefs_ui_keep_screen_on">画面をオンのままにする</string>
+	<string name="prefs_ui_keep_screen_on_summary">"アイドル時間後の画面ロックを防止します "</string>
+	<string name="prefs_credentials">資格情報</string>
+	<string name="prefs_credentials_user">ログイン</string>
+	<string name="prefs_credentials_user_summary">まだアカウントを持っていない場合、http://radiocells.org で作成します (アップロードでのみ必要)</string>
+	<string name="prefs_credentials_password">パスワード</string>
+	<string name="prefs_save_cells">基地局を保存</string>
+	<string name="prefs_save_cells_summary">"基地局のスキャンをアクティブにします "</string>
+	<string name="prefs_save_wifis_summary">Wifis のスキャンをアクティブにします</string>
+	<string name="prefs_save_wifis">Wifi を保存</string>
+	<string name="prefs_data_map">オフライン マップ</string>
+	<string name="prefs_data_map_summary">"オフライン マップ リポジトリを参照します "</string>
+	<string name="prefs_data_ref_database">Wifi カタログを選択</string>
+	<string name="prefs_data_ref_database_summary">"すべての知られた openbmap wifi をマップで確認する Wifi カタログをインストールします。新しい Wifi を探しているときに役立ちます "</string>
+	<string name="prefs_download_wifi_catalog">Wifi カタログをダウンロード</string>
+	<string name="prefs_download_wifi_catalog_summary">現在のサイズ (~1 GB)</string>
+	<string name="prefs_min_cell_distance">基地局ログ間隔</string>
+	<string name="prefs_min_cell_distance_hint">スキャンする 2 つの基地局間の最小距離 (メートル)</string>
+	<string name="prefs_min_wifi_distance">Wifi ログ間隔</string>
+	<string name="prefs_min_wifi_distance_hint">"スキャンする 2 つの wifi 間の最小距離 (メートル) "</string>
+	<string name="prefs_req_gps_accuracy">GPS しきい値</string>
+	<string name="prefs_req_gps_accuracy_hint">"しきい値より GPS の精度が悪い場合、スキャン結果が破棄されます (メートル単位) "</string>
+	<string name="prefs_display_always_on">常に画面をオン</string>
+	<string name="prefs_display_always_on_summary">追跡中に画面を常にオンにします。バッテリーを節約するには無効にしてください</string>
+	<string name="prefs_debug">デバッグ設定</string>
+	<string name="prefs_simulate_upload_summary">データをエクスポートするのみ。サーバーにアップロードしません</string>
+	<string name="prefs_simulate_upload">openbmap.org へのアップロードをスキップ</string>
+	</resources>
