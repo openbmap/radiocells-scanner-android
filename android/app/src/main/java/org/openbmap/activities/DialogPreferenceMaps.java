@@ -64,7 +64,7 @@ import java.util.List;
 public class DialogPreferenceMaps extends DialogPreference implements IMapsListAdapterListener {
     private static String TAG = DialogPreferenceMaps.class.getSimpleName();
 
-    public static final String LIST_DOWNLOADS_URL = "http://radiocells.org/openbmap/downloads/map_downloads.json";
+    public static final String LIST_DOWNLOADS_URL = "https://radiocells.org/openbmap/downloads/map_downloads.json";
 
     private static SharedPreferences pref;
     private DialogPreferenceMapsListAdapter mAdapter;

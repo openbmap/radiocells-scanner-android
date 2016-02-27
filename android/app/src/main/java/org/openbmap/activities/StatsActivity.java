@@ -392,8 +392,8 @@ public class StatsActivity extends Fragment {
 	 * Displays time since last cell/wifi update
 	 */
 	private void updateTimeSinceUpdate() {
-		final String deltaCellString = String.format(getString(R.string.time_since_last_cell_update), getTimeSinceLastUpdate(mLastCellUpdate));
-		final String deltaWifiString = String.format(getString(R.string.time_since_last_wifi_update), getTimeSinceLastUpdate(mLastWifiUpdate));
+		final String deltaCellString = "Last cell update " + getTimeSinceLastUpdate(mLastCellUpdate) + " ago";
+		final String deltaWifiString = "Last cell update " + getTimeSinceLastUpdate(mLastWifiUpdate) + " ago";
 
 		Log.d(TAG, deltaCellString);
 		Log.d(TAG, deltaWifiString);

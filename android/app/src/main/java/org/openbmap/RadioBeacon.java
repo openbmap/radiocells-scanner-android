@@ -214,7 +214,7 @@ public final class RadioBeacon {
      * 			- If you change client version, check whether you need to adjust current_version.xml on server and VERSION_COMPATIBILITY
      * 			- Also consider updating android:versionCode="x+1" android:versionName="XYZ" in AndroidManifest.xml (e.g. for automatic F-Droid updates)
 	 */
-	public static final String SW_VERSION = "0.8.12";
+	public static final String SW_VERSION = "0.8.13-beta";
 	
 	/**
 	 * ServerValidation compares server version against VERSION_COMPATIBILITY to check whether client is outdated.
@@ -224,9 +224,7 @@ public final class RadioBeacon {
 	 * If you just have minor improvements on the client side, increase SW_VERSION, e.g. 00.6.01 and leave VERSION_COMPATIBILITY
 	 * at the server's current_version.xml version, e.g. 00.6.00. Thus the ServerValidation will still allow uploads.
 	 * 
-	 * On major changes adjust server's current_version.xml version, SW_VERSION and VERSION_COMPATIBILITY 
-	 * 
-	
+	 * On major changes adjust server's current_version.xml version, SW_VERSION and VERSION_COMPATIBILITY
 	 */
 	public static final String VERSION_COMPATIBILITY = "00.8.00";
 

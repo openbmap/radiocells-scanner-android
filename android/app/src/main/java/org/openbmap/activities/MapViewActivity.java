@@ -85,7 +85,9 @@ import java.util.Iterator;
 import de.greenrobot.event.EventBus;
 
 /**
- * Activity for displaying session's GPX track and wifis
+ * Fragment for displaying map with session's GPX track and wifis
+ * Caution: due to ViewPager default implementation, this fragment is loaded even before it becomes
+ * visible
  */
 public class MapViewActivity extends Fragment implements
         OnCatalogLoadedListener,
@@ -101,8 +103,6 @@ public class MapViewActivity extends Fragment implements
     public enum LayersDisplayed {
         ALL, SESSION_ONLY
     }
-
-    ;
 
     /**
      * If zoom level < MIN_OBJECT_ZOOM session wifis and wifi catalog objects won't be displayed for performance reasons
@@ -191,7 +191,7 @@ public class MapViewActivity extends Fragment implements
     /**
      * Online tile layer, used when no offline map available
      */
-    private static TileDownloadLayer mapDownloadLayer = null;
+    private static TileDownloadLayer mMapDownloadLayer = null;
 
     private Paint paintCatalogFill;
 
@@ -220,12 +220,12 @@ public class MapViewActivity extends Fragment implements
     /**
      * Used for persisting zoom and position settings onPause / onDestroy
      */
-    private AndroidPreferences preferencesFacade;
+    private AndroidPreferences mPreferencesFacade;
 
     /**
      * Observes zoom and map movements (for triggering layer updates)
      */
-    private Observer mapObserver;
+    private Observer mMapObserver;
 
     /**
      * Wifi catalog layer is currently refreshing
@@ -270,7 +270,6 @@ public class MapViewActivity extends Fragment implements
 
     @Override
     public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
-        Log.d(TAG, "onCreateView called");
         final View view = inflater.inflate(R.layout.mapview, container, false);
 
         // Register our gps broadcast mReceiver
@@ -284,7 +283,6 @@ public class MapViewActivity extends Fragment implements
 
     @Override
     public void onDestroyView() {
-        Log.i(TAG, "OnDestroyView called");
         unregisterReceiver();
         super.onDestroyView();
     }
@@ -307,13 +305,10 @@ public class MapViewActivity extends Fragment implements
     public final void onResume() {
         super.onResume();
 
-        // Register our gps broadcast mReceiver
-        registerReceiver();
-
         getSession();
 
-        if (mapDownloadLayer != null) {
-            mapDownloadLayer.onResume();
+        if (mMapDownloadLayer != null) {
+            mMapDownloadLayer.onResume();
         }
 
         registerReceiver();
@@ -322,17 +317,41 @@ public class MapViewActivity extends Fragment implements
     @Override
     public final void onPause() {
 
-        if (mapDownloadLayer != null) {
-            mapDownloadLayer.onPause();
+        if (mMapDownloadLayer != null) {
+            mMapDownloadLayer.onPause();
         }
 
-        //releaseMap();
         clearCatalogLayer();
         clearSessionLayer();
+        clearGpxLayer();
 
         unregisterReceiver();
 
         super.onPause();
+    }
+
+    /**
+     * Clean up layers and disable GPX events before leaving
+     * @param isVisibleToUser
+     */
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser) {
+            Log.d(TAG, "Map become visible, initializing");
+            registerReceiver();
+            // TODO: currently no possible due to https://github.com/mapsforge/mapsforge/issues/659
+            //initMap();
+        } else {
+            Log.d(TAG, "Map not visible, releasing");
+            clearCatalogLayer();
+            clearSessionLayer();
+            clearGpxLayer();
+            // TODO: currently no possible due to https://github.com/mapsforge/mapsforge/issues/659
+            //releaseMap();
+
+            unregisterReceiver();
+        }
     }
 
     @Override
@@ -355,32 +374,46 @@ public class MapViewActivity extends Fragment implements
 
     /**
      * Initializes map components
+     * @param view
      */
-    private void initMap(final View view) {
+    private void initMap(View view) {
+
+        if (view == null) {
+            Log.w(TAG, "view is null, can't initialize map");
+            return;
+        } else {
+            mMapView = (MapView) view.findViewById(R.id.map);
+        }
+
+        if (mMapView == null) {
+            Log.e(TAG, "MapView is null");
+            return;
+        }
 
         final SharedPreferences sharedPreferences = getActivity().getApplicationContext().getSharedPreferences(getPersistableId(), /*MODE_PRIVATE*/ 0);
-        preferencesFacade = new AndroidPreferences(sharedPreferences);
+        mPreferencesFacade = new AndroidPreferences(sharedPreferences);
 
-        this.mMapView = (MapView) view.findViewById(R.id.map);
-        this.mMapView.getModel().init(preferencesFacade);
-        this.mMapView.setClickable(true);
-        this.mMapView.getMapScaleBar().setVisible(true);
-        this.mTileCache = createTileCache();
+        mMapView.getModel().init(mPreferencesFacade);
+        mMapView.setClickable(true);
+        mMapView.getMapScaleBar().setVisible(true);
+
+        mTileCache = createTileCache();
 
         // on first start zoom is set to very low value, so users won't see anything
         // zoom to moderate zoomlevel..
-        if (this.mMapView.getModel().mapViewPosition.getZoomLevel() < (byte) 10) {
-            this.mMapView.getModel().mapViewPosition.setZoomLevel((byte) 15);
+        if (mMapView.getModel().mapViewPosition.getZoomLevel() < (byte) 10) {
+            mMapView.getModel().mapViewPosition.setZoomLevel((byte) 15);
         }
 
         if (MapUtils.isMapSelected(this.getActivity().getApplicationContext())) {
             // remove all layers including base layer
-            this.mMapView.getLayerManager().getLayers().clear();
+            mMapView.getLayerManager().getLayers().clear();
             final Layer offlineLayer = MapUtils.createTileRendererLayer(
-                    this.mTileCache, this.mMapView.getModel().mapViewPosition, getMapFile(), this, getRenderTheme());
-            if (offlineLayer != null) this.mMapView.getLayerManager().getLayers().add(offlineLayer);
+                    mTileCache, mMapView.getModel().mapViewPosition, getMapFile(), this, getRenderTheme());
+            if (offlineLayer != null) {
+                mMapView.getLayerManager().getLayers().add(offlineLayer);
+            }
         } else {
-            //this.mMapView.getModel().displayModel.setBackgroundColor(0xffffffff);
             Toast.makeText(this.getActivity(), R.string.info_using_online_map, Toast.LENGTH_LONG).show();
 
             final OnlineTileSource onlineTileSource = new OnlineTileSource(new String[]{
@@ -395,17 +428,16 @@ public class MapViewActivity extends Fragment implements
                     .setZoomLevelMax((byte) 18)
                     .setZoomLevelMin((byte) 0);
 
-            mapDownloadLayer = new TileDownloadLayer(mTileCache,
+            mMapDownloadLayer = new TileDownloadLayer(mTileCache,
                     mMapView.getModel().mapViewPosition, onlineTileSource,
                     AndroidGraphicFactory.INSTANCE);
-            this.mMapView.getLayerManager().getLayers().add(mapDownloadLayer);
-            mapDownloadLayer.onResume();
+            this.mMapView.getLayerManager().getLayers().add(mMapDownloadLayer);
+            mMapDownloadLayer.onResume();
         }
 
-        this.mapObserver = new Observer() {
+        mMapObserver = new Observer() {
             @Override
             public void onChange() {
-
                 final byte zoom = mMapView.getModel().mapViewPosition.getZoomLevel();
                 if (zoom != mLastZoom && zoom >= MIN_OBJECT_ZOOM) {
                     // Zoom level changed
@@ -432,11 +464,10 @@ public class MapViewActivity extends Fragment implements
                         clearCatalogLayer();
                     }
                 }
-
             }
-
         };
-        mMapView.getModel().mapViewPosition.addObserver(mapObserver);
+
+        mMapView.getModel().mapViewPosition.addObserver(mMapObserver);
     }
 
     /**
@@ -479,10 +510,12 @@ public class MapViewActivity extends Fragment implements
     }
 
     /**
-     * Unregisters receivers for GPS and wifi scan results.
+     * Unregisters receivers for GPS.
      */
     private void unregisterReceiver() {
-        EventBus.getDefault().unregister(this);
+        if (EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this);
+        }
     }
 
     /**
@@ -493,7 +526,7 @@ public class MapViewActivity extends Fragment implements
         Location location = event.location;
 
         if (mMapView == null) {
-            Log.wtf(TAG, "Map view is null");
+            Log.wtf(TAG, "MapView is null");
             return;
         }
 
@@ -539,6 +572,10 @@ public class MapViewActivity extends Fragment implements
      *
      */
     private void refreshAllLayers() {
+        if (mMapView == null) {
+            return;
+        }
+
         final Location mapCenter = new Location("DUMMY");
         mapCenter.setLatitude(mMapView.getModel().mapViewPosition.getCenter().latitude);
         mapCenter.setLongitude(mMapView.getModel().mapViewPosition.getCenter().longitude);
@@ -551,7 +588,7 @@ public class MapViewActivity extends Fragment implements
         }
     }
 
-    /**
+    /**7
      * Refreshes catalog layer, if not already refreshing
      *
      * @param location
@@ -569,10 +606,20 @@ public class MapViewActivity extends Fragment implements
             Log.v(TAG, "Wifi catalog layer is refreshing. Skipping refresh..");
         }
     }
+
     /**
      *
      */
     private void clearSessionLayer() {
+        if (sessionObjects == null) {
+            return;
+        }
+
+        if (mMapView == null) {
+            sessionObjects = null;
+            return;
+        }
+
         for (final Iterator<Layer> iterator = sessionObjects.iterator(); iterator.hasNext(); ) {
             final Layer layer = (Layer) iterator.next();
             this.mMapView.getLayerManager().getLayers().remove(layer);
@@ -584,12 +631,35 @@ public class MapViewActivity extends Fragment implements
      * Clears catalog layer objects
      */
     private void clearCatalogLayer() {
+        if (catalogObjects == null) {
+            return;
+        }
+
+        if (mMapView == null) {
+            catalogObjects = null;
+            return;
+        }
+
         synchronized (catalogObjects) {
             for (final Iterator<Layer> iterator = catalogObjects.iterator(); iterator.hasNext(); ) {
                 final Layer layer = (Layer) iterator.next();
                 this.mMapView.getLayerManager().getLayers().remove(layer);
             }
             catalogObjects.clear();
+        }
+    }
+
+    /**
+     * Clears GPX layer objects
+     */
+    private void clearGpxLayer() {
+        if (gpxObjects != null && mMapView != null) {
+            synchronized (this) {
+                // clear layer
+                mMapView.getLayerManager().getLayers().remove(gpxObjects);
+            }
+        } else {
+            gpxObjects = null;
         }
     }
 
@@ -615,6 +685,10 @@ public class MapViewActivity extends Fragment implements
      * Callback function, upon completion onCatalogLoaded is called for drawing
      */
     private void triggerCatalogObjectsUpdate() {
+
+        if (mMapView == null) {
+            return;
+        }
 
         final BoundingBox bbox = MapPositionUtil.getBoundingBox(
                 mMapView.getModel().mapViewPosition.getMapPosition(),
@@ -645,7 +719,11 @@ public class MapViewActivity extends Fragment implements
     @Override
     public final void onCatalogLoaded(final ArrayList<LatLong> points) {
         Log.d(TAG, "Loaded catalog objects");
-        final Layers layers = this.mMapView.getLayerManager().getLayers();
+        if (mMapView == null) {
+            return;
+        }
+
+        final Layers layers = mMapView.getLayerManager().getLayers();
 
         clearCatalogLayer();
 
@@ -679,7 +757,6 @@ public class MapViewActivity extends Fragment implements
         // enable next refresh
         mRefreshCatalogPending = false;
         Log.d(TAG, "Drawed catalog objects");
-
     }
 
     /**
@@ -726,6 +803,10 @@ public class MapViewActivity extends Fragment implements
      * @param highlight If highlight is specified only this wifi is displayed
      */
     private void triggerSessionObjectsUpdate(final WifiRecord highlight) {
+        if (mMapView == null) {
+            return;
+        }
+
         final BoundingBox bbox = MapPositionUtil.getBoundingBox(
                 mMapView.getModel().mapViewPosition.getMapPosition(),
                 mMapView.getDimension(), mMapView.getModel().displayModel.getTileSize());
@@ -767,7 +848,6 @@ public class MapViewActivity extends Fragment implements
         }
     }
 
-
     /* (non-Javadoc)
      * @see org.openbmap.utils.SessionMapObjectsLoader.OnSessionLoadedListener#onSessionLoaded(java.util.ArrayList)
      */
@@ -776,12 +856,11 @@ public class MapViewActivity extends Fragment implements
         Log.d(TAG, "Loaded session objects");
         final Layers layers = this.mMapView.getLayerManager().getLayers();
 
-        // clear layer
-        for (final Iterator<Layer> iterator = sessionObjects.iterator(); iterator.hasNext(); ) {
-            final Layer layer = (Layer) iterator.next();
-            layers.remove(layer);
+        clearSessionLayer();
+
+        if (mMapView == null) {
+            return;
         }
-        sessionObjects.clear();
 
         for (final SessionLatLong point : points) {
             if (point.getSession() == mSessionId) {
@@ -794,7 +873,6 @@ public class MapViewActivity extends Fragment implements
                 sessionObjects.add(circle);
             }
         }
-
 
         /**
          * Draw stack (z-order):
@@ -877,6 +955,10 @@ public class MapViewActivity extends Fragment implements
      * Loads gpx points in visible range.
      */
     private void triggerGpxObjectsUpdate() {
+        if (mMapView == null) {
+            return;
+        }
+
         final BoundingBox bbox = MapPositionUtil.getBoundingBox(
                 mMapView.getModel().mapViewPosition.getMapPosition(),
                 mMapView.getDimension(), mMapView.getModel().displayModel.getTileSize());
@@ -892,11 +974,10 @@ public class MapViewActivity extends Fragment implements
     public final void onGpxLoaded(final ArrayList<LatLong> points) {
         Log.d(TAG, "Loading " + points.size() + " gpx objects");
 
-        if (gpxObjects != null) {
-            synchronized (this) {
-                // clear layer
-                mMapView.getLayerManager().getLayers().remove(gpxObjects);
-            }
+        clearGpxLayer();
+
+        if (mMapView == null) {
+            return;
         }
 
         gpxObjects = new Polyline(MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(Color.GREEN), STROKE_GPX_WIDTH,
@@ -1009,7 +1090,15 @@ public class MapViewActivity extends Fragment implements
      * @return
      */
     protected final TileCache createTileCache() {
-        return AndroidUtil.createTileCache(this.getActivity().getApplicationContext(), "mapcache", mMapView.getModel().displayModel.getTileSize(), 1f, this.mMapView.getModel().frameBufferModel.getOverdrawFactor());
+        if (mMapView == null) {
+            return null;
+        }
+        return AndroidUtil.createTileCache(
+                getActivity().getApplicationContext(),
+                "mapcache",
+                mMapView.getModel().displayModel.getTileSize(),
+                1f,
+                mMapView.getModel().frameBufferModel.getOverdrawFactor());
     }
 
     /**
@@ -1025,22 +1114,23 @@ public class MapViewActivity extends Fragment implements
     private void releaseMap() {
         Log.i(TAG, "Releasing map components");
 
-        if (this.mTileCache != null) {
+        AndroidResourceBitmap.clearResourceBitmaps();
+
+        if (mTileCache != null) {
             this.mTileCache.destroy();
         }
 
         // release zoom / move observer for gc
-        this.mapObserver = null;
+        this.mMapObserver = null;
 
         if (mMapView != null) {
             // save map settings
-            this.mMapView.getModel().save(this.preferencesFacade);
-            this.preferencesFacade.save();
-            this.mMapView.getModel().mapViewPosition.destroy();
-            this.mMapView.destroyAll();
+            mMapView.getModel().save(mPreferencesFacade);
+            mPreferencesFacade.save();
+            //mMapView.getModel().mapViewPosition.destroy();
+            mMapView.destroyAll();
+            mMapView = null;
         }
-
-        AndroidResourceBitmap.clearResourceBitmaps();
     }
 
     /* (non-Javadoc)
@@ -1068,6 +1158,5 @@ public class MapViewActivity extends Fragment implements
         ToneGenerator toneG = new ToneGenerator(AudioManager.STREAM_ALARM, 100);
         toneG.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 200);
     }
-
 }
 

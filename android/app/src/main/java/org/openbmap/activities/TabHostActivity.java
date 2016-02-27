@@ -324,6 +324,7 @@ public class TabHostActivity extends AppCompatActivity {
 
         // add tabs to actionbar
         final CustomViewPagerAdapter mTabsAdapter = new CustomViewPagerAdapter(this, mPager);
+
         mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.overview)), StatsActivity.class, null);
         mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.wifis)), WifiListContainer.class, null);
         mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.cells)), CellsListContainer.class, null);

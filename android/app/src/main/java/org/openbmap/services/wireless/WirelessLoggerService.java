@@ -579,7 +579,6 @@ public class WirelessLoggerService extends AbstractService {
                                         Log.i(TAG, "Checking catalog status");
                                         wifi.setCatalogStatus(checkCatalogStatus(r.BSSID));
                                         wifis.add(wifi);
-                                        Log.i(TAG, "Serialisation finished");
                                         if (wifi.isFree()) {
                                             Log.i(TAG, "Found free wifi, broadcasting");
                                             broadcastFree(r.SSID);

@@ -148,7 +148,8 @@ public class AsyncUploader extends AsyncTask<String, Integer, Boolean> {
 	 * @param validateServerSide	additional check, whether file is actually uploaded (more safe than just relying on server response 200)
 	 * @param validationBaseUrl		base URL for additional check 
 	 */
-	public AsyncUploader(final FileUploadListener listener, final String user, final String password, final String server, final boolean validateServerSide, final String validationBaseUrl) {
+	public AsyncUploader(final FileUploadListener listener, final String user, final String password,
+						 final String server, final boolean validateServerSide, final String validationBaseUrl) {
 		mListener = listener;
 		mUser = user;
 		mPassword = password;

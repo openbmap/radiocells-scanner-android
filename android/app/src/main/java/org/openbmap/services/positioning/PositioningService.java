@@ -206,7 +206,7 @@ public class PositioningService extends AbstractService implements LocationChang
 
 	@Override
 	public final void onLocationChanged(final Location location) {
-        Log.d(TAG, "Broadcasting position: lat " + location.getLatitude() + " lon " + location.getLongitude());
+        //Log.d(TAG, "Broadcasting position: lat " + location.getLatitude() + " lon " + location.getLongitude());
 		// first of all we check if the time from the last used fix to the current fix is greater than the logging interval
 		if (mIsTracking) {
 			if ((mLastTimestamp + gpsLoggingInterval) < System.currentTimeMillis()) {
