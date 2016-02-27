@@ -26,7 +26,7 @@
 	</string>
     <string name="prefs_credentials">Credentials</string>
     <string name="prefs_credentials_user">Login</string>
-    <string name="prefs_credentials_user_summary">If you don\'t have an account yet, create on at http://radiocells.org (Required for upload only)</string>
+    <string name="prefs_credentials_user_summary">If you don\'t have an account yet, create on at https://radiocells.org (Required for upload only)</string>
     <string name="prefs_credentials_password">Wachtwoord</string>
     <string name="prefs_credentials_password_summary" translatable="false"/>
     <string name="prefs_save_cells">Cellen opslaan</string>

@@ -77,7 +77,7 @@
 	<string name="prefs_logging">Registro</string>
 	<string name="prefs_check_gps_startup_summary">Advertir si el GPS está desactivado</string>
 	<string name="prefs_gps_logging_interval_summary">"Utilizar 0 para el más corto posible (afecta la vida de la batería) "</string>
-	<string name="prefs_credentials_user_summary">Si no tienes una cuenta todavía, créala en http://radiocells.org (Requerido sólo para subidas)</string>
+	<string name="prefs_credentials_user_summary">Si no tienes una cuenta todavía, créala en https://radiocells.org (Requerido sólo para subidas)</string>
 	<string name="prefs_save_cells">Guardar redes móviles</string>
 	<string name="prefs_save_cells_summary">"Activar para analizar redes móviles "</string>
 	<string name="prefs_min_cell_distance">Intervalo de registro de redes móviles</string>

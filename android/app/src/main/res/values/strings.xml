@@ -16,9 +16,8 @@
 	</string>
 	<string name="prefs_gps_logging_interval_seconds">seconds</string>
 	<string name="prefs_save_gps_track">Save GPX track</string>
-	<string name="prefs_save_gps_track_summary">Create a GPX file for each uploaded session. Find
-		gpx tracks in data directory.\n(Note: GPX tracks themselves are never
-		uploaded)
+	<string name="prefs_save_gps_track_summary">Create a local GPX file. Find
+		GPX tracks in data directory.
 	</string>
 	<string name="prefs_ui">User interface</string>
 	<string name="prefs_map_none">None</string>

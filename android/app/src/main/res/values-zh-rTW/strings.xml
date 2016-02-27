@@ -17,6 +17,6 @@
 	<string name="prefs_ui_keep_screen_on_summary">"防止螢幕鎖定後的閒置時間 "</string>
 	<string name="prefs_credentials">憑據</string>
 	<string name="prefs_credentials_user">登入</string>
-	<string name="prefs_credentials_user_summary">如果您還沒有帳戶，請在 http://radiocells.org 上建立(僅限於上載所需)</string>
+	<string name="prefs_credentials_user_summary">如果您還沒有帳戶，請在 https://radiocells.org 上建立(僅限於上載所需)</string>
 	<string name="prefs_credentials_password">密碼</string>
 	</resources>
