@@ -561,7 +561,6 @@ public class WirelessLoggerService extends AbstractService {
                                         Log.v(TAG, "Wifi not ssid blocked");
                                     }
 
-                                    // skipSpecific = false;
                                     if (!skipThis) {
                                         Log.i(TAG, "Serializing wifi");
                                         final WifiRecord wifi = new WifiRecord();

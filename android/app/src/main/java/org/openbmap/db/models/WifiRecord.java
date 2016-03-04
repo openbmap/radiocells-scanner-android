@@ -118,20 +118,34 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 		return "BSSID " + mBSsid + "/ SSID " + mSsid + " / Capabilities " + mCapabilities + " / Frq. " + mFrequency + " / Level " + mLevel;
 	}
 
+
+    /**
+     * Returns bssid
+     * Please note: bssid are always convert to UPPERCASE
+     */
 	public final String getBssid() {
-		return mBSsid;
+		return mBSsid.toUpperCase();
 	}
 
+    /**
+     * Sets bssid
+     * Please note: bssid are always convert to UPPERCASE
+     * @param bssid
+     */
 	public final void setBssid(final String bssid) {
-		this.mBSsid = bssid;
+		this.mBSsid = bssid.toUpperCase();
 	}
 
 	public final String getSsid() {
 		return mSsid;
 	}
 
+    /**
+     * Returns hashed bssid
+     * Please note: hashed bssid is always convert to UPPERCASE
+     */
 	public final String getMd5Ssid() {
-		return md5(mSsid);
+		return md5(mSsid).toUpperCase();
 	}
 
 	public final void setSsid(final String ssid) {
