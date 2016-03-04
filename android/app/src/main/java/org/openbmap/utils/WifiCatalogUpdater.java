@@ -73,8 +73,16 @@ public class WifiCatalogUpdater extends AsyncTask<Void, Void, Void> {
 
 			SQLiteDatabase localDb = mDbHelper.getReadableDatabase();
 			Cursor cursorWifis = localDb.rawQuery(
-					"SELECT w." + Schema.COL_BSSID + ", avg(p."+ Schema.COL_LATITUDE +") as latitude, avg(p."+ Schema.COL_LONGITUDE +") as longitude FROM "+ Schema.TBL_WIFIS +" w"
-					+ " JOIN "+ Schema.TBL_POSITIONS + " p ON (w."+ Schema.COL_BEGIN_POSITION_ID +" = p."+ Schema.COL_ID +") WHERE " + Schema.COL_KNOWN_WIFI + " = 0 GROUP BY w."+ Schema.COL_BSSID + "",
+					"SELECT w." + Schema.COL_BSSID +
+							", avg(p."+ Schema.COL_LATITUDE +") as latitude" +
+                            ", avg(p."+ Schema.COL_LONGITUDE +") as longitude " +
+                            " FROM "+ Schema.TBL_WIFIS +" w" +
+                            " JOIN "+ Schema.TBL_POSITIONS +
+                            " p ON (w."+ Schema.COL_BEGIN_POSITION_ID +
+                            " = p."+ Schema.COL_ID +") WHERE " +
+                            Schema.COL_KNOWN_WIFI +
+                            " = 0 GROUP BY w." +
+                            Schema.COL_BSSID + "",
 					null);
 
 			// Open catalog database
@@ -100,7 +108,7 @@ public class WifiCatalogUpdater extends AsyncTask<Void, Void, Void> {
 				//Log.d(TAG, "Inserting " + cursorWifis.getString(0).replace(":", "") );
 
 				ContentValues newWifi = new ContentValues();
-				newWifi.put("bssid", cursorWifis.getString(0).replace(":", ""));
+				newWifi.put("bssid", cursorWifis.getString(0).replace(":", "").toUpperCase());
 				newWifi.put("latitude", cursorWifis.getDouble(1));
 				newWifi.put("longitude", cursorWifis.getDouble(2));
 				newWifi.put("source", 99);
