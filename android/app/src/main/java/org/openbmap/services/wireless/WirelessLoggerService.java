@@ -1540,7 +1540,7 @@ public class WirelessLoggerService extends AbstractService {
 			 *		If wifi catalog's bssid aren't in LOWER case, consider SELECT bssid FROM wifi_zone WHERE LOWER(bssid) = ?
 			 *		Drawback: can't use indices then
 			 */
-            final Cursor exists = mRefDb.rawQuery("SELECT bssid, source FROM wifi_zone WHERE bssid = ?", new String[]{bssid.replace(":", "").toLowerCase()});
+            final Cursor exists = mRefDb.rawQuery("SELECT bssid, source FROM wifi_zone WHERE bssid = ?", new String[]{bssid.replace(":", "").toUpperCase()});
             if (exists.moveToFirst()) {
                 final int source = exists.getInt(1);
                 exists.close();
