@@ -127,7 +127,9 @@ public final class SsidBlackListBootstraper {
 		// mobile hotspots
 		{"German 1und1 mobile hotspots", "1und1 mobile"},
 		{"xperia tablet", "xperia tablet"},
+        {"Sony devices", "XPERIA"},
 		{"xperia tablet", "androidhotspot"},
+        {"HP laptops", "HP envy"},
 		{"empty ssid (not really hidden, just not broadcasting..)", ""},
 
 
