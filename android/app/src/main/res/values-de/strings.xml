@@ -192,7 +192,7 @@
     <string name="prefs_min_cell_distance">Häufigkeiten Funkzellen-Aufzeichnung</string>
     <string name="prefs_min_wifi_distance">Häufigkeit WLAN-Aufzeichnung</string>
     <string name="prefs_privacy">Datenschutz</string>
-    <string name="prefs_save_gps_track_summary">Erstelle im Datenordner eine GPX-Datei für jede Session (die GPX-Dateien werden nicht hochgeladen)</string>
+    <string name="prefs_save_gps_track_summary">"Erstelle im Datenordner eine GPX-Datei für jede Session (die GPX-Dateien werden nicht hochgeladen) "</string>
     <string name="prefs_ui">User Interface</string>
     <string name="prefs_update_catalog">Synchronisiere lokales WLAN-Verzeichnis</string>
     <string name="prefs_update_catalog_summary">Fügt die von Dir entdeckten WLANs zu Deinem lokalen WLAN-Verzeichnis hinzu</string>
@@ -212,4 +212,6 @@
     <string name="warning_no_server_connection">Server nicht erreichbar. Bist Du online?</string>
     <string name="warning_sd_not_writable">Fehler beim Zugriff auf die SD-Karte. Hast Du sie zufällig mit Deinem Desktop-PC im Zugriff?</string>
 <string name="error_accessing_wifi_catalog">Fehler beim Zugriff auf das WLAN-Verzeichnis</string>
-</resources>
+<string name="level">Ebene</string>
+	<string name="blacklisted_area">Ignoriert: In der ignorierten Zone</string>
+	</resources>
