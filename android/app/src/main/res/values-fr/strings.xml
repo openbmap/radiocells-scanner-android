@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <resources>
     <string name="app_name">Radiobeacon</string>
 <string name="prefs">Paramètres</string>
@@ -11,4 +11,5 @@
 	<string name="activity_credits_activity">Crédits</string>
 	<string name="error_opening_wifi_catalog"/>
 <string name="activity_settings_activity">Préférences</string>
+	<string name="prefs_logging">saisie</string>
 	</resources>
