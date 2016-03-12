@@ -123,9 +123,9 @@ public final class SsidBlackListBootstraper {
 		{"default", "VTA Free Wi-Fi"},
 		{"default", "webOS Network"},
 		{"GoPro cams", "goprohero3"},
-		{"Swiss Post Auto Wifi", "PostAuto"}
-		{"Swiss Post Auto Wifi French", "CarPostal"}
-		{"Swiss Post Auto Wifi Italian", "AutoPostale"}
+		{"Swiss Post Auto Wifi", "PostAuto"},
+		{"Swiss Post Auto Wifi French", "CarPostal"},
+		{"Swiss Post Auto Wifi Italian", "AutoPostale"},
 		
 		// mobile hotspots
 		{"German 1und1 mobile hotspots", "1und1 mobile"},
