@@ -64,9 +64,9 @@ public final class ServerCheckTask extends AsyncTask<String, Object, Object[]> {
         OUTDATED,
         NO_REPLY,
         UNKNOWN_ERROR
-    };
+    }
 
-    /**
+	/**
 	 * 
 	 */
 	private static final int CONNECTION_TIMEOUT	= 10000;

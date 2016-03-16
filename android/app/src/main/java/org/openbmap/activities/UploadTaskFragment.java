@@ -48,7 +48,6 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
 
     private enum CheckResult {UNKNOWN, FAILED, PASSED}
 
-    ;
     private CheckResult sdCardWritable = CheckResult.UNKNOWN;
     private CheckResult serverReply = CheckResult.UNKNOWN;
 

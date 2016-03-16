@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteDatabase;
@@ -65,9 +66,11 @@ import org.openbmap.db.models.LogFile;
 import org.openbmap.db.models.PositionRecord;
 import org.openbmap.db.models.WifiRecord;
 import org.openbmap.db.models.WifiRecord.CatalogStatus;
+import org.openbmap.events.onCellUpdated;
 import org.openbmap.events.onLocationUpdate;
 import org.openbmap.events.onStartWireless;
 import org.openbmap.events.onStopTracking;
+import org.openbmap.events.onWifiAdded;
 import org.openbmap.services.AbstractService;
 import org.openbmap.services.wireless.blacklists.BlacklistReasonType;
 import org.openbmap.services.wireless.blacklists.LocationBlackList;
@@ -333,8 +336,28 @@ public class WirelessLoggerService extends AbstractService {
     /**
      * Register PhoneStateListener to permanently measuring cell signal strength
      */
+    @SuppressLint("NewApi")
     private void registerPhoneStateManager() {
+        Log.i(TAG, "Booting telephony manager");
         mTelephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            final PackageManager pm = getApplicationContext().getPackageManager();
+            //Log.i(TAG, mTelephonyManager.getPhoneCount() == 1 ? "Single SIM mode" : "Dual SIM mode");
+            Log.wtf(TAG, "------------ YOU MAY WANT TO REDACT INFO BELOW BEFORE POSTING THIS TO THE INTERNET \"------------ ");
+            Log.i(TAG, "GPS support: " + pm.hasSystemFeature("android.hardware.location.gps"));
+            Log.i(TAG, "GSM support: " + pm.hasSystemFeature("android.hardware.telephony.gsm"));
+            Log.i(TAG, "Wifi support: " + pm.hasSystemFeature("android.hardware.wifi"));
+
+            Log.i(TAG, "SIM operator: " + mTelephonyManager.getSimOperator());
+            Log.i(TAG, mTelephonyManager.getSimOperatorName());
+            Log.i(TAG, "Network operator: " + mTelephonyManager.getNetworkOperator());
+            Log.i(TAG, mTelephonyManager.getNetworkOperatorName());
+            Log.i(TAG, "Roaming: " + mTelephonyManager.isNetworkRoaming());
+            Log.wtf(TAG, "------------ YOU MAY WANT TO REDACT INFO BELOW ABOVE POSTING THIS TO THE INTERNET \"------------ ");
+        }
+
         mPhoneListener = new PhoneStateListener() {
             @Override
             public void onSignalStrengthsChanged(final SignalStrength signalStrength) {
@@ -562,7 +585,7 @@ public class WirelessLoggerService extends AbstractService {
                                     }
 
                                     if (!skipThis) {
-                                        Log.i(TAG, "Serializing wifi");
+                                        //Log.i(TAG, "Serializing wifi");
                                         final WifiRecord wifi = new WifiRecord();
                                         wifi.setBssid(r.BSSID);
                                         wifi.setSsid(r.SSID.toLowerCase(Locale.US));
@@ -585,12 +608,12 @@ public class WirelessLoggerService extends AbstractService {
 
                                     }
                                 }
-                                Log.i(TAG, "Saving wifis");
+                                // Log.i(TAG, "Saving wifis");
                                 mDataHelper.storeWifiScanResults(begin, end, wifis);
 
                                 // take last seen wifi and broadcast infos in ui
                                 if (wifis.size() > 0) {
-                                    broadcastWifiInfos(wifis.get(wifis.size() - 1));
+                                    broadcastWifiInfos(wifis);
                                     broadcastWifiUpdate();
                                 }
 
@@ -617,14 +640,10 @@ public class WirelessLoggerService extends AbstractService {
 
     /**
      * Broadcasts human-readable description of last wifi.
-     *
-     * @param recent
      */
-    private void broadcastWifiInfos(final WifiRecord recent) {
-        final Intent intent = new Intent(RadioBeacon.INTENT_NEW_WIFI);
-        intent.putExtra(RadioBeacon.MSG_SSID, recent.getSsid());
-        intent.putExtra(RadioBeacon.MSG_STRENGTH, recent.getLevel());
-        sendBroadcast(intent);
+    private void broadcastWifiInfos(final ArrayList<WifiRecord> wifis) {
+        final WifiRecord recent = wifis.get(wifis.size() - 1);
+        EventBus.getDefault().post(new onWifiAdded(recent.getSsid(), recent.getLevel()));
     }
 
     /**
@@ -726,8 +745,6 @@ public class WirelessLoggerService extends AbstractService {
                         cells.add(cell);
                         broadcastCellInfos(cell);
                     }
-
-                    broadcastCellUpdate();
                 }
             }
         }
@@ -749,7 +766,6 @@ public class WirelessLoggerService extends AbstractService {
                 cells.addAll(neigbors);
 
                 broadcastCellInfos(serving);
-                broadcastCellUpdate();
             }
         }
 
@@ -768,11 +784,7 @@ public class WirelessLoggerService extends AbstractService {
     @SuppressLint("NewApi")
     private boolean isNewApiSupported() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            if (mTelephonyManager.getAllCellInfo() != null) {
-                return true;
-            } else {
-                return false;
-            }
+            return mTelephonyManager.getAllCellInfo() != null;
         } else {
             return false;
         }
@@ -1340,13 +1352,6 @@ public class WirelessLoggerService extends AbstractService {
         return (ci.getCid() != NeighboringCellInfo.UNKNOWN_CID || ci.getLac() != NeighboringCellInfo.UNKNOWN_CID || ci.getPsc() != NeighboringCellInfo.UNKNOWN_CID);
     }
 
-    /**
-     * Broadcast signal to refresh UI.
-     */
-    private void broadcastCellUpdate() {
-        final Intent intent = new Intent(RadioBeacon.INTENT_CELL_UPDATE);
-        sendBroadcast(intent);
-    }
 
     /**
      * Broadcasts human-readable description of last cell.
@@ -1359,23 +1364,15 @@ public class WirelessLoggerService extends AbstractService {
             return;
         }
 
-        final Intent intent = new Intent(RadioBeacon.INTENT_NEW_CELL);
-		/*
-		intent.putExtra(RadioBeacon.MSG_KEY, recent.getOperatorName() 
-				+ " " + recent.getLogicalCellId()
-				+ " " + CellRecord.NETWORKTYPE_MAP().get(recent.getNetworkType())
-				+ " " + recent.getStrengthdBm() + "dBm");
-		 */
+        Log.v(TAG, "Broadcasting cell " + recent.toString());
 
-        intent.putExtra(RadioBeacon.MSG_OPERATOR, recent.getOperatorName());
-        intent.putExtra(RadioBeacon.MSG_MCC, recent.getMcc());
-        intent.putExtra(RadioBeacon.MSG_MNC, recent.getMnc());
-        intent.putExtra(RadioBeacon.MSG_AREA, recent.getArea());
-        intent.putExtra(RadioBeacon.MSG_CELL_ID, recent.getLogicalCellId());
-        intent.putExtra(RadioBeacon.MSG_TECHNOLOGY, CellRecord.TECHNOLOGY_MAP().get(recent.getNetworkType()));
-        intent.putExtra(RadioBeacon.MSG_STRENGTH, recent.getStrengthdBm());
-
-        sendBroadcast(intent);
+        EventBus.getDefault().post(new onCellUpdated(recent.getOperatorName(),
+                recent.getMcc(),
+                recent.getMnc(),
+                recent.getArea(),
+                recent.getLogicalCellId(),
+                CellRecord.TECHNOLOGY_MAP().get(recent.getNetworkType()),
+                recent.getStrengthdBm()));
     }
 
     @Override
@@ -1477,7 +1474,7 @@ public class WirelessLoggerService extends AbstractService {
 
         // do nothing, if required minimum gps accuracy is not given
         if (!acceptableAccuracy(location)) {
-            Log.i(TAG, "GPS accuracy to bad (" + location.getAccuracy() + "m). Skipping cycle");
+            Log.i(TAG, "GPS accuracy to bad (" + location.getAccuracy() + "m). Ignoring");
             return;
         }
 

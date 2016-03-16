@@ -139,7 +139,7 @@ public class AdvancedSettingsActivity extends PreferenceActivity {
 	 * @return EditTextPreference with data directory.
 	 */
 	private void initMapFolderControl() {
-		final Preference button = (Preference) findPreference(Preferences.KEY_MAP_FOLDER);
+		final Preference button = findPreference(Preferences.KEY_MAP_FOLDER);
 		button.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			private String mChosenDir = MapUtils.getMapFolder(AdvancedSettingsActivity.this).getAbsolutePath();
 			private boolean mNewFolderEnabled = false;
@@ -187,7 +187,7 @@ public class AdvancedSettingsActivity extends PreferenceActivity {
 	 * @return EditTextPreference with data directory.
 	 */
 	private void initWifiCatalogFolderControl() {
-		final Preference button = (Preference) findPreference(Preferences.KEY_WIFI_CATALOG_FOLDER);
+		final Preference button = findPreference(Preferences.KEY_WIFI_CATALOG_FOLDER);
 		button.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			private String mChosenDir = MapUtils.getCatalogFolder(AdvancedSettingsActivity.this).getAbsolutePath();
 

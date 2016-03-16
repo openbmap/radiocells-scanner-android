@@ -64,7 +64,7 @@ public class DirectoryChooserDialog {
      * Callback interface for selected directory
      */
     public interface ChosenDirectoryListener {
-        public void onChosenDir(String chosenDir);
+        void onChosenDir(String chosenDir);
     }
 
     public DirectoryChooserDialog(final Context context, final ChosenDirectoryListener chosenDirectoryListener) {

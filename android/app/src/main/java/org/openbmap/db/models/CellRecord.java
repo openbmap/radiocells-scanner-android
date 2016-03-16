@@ -33,6 +33,12 @@ import java.util.Map;
  */
 public class CellRecord extends AbstractLogEntry<CellRecord> {
 
+	private static final int AREA_UNKNOWN = -1;
+	private static final int PSC_UNKNOWN = -1;
+	private static final String SYSTEM_ID_UNKNOWN = "-1";
+	private static final String NETWORK_ID_UNKOWN = "-1";
+	private static final String BASE_ID_UNKNOWN = "-1";
+	private static final int STRENGTH_UNKNOWN = -1;
 	/**
 	 * GSM cell id; UMTS and other UTRAN networks LCID; -1 if unknown
 	 * Please note: may contain values > 0xffff (max legal value) when in UTRAN network 
@@ -83,33 +89,33 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	/**
 	 * System id in CDMA mode
 	 */
-	private String mSystemId;
+	private String mSystemId = SYSTEM_ID_UNKNOWN;
 
 	/**
 	 * Cell network type as defined by android.telephony.TelephonyManager
 	 */
-	private int mNetworkType;
+	private int mNetworkType = TelephonyManager.NETWORK_TYPE_UNKNOWN;
 
 	/**
 	 * GSM location area code, -1 if unknown, 0xffff max legal value 
 	 */
-    private int mArea;
+    private int mArea = AREA_UNKNOWN;
 
 	/**
 	 * Primary scrambling code, -1 if in GSM mode
 	 */
-	private int mPsc;
+	private int mPsc = PSC_UNKNOWN;
 
 	/**
-	 * Signal strength in dBm
+	 * Signal strength in dBm, -1 invalid
 	 */
-	private int mStrengthdBm;
+	private int mStrengthdBm = STRENGTH_UNKNOWN;
 
 	/**
 	 * Signal strength in Asu
 	 * see e.g. http://www.lte-anbieter.info/technik/asu.php
 	 */
-	private int	mStrengthAsu;
+	private int	mStrengthAsu = STRENGTH_UNKNOWN;
 	
 	/**
 	 * Timestamp in openbmap format: YYYYMMDDHHMMSS
@@ -136,13 +142,13 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 		setSessionId(session);
 
 		setLogicalCellId(-1);
-        setArea(-1);
+        setArea(AREA_UNKNOWN);
         setUtranRnc(-1);
         setActualCid(-1);
-        setPsc(-1);
-		setSystemId("-1");
-		setNetworkId("-1");
-		setBaseId("-1");
+        setPsc(PSC_UNKNOWN);
+		setSystemId(SYSTEM_ID_UNKNOWN);
+		setNetworkId(NETWORK_ID_UNKOWN);
+		setBaseId(BASE_ID_UNKNOWN);
 		setNetworkType(TelephonyManager.NETWORK_TYPE_UNKNOWN);
 		
 	}
@@ -168,7 +174,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	@Override
 	public final String toString() {
         return "Cell " + mLogicalCellId + " / Operator " + mOperatorName + ", " + mOperator + " / MCC " + mMcc + " / MNC " + mMnc
-                + " / Type " + mNetworkType + " / LAC " + mArea + " / PSc " + mPsc + " / dbm " + mStrengthdBm + " / Session Id " + mSessionId;
+                + " / Type " + mNetworkType + " / LAC " + mArea + " / PSC " + mPsc + " / dbm " + mStrengthdBm + " / Session Id " + mSessionId;
     }
 
 	@Override

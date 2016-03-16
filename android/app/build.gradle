@@ -25,9 +25,9 @@ android {
 
 dependencies {
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:support-v4:22.1.1'
-    compile 'com.android.support:appcompat-v7:22.1.1'
-    compile 'com.android.support:support-v13:22.1.1'
+    compile 'com.android.support:support-v4:22.2.1'
+    compile 'com.android.support:appcompat-v7:22.2.1'
+    compile 'com.android.support:support-v13:22.2.1'
     compile 'de.greenrobot:eventbus:2.4.0'
     compile 'com.caverock:androidsvg:1.2.1'
     compile 'org.apache.commons:commons-lang3:3.4'

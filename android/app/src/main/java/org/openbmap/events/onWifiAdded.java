@@ -14,15 +14,17 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
-package org.openbmap.services.positioning.providers;
+package org.openbmap.events;
 
-import android.location.Location;
-import android.os.Bundle;
+public class onWifiAdded {
 
-public interface LocationChangeListener {
-	void onLocationChanged(Location loc);
-	void onStatusChanged(String provider, int status, Bundle extras);
-	void onSatInfo(int satCount);
-}
+    public final String wifiDescription;
+    public final int level;
+
+    public onWifiAdded(final String wifiDescription, final int level) {
+            this.wifiDescription = wifiDescription;
+            this.level = level;
+        }
+    }

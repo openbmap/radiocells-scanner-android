@@ -161,7 +161,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		mAdapter.setViewBinder(new SessionViewBinder());
 
 		// Trying to add a Header View.
-		final View header = (View) getLayoutInflater(savedInstanceState).inflate(
+		final View header = getLayoutInflater(savedInstanceState).inflate(
 				R.layout.sessionlistheader, null);
 		this.getListView().addHeaderView(header);
 
@@ -174,7 +174,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 			@Override
 			public void onChange(final boolean selfChange) {
 				refreshAdapter();
-			};
+			}
 		};
 
 		getListView().setLongClickable(true);

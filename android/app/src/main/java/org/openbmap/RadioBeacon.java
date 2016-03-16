@@ -41,17 +41,7 @@ public final class RadioBeacon {
 	 * Intent signaling new session has been saved
 	 */
 	public static final String INTENT_NEW_SESSION = RadioBeacon.PACKAGE_NAME + ".intent.SESSION_SAVED";
-	
-	/**
-	 * Intent signalling new cell has been saved
-	 */
-	public static final String INTENT_NEW_CELL = RadioBeacon.PACKAGE_NAME + ".intent.CELL_SAVED";
 
-	/**
-	 * Intent signalling new wifi has been saved
-	 */
-	public static final String INTENT_NEW_WIFI = RadioBeacon.PACKAGE_NAME + ".intent.WIFI_SAVED";
-	
 	/**
 	 * Intent signalling wifi has been skipped due to blacklist
 	 */
@@ -61,11 +51,6 @@ public final class RadioBeacon {
 	 * Intent signalling free wifi has been found
 	 */
 	public static final String INTENT_WIFI_FREE = RadioBeacon.PACKAGE_NAME + ".intent_WIFI_FREE";
-	
-	/**
-	 * Intent signalling cells have been changed (e.g. deletes)
-	 */
-	public static final String INTENT_CELL_UPDATE = RadioBeacon.PACKAGE_NAME + ".intent.CELL_UPDATE";
 	
 	/**
 	 * Intent signalling wifis have been changed (e.g. deletes)
@@ -126,36 +111,6 @@ public final class RadioBeacon {
 	 * Extra data key: Operator name
 	 */
 	public static final String MSG_OPERATOR = "operator";
-
-	/**
-	 * Extra data key: MCC
-	 */
-	public static final String MSG_MCC = "mcc";
-
-	/**
-	 * Extra data key: MNC
-	 */
-	public static final String MSG_MNC = "mnc";
-
-	/**
-	 * Extra data key: Area (location area code)
-	 */
-	public static final String MSG_AREA = "area";
-
-	/**
-	 * Extra data key: Cell id
-	 */
-	public static final String MSG_CELL_ID = "cellid";
-	
-	/**
-	 * Extra data key: network technology
-	 */
-	public static final String MSG_TECHNOLOGY = "network_type";
-	
-	/**
-	 * Extra data key: signal strength
-	 */
-	public static final String MSG_STRENGTH = "strength";
 
 	/**
 	 * Extra data key: ssid
@@ -231,7 +186,7 @@ public final class RadioBeacon {
 	/**
 	 * Database scheme version, increment to trigger database update
 	 */
-	public static final int DATABASE_VERSION = 12;
+	public static final int DATABASE_VERSION = 13;
 
     /**
 	 * Private dummy constructor

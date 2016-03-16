@@ -97,7 +97,7 @@ public class CellsListContainer extends ListFragment implements LoaderManager.Lo
 	@Override
 	public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
 		// Trying to add a Header View.
-		mHeader = (View) inflater.inflate(R.layout.celllistheader, null);
+		mHeader = inflater.inflate(R.layout.celllistheader, null);
 		return inflater.inflate(R.layout.cellslist, container, false);
 	}
 	

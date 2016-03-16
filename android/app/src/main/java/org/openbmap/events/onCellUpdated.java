@@ -18,13 +18,34 @@
 
 package org.openbmap.events;
 
-import android.location.Location;
+public class onCellUpdated {
 
-public class onLocationUpdate {
-    public final Location location;
-    public final String source = "GPS";
+    public String operator;
+    public String mcc;
+    public String mnc;
+    public int area;
+    public int cell_id;
+    public String technology;
+    public int level;
 
-        public onLocationUpdate(final Location location) {
-            this.location = location;
-        }
+    /**
+     * Fired when new cells scan is available
+     * @param operatorName
+     * @param mcc
+     * @param mnc
+     * @param area
+     * @param cell_id
+     * @param technology
+     * @param level
+     */
+    public onCellUpdated(final String operatorName, final String mcc, final String mnc, final int area, final int cell_id, final String technology, final int level) {
+        this.operator = operatorName;
+        this.mcc = mcc;
+        this.mnc = mnc;
+        this.area = area;
+        this.cell_id = cell_id;
+        this.technology = technology;
+        this.level = level;
     }
+
+}

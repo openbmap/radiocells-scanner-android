@@ -41,8 +41,8 @@ public class PositioningService extends AbstractService implements LocationChang
 
 	private static final String TAG = PositioningService.class.getSimpleName();
 
-	public enum ProviderType { OFF, GPS, INERTIAL };
-	
+	public enum ProviderType { OFF, GPS, INERTIAL }
+
 	private ProviderType providerProviderType;
 	/**
 	 * Are we currently tracking ?
@@ -213,7 +213,6 @@ public class PositioningService extends AbstractService implements LocationChang
 				mLastTimestamp = System.currentTimeMillis(); // save the time of this fix
 
 				EventBus.getDefault().post(new onLocationUpdate(location));
-
 
 				mLastTimestamp = location.getTime();
 				mLastLocation = location;

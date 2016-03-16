@@ -27,12 +27,11 @@ import java.security.NoSuchAlgorithmException;
  * Model for wifi records
  */
 public class WifiRecord extends AbstractLogEntry<WifiRecord> {
-	
-	@SuppressWarnings("unused")
+
 	private static final String TAG = WifiRecord.class.getSimpleName();
 	
-	public enum CatalogStatus {NEW, OPENBMAP, LOCAL};
-	
+	public enum CatalogStatus {NEW, OPENBMAP, LOCAL}
+
 	private String mBSsid;
 	private String mSsid;
 	private String mCapabilities;

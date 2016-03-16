@@ -504,7 +504,7 @@ public class MapViewActivity extends Fragment implements
 
     private void registerReceiver() {
         if (!EventBus.getDefault().isRegistered(this)) {
-        EventBus.getDefault().register(this);} else {
+            EventBus.getDefault().register(this);} else {
             Log.i(TAG, "Event bus receiver already registered");
         }
     }
@@ -621,7 +621,7 @@ public class MapViewActivity extends Fragment implements
         }
 
         for (final Iterator<Layer> iterator = sessionObjects.iterator(); iterator.hasNext(); ) {
-            final Layer layer = (Layer) iterator.next();
+            final Layer layer = iterator.next();
             this.mMapView.getLayerManager().getLayers().remove(layer);
         }
         sessionObjects.clear();
@@ -642,7 +642,7 @@ public class MapViewActivity extends Fragment implements
 
         synchronized (catalogObjects) {
             for (final Iterator<Layer> iterator = catalogObjects.iterator(); iterator.hasNext(); ) {
-                final Layer layer = (Layer) iterator.next();
+                final Layer layer = iterator.next();
                 this.mMapView.getLayerManager().getLayers().remove(layer);
             }
             catalogObjects.clear();
@@ -1015,7 +1015,7 @@ public class MapViewActivity extends Fragment implements
 
         // determine which drawable we currently
         final ImageView iv = (ImageView) getView().findViewById(R.id.position_marker);
-        final Integer id = (Integer) iv.getTag() == null ? 0 : (Integer) iv.getTag();
+        final Integer id = iv.getTag() == null ? 0 : (Integer) iv.getTag();
 
         if (location.hasBearing()) {
             // determine which drawable we currently use

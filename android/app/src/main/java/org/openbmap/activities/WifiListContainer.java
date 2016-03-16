@@ -118,7 +118,7 @@ public class WifiListContainer extends ListFragment implements LoaderManager.Loa
 	
 	@Override
 	public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
-		mHheader = (View) inflater.inflate(R.layout.wifilistheader, null);
+		mHheader = inflater.inflate(R.layout.wifilistheader, null);
 		return inflater.inflate(R.layout.wifilist, container, false);
 	}
 	
@@ -343,7 +343,7 @@ public class WifiListContainer extends ListFragment implements LoaderManager.Loa
 	 */
 	private class WifiViewBinder implements ViewBinder {
 
-		private final int DEFAULT_TEXT_COLOR = new TextView(getActivity()).getTextColors().getDefaultColor();;
+		private final int DEFAULT_TEXT_COLOR = new TextView(getActivity()).getTextColors().getDefaultColor();
 
 		public boolean setViewValue(final View view, final Cursor cursor, final int columnIndex) {
 			final ImageView isNew = ((ImageView) ((View) view.getParent()).findViewById(R.id.wifilistfragment_statusicon));

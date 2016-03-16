@@ -405,8 +405,6 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		// TODO check if we really need this
 		final Intent intent1 = new Intent(RadioBeacon.INTENT_WIFI_UPDATE);
 		sendBroadcast(intent1);
-		final Intent intent2 = new Intent(RadioBeacon.INTENT_CELL_UPDATE);
-		sendBroadcast(intent2);
 	}
 
 	/**
@@ -732,7 +730,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 			mExportGpxProgress.setTitle(defaultTitle);
 			mExportGpxProgress.setMessage(defaultMessage);
 
-			mUploadTaskFragment.retainProgress(defaultTitle, defaultMessage, (int) mExportGpxProgress.getProgress());
+			mUploadTaskFragment.retainProgress(defaultTitle, defaultMessage, mExportGpxProgress.getProgress());
 		} else {
 			mExportGpxProgress = new ProgressDialog(this);
 			mExportGpxProgress.setCancelable(false);
@@ -776,7 +774,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 			mUploadProgress.setTitle(defaultTitle);
 			mUploadProgress.setMessage(defaultMessage);
 
-			mUploadTaskFragment.retainProgress(defaultTitle, defaultMessage, (int) mUploadProgress.getProgress());
+			mUploadTaskFragment.retainProgress(defaultTitle, defaultMessage, mUploadProgress.getProgress());
 		} else {
 			mUploadProgress = new ProgressDialog(this);
 			mUploadProgress.setCancelable(false);

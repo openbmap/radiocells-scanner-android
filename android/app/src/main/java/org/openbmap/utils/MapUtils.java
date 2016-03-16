@@ -73,7 +73,7 @@ public final class MapUtils {
 		}
 	}
 
-	public static interface onLongPressHandler{
+	public interface onLongPressHandler{
 		void onLongPress(LatLong tapLatLong, Point thisXY, Point tapXY);
 	}
 
@@ -159,7 +159,7 @@ public final class MapUtils {
 			return tileRendererLayer;	
 		} else {
 			// just a plain vanilla layer
-			final TileRendererLayer tileRendererLayer = new TileRendererLayer (tileCache, (MapDataStore) mapFile,
+			final TileRendererLayer tileRendererLayer = new TileRendererLayer (tileCache, mapFile,
 					mapViewPosition, false, true, AndroidGraphicFactory.INSTANCE);
 
 			//tileRendererLayer.setMapFile(mapFile);
