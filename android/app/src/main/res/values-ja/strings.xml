@@ -11,7 +11,7 @@
 	<string name="prefs_gps_logging_interval_summary">"最短は 0 を使用してください (バッテリーの寿命に影響を与えます) "</string>
 	<string name="prefs_gps_logging_interval_seconds">秒</string>
 	<string name="prefs_save_gps_track">GPX 追跡を保存</string>
-	<string name="prefs_save_gps_track_summary">"アップロード セッションごとに GPX ファイルを作成します。データ ディレクトリで gpx 追跡を見つけます。\n(注: GPX 追跡自体がアップロードされることはありません) "</string>
+	<string name="prefs_save_gps_track_summary">"ローカル GPX ファイルを作成します。データ ディレクトリで GPX 追跡を探してください。 "</string>
 	<string name="prefs_ui">ユーザー インターフェイス</string>
 	<string name="prefs_map_none">なし</string>
 	<string name="prefs_ui_keep_screen_on">画面をオンのままにする</string>
