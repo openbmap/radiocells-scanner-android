@@ -24,6 +24,7 @@ import android.widget.TextView;
 
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
+import org.openbmap.utils.CertificateUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -46,6 +47,8 @@ public class CreditsActivity extends Activity {
 		tvClientVersion.setText(RadioBeacon.SW_VERSION);
 		final TextView tvBuild = (TextView) findViewById(R.id.credits_build);
 		tvBuild.setText("(" + readBuildInfo() + ")");
+		final TextView tvSignature = (TextView) findViewById(R.id.credits_build_signature);
+        tvSignature.setText(CertificateUtils.getCertificateSHA1Fingerprint(this));
 	}
 
 	public final String readBuildInfo() {
