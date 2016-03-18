@@ -214,4 +214,5 @@
 <string name="error_accessing_wifi_catalog">Fehler beim Zugriff auf das WLAN-Verzeichnis</string>
 <string name="level">Ebene</string>
 	<string name="blacklisted_area">Ignoriert: In der ignorierten Zone</string>
-	</resources>
+	<string name="build_signature">Build-Signatur:</string>
+</resources>
