@@ -28,7 +28,7 @@
     <string name="prefs_credentials_user">Login</string>
     <string name="prefs_credentials_user_summary">If you don\'t have an account yet, create on at https://radiocells.org (Required for upload only)</string>
     <string name="prefs_credentials_password">Wachtwoord</string>
-    <string name="prefs_credentials_password_summary" translatable="false"/>
+    <string name="prefs_credentials_password_summary"/>
     <string name="prefs_save_cells">Cellen opslaan</string>
 	<string name="prefs_save_cells_summary">Activate to scan for cells
 	</string>
@@ -239,7 +239,6 @@
     <string name="chart_library">Chart library: GraphView</string>
     <string name="no_map_file_selected">No map file selected!</string>
     <string name="saved_waypoint">Saved waypoint</string>
-    <string name="at">" at "</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="gpx_export_failed">GPX export failed</string>
@@ -280,5 +279,4 @@
     <string name="activity_settings_activity">Preferences</string>
     <string name="activity_credits_activity">Credits</string>
     <string name="error_opening_wifi_catalog">Error while opening wifi catalog</string>
-<string name="prefs_gps"/>
 	</resources>

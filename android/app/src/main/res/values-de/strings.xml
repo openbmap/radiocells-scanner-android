@@ -189,7 +189,7 @@
     <string name="prefs_gpx_verbosity_title">GPX-Detailgrad</string>
     <string name="prefs_ignore_battery_summary">Scanne bis zum bitteren Ende (nur empfohlen, falls Du ein Ersatzbatteriepack dabei hast)</string>
     <string name="prefs_keep_export_files_summary">Behalte eine lokale Kopie der Upload-Rohdaten (hilfreich beim Debuggen)</string>
-    <string name="prefs_min_cell_distance">Häufigkeiten Funkzellen-Aufzeichnung</string>
+    <string name="prefs_min_cell_distance">Häufigkeit Funkzellen-Aufzeichnung</string>
     <string name="prefs_min_wifi_distance">Häufigkeit WLAN-Aufzeichnung</string>
     <string name="prefs_privacy">Datenschutz</string>
     <string name="prefs_save_gps_track_summary">"Erstelle im Datenordner eine GPX-Datei für jede Session (die GPX-Dateien werden nicht hochgeladen) "</string>

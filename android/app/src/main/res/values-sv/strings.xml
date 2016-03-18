@@ -30,8 +30,6 @@
     <string name="prefs_credentials_user">Login</string>
     <string name="prefs_credentials_user_summary">If you don\'t have an account yet, create on at https://radiocells.org (Required for upload only)</string>
     <string name="prefs_credentials_password">Password</string>
-    <string name="prefs_credentials_password_summary" translatable="false"></string>
-    <string name="prefs_save_cells">Save Cells</string>
 	<string name="prefs_save_cells_summary">Activate to scan for cells
 	</string>
     <string name="prefs_save_wifis_summary">Activate to scan for wifis</string>
@@ -241,7 +239,6 @@
     <string name="chart_library">Chart library: GraphView</string>
     <string name="no_map_file_selected">No map file selected!</string>
     <string name="saved_waypoint">Saved waypoint</string>
-    <string name="at">" at "</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="gpx_export_failed">GPX export failed</string>

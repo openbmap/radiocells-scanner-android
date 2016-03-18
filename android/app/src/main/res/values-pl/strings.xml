@@ -25,7 +25,6 @@
     <string name="prefs_credentials_user">Użytkownik</string>
     <string name="prefs_credentials_user_summary">Jeżeli nie masz jeszcze konta, stwórz je na https://radiocells.org (Wymagane tylko przy wysyłaniu)</string>
     <string name="prefs_credentials_password">Hasło</string>
-    <string name="prefs_credentials_password_summary" translatable="false"/>
     <string name="prefs_save_cells">Śledź sieci komórkowe</string>
 	<string name="prefs_save_cells_summary">Aktywuj, aby skanować sieci komórkowe</string>
     <string name="prefs_save_wifis_summary">Aktywuj, aby skanować sieci wifi</string>
