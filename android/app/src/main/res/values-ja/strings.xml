@@ -218,4 +218,5 @@
 	<string name="activity_credits_activity">クレジット</string>
 	<string name="error_opening_wifi_catalog">Wifi カタログを開く際にエラーが発生しました</string>
 	<string name="error_accessing_wifi_catalog">Wifi カタログにアクセス中にエラーが発生しました</string>
+<string name="build_signature">ビルド署名:</string>
 </resources>
