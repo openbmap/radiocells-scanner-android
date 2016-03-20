@@ -268,7 +268,7 @@
     <string name="invalid_download">Invalid download</string>
     <string name="prefs_gpx_verbosity_title">GPX verbosity</string>
     <string name="prefs_gpx_verbosity_summary">Select which details are exported to GPX files</string>
-    <string name="wifi_catalog_up_to_date">Already have the latest version installed!</string>
+    <string name="wifi_catalog_up_to_date">Already have the latest version installed (%s)!</string>
     <string name="waypoint">WP</string>
     <string name="activity_stats_activity">Overview</string>
     <string name="activity_wifi_list_container">Wifis</string>

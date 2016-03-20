@@ -206,7 +206,7 @@
 	<string name="invalid_download">無効なダウンロード</string>
 	<string name="prefs_gpx_verbosity_title">GPX の詳細</string>
 	<string name="prefs_gpx_verbosity_summary">GPX ファイルにエクスポートする詳細を選択します</string>
-	<string name="wifi_catalog_up_to_date">すでに最新バージョンがインストールされています!</string>
+	<string name="wifi_catalog_up_to_date">すでに最新バージョンがインストールされています (%s)!</string>
 	<string name="waypoint">WP</string>
 	<string name="activity_stats_activity">概要</string>
 	<string name="activity_wifi_list_container">Wifi</string>

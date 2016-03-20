@@ -187,7 +187,7 @@
 	<string name="activity_wifi_details_activity">Detalles de WiFi</string>
 	<string name="activity_wifi_list_container">WiFis</string>
 	<string name="activity_stats_activity">Resumen</string>
-	<string name="wifi_catalog_up_to_date">¡Ya tienes instalada la última versión!</string>
+	<string name="wifi_catalog_up_to_date">¡Ya tienes instalada la última versión (%s)!</string>
 	<string name="prefs_folder_various">Varios</string>
 	<string name="graph_title">Potencia de red móvil</string>
 	<string name="warning_bad_password">¡Nombre de usuario o contraseña erróneas!</string>
