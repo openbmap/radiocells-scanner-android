@@ -222,7 +222,7 @@
     <string name="invalid_download">Niepoprawnie pobrane</string>
     <string name="prefs_gpx_verbosity_title">Szczegółowość GPX</string>
     <string name="prefs_gpx_verbosity_summary">Wybierz jakie szczegóły są eksportowane do pliku GPX</string>
-    <string name="wifi_catalog_up_to_date">Aktualna wersja jest zainstalowana!</string>
+    <string name="wifi_catalog_up_to_date">Aktualna wersja jest zainstalowana (%s)!</string>
     <string name="waypoint">WP</string>
     <!-- out of context so I leave for now? -->
     <string name="activity_stats_activity">Podsumowanie</string>

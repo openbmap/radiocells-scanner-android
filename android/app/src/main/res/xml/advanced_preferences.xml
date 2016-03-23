@@ -15,8 +15,14 @@
             android:summary="@string/prefs_gpx_verbosity_summary"
             android:key="gpx.verbosity"
             android:defaultValue="1"
-            android:entries="@array/gpxVerbosityEntries"
-            android:entryValues="@array/gpxVerbosityValues" />
+            android:entries="@array/gpx_verbosity_entries"
+            android:entryValues="@array/gpx_verbosity_values" />
+        <ListPreference android:title="@string/prefs_scan_mode"
+            android:summary="@string/prefs_scan_mode_summary"
+            android:key="logging.wifi_scan_mode"
+            android:defaultValue="1"
+            android:entries="@array/scan_mode_entries"
+            android:entryValues="@array/scan_mode_values" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/prefs_privacy" >
         <Preference

@@ -101,7 +101,7 @@
     <string name="preparing_export">Export vorbereiten..</string>
     <string name="warning_outdated_client">Deine Version ist veraltet.\nBitte aktualisiere!</string>
     <string name="warning_session_closed">Fortsetzen nicht möglich! Session wurde bereits hochgeladen</string>
-    <string name="wifi_catalog_up_to_date">Du hast bereits die aktuellste Version!</string>
+    <string name="wifi_catalog_up_to_date">Du hast bereits die aktuellste Version (%s)!</string>
     <string name="unknown">unbekannt</string>
     <string name="uploading_wifis">Lade WLANs hoch</string>
     <string name="seconds">Sekunden</string>
@@ -146,7 +146,7 @@
     <string name="prefs_check_map_repo">Prüfe Server...</string>
     <string name="prefs_data_map_folder_summary">Karten-Ordner auswählen</string>
     <string name="prefs_data_map_summary">Eine lokal gespeicherte Karte auswählen</string>
-    <string name="prefs_data_ref_database_summary">"Wähle ein WLAN-Verzeichnis, um alle bereits bekannten WLANSs auf der Karte anzuzeigen. Dies hilft dir, noch unerschlossene Gebiete zu entdecken "</string>
+    <string name="prefs_data_ref_database_summary">"Wähle ein WLAN-Verzeichnis, um alle bereits bekannten WLANs auf der Karte anzuzeigen. Dies hilft dir, noch unerschlossene Gebiete zu entdecken "</string>
     <string name="prefs_display_always_on_summary">Lässt den Bildschirm dauerhaft an. Deaktiviere diese Option, um Energie zu sparen</string>
     <string name="prefs_get_maps_summary">Offline-Karten</string>
     <string name="prefs_get_maps_title">Offline-Karte herunterladen</string>
@@ -163,7 +163,7 @@
     <string name="dialog_delete_all_sessions_title">Alle Sessions löschen?</string>
     <string name="dialog_found_pending_uploads_title">Einige Sessions wurden noch nicht hochgeladen</string>
     <string name="invalid_download">Ungültiger Download</string>
-    <string name="chart_library">Diagramm Ansicht: GraphView</string>
+    <string name="chart_library">Diagrammbibliothek: GraphView</string>
     <string name="do_you_want_to_delete_processed_sessions">Möchtest Du die hochgeladenen Sessions löschen?</string>
     <string name="error_save_file_failed">Download fehlgeschlagen! SD-Card beschreibbar</string>
     <string name="error_version_check_body">"Anscheinend bist Du nicht online! Soll versucht werden, die Verbindungsprobleme automatisch zu beheben? "</string>

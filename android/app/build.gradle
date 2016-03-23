@@ -21,6 +21,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
         }
     }
+
+    lintOptions {
+        disable 'MissingTranslation'
+    }
 }
 
 dependencies {

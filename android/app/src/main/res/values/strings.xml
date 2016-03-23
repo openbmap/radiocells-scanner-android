@@ -29,6 +29,8 @@
 	<string name="prefs_credentials_user_summary">If you don\'t have an account yet, create on at http://radiocells.org (Required for upload only)</string>
 	<string name="prefs_credentials_password">Password</string>
 	<string name="prefs_credentials_password_summary"/>
+	<string name="prefs_credentials_anonymous_upload">Anonymous upload</string>
+    <string name="prefs_credentials_anonymous_upload_summary">Activate for anonymous upload</string>
 	<string name="prefs_save_cells">Save Cells</string>
 	<string name="prefs_save_cells_summary">Activate to scan for cells
 	</string>
@@ -136,8 +138,7 @@
 	<string name="credits">Credits</string>
 	<string name="map_data_source">Map data: Openstreetmap</string>
 	<string name="map_data_license">Odbl Licence</string>
-	<string name="other_credits">Some great ideas were taken from OSMTracker, stack
-		overflow discussions and any many, many others
+	<string name="other_credits">Many thanks to all the contributors and translators!\nSpecial thanks to the mapsforge people and the OSMTracker developers.
 	</string>
 	<string name="bug_report">Always find the latest version (and the issue
 		tracker) at
@@ -206,7 +207,8 @@
 	<string name="error">Error</string>
 	<string name="no_data_connection">No data connection!</string>
 	<string name="link_repository" translatable="false">https://github.com/wish7code/openbmap/</string>
-	<string name="radiobeacon_licence_caption">Client licence</string>
+	<string name="licences">Licences</string>
+	<string name="radiobeacon_licence_caption">Client</string>
 	<string name="session_uploaded">Session uploaded</string>
 	<string name="do_you_want_to_delete_this_session">Do you want to delete this session?</string>
 	<string name="do_you_want_to_delete_processed_sessions">Do you want to delete uploaded sessions?</string>
@@ -302,7 +304,7 @@
 	<string name="invalid_download">Invalid download</string>
 	<string name="prefs_gpx_verbosity_title">GPX verbosity</string>
 	<string name="prefs_gpx_verbosity_summary">Select which details are exported to GPX files</string>
-	<string name="wifi_catalog_up_to_date">Already have the latest version installed!</string>
+	<string name="wifi_catalog_up_to_date">Already have the latest version installed (%s)!</string>
 	<string name="waypoint">WP</string>
 	<string name="activity_stats_activity">Overview</string>
 	<string name="activity_wifi_list_container">Wifis</string>
@@ -314,5 +316,7 @@
 	<string name="activity_credits_activity">Credits</string>
 	<string name="error_opening_wifi_catalog">Error while opening wifi catalog</string>
 	<string name="error_accessing_wifi_catalog">Error accessing wifi catalog</string>
-	<string name="build_signature">Build signature:</string>
+	<string name="build_signature">Build signature: </string>
+    <string name="prefs_scan_mode">Wireless scan mode</string>
+    <string name="prefs_scan_mode_summary">Warning: Selecting high performance mode will massively drain battery!</string>
 </resources>

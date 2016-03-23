@@ -163,7 +163,7 @@
 	<string name="prefs_get_maps_summary">Hent offline kort</string>
 	<string name="downloading">Henter</string>
 	<string name="prefs_gpx_verbosity_summary">Vælg, hvilke oplysninger der eksporteres til GPX filer</string>
-	<string name="wifi_catalog_up_to_date">Den nyeste version er allerede installeret!</string>
+	<string name="wifi_catalog_up_to_date">Den nyeste version er allerede installeret (%s)!</string>
 	<string name="waypoint">RP</string>
 	<string name="activity_stats_activity">Oversigt</string>
 	<string name="activity_wifi_list_container">WiFi</string>

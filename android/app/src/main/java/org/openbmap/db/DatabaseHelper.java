@@ -326,7 +326,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		this.mDataBase = db;
 
 		if (!db.isReadOnly()) {
-
 			// create general purpose tables
 			db.execSQL("DROP TABLE IF EXISTS " + Schema.TBL_POSITIONS);
 			db.execSQL(SQL_CREATE_TABLE_POSITIONS);

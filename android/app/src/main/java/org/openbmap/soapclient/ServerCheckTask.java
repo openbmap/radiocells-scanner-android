@@ -23,6 +23,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.NetworkInfo.State;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.util.Base64;
 import android.util.Log;
 
@@ -154,12 +155,16 @@ public final class ServerCheckTask extends AsyncTask<String, Object, Object[]> {
 
 			if (serverVersion.equals(params[0])) {
 				Log.i(TAG, "Client version is up-to-date: " + params[0]);
-                if (credentialsAccepted(params[1], params[2])) {
+				final boolean anonymousUpload = PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(Preferences.KEY_ANONYMOUS_UPLOAD, false);
+				if (!anonymousUpload && credentialsAccepted(params[1], params[2])) {
                     result[0] = ServerAnswer.OK;
                     result[1] = "Everything fine! You're using the most up-to-date version!";
-                } else {
+                } else if (!anonymousUpload && !credentialsAccepted(params[1], params[2])) {
                     result[0] = ServerAnswer.BAD_PASSWORD;
                     result[1] = "Server reports bad user or password!";
+                } else {
+                    result[0] = ServerAnswer.OK;
+                    result[1] = "Password validation skipped, anonymous upload!";
                 }
 				return result;
 			} else {
@@ -169,11 +174,11 @@ public final class ServerCheckTask extends AsyncTask<String, Object, Object[]> {
 				return result;
 			}
 		} catch (final IOException e) {
-			Log.e(TAG, "Error occured on version check. Are you online?");
+			Log.e(TAG, "Error while checking version. Are you online?");
 			final Object[] noreply = new Object[]{ ServerAnswer.NO_REPLY, "Couldn't contact server"};
 			return noreply;
 		} catch (final Exception e) {
-			Log.e(TAG, "Error occured on version check: " + e.getMessage());
+			Log.e(TAG, "Error while checking version: " + e.getMessage());
 			e.printStackTrace();
 			final Object[] generic = new Object[]{ ServerAnswer.UNKNOWN_ERROR, "Error: " + e.getMessage()};
 			return generic;
@@ -181,7 +186,7 @@ public final class ServerCheckTask extends AsyncTask<String, Object, Object[]> {
 	}
 
     /**
-     * Sends a http request to website to check if server accepts user name and password
+     * Sends a https request to website to check if server accepts user name and password
      * @return true if server confirms credentials
      */
     private boolean credentialsAccepted(String user, String password) {

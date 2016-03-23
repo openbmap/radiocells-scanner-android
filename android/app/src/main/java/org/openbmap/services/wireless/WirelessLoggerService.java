@@ -36,9 +36,9 @@ import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.WifiLock;
 import android.os.Build;
 import android.os.Message;
-import android.os.PowerManager;
-import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.telephony.CellIdentityCdma;
 import android.telephony.CellIdentityGsm;
 import android.telephony.CellIdentityLte;
@@ -193,16 +193,6 @@ public class WirelessLoggerService extends AbstractService {
      * Wifi scan result callback
      */
     private WifiScanCallback mWifiScanResults;
-
-    /**
-     * WakeLock to prevent cpu from going into sleep mode
-     */
-    private WakeLock mWakeLock;
-
-    /**
-     * WakeLock Tag
-     */
-    private static final String WAKELOCK_NAME = "WakeLock.CPU";
 
     /**
      * WifiLock to prevent wifi from going into sleep mode
@@ -436,33 +426,34 @@ public class WirelessLoggerService extends AbstractService {
     }
 
     /**
-     * Register wakelock and wifilock to prevent phone going into sleep mode
+     * Register wifilock to prevent wifi adapter going into sleep mode
      */
     private void registerWakeLocks() {
-        final PowerManager mgr = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        try {
-            mWakeLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK_NAME);
-            mWakeLock.setReferenceCounted(true);
-            mWakeLock.acquire();
-        } catch (final Exception e) {
-            e.printStackTrace();
-        }
-
         if (mWifiLock != null) {
-            mWifiLock = mWifiManager.createWifiLock(WifiManager.WIFI_MODE_SCAN_ONLY, WIFILOCK_NAME);
+
+            int mode = WifiManager.WIFI_MODE_SCAN_ONLY;
+
+            if (Integer.parseInt(prefs.getString(Preferences.KEY_WIFI_SCAN_MODE, Preferences.VAL_WIFI_SCAN_MODE)) == 2) {
+                Log.i(TAG, "Scanning in full power mode");
+                mode = WifiManager.WIFI_MODE_FULL;
+            } else if (Integer.parseInt(prefs.getString(Preferences.KEY_WIFI_SCAN_MODE, Preferences.VAL_WIFI_SCAN_MODE)) == 3) {
+                Log.i(TAG, "Scanning in full high perf mode");
+                /**
+                 * WARNING POSSIBLE HIGH POWER DRAIN!!!!
+                 * see https://github.com/wish7code/openbmap/issues/130
+                 */
+                mode = WifiManager.WIFI_MODE_FULL_HIGH_PERF;
+            }
+
+            mWifiLock = mWifiManager.createWifiLock(mode, WIFILOCK_NAME);
             mWifiLock.acquire();
         }
     }
 
     /**
-     * Unregisters wakelock and wifilock
+     * Unregisters wifilock
      */
     private void unregisterWakeLocks() {
-        if (mWakeLock != null && mWakeLock.isHeld()) {
-            mWakeLock.release();
-        }
-        mWakeLock = null;
-
         if (mWifiLock != null && mWifiLock.isHeld()) {
             mWifiLock.release();
         }
@@ -807,57 +798,11 @@ public class WirelessLoggerService extends AbstractService {
 
             if (isValidGsmCell(gsmLocation)) {
                 Log.i(TAG, "Assuming gsm (assumption based on cell-id" + gsmLocation.getCid() + ")");
-                final CellRecord serving = new CellRecord(mSessionId);
-                serving.setIsCdma(false);
+                final CellRecord serving = processGsm(position, gsmLocation);
 
-                // generic cell info
-                serving.setNetworkType(mTelephonyManager.getNetworkType());
-                // TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
-                serving.setOpenBmapTimestamp(position.getOpenBmapTimestamp());
-                serving.setBeginPosition(position);
-                // so far we set end position = begin position
-                serving.setEndPosition(position);
-                serving.setIsServing(true);
-                serving.setIsNeighbor(false);
-
-                // GSM specific
-                serving.setLogicalCellId(gsmLocation.getCid());
-
-                // add UTRAN ids, if needed
-                if (gsmLocation.getCid() > 0xFFFFFF) {
-                    serving.setUtranRnc(gsmLocation.getCid() >> 16);
-                    serving.setActualCid(gsmLocation.getCid() & 0xFFFF);
-                } else {
-                    serving.setActualCid(gsmLocation.getCid());
-                }
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-                    // at least for Nexus 4, even HSDPA networks broadcast psc
-                    serving.setPsc(gsmLocation.getPsc());
-                }
-
-                final String operator = mTelephonyManager.getNetworkOperator();
-                // getNetworkOperator() may return empty string, probably due to dropped connection
-                if (operator != null && operator.length() > 3) {
-                    serving.setOperator(operator);
-                    serving.setMcc(operator.substring(0, 3));
-                    serving.setMnc(operator.substring(3));
-                } else {
-                    Log.e(TAG, "Error retrieving network operator, skipping cell");
+                if (serving == null) {
                     return null;
                 }
-
-                final String networkOperatorName = mTelephonyManager.getNetworkOperatorName();
-                if (networkOperatorName != null) {
-                    serving.setOperatorName(networkOperatorName);
-                } else {
-                    Log.e(TAG, "Error retrieving network operator's name, skipping cell");
-                    return null;
-                }
-
-                serving.setArea(gsmLocation.getLac());
-                serving.setStrengthdBm(gsmStrengthDbm);
-                serving.setStrengthAsu(gsmStrengthAsu);
 
                 return serving;
             }
@@ -869,50 +814,112 @@ public class WirelessLoggerService extends AbstractService {
 				 * Assume CDMA network, if cdma location and basestation, network and system id are available
 				 */
                 Log.i(TAG, "Assuming cdma for cell " + cdmaLocation.getBaseStationId());
-                final CellRecord serving = new CellRecord(mSessionId);
-                serving.setIsCdma(true);
-
-                // generic cell info
-                serving.setNetworkType(mTelephonyManager.getNetworkType());
-                // TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
-                serving.setOpenBmapTimestamp(position.getOpenBmapTimestamp());
-                serving.setBeginPosition(position);
-                // so far we set end position = begin position
-                serving.setEndPosition(position);
-                serving.setIsServing(true);
-                serving.setIsNeighbor(false);
-
-                // getNetworkOperator can be unreliable in CDMA networks, thus be careful
-                // {@link http://developer.android.com/reference/android/telephony/TelephonyManager.html#getNetworkOperator()}
-                final String operator = mTelephonyManager.getNetworkOperator();
-                if (operator.length() > 3) {
-                    serving.setOperator(operator);
-                    serving.setMcc(operator.substring(0, 3));
-                    serving.setMnc(operator.substring(3));
-                } else {
-                    Log.i(TAG, "Error retrieving network operator, this might happen in CDMA network");
-                    serving.setMcc("");
-                    serving.setMnc("");
-                }
-
-                final String networkOperatorName = mTelephonyManager.getNetworkOperatorName();
-                if (networkOperatorName != null) {
-                    serving.setOperatorName(mTelephonyManager.getNetworkOperatorName());
-                } else {
-                    Log.i(TAG, "Error retrieving network operator's name, this might happen in CDMA network");
-                    serving.setOperatorName("");
-                }
-
-                // CDMA specific
-                serving.setBaseId(String.valueOf(cdmaLocation.getBaseStationId()));
-                serving.setNetworkId(String.valueOf(cdmaLocation.getNetworkId()));
-                serving.setSystemId(String.valueOf(cdmaLocation.getSystemId()));
-
-                serving.setStrengthdBm(cdmaStrengthDbm);
+                final CellRecord serving = processCdma(position, cdmaLocation);
                 return serving;
             }
         }
         return null;
+    }
+
+    @NonNull
+    private CellRecord processCdma(PositionRecord position, CdmaCellLocation cdmaLocation) {
+        final CellRecord serving = new CellRecord(mSessionId);
+        serving.setIsCdma(true);
+
+        // generic cell info
+        serving.setNetworkType(mTelephonyManager.getNetworkType());
+        // TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
+        serving.setOpenBmapTimestamp(position.getOpenBmapTimestamp());
+        serving.setBeginPosition(position);
+        // so far we set end position = begin position
+        serving.setEndPosition(position);
+        serving.setIsServing(true);
+        serving.setIsNeighbor(false);
+
+        // getNetworkOperator can be unreliable in CDMA networks, thus be careful
+        // {@link http://developer.android.com/reference/android/telephony/TelephonyManager.html#getNetworkOperator()}
+        final String operator = mTelephonyManager.getNetworkOperator();
+        if (operator.length() > 3) {
+            serving.setOperator(operator);
+            serving.setMcc(operator.substring(0, 3));
+            serving.setMnc(operator.substring(3));
+        } else {
+            Log.i(TAG, "Error retrieving network operator, this might happen in CDMA network");
+            serving.setMcc("");
+            serving.setMnc("");
+        }
+
+        final String networkOperatorName = mTelephonyManager.getNetworkOperatorName();
+        if (networkOperatorName != null) {
+            serving.setOperatorName(mTelephonyManager.getNetworkOperatorName());
+        } else {
+            Log.i(TAG, "Error retrieving network operator's name, this might happen in CDMA network");
+            serving.setOperatorName("");
+        }
+
+        // CDMA specific
+        serving.setBaseId(String.valueOf(cdmaLocation.getBaseStationId()));
+        serving.setNetworkId(String.valueOf(cdmaLocation.getNetworkId()));
+        serving.setSystemId(String.valueOf(cdmaLocation.getSystemId()));
+
+        serving.setStrengthdBm(cdmaStrengthDbm);
+        return serving;
+    }
+
+    @Nullable
+    private CellRecord processGsm(PositionRecord position, GsmCellLocation gsmLocation) {
+        final CellRecord serving = new CellRecord(mSessionId);
+        serving.setIsCdma(false);
+
+        // generic cell info
+        serving.setNetworkType(mTelephonyManager.getNetworkType());
+        // TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
+        serving.setOpenBmapTimestamp(position.getOpenBmapTimestamp());
+        serving.setBeginPosition(position);
+        // so far we set end position = begin position
+        serving.setEndPosition(position);
+        serving.setIsServing(true);
+        serving.setIsNeighbor(false);
+
+        // GSM specific
+        serving.setLogicalCellId(gsmLocation.getCid());
+
+        // add UTRAN ids, if needed
+        if (gsmLocation.getCid() > 0xFFFFFF) {
+            serving.setUtranRnc(gsmLocation.getCid() >> 16);
+            serving.setActualCid(gsmLocation.getCid() & 0xFFFF);
+        } else {
+            serving.setActualCid(gsmLocation.getCid());
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+            // at least for Nexus 4, even HSDPA networks broadcast psc
+            serving.setPsc(gsmLocation.getPsc());
+        }
+
+        final String operator = mTelephonyManager.getNetworkOperator();
+        // getNetworkOperator() may return empty string, probably due to dropped connection
+        if (operator != null && operator.length() > 3) {
+            serving.setOperator(operator);
+            serving.setMcc(operator.substring(0, 3));
+            serving.setMnc(operator.substring(3));
+        } else {
+            Log.e(TAG, "Error retrieving network operator, skipping cell");
+            return null;
+        }
+
+        final String networkOperatorName = mTelephonyManager.getNetworkOperatorName();
+        if (networkOperatorName != null) {
+            serving.setOperatorName(networkOperatorName);
+        } else {
+            Log.e(TAG, "Error retrieving network operator's name, skipping cell");
+            return null;
+        }
+
+        serving.setArea(gsmLocation.getLac());
+        serving.setStrengthdBm(gsmStrengthDbm);
+        serving.setStrengthAsu(gsmStrengthAsu);
+        return serving;
     }
 
     /**
@@ -1366,11 +1373,16 @@ public class WirelessLoggerService extends AbstractService {
 
         Log.v(TAG, "Broadcasting cell " + recent.toString());
 
+        String cellId = String.valueOf(recent.getLogicalCellId());
+        if (recent.isCdma()) {
+            cellId = String.format("%s-%s%s", recent.getSystemId(), recent.getNetworkId(), recent.getBaseId());
+        }
+
         EventBus.getDefault().post(new onCellUpdated(recent.getOperatorName(),
                 recent.getMcc(),
                 recent.getMnc(),
                 recent.getArea(),
-                recent.getLogicalCellId(),
+                cellId,
                 CellRecord.TECHNOLOGY_MAP().get(recent.getNetworkType()),
                 recent.getStrengthdBm()));
     }

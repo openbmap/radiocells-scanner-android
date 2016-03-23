@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="gpxVerbosityEntries">
+    <string-array name="gpx_verbosity_entries">
     <item>Track and waypoints</item>
     <item>Waypoints only</item>
     <item>All Data</item>
     </string-array>
-    <string-array name="gpxVerbosityValues">
+    <string-array name="gpx_verbosity_values">
         <item>1</item>
         <item>2</item>
         <item>3</item>
