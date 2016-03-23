@@ -175,7 +175,7 @@
     <string name="mapsforge_source">Kartenkomponente: Mapsforge Library</string>
     <string name="notification">RadioBeacon zeichnet auf (#{0})</string>
     <string name="notification_caption">Scanning</string>
-    <string name="other_credits">"Einige Ideen wurden von OSMTracker übernommen, stackoverflow und vielen, vielen weiteren. "</string>
+    <string name="other_credits">"Danke an alle Mitmachenden und Übersetzer! Speziellen Dank an die mapsforge Leute und OSM Tracker Entwickler. "</string>
     <string name="prefs_anonymise_ssid">Entferne SSIDs vor Upload</string>
     <string name="prefs_anonymise_ssid_summary">Ersetzt WLAN-Namen durch MD5 Hash, um die Privatspähre der WLAN-Betreiber zu gewährleisten (SSID \'John Does Wifi\' wird durch einen pseudo-anonymen Wert \'FD33531\' ersetzt)</string>
     <string name="prefs_block_homezone_summary">Verhindert die Aufzeichnung im Umkreis von 500m um Deinen aktuellen Standort.Wenn Du lieber XML-Dateien bearbeitest, trag die Sperrzone in die Datei custom_location.xml auf Deiner SD-Card ein</string>
@@ -196,7 +196,7 @@
     <string name="prefs_ui">User Interface</string>
     <string name="prefs_update_catalog">Synchronisiere lokales WLAN-Verzeichnis</string>
     <string name="prefs_update_catalog_summary">Fügt die von Dir entdeckten WLANs zu Deinem lokalen WLAN-Verzeichnis hinzu</string>
-    <string name="radiobeacon_licence_caption">Anwendungslizenz</string>
+    <string name="radiobeacon_licence_caption">Anwendung</string>
     <string name="sessions">Sitzungen</string>
     <string name="synchronizing">Synchronisiere..</string>
     <string name="stopped_tracking">Aufzeichnung beendet</string>
@@ -214,5 +214,10 @@
 <string name="error_accessing_wifi_catalog">Fehler beim Zugriff auf das WLAN-Verzeichnis</string>
 <string name="level">Ebene</string>
 	<string name="blacklisted_area">Ignoriert: In der ignorierten Zone</string>
-	<string name="build_signature">Build-Signatur:</string>
-</resources>
+	<string name="build_signature">"Build-Signatur: "</string>
+<string name="prefs_credentials_anonymous_upload_summary">Für anonymes hochladen aktivieren</string>
+	<string name="licences">Lizenzen</string>
+	<string name="prefs_scan_mode">Funknetzwerk Suchmodus</string>
+    <string name="prefs_scan_mode_summary">Warnung: Der Akku wird viel schneller leer, wenn der Hochleistungsmodus gewählt wird!</string>
+<string name="prefs_credentials_anonymous_upload">Anonymer Upload</string>
+    </resources>
