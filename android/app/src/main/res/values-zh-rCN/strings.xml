@@ -215,4 +215,10 @@
 	<string name="bug_report">"始终查找最新版本（和问题跟踪器）在 "</string>
 	<string name="prefs_anonymise_ssid_summary">"在上传时用 MD5 散列替换 SSID 以减缓隐私问题 (像是 \'John Does Wifi\' 的 SSID 将变为类似 \'FD33531\') "</string>
 	<string name="prefs_block_homezone_summary">"阻止记录当前位置附近500米。您也可以在您的 SD 卡上直接编辑 custom_location.xml "</string>
-	</resources>
+	<string name="prefs_credentials_anonymous_upload">匿名上传</string>
+    <string name="prefs_credentials_anonymous_upload_summary">激活匿名上传</string>
+	<string name="other_credits">"非常感谢所有的贡献者和翻译人员！\n特别感谢 mapsforge 的人员和 OSMTracker 的开发者。 "</string>
+	<string name="licences">许可协议</string>
+	<string name="prefs_scan_mode">无线扫描模式</string>
+    <string name="prefs_scan_mode_summary">警告：选择高性能模式会快速消耗电量！</string>
+</resources>
