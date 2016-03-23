@@ -24,13 +24,21 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.soapclient.AsyncUploader.FileUploadListener;
 import org.openbmap.utils.MediaScanner;
 import org.openbmap.utils.WifiCatalogUpdater;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 /**
@@ -55,32 +63,23 @@ public class ExportDataTask extends AsyncTask<Void, Object, Boolean> implements 
 	 * OpenBmap cell upload address
 	 */
 	private static final String CELL_WEBSERVICE = "https://radiocells.org/uploads/cells";
-	
-	/**
-	 * Cell target folder, always add trailing slash!
-	 * Folder was used to determine, whether file upload was successful
-     * now obsolete
-	 */
-	private static final String CELL_TARGET_FOLDER = "http://openbmap.org/upload/maps/";
+
+    /**
+     * OpenBmap cell anonymous upload address
+     */
+    private static final String CELL_ANONYMOUS_WEBSERVICE = "https://radiocells.org/uploads/share_cells";
 
 	/**
 	 * OpenBmap wifi upload address
 	 */
 	private static final String WIFI_WEBSERVICE = "https://radiocells.org/uploads/wifis";
-	
-	/**
-	 * Wifi target folder, always add trailing slash!
-	 * Folder was used to determine, whether file upload was successful
-     * now obsolete
-	 */
-	private static final String WIFI_TARGET_FOLDER = "http://www.openbmap.org/upload_wifi/maps/";
 
-	/**
-	 * Checks, whether the file has actually made it to the server by sending a GET request
-	 */
-	private static final boolean VALIDATE_UPLOAD = false;
+    /**
+     * OpenBmap cell anonymous upload address
+     */
+    private static final String WIFI_ANONYMOUS_WEBSERVICE = "https://radiocells.org/uploads/share_wifis";
 
-	private Context mAppContext;
+    private Context mAppContext;
 
 	/**
 	 * Session Id to export
@@ -121,7 +120,12 @@ public class ExportDataTask extends AsyncTask<Void, Object, Boolean> implements 
 	 */
 	private boolean	mExportWifis = false;
 
-	/**
+    /**
+     * Anonymous upload using one-time token
+     */
+    private final boolean mAnonymousUpload;
+
+    /**
 	 * Upload md5ssid only?
 	 */
 	private boolean	mAnonymiseSsid = false;
@@ -145,6 +149,11 @@ public class ExportDataTask extends AsyncTask<Void, Object, Boolean> implements 
 	 * Number of active upload tasks
 	 */
 	private int	mActiveUploads;
+
+    /**
+     * One-time token for anonymous upload
+     */
+    private String mToken;
 
 	/**
 	 * List of all successfully uploaded files. For the moment no differentiation between cells and wifis
@@ -170,7 +179,7 @@ public class ExportDataTask extends AsyncTask<Void, Object, Boolean> implements 
 	 * @param password
 	 */
 	public ExportDataTask(final Context context, final UploadTaskListener listener, final int session,
-                          final String targetPath, final String user, final String password, final boolean anonymiseSsid) {
+                          final String targetPath, final String user, final String password, final boolean anonymous_upload, final boolean anonymiseSsid) {
 		mAppContext = context.getApplicationContext();
 		mSession = session;
 		mTargetPath = targetPath;
@@ -178,7 +187,9 @@ public class ExportDataTask extends AsyncTask<Void, Object, Boolean> implements 
 		mPassword = password;
 		mListener = listener;
 
-		this.mAnonymiseSsid = anonymiseSsid;
+        mAnonymousUpload = anonymous_upload;
+
+		mAnonymiseSsid = anonymiseSsid;
 
 		// by default: upload and delete local temp files afterward
 		this.setSkipUpload(false);
@@ -198,6 +209,11 @@ public class ExportDataTask extends AsyncTask<Void, Object, Boolean> implements 
 		ArrayList<String> wifiFiles = new ArrayList<String>();
 		ArrayList<String> cellFiles = new ArrayList<String>();
 		Boolean success = true;
+
+        if (!getSkipUpload() && mAnonymousUpload && (mExportCells || mExportWifis)) {
+            mToken = getToken();
+            Log.i(TAG, "Token " + mToken);
+        }
 
 		if (mExportCells) {
 			Log.i(TAG, "Exporting cells");
@@ -298,10 +314,17 @@ public class ExportDataTask extends AsyncTask<Void, Object, Boolean> implements 
                 }
             }
             publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.uploading_cells) + "(" + "Files" + ": " + String.valueOf(cellFiles.size() -i) +")" , 0);
-                // enforce parallel execution on HONEYCOMB
-                new AsyncUploader(this, mUser, mPassword, CELL_WEBSERVICE, VALIDATE_UPLOAD, CELL_TARGET_FOLDER).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, cellFiles.get(i));
-                mActiveUploads += 1;
 
+            // enforce parallel execution on HONEYCOMB
+            if (!mAnonymousUpload) {
+                new AsyncUploader(this, mUser, mPassword, CELL_WEBSERVICE).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, cellFiles.get(i));
+                mActiveUploads += 1;
+            } else if (mAnonymousUpload && (mToken != null)){
+                new AsyncUploader(this, mToken, CELL_ANONYMOUS_WEBSERVICE).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, cellFiles.get(i));
+                mActiveUploads += 1;
+            } else {
+                Log.e(TAG, "Neither user name nor token was available");
+            }
         }
 	}
 
@@ -316,10 +339,15 @@ public class ExportDataTask extends AsyncTask<Void, Object, Boolean> implements 
             }
             publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.uploading_wifis) + "(" + mAppContext.getString(R.string.files) + ": " + String.valueOf(wifiFiles.size() -i ) + ")", 50);
             // enforce parallel execution on HONEYCOMB
-            new AsyncUploader(this, mUser, mPassword, WIFI_WEBSERVICE,
-					VALIDATE_UPLOAD, WIFI_TARGET_FOLDER).executeOnExecutor(
-					AsyncTask.THREAD_POOL_EXECUTOR, wifiFiles.get(i));
-            mActiveUploads += 1;
+            if (!mAnonymousUpload) {
+                new AsyncUploader(this, mUser, mPassword, WIFI_WEBSERVICE).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, wifiFiles.get(i));
+                mActiveUploads += 1;
+            } else if (mAnonymousUpload && (mToken != null)) {
+                new AsyncUploader(this, mToken, WIFI_ANONYMOUS_WEBSERVICE).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, wifiFiles.get(i));
+                mActiveUploads += 1;
+            } else {
+                Log.e(TAG, "Neither user name nor token was available");
+            }
         }
 	}
 
@@ -442,5 +470,36 @@ public class ExportDataTask extends AsyncTask<Void, Object, Boolean> implements 
 	public void setUpdateWifiCatalog(final boolean updateCatalog) {
 		mUpdateWifiCatalog = updateCatalog;
 	}
+
+    private String getToken() {
+        final DefaultHttpClient httpclient = new DefaultHttpClient(new BasicHttpParams());
+        final HttpPost httppost = new HttpPost("https://radiocells.org/openbmap/uploads/generate_api_key");
+        final StringBuilder sb = new StringBuilder();
+
+        InputStream inputStream = null;
+        try {
+            final HttpResponse response = httpclient.execute(httppost);
+            final HttpEntity entity = response.getEntity();
+
+            inputStream = entity.getContent();
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting token:" + e.getMessage());
+        } finally {
+            try{
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+            } catch (Exception squish) {
+                return null;
+            }
+        }
+        return sb.toString();
+    }
 
 }

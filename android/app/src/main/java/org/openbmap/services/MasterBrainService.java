@@ -87,7 +87,7 @@ public class MasterBrainService extends Service {
     /**
      * Unique powerlock id
      */
-    private static final String	POWERLOCKNAME	= "WakeLock.Position";
+    private static final String WAKELOCK_NAME = "org.openbmap.wakelock";
 
     /**
      * Keeps the SharedPreferences.
@@ -267,23 +267,26 @@ public class MasterBrainService extends Service {
     }
 
     /**
-     * Setups wakelock
+     * Acquires wakelock to prevent CPU falling asleep
      */
     private void requirePowerLock() {
         final PowerManager mgr = (PowerManager) getSystemService(Context.POWER_SERVICE);
         try {
-            mWakeLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, POWERLOCKNAME);
+            Log.i(TAG, "Acquiring wakelock " + WAKELOCK_NAME);
+            mWakeLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK_NAME);
             mWakeLock.setReferenceCounted(true);
         } catch (final Exception e) {
+            Log.e(TAG, "Error acquiring wakelock " + WAKELOCK_NAME);
             e.printStackTrace();
         }
     }
 
     /**
-     * Releases wakelock
+     * Releases wakelock, if held
      */
     private void releasePowerLock() {
         if (mWakeLock != null && mWakeLock.isHeld()) {
+            Log.i(TAG, "Releasing wakelock " + WAKELOCK_NAME);
             mWakeLock.release();
         }
         mWakeLock = null;
@@ -295,7 +298,6 @@ public class MasterBrainService extends Service {
          */
         @Override
         public void onReceive(final Context context, final Intent intent) {
-            // remove till here
             if (Intent.ACTION_BATTERY_LOW.equals(intent.getAction())) {
                 Log.d(TAG, "ACTION_BATTERY_LOW received");
                 final boolean ignoreBattery = mPrefs.getBoolean(Preferences.KEY_IGNORE_BATTERY, Preferences.VAL_IGNORE_BATTERY);

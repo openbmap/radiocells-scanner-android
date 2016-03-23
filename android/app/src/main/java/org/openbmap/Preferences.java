@@ -76,7 +76,12 @@ public final class Preferences {
 	 * Openbmap password
 	 */
 	public static final String KEY_CREDENTIALS_PASSWORD = "credentials.password";
-	
+
+	/**
+	 * Anonymous upload
+	 */
+	public static final String KEY_ANONYMOUS_UPLOAD = "credentials.anonymous_upload";
+
 	/**
 	 * Shall cells be saved?
 	 */
@@ -96,7 +101,12 @@ public final class Preferences {
 	 * Minimum distance between wifis logged.
 	 */
 	public static final String KEY_MIN_WIFI_DISTANCE = "logging.wifi_distance";
-	
+
+	/**
+	 * Minimum distance between wifis logged.
+	 */
+	public static final String KEY_WIFI_SCAN_MODE = "logging.wifi_scan_mode";
+
 	/**
 	 * Required GPS accuracy
 	 */
@@ -150,6 +160,11 @@ public final class Preferences {
 	/*
 	 * Default values following ..
 	 */
+
+    /**
+     * Default: background wifi scanning
+     */
+    public static final String VAL_WIFI_SCAN_MODE = "1";
 
     /**
      * Default: stop tracking on low battery

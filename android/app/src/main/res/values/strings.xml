@@ -317,4 +317,6 @@
 	<string name="error_opening_wifi_catalog">Error while opening wifi catalog</string>
 	<string name="error_accessing_wifi_catalog">Error accessing wifi catalog</string>
 	<string name="build_signature">Build signature: </string>
+    <string name="prefs_scan_mode">Wireless scan mode</string>
+    <string name="prefs_scan_mode_summary">Warning: Selecting high performance mode will massively drain battery!</string>
 </resources>

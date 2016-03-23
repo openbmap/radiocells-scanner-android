@@ -430,14 +430,22 @@ public class WirelessLoggerService extends AbstractService {
      */
     private void registerWakeLocks() {
         if (mWifiLock != null) {
-            /**
-             * Set to WifiManager.WIFI_MODE_FULL_HIGH_PERF
-             * WARNING POWER DRAIN!!!!
-             * this was set to WIFI_MODE_SCAN_ONLY before,
-             * but some users complaint about wifis not scanned
-             * see https://github.com/wish7code/openbmap/issues/130
-             */
-            mWifiLock = mWifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, WIFILOCK_NAME);
+
+            int mode = WifiManager.WIFI_MODE_SCAN_ONLY;
+
+            if (Integer.parseInt(prefs.getString(Preferences.KEY_WIFI_SCAN_MODE, Preferences.VAL_WIFI_SCAN_MODE)) == 2) {
+                Log.i(TAG, "Scanning in full power mode");
+                mode = WifiManager.WIFI_MODE_FULL;
+            } else if (Integer.parseInt(prefs.getString(Preferences.KEY_WIFI_SCAN_MODE, Preferences.VAL_WIFI_SCAN_MODE)) == 3) {
+                Log.i(TAG, "Scanning in full high perf mode");
+                /**
+                 * WARNING POSSIBLE HIGH POWER DRAIN!!!!
+                 * see https://github.com/wish7code/openbmap/issues/130
+                 */
+                mode = WifiManager.WIFI_MODE_FULL_HIGH_PERF;
+            }
+
+            mWifiLock = mWifiManager.createWifiLock(mode, WIFILOCK_NAME);
             mWifiLock.acquire();
         }
     }

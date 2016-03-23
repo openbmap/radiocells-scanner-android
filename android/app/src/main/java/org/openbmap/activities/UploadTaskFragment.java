@@ -146,15 +146,21 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
     private void process(final int session) {
 
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        final String user = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_USER, null);
-        final String password = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
+        final boolean anonymousUpload = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_ANONYMOUS_UPLOAD, false);
+
+        String user = null;
+        String password = null;
+        if (!anonymousUpload) {
+            user = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_USER, null);
+            password = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
+        }
+
         final String targetPath = getActivity().getExternalFilesDir(null).getAbsolutePath() + File.separator;
         final boolean skipUpload = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_SKIP_UPLOAD, Preferences.VAL_SKIP_UPLOAD);
         final boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_KEEP_XML, Preferences.VAL_KEEP_XML);
         final boolean anonymiseSsid = prefs.getBoolean(Preferences.KEY_ANONYMISE_SSID, Preferences.VAL_ANONYMISE_SSID);
 
-        mExportDataTask = new ExportDataTask(getActivity(), this, session,
-                targetPath, user, password, anonymiseSsid);
+        mExportDataTask = new ExportDataTask(getActivity(), this, session, targetPath, user, password, anonymousUpload, anonymiseSsid);
 
         mExportDataTask.setExportCells(true);
         mExportDataTask.setExportWifis(true);

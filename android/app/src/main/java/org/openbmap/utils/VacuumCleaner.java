@@ -20,6 +20,7 @@ package org.openbmap.utils;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabaseLockedException;
 import android.database.sqlite.SQLiteException;
@@ -31,7 +32,7 @@ import org.openbmap.R;
 import org.openbmap.db.DatabaseHelper;
 
 /**
- * Uploads xml files as multipart message to webservice.
+ * Reorganizes database (vacuum)
  */
 public class VacuumCleaner extends AsyncTask<Void, Void, Boolean> {
 
@@ -46,7 +47,6 @@ public class VacuumCleaner extends AsyncTask<Void, Void, Boolean> {
 	@Override
 	protected final void onPreExecute() {
 		mDialog = new ProgressDialog(mContext);
-		//mDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 		mDialog.setTitle(mContext.getString(R.string.cleaning_database));
 		mDialog.setMessage(mContext.getString(R.string.please_stay_patient));
 		mDialog.setCancelable(false);
@@ -63,17 +63,17 @@ public class VacuumCleaner extends AsyncTask<Void, Void, Boolean> {
 			db.execSQL("VACUUM");
 			Log.i(TAG, "Finished cleaning");
 			db.close();
-		}
-		catch (final SQLiteDatabaseLockedException e){
+		} catch (final SQLiteDatabaseLockedException e){
 			// possibly a database upgrade is currently taking place
 			Log.e(TAG, "Error locking database");
 			return false;
-
 		} catch (final SQLiteException e) {
 			Log.e(TAG, "Database error: " + e.getMessage());
 			return false;
-		}
-
+		} catch (final SQLException e) {
+            Log.e(TAG, "Generic database expection: " + e.getMessage());
+            return false;
+        }
 		return true;
 	}
 
@@ -87,5 +87,4 @@ public class VacuumCleaner extends AsyncTask<Void, Void, Boolean> {
 			Toast.makeText(mContext,  mContext.getResources().getString(R.string.database_lock_error), Toast.LENGTH_LONG).show();
 		}
 	}
-
 }

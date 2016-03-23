@@ -34,9 +34,6 @@ import org.apache.http.params.HttpParams;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 /**
  * Uploads xml files as multipart message to webservice.
@@ -56,18 +53,13 @@ public class AsyncUploader extends AsyncTask<String, Integer, Boolean> {
 
 	private static final String TAG = AsyncUploader.class.getSimpleName();
 
-	/**
-	 * Field for multipart message: username
-	 */
-	private static final String	LOGIN_FIELD	= "openBmap_login";
+    /**
+     * Multipart message field: one-time token (for anonymous upload)
+     */
+    private static final String API_FIELD = "api";
 
 	/**
-	 * Field for multipart message: password
-	 */
-	private static final String	PASSWORD_FIELD	= "openBmap_passwd";
-
-	/**
-	 * Field for multipart message: file
+	 * Multipart message field: file
 	 */
 	private static final String FILE_FIELD = "file";
 
@@ -105,12 +97,20 @@ public class AsyncUploader extends AsyncTask<String, Integer, Boolean> {
 	 */
 	private String lastErrorMsg = null;
 
+    /**
+     * Either user/password oder token must be provided
+     */
 	private final String mUser;
 	private final String mPassword;
+    private final String mToken;
 
     private boolean passwordValidated = false;
 
+    /**
+     * Upload target address
+     */
 	private final String mServer;
+
 	private String mFile;
 
     /**
@@ -124,39 +124,33 @@ public class AsyncUploader extends AsyncTask<String, Integer, Boolean> {
     private long mSpeed;
 
 	/**
-	 * If set to true, following the upload a request is sent to the server, verifying file is actually there
-	 * Background: On wrong or missing credentials server accepts upload (server response 200),
-	 * but discards the file later on.
-	 * 
-	 * Reference:
-	 * http://code.google.com/p/openbmap/issues/detail?id=40
-	 */
-	private final boolean mValidateServerSide;
-
-	/**
-	 * Remote folder, in which uploaded files are searched upon validation
-	 * No trailing slash!
-	 */
-	private final String mValidationBaseUrl;
-
-	/**
 	 * 
 	 * @param listener UploadTaskListener which is informed about upload result
 	 * @param user	   user name
 	 * @param password password
 	 * @param server   remote URL
-	 * @param validateServerSide	additional check, whether file is actually uploaded (more safe than just relying on server response 200)
-	 * @param validationBaseUrl		base URL for additional check 
 	 */
-	public AsyncUploader(final FileUploadListener listener, final String user, final String password,
-						 final String server, final boolean validateServerSide, final String validationBaseUrl) {
+	public AsyncUploader(final FileUploadListener listener, final String user, final String password, final String server) {
 		mListener = listener;
 		mUser = user;
 		mPassword = password;
+        mToken = null;
 		mServer = server;
-		mValidateServerSide = validateServerSide;
-		mValidationBaseUrl = validationBaseUrl;
 	}
+
+    /**
+     *
+     * @param listener UploadTaskListener which is informed about upload result
+     * @param token    server generated one-time token
+     * @param server   remote URL
+     */
+    public AsyncUploader(final FileUploadListener listener, final String token, final String server) {
+        mListener = listener;
+        mUser = null;
+        mPassword = null;
+        mToken = token;
+        mServer = server;
+    }
 
 	/**
 	 * Background task. Note: When uploading several files
@@ -176,15 +170,6 @@ public class AsyncUploader extends AsyncTask<String, Integer, Boolean> {
             return false;
         }
 
-        // perform additional checks if needed
-		if (mValidateServerSide && mResult == UploadResult.OK && !fileFoundOnline(mFile)) {
-			final String filename = mUser + "_" + mFile.substring(mFile.lastIndexOf(File.separator) + 1, mFile.length());
-			
-			lastErrorMsg = "Server reported code 200 on " + filename + ", but the file's not there..";
-			Log.e(TAG, lastErrorMsg);
-			Log.e(TAG, "Hint: Check user/password! Typo?");
-			return false;
-		}
         mSpeed = calcSpeed(System.currentTimeMillis(), beforeTime, mSize);
 
 		return (mResult == UploadResult.OK);
@@ -220,26 +205,24 @@ public class AsyncUploader extends AsyncTask<String, Integer, Boolean> {
         final HttpParams httpParameters = new BasicHttpParams();
         // Set the timeout in milliseconds until a connection is established.
         // The default value is zero, that means the timeout is not used.
-        //HttpConnectionParams.setConnectionTimeout(httpParameters, CONNECTION_TIMEOUT);
+        // HttpConnectionParams.setConnectionTimeout(httpParameters, CONNECTION_TIMEOUT);
         // Set the default socket timeout (SO_TIMEOUT)
         // in milliseconds which is the timeout for waiting for data.
         //HttpConnectionParams.setSoTimeout(httpParameters, SOCKET_TIMEOUT);
         final DefaultHttpClient httpclient = new DefaultHttpClient(httpParameters);
-
         final HttpPost httppost = new HttpPost(mServer);
         try {
-
-            final String authorizationString = "Basic " + Base64.encodeToString(
-                    (mUser + ":" + mPassword).getBytes(),
-                    Base64.NO_WRAP);
-            httppost.setHeader("Authorization", authorizationString);
-
             final MultipartEntity entity = new MultipartEntity();
-
-            entity.addPart(LOGIN_FIELD, new StringBody(mUser));
-            // we don't need passwords for the new service, this is handled by the http post authentication
-            //entity.addPart(PASSWORD_FIELD, new StringBody(mPassword));
             entity.addPart(FILE_FIELD, new FileBody(new File(file), "text/xml"));
+
+            if ((mUser != null) && (mPassword != null)) {
+                final String authorizationString = "Basic " + Base64.encodeToString((mUser + ":" + mPassword).getBytes(), Base64.NO_WRAP);
+                httppost.setHeader("Authorization", authorizationString);
+            }
+
+            if (mToken != null) {
+                entity.addPart(API_FIELD, new StringBody(mToken));
+            }
 
             httppost.setEntity(entity);
             final HttpResponse response = httpclient.execute(httppost);
@@ -267,44 +250,6 @@ public class AsyncUploader extends AsyncTask<String, Integer, Boolean> {
         }
         return UploadResult.UNDEFINED;
     }
-
-	/**
-	 * Sends a head request to the server to check whether uploaded file actually exists on the server
-	 * @param file	file
-	 * @return true if file was available
-	 */
-	private boolean fileFoundOnline(final String file) {
-		if (mValidationBaseUrl == null) {
-			Log.i(TAG, "Validation url not set. Skipping server side validation");
-			return true;
-		}
-
-		try {
-			// not very generic yet
-			final String expectedUrl = 
-					mValidationBaseUrl
-					+ mUser + "_"
-					+ file.substring(file.lastIndexOf(File.separator) + 1, file.length());
-			
-			final HttpURLConnection connection = (HttpURLConnection) new URL(expectedUrl).openConnection();
-			connection.setRequestMethod("HEAD");
-			final int responseCode = connection.getResponseCode();
-			if (responseCode != 200) {
-				// Not OK.
-				return false;
-			}
-		}
-		catch (final MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return true;
-		}
-		catch (final IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return true;
-	}
 
 	/**
 	 * Uploads file. If upload hasn't succeeded on first attempt, upload is tried again MAX_RETRIES times

@@ -24,7 +24,7 @@ public class onCellUpdated {
     public String mcc;
     public String mnc;
     public int area;
-    public int cell_id;
+    public String cell_id;
     public String technology;
     public int level;
 
@@ -38,7 +38,7 @@ public class onCellUpdated {
      * @param technology
      * @param level
      */
-    public onCellUpdated(final String operatorName, final String mcc, final String mnc, final int area, final int cell_id, final String technology, final int level) {
+    public onCellUpdated(final String operatorName, final String mcc, final String mnc, final int area, final String cell_id, final String technology, final int level) {
         this.operator = operatorName;
         this.mcc = mcc;
         this.mnc = mnc;

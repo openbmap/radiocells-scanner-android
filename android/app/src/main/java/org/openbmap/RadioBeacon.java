@@ -169,7 +169,7 @@ public final class RadioBeacon {
      * 			- If you change client version, check whether you need to adjust current_version.xml on server and VERSION_COMPATIBILITY
      * 			- Also consider updating android:versionCode="x+1" android:versionName="XYZ" in AndroidManifest.xml (e.g. for automatic F-Droid updates)
 	 */
-	public static final String SW_VERSION = "0.8.13-beta";
+	public static final String SW_VERSION = "0.8.13";
 	
 	/**
 	 * ServerValidation compares server version against VERSION_COMPATIBILITY to check whether client is outdated.
