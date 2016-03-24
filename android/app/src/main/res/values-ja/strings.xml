@@ -76,7 +76,7 @@
 	<string name="credits">クレジット</string>
 	<string name="map_data_source">マップ データ: Openstreetmap</string>
 	<string name="map_data_license">Odbl ライセンス</string>
-	<string name="other_credits">"いくつかの素晴らしいアイデアは、OSMTracker、 stack overflow の議論、その他の多くから得ました "</string>
+	<string name="other_credits">"すべての貢献者と翻訳者のおかげです!\n特に Mapsforge の人々と OSMTracker の開発者に感謝します。 "</string>
 	<string name="bug_report">"常に最新バージョン (およびバグ追跡システム) を見つける "</string>
 	<string name="subtitle">OpenBmap Wifi &amp; 基地局ログ取得</string>
 	<string name="sessions">セッション</string>
@@ -127,7 +127,7 @@
 	<string name="app_description">Openbmap.org Wifi と基地局のログ取得</string>
 	<string name="error">エラー</string>
 	<string name="no_data_connection">データ接続がありません!</string>
-	<string name="radiobeacon_licence_caption">クライアント ライセンス</string>
+	<string name="radiobeacon_licence_caption">クライアント</string>
 	<string name="session_uploaded">セッションをアップロードしました</string>
 	<string name="do_you_want_to_delete_this_session">このセッションを削除しますか?</string>
 	<string name="do_you_want_to_delete_processed_sessions">アップロードしたセッションを削除しますか?</string>
@@ -218,5 +218,9 @@
 	<string name="activity_credits_activity">クレジット</string>
 	<string name="error_opening_wifi_catalog">Wifi カタログを開く際にエラーが発生しました</string>
 	<string name="error_accessing_wifi_catalog">Wifi カタログにアクセス中にエラーが発生しました</string>
-<string name="build_signature">ビルド署名:</string>
-</resources>
+<string name="build_signature">"ビルド署名: "</string>
+<string name="prefs_credentials_anonymous_upload">匿名のアップロード</string>
+    <string name="prefs_credentials_anonymous_upload_summary">匿名のアップロードを有効にします</string>
+	<string name="licences">ライセンス</string>
+	<string name="prefs_scan_mode">ワイヤレス スキャン モード</string>
+    </resources>
