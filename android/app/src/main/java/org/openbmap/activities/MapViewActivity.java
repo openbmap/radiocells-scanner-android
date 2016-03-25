@@ -46,7 +46,6 @@ import org.mapsforge.core.model.LatLong;
 import org.mapsforge.core.model.Point;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
 import org.mapsforge.map.android.graphics.AndroidResourceBitmap;
-import org.mapsforge.map.android.rendertheme.AssetsRenderTheme;
 import org.mapsforge.map.android.util.AndroidPreferences;
 import org.mapsforge.map.android.util.AndroidUtil;
 import org.mapsforge.map.android.view.MapView;
@@ -58,8 +57,6 @@ import org.mapsforge.map.layer.download.tilesource.OnlineTileSource;
 import org.mapsforge.map.layer.overlay.Circle;
 import org.mapsforge.map.layer.overlay.Polyline;
 import org.mapsforge.map.model.common.Observer;
-import org.mapsforge.map.reader.MapFile;
-import org.mapsforge.map.rendertheme.XmlRenderTheme;
 import org.mapsforge.map.util.MapPositionUtil;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
@@ -78,7 +75,6 @@ import org.openbmap.utils.SessionMapObjectsLoader.OnSessionLoadedListener;
 import org.openbmap.utils.WifiCatalogObjectsLoader;
 import org.openbmap.utils.WifiCatalogObjectsLoader.OnCatalogLoadedListener;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -409,7 +405,11 @@ public class MapViewActivity extends Fragment implements
             // remove all layers including base layer
             mMapView.getLayerManager().getLayers().clear();
             final Layer offlineLayer = MapUtils.createTileRendererLayer(
-                    mTileCache, mMapView.getModel().mapViewPosition, getMapFile(), this, getRenderTheme());
+                    mTileCache,
+                    mMapView.getModel().mapViewPosition,
+                    MapUtils.getMapFile(getActivity().getApplicationContext()),
+                    this,
+                    MapUtils.getRenderTheme(getActivity().getApplicationContext()));
             if (offlineLayer != null) {
                 mMapView.getLayerManager().getLayers().add(offlineLayer);
             }
@@ -1059,29 +1059,6 @@ public class MapViewActivity extends Fragment implements
     private boolean catalogLayerSelected() {
         // TODO add some ui control
         return true; //(getSherlockActivity().getSupportActionBar().getSelectedNavigationIndex() == LayersDisplayed.ALL.ordinal());
-    }
-
-    /**
-     * Opens selected map file
-     *
-     * @return a map file
-     */
-    protected final MapFile getMapFile() {
-        return MapUtils.getMapFile(getActivity().getApplicationContext());
-    }
-
-    /**
-     * Reads custom render theme from assets
-     *
-     * @return render theme
-     */
-    protected XmlRenderTheme getRenderTheme() {
-        try {
-            return new AssetsRenderTheme(this.getActivity().getApplicationContext(), "", "renderthemes/rendertheme-v4.xml");
-        } catch (final IOException e) {
-            Log.e(TAG, "Render theme failure " + e.toString());
-        }
-        return null;
     }
 
     /**

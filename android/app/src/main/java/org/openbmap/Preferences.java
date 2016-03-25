@@ -319,6 +319,11 @@ public final class Preferences {
 	public static final String PASSWORD_VALIDATION_URL = "https://radiocells.org/uploads/check_login";
 
 	/**
+	 * Mapsforge render theme
+	 */
+	public static final String RENDER_THEME = "renderthemes/rendertheme-v4.xml";
+
+	/**
 	 * Private dummy constructor
 	 */
 	private Preferences() {

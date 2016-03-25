@@ -41,7 +41,6 @@ import org.mapsforge.core.model.BoundingBox;
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
 import org.mapsforge.map.android.graphics.AndroidResourceBitmap;
-import org.mapsforge.map.android.rendertheme.AssetsRenderTheme;
 import org.mapsforge.map.android.util.AndroidUtil;
 import org.mapsforge.map.android.view.MapView;
 import org.mapsforge.map.layer.Layer;
@@ -50,8 +49,6 @@ import org.mapsforge.map.layer.download.TileDownloadLayer;
 import org.mapsforge.map.layer.download.tilesource.OnlineTileSource;
 import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.model.common.Observer;
-import org.mapsforge.map.reader.MapFile;
-import org.mapsforge.map.rendertheme.XmlRenderTheme;
 import org.mapsforge.map.util.MapPositionUtil;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
@@ -64,7 +61,6 @@ import org.openbmap.heatmap.HeatmapBuilder;
 import org.openbmap.heatmap.HeatmapBuilder.HeatmapBuilderListener;
 import org.openbmap.utils.MapUtils;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -332,26 +328,6 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 		}
 	}
 
-	/**
-	 * Opens selected map file
-	 * @return a map file
-	 */
-	protected final MapFile getMapFile() {
-		return MapUtils.getMapFile(getActivity());
-	}
-
-	/**
-	 * Reads custom render theme from assets
-	 * @return render theme
-	 */
-	protected XmlRenderTheme getRenderTheme() {
-		try {
-			return new AssetsRenderTheme(this.getActivity(), "", "renderthemes/rendertheme-v4.xml");
-		} catch (final IOException e) {
-			Log.e(TAG, "Render theme failure " + e.toString());
-		}
-		return null;
-	}
 
 	/**
 	 * Initializes map components
@@ -362,7 +338,11 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 		if (MapUtils.isMapSelected(this.getActivity())) {
 			final Layer offlineLayer = MapUtils.createTileRendererLayer(
-					this.mTileCache, this.mMapView.getModel().mapViewPosition, getMapFile(), null, getRenderTheme());
+					this.mTileCache,
+					this.mMapView.getModel().mapViewPosition,
+					MapUtils.getMapFile(this.getActivity()),
+					null,
+					MapUtils.getRenderTheme(this.getActivity()));
 			if (offlineLayer != null) this.mMapView.getLayerManager().getLayers().add(offlineLayer);
 		} else {
 			//this.mMapView.getModel().displayModel.setBackgroundColor(0xffffffff);
