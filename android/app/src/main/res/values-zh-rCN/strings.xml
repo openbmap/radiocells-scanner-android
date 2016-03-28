@@ -220,4 +220,7 @@
 	<string name="licences">许可协议</string>
 	<string name="prefs_scan_mode">无线扫描模式</string>
     <string name="prefs_scan_mode_summary">警告：选择高性能模式会快速消耗电量！</string>
-</resources>
+<string name="prefs_save_gpx_summary">在导出时，在您的设备上创建一个 GPX 文件</string>
+	<string name="saved_at">"已保存在 "</string>
+<string name="warning_sd_not_writable">"无法写入 SD 卡。也许它已共享到其他设备？ "</string>
+	</resources>
