@@ -113,10 +113,10 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		void uploadAllCommand();
 
 		/**
-		 * Exports GPX track of selected session
+		 * Saves GPX track of selected session
 		 * @param id
 		 */
-		void exportGpxCommand(int id);
+		void saveGpxCommand(int id);
 		
 		void reloadListFragment();
 	}
@@ -343,8 +343,8 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 					((SessionFragementListener) getActivity()).uploadCommand(id);
 				}
 				return true;
-			case R.id.menu_export_gpx:
-				((SessionFragementListener) getActivity()).exportGpxCommand(id);
+			case R.id.menu_save_gpx:
+				((SessionFragementListener) getActivity()).saveGpxCommand(id);
 				return true;
 			case R.id.menu_delete_session:
 				((SessionFragementListener) getActivity()).deleteCommand(id);

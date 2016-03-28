@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.0" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>books</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>books</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g fill-rule="evenodd">
+  <path opacity=".8" d="m29 319v-174l261-145h29l232 275.15v159.85l-232 145h-42.439z" fill="#fff"/>
+  <path stroke-linejoin="round" d="m73.931 159.89 228.5 259.48 218.82-125.87-222.69-257.54-224.63 123.93z" stroke="#00f" stroke-linecap="round" stroke-width="10" fill="#00f"/>
+  <path stroke-linejoin="round" d="m61.653 188.6 224.63 255.61 0.97 96.82-226.56-256.09 0.963-96.34z" stroke="#00f" stroke-linecap="round" stroke-width="10" fill="#00f"/>
+ </g>
+ <g stroke-linejoin="round" fill-rule="evenodd" stroke="#9f9fff" stroke-linecap="round" stroke-width="16.477" fill="#9f9fff">
+  <path d="m519.51 327.14-206.25 120.85-0.14425 3.1853 206.08-120.77 0.31735-3.2719z"/>
+  <path d="m519.51 367.14-206.25 120.85-0.14425 3.1853 206.08-120.77 0.31735-3.2719z"/>
+  <path d="m519.51 407.14-206.25 120.85-0.14425 3.1853 206.08-120.77 0.31735-3.2719z"/>
+ </g>
+</svg>

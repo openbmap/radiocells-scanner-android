@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>plantage</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>plantage</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path fill-rule="evenodd" d="m0 580v-580h580v580z" fill="#a5df94"/>
+ <g fill-rule="evenodd" fill="#408000">
+  <circle cy="10.5" cx="10.5" r="10.5"/>
+  <circle cy="10.5" cx="155.5" r="10.5"/>
+  <circle cy="10.5" cx="300.5" r="10.5"/>
+  <circle cy="10.5" cx="445.5" r="10.5"/>
+  <circle cy="300.5" cx="10.5" r="10.5"/>
+  <circle cy="300.5" cx="155.5" r="10.5"/>
+  <circle cy="300.5" cx="300.5" r="10.5"/>
+  <circle cy="300.5" cx="445.5" r="10.5"/>
+  <circle cy="155.5" cx="83" r="10.5"/>
+  <circle cy="155.5" cx="228" r="10.5"/>
+  <circle cy="155.5" cx="373" r="10.5"/>
+  <circle cy="155.5" cx="518" r="10.5"/>
+  <circle cy="445.5" cx="83" r="10.5"/>
+  <circle cy="445.5" cx="228" r="10.5"/>
+  <circle cy="445.5" cx="373" r="10.5"/>
+  <circle cy="445.5" cx="518" r="10.5"/>
+ </g>
+</svg>

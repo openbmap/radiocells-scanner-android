@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.0" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>shoes</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>shoes</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path opacity=".8" fill="#fff" d="m58 435v-174c7.2799-41.073 12.26-87 29-126.61h43.146c14.854 46.683 63.659 50.22 72.854 0h29c58 22.398 84.721 55.34 112 88.415h62c87.4 16.84 106.36 67.2 116 96.2v116h-203c-18.977-12.728-42.911-29-58-58v58z" fill-rule="evenodd"/>
+ <path fill="#00f" d="m108.75 166.75s-21.75 65.25-21.75 152.25h159.5c14.5 0 37.89 29 37.7 29h208.8c0-87-87-94.25-116-94.25h-58c-29-58-87-87-87-87h-7.25c-21.75 43.74-79.27 43.74-108.75 0h-7.25zm137.75 29c8.01 0 14.5 6.49 14.5 14.5s-6.49 14.5-14.5 14.5-14.5-6.49-14.5-14.5 6.49-14.5 14.5-14.5zm29 29c8.01 0 14.5 6.49 14.5 14.5s-6.49 14.5-14.5 14.5-14.5-6.49-14.5-14.5 6.49-14.5 14.5-14.5zm-188.5 123.25v58h145v-58h-145zm211.7 29c7.31 9.49 18.28 29 34.8 29h159.5v-29h-194.3z"/>
+</svg>

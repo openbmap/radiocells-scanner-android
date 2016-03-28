@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.0" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>supermarket</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>supermarket</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path opacity=".8" d="m58 116 377-2s6.3963-19.826 13.439-27c22.16-22.576 57.57-31.997 84.17-43.854 26.6-11.856 47.39 14.854 47.39 14.854v58l-58 58-50.93 232 2.93 58c-1.4642 13.452-10 29-25.207 29h-24.402s-8.3605 23.484-18.39 29c-25.411 13.975-61.589 13.975-87 0-10.03-5.5161-18.39-29-18.39-29h-106.8s-9.4535 23.534-19.805 29c-25.645 13.541-63.794 17.512-83 0-19.216-17.51-15.54-30.83-19.306-45-12.386-15.12-14.282-31.71-13.704-42 1.156-20.58 13.439-29 13.439-29h160.56l-166-29-58-232c2.5773-29 50-29 50-29z" fill-rule="evenodd" fill="#fff"/>
+ <path stroke-linejoin="round" d="m538.76 90.924-49.409 27.996-63.323 269.65v61.129h-324.88" stroke="#00f" stroke-linecap="round" stroke-width="29" fill="none"/>
+ <path stroke-linejoin="round" d="m479 159h-423l45.864 179.4 325.3 44.782z" stroke="#00f" stroke-linecap="round" stroke-width="29" fill="none"/>
+ <path fill="#00f" d="m158.98 478.45a28.783 28.746 0 0 1 -28.788 28.739 28.783 28.746 0 0 1 -28.777 -28.75 28.783 28.746 0 0 1 28.786 -28.741 28.783 28.746 0 0 1 28.78 28.747"/>
+ <path d="m396.1 478.45a28.783 28.746 0 0 1 -28.788 28.739 28.783 28.746 0 0 1 -28.777 -28.75 28.783 28.746 0 0 1 28.786 -28.741 28.783 28.746 0 0 1 28.78 28.747" fill="#00f"/>
+</svg>

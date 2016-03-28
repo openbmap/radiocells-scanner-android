@@ -15,9 +15,8 @@
     <string name="prefs_gps_logging_interval">Interwał logowania GPS</string>
 	<string name="prefs_gps_logging_interval_summary">Użyj 0 dla najmniejszego możliwego (wpływa na zużycie baterii)</string>
     <string name="prefs_gps_logging_interval_seconds">sekund</string>
-    <string name="prefs_save_gps_track">Zapisz szlak GPX</string>
-	<string name="prefs_save_gps_track_summary">"Utwórz plik GPX dla każdej wysłanej sesji. Szukaj plików GPX w folderze danych. "</string>
-    <string name="prefs_ui">Interfejs użytkownika</string>
+    <string name="prefs_save_gpx">Zapisz szlak GPX</string>
+	<string name="prefs_ui">Interfejs użytkownika</string>
     <string name="prefs_map_none">Brak</string>
     <string name="prefs_ui_keep_screen_on">Trzymaj ekran włączony</string>
 	<string name="prefs_ui_keep_screen_on_summary">Zapobiegaj blokowaniu ekranu po czasie bezczynnośći</string>

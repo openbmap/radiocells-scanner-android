@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.0" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>embassy</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>embassy</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g>
+  <path opacity=".8" d="m130.5 58c-29 0-43.5 29-43.5 58v348c0 29 14.5 58 43.5 58s43.5-29 43.5-58v-110.98c47.698 29.429 111.31 24.559 156.09-8.2614 22.371-13.827 48.198-27.454 75.085-22.989 21.47 2.6565 39.866 15.825 54.734 30.68 16.353 8.0134 37.788-10.486 33.094-27.758v-213.93c-8.21-18.716-29-32.889-48.1-39.057-44.48-18.055-96.65-8.769-135.92 17.475-20.31 12.662-42.51 25.952-67.24 24.472-24.3-0.27-47.73-12.38-62.19-32.109-20.05-23.541-20.05-23.541-49.05-23.541z" fill="#fff"/>
+  <path d="m319 116c-86.773 57.849-140.83 0-145 0v203c4.568 0 58.227 57.849 145 0 87-58 140.43 0 145 0v-203c-4.1679 0-58-58-145 0z" fill="#202020"/>
+  <path d="m116 101.5v377c0 20.471 29 19.839 29 0v-377c0-18.39-29-18.793-29 0z" fill="#202020"/>
+  <path d="m319 145c-58 43.5-113.69 18.816-116 18.5v145c1.9067 0.73768 58 25 116-18.5s113.95-19.17 116-18.5v-145c-2.4383-0.81651-58-25-116 18.5z" fill="#fff"/>
+ </g>
+</svg>

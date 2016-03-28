@@ -15,10 +15,8 @@
 		life)
 	</string>
 	<string name="prefs_gps_logging_interval_seconds">seconds</string>
-	<string name="prefs_save_gps_track">Save GPX track</string>
-	<string name="prefs_save_gps_track_summary">Create a local GPX file. Find
-		GPX tracks in data directory.
-	</string>
+	<string name="prefs_save_gpx">Save GPX track</string>
+	<string name="prefs_save_gpx_summary">On export, create a GPX file locally on your device</string>
 	<string name="prefs_ui">User interface</string>
 	<string name="prefs_map_none">None</string>
 	<string name="prefs_ui_keep_screen_on">Keep screen on</string>
@@ -319,4 +317,5 @@
 	<string name="build_signature">Build signature: </string>
     <string name="prefs_scan_mode">Wireless scan mode</string>
     <string name="prefs_scan_mode_summary">Warning: Selecting high performance mode will massively drain battery!</string>
+	<string name="saved_at">"Saved at "</string>
 </resources>

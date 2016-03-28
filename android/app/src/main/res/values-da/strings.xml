@@ -10,8 +10,7 @@
 	<string name="prefs_gps_logging_interval">GPS logningsinterval</string>
 	<string name="prefs_gps_logging_interval_summary">"Brug 0 for kortest mulig (påvirker batteriets levetid) "</string>
 	<string name="prefs_gps_logging_interval_seconds">sekunder</string>
-	<string name="prefs_save_gps_track">Gem GPX spor</string>
-	<string name="prefs_save_gps_track_summary">"Opret en GPX fil for hver overførte session. Find gpx spor i datamappen.\n(Bemærk: GPX spor bliver aldrig overført) "</string>
+	<string name="prefs_save_gpx">Gem GPX spor</string>
 	<string name="prefs_ui">Brugergrænseflade</string>
 	<string name="prefs_map_none">Ingen</string>
 	<string name="prefs_ui_keep_screen_on_summary">"Forhindre skærmlåsning efter ledig tid "</string>

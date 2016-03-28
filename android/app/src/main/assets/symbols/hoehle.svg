@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>hoehle</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>hoehle</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path d="m289.52 178.76c-74.636-0.0301-147.08 58.926-164.62 154.56h-40.957-43.687v90.177h43.687 124.26v-45.089c0-84.286 42.058-109.5 81.286-109.48 39.23 0.0148 81.317 25.305 81.317 109.48v45.089h124.76 43.687v-90.177h-43.687-41.461c-17.54-95.57-89.94-154.53-164.57-154.56z" fill-rule="evenodd" stroke="#fff" fill="#333" stroke-linecap="square" stroke-width="35"/>
+</svg>

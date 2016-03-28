@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>shelter_lean_to</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>shelter_lean_to</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path opacity=".8" d="m364.44 145h-161.44c-16.623 3.1725-28.573 22.427-36.867 35.375l-50.13 72.95v36.67h29l0.66992 61.143c-19.93 6-33.44 27.51-29.67 47.66v36.2h145v-145h58v145h145v-37.422c3.93-30.29-19.23-35.05-29-49.58v-58h29v-39.741l-71.398-97.741c-8.13-5.74-18.46-7.78-28.16-7.52z" fill-rule="evenodd" fill="#fff"/>
+ <path d="m232 406.5v-145h116v145l87-0.5c0-29 0-29-29-29v-116h29l-55-81c-3-4.4182-3-6-10-6h-160c-7 0-7 1.5546-10 6l-55 81.5h29v116c-29-0.5-29-0.5-29 28.5z" fill-rule="evenodd" fill="#333"/>
+</svg>

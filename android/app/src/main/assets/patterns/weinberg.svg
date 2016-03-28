@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>weinberg</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>weinberg</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path fill="#93CB82" d="m0 580v-580h580v580z" fill-rule="evenodd"/>
+ <g fill-rule="evenodd" fill="#30ab38">
+  <circle cy="135.94" cx="117.81" r="9.0625"/>
+  <circle cy="117.81" cx="117.81" r="9.0625"/>
+  <circle cy="135.94" cx="99.688" r="9.0625"/>
+  <circle cy="135.94" cx="135.94" r="9.0625"/>
+  <circle cy="154.06" cx="117.81" r="9.0625"/>
+  <circle cy="190.31" cx="154.06" r="9.0625"/>
+  <circle cy="172.19" cx="154.06" r="9.0625"/>
+  <circle cy="190.31" cx="135.94" r="9.0625"/>
+  <circle cy="190.31" cx="172.19" r="9.0625"/>
+  <circle cy="208.44" cx="154.06" r="9.0625"/>
+  <circle cy="135.94" cx="190.31" r="9.0625"/>
+  <circle cy="117.81" cx="190.31" r="9.0625"/>
+  <circle cy="135.94" cx="172.19" r="9.0625"/>
+  <circle cy="135.94" cx="208.44" r="9.0625"/>
+  <circle cy="154.06" cx="190.31" r="9.0625"/>
+ </g>
+ <path stroke-linejoin="round" d="m154.06 63.438v54.375" stroke="#30ab38" stroke-linecap="round" stroke-width="18.125" fill="none"/>
+ <g fill-rule="evenodd" fill="#30ab38">
+  <circle cy="425.94" cx="425.94" r="9.0625"/>
+  <circle cy="407.81" cx="425.94" r="9.0625"/>
+  <circle cy="425.94" cx="407.81" r="9.0625"/>
+  <circle cy="425.94" cx="444.06" r="9.0625"/>
+  <circle cy="444.06" cx="425.94" r="9.0625"/>
+  <circle cy="480.31" cx="462.19" r="9.0625"/>
+  <circle cy="462.19" cx="462.19" r="9.0625"/>
+  <circle cy="480.31" cx="444.06" r="9.0625"/>
+  <circle cy="480.31" cx="480.31" r="9.0625"/>
+  <circle cy="498.44" cx="462.19" r="9.0625"/>
+  <circle cy="425.94" cx="498.44" r="9.0625"/>
+  <circle cy="407.81" cx="498.44" r="9.0625"/>
+  <circle cy="425.94" cx="480.31" r="9.0625"/>
+  <circle cy="425.94" cx="516.56" r="9.0625"/>
+  <circle cy="444.06" cx="498.44" r="9.0625"/>
+ </g>
+ <path stroke-linejoin="round" d="m462.19 353.44v54.375" stroke="#30ab38" stroke-linecap="round" stroke-width="18.125" fill="none"/>
+</svg>

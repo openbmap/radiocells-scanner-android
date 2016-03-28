@@ -28,11 +28,11 @@ import android.util.Log;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
-import org.openbmap.soapclient.ExportDataTask;
-import org.openbmap.soapclient.ExportDataTask.UploadTaskListener;
-import org.openbmap.soapclient.ServerCheckTask;
-import org.openbmap.soapclient.ServerCheckTask.ServerAnswer;
-import org.openbmap.soapclient.ServerCheckTask.ServerCheckerListener;
+import org.openbmap.soapclient.ExportSessionTask;
+import org.openbmap.soapclient.ExportSessionTask.UploadTaskListener;
+import org.openbmap.soapclient.CheckServerTask;
+import org.openbmap.soapclient.CheckServerTask.ServerAnswer;
+import org.openbmap.soapclient.CheckServerTask.ServerCheckerListener;
 import org.openbmap.utils.FileUtils;
 
 import java.io.File;
@@ -52,7 +52,7 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
     private CheckResult serverReply = CheckResult.UNKNOWN;
 
     private final Vector<Integer> toExport = new Vector<Integer>();
-    private ExportDataTask mExportDataTask;
+    private ExportSessionTask mExportDataTask;
 
     private String mTitle;
     private String mMessage;
@@ -159,11 +159,15 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
         final boolean skipUpload = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_SKIP_UPLOAD, Preferences.VAL_SKIP_UPLOAD);
         final boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_KEEP_XML, Preferences.VAL_KEEP_XML);
         final boolean anonymiseSsid = prefs.getBoolean(Preferences.KEY_ANONYMISE_SSID, Preferences.VAL_ANONYMISE_SSID);
+        final boolean saveGpx = prefs.getBoolean(Preferences.KEY_SAVE_GPX, Preferences.VAL_SAVE_GPX);
 
-        mExportDataTask = new ExportDataTask(getActivity(), this, session, targetPath, user, password, anonymousUpload, anonymiseSsid);
+        mExportDataTask = new ExportSessionTask(getActivity(), this, session, targetPath, user, password, anonymousUpload);
 
+        // set extras
         mExportDataTask.setExportCells(true);
         mExportDataTask.setExportWifis(true);
+        mExportDataTask.setAnonymiseSsid(anonymiseSsid);
+        mExportDataTask.setSaveGpx(saveGpx);
         // currently deactivated to prevent crashes
         mExportDataTask.setUpdateWifiCatalog(false);
 
@@ -184,7 +188,7 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
             final String password = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
 
             final String[] params = {RadioBeacon.VERSION_COMPATIBILITY, user, password};
-            new ServerCheckTask(getActivity(), this).execute(params);
+            new CheckServerTask(getActivity(), this).execute(params);
         } else if (serverReply == CheckResult.PASSED) {
             stageLocalChecks();
         }

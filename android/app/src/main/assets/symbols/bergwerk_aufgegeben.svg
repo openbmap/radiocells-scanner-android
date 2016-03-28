@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>bergwerk_aufgegeben</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>bergwerk_aufgegeben</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path opacity=".8" d="m81.098 127.87 145.14 145.14-46.57 46.58c-11.42-14.57-21.88-29.85-32.4-45.07l-95.947 88.91c33.929 61.825 86.094 111.2 141.17 154.16l96.459-96.467c-14.482-10.597-28.984-21.154-42.701-32.643l47.727-47.727 45.844 45.844-37.672 37.672 95.318 95.32 123.53-123.53v-95.318h-95.318l-18.117 18.117-45.84-45.85 145.14-145.14-67.74-67.739-145.14 145.15-145.14-145.15z" fill="#fff"/>
+ <g transform="matrix(7.9608 0 0 -7.9608 39.235 527.76)">
+  <path stroke="#4c4c4c" stroke-width="5" d="m52 52-36-36" fill="none"/>
+  <path stroke-linejoin="round" d="m12 52 36-36" stroke="#4c4c4c" stroke-width="5" fill="none"/>
+  <path stroke-width="0" d="m38 13 7-7 12 12v7h-7z" fill="#4c4c4c"/>
+  <path stroke-width="0" d="m19 6 7 7c-5.1835 3.9286-9.4429 8.4732-13 13.486l-7-6.486c3.4504-5.446 8.021-9.903 13-14z" fill="#4c4c4c"/>
+ </g>
+</svg>

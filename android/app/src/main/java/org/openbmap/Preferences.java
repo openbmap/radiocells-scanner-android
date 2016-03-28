@@ -152,6 +152,7 @@ public final class Preferences {
      */
     public static final String KEY_DELETE_SESSIONS = "delete_tracks";
 
+	public static final String KEY_SAVE_GPX = "gpx.save_track";
     /**
      * Level of detail for GPX exports (track + waypoints, waypoints only, track + waypoints + wifis/cells
      */
@@ -161,6 +162,10 @@ public final class Preferences {
 	 * Default values following ..
 	 */
 
+    /**
+     * Default: upload using username / password
+     */
+    public static final boolean VAL_ANONYMOUS_UPLOAD = false;
     /**
      * Default: background wifi scanning
      */
@@ -175,6 +180,11 @@ public final class Preferences {
      * Default: don't delete sessions after successful upload
      */
     public static final boolean VAL_DELETE_SESSIONS = false;
+
+    /**
+     * Default: don't create a GPX file
+     */
+    public static final boolean VAL_SAVE_GPX = false;
 
     /**
      * Default: export track and waypoints
@@ -321,9 +331,9 @@ public final class Preferences {
 	/**
 	 * Mapsforge render theme
 	 */
-	public static final String RENDER_THEME = "renderthemes/rendertheme-v4.xml";
+	public static final String RENDER_THEME = "renderthemes/freizeitkarte-v4.xml";
 
-	/**
+    /**
 	 * Private dummy constructor
 	 */
 	private Preferences() {

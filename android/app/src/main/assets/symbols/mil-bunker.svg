@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>mil-bunker</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>mil-bunker</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g fill-rule="evenodd">
+  <path opacity=".8" d="m29 464h522c0-116-98.32-279.58-261-280.12s-261 164.12-261 280.12z" fill="#fff"/>
+  <path fill="#734a08" d="m58 435h464c0-58-71.06-164.95-145-203-51.57-26.54-122.43-26.54-174 0-73.94 38.05-145 145-145 203z"/>
+  <rect height="58" width="116" y="290" x="232" fill="#fff"/>
+ </g>
+</svg>

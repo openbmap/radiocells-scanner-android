@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>schilf</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>schilf</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path fill="#80cca0" d="m0 0v580h580v-580z" fill-rule="evenodd"/>
+ <g stroke-linecap="round" fill="none">
+  <g stroke-width="18.125" stroke="#017fff">
+   <path d="m63.567 462.19h36.16"/>
+   <path d="m262.94 570.94h108.49"/>
+   <path d="m444.17 63.437h90.392"/>
+   <path d="m516.67 262.81h72.266"/>
+   <path d="m-9.1012 262.81h36.16"/>
+   <path d="m-8.9334 135.94h36.16"/>
+   <path d="m335.44 172.19h108.49"/>
+   <path d="m172.3 317.19h90.392"/>
+   <path d="m172.3 462.19h90.392"/>
+   <path d="m571.05 135.94h17.919"/>
+  </g>
+  <path stroke-linejoin="round" d="m99.751 208.36h16.125l2-72.5 2.3195 63.515 6.0922 8.9854 9.7133-20.125 7.7544 20.125 7.4146-8.9854 2.956-81.64 2 90.625 15.922-2 15.922 2 2.407-56.375" stroke="#390" stroke-width="18"/>
+  <path stroke-linejoin="round" d="m516.5 462.25h-16.125l-2-72.5-2.3195 63.515-6.0922 8.9854-9.7133-20.125-7.7544 20.125-7.4146-8.9854-2.956-81.64-2 90.625-15.922-2-15.922 2-2.407-56.375" stroke="#390" stroke-width="18"/>
+ </g>
+</svg>

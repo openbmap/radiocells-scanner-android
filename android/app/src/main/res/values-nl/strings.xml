@@ -14,11 +14,6 @@
     <string name="prefs_gps_logging_interval">GPS logging interval</string>
 	<string name="prefs_gps_logging_interval_summary">"Gebruik 0 voor de kortst mogelijke (invloed op de levensduur van de batterij) "</string>
     <string name="prefs_gps_logging_interval_seconds">seconden</string>
-    <string name="prefs_save_gps_track">GPX track opslaan</string>
-	<string name="prefs_save_gps_track_summary">Create a GPX file for each uploaded session.Find
-		gpx tracks in data directory.\n(Note: GPX tracks themselves are never
-		uploaded)
-	</string>
     <string name="prefs_ui">User interface</string>
     <string name="prefs_map_none">Geen</string>
     <string name="prefs_ui_keep_screen_on">Keep screen on</string>

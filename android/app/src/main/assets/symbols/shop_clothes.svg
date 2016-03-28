@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.0" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>clothes</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>clothes</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path opacity=".8" d="m261 87h-95.29l-111.45 75.2 45.83 155.49 44.91-27.69v203h290v-203l44.914 25.693 46.09-154.33-120-73.36-87-1v29c0 17.84-11.423 29-29 29s-29-10.97-29-29z" fill="#fff"/>
+ <path d="m174 116-87 58 29 97.15 58-39.15v232h232v-232l58 39.15 29-97.15-87-58h-58c0 29-29 58-58 58s-58-29-58-58z" fill="#00f"/>
+</svg>

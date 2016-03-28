@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>moschee</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>moschee</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path d="m267.3 439c-48-8.9-89-44-109-88-20.9-47-15.7-106 15.7-148 22-30 54.8-55 93-60 23.4-5.2 47.8-4.3 71 3.2 16.4 5.7 35.5 17.9 47 31.6-8.2 7.2-26.9-3.4-38.8-3.4-51-7.6-95 18-116 64-13 27-13.2 59-6.5 88 15.6 49 54.7 81 107 82 18.3-0.5 36-8 54-7.1-6.4 12.6-24 25.2-36.8 31-25.5 8.6-53 11.7-79.9 6.9" fill="#202020"/>
+ <path fill="#202020" d="m319.9 270.64h122.14l-98.803 71.803 37.78-116.21 37.78 116.21z"/>
+</svg>

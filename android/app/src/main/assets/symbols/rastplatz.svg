@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>rastplatz</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>rastplatz</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path opacity=".8" d="m116 551h145v-174l87 174h153v-49.024l-72.39-141.95s72.39-29 72.39-142.88c0-159.15-124-159.15-124-159.15h-261z" fill-rule="evenodd" fill="#fff"/>
+ <path d="m145 87v435h87v-174h58l87 174h87l-88.72-177.2h-0.04c47.68-11.37 88.97-53.27 88.76-127.3-0.25-87.9-58-130.5-116-130.5h-203zm87 87h58c58 0 86.29 0 87 43.5s-29 43.5-87 43.5h-58v-87z" fill="#0069b6"/>
+</svg>

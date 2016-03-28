@@ -11,6 +11,11 @@
             android:summary="@string/prefs_auto_delete_tracks_summary"
             android:title="@string/prefs_auto_delete_sessions_title"
             />
+        <CheckBoxPreference
+            android:key="gpx.save_track"
+            android:summary="@string/prefs_save_gpx"
+            android:title="@string/prefs_save_gpx_summary"
+            />
         <ListPreference android:title="@string/prefs_gpx_verbosity_title"
             android:summary="@string/prefs_gpx_verbosity_summary"
             android:key="gpx.verbosity"

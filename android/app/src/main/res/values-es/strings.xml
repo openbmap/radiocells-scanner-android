@@ -8,8 +8,7 @@
 	<string name="prefs_check_gps_startup">Comprobar GPS al iniciar</string>
 	<string name="prefs_gps_logging_interval">Intervalo de registro del GPS</string>
 	<string name="prefs_gps_logging_interval_seconds">segundos</string>
-	<string name="prefs_save_gps_track">Guardar traza GPX</string>
-	<string name="prefs_save_gps_track_summary">"Crear un archivo GPX para cada subida de sesión. Encontrar traza de GPX en el directorio de dato.\n(Nota: las mismas trazas GPX nunca se cargan) "</string>
+	<string name="prefs_save_gpx">Guardar traza GPX</string>
 	<string name="prefs_ui">Interfaz de usuario</string>
 	<string name="prefs_map_none">Ninguno</string>
 	<string name="prefs_ui_keep_screen_on">Mantener la pantalla encendida</string>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>synagoge</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>synagoge</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path fill="#202020" d="m290.76 121.67l-49.09 83.83h-96.67l48.34 84.58-48.33 84.58h96.66l49.09 85.34 48.33-85.34h95.91l-47.58-84.58 47.58-84.59h-95.91l-48.33-83.82zm0 58.91l14.35 24.92h-28.7l14.35-24.92zm-94.4 52.86h29.45l-15.1 25.68-14.35-25.68zm64.19 0h60.42l31.72 56.64-31.72 56.64h-60.42l-31.72-56.64 31.72-56.64zm94.4 0h30.21l-15.1 26.43-15.11-26.43zm15.11 86.85l15.1 26.43h-30.21l15.11-26.43zm-159.35 0.75l15.1 25.68h-29.45l14.35-25.68zm65.7 53.62h28.7l-14.35 24.93-14.35-24.93z"/>
+</svg>

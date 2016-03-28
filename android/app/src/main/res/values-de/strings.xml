@@ -88,7 +88,6 @@
     <string name="prefs_credentials_user_summary">Wenn Du noch keine Account hast, meld Dich unter https://radiocells.org an (nur für Upload benötigt)</string>
     <string name="prefs_data_map">Offline-Karten</string>
     <string name="prefs_credentials">Login-Daten</string>
-    <string name="prefs_save_gps_track">GPX Tracks erstellen</string>
     <string name="prefs_save_wifis">WLANs scannen</string>
     <string name="prefs_save_cells">Funkzellen scannen</string>
     <string name="prefs_save_cells_summary">Aktivieren, um Funkzellen aufzuzeichnen</string>
@@ -192,7 +191,8 @@
     <string name="prefs_min_cell_distance">Häufigkeit Funkzellen-Aufzeichnung</string>
     <string name="prefs_min_wifi_distance">Häufigkeit WLAN-Aufzeichnung</string>
     <string name="prefs_privacy">Datenschutz</string>
-    <string name="prefs_save_gps_track_summary">"Erstelle im Datenordner eine GPX-Datei für jede Session (die GPX-Dateien werden nicht hochgeladen) "</string>
+    <string name="prefs_save_gpx">GPX Tracks erstellen</string>
+    <string name="prefs_save_gpx_summary">Speichere beim Exportieren eine lokale GPX-Datei</string>
     <string name="prefs_ui">User Interface</string>
     <string name="prefs_update_catalog">Synchronisiere lokales WLAN-Verzeichnis</string>
     <string name="prefs_update_catalog_summary">Fügt die von Dir entdeckten WLANs zu Deinem lokalen WLAN-Verzeichnis hinzu</string>

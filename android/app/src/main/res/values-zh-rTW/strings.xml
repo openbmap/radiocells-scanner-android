@@ -9,7 +9,7 @@
 	<string name="prefs_check_gps_startup_summary">"如果在啟動時 GPS 是停用，發出警告並且給予啟用 "</string>
 	<string name="prefs_gps_logging_interval">GPS 日誌記錄間隔</string>
 	<string name="prefs_gps_logging_interval_seconds">秒</string>
-	<string name="prefs_save_gps_track">儲存 GPX 軌跡</string>
+	<string name="prefs_save_gpx">儲存 GPX 軌跡</string>
 	<string name="prefs_ui">使用者介面</string>
 	<string name="prefs_map_none">無</string>
 	<string name="prefs_ui_keep_screen_on">保持螢幕開啟</string>
