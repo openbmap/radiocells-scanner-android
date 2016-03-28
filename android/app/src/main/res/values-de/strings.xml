@@ -214,10 +214,11 @@
 <string name="error_accessing_wifi_catalog">Fehler beim Zugriff auf das WLAN-Verzeichnis</string>
 <string name="level">Ebene</string>
 	<string name="blacklisted_area">Ignoriert: In der ignorierten Zone</string>
-	<string name="build_signature">"Build-Signatur: "</string>
+	<string name="build_signature">"Versions-Unterschrift: "</string>
 <string name="prefs_credentials_anonymous_upload_summary">Für anonymes hochladen aktivieren</string>
 	<string name="licences">Lizenzen</string>
 	<string name="prefs_scan_mode">Funknetzwerk Suchmodus</string>
     <string name="prefs_scan_mode_summary">Warnung: Der Akku wird viel schneller leer, wenn der Hochleistungsmodus gewählt wird!</string>
 <string name="prefs_credentials_anonymous_upload">Anonymer Upload</string>
-    </resources>
+    <string name="saved_at">"Gespeichert unter "</string>
+</resources>
