@@ -223,4 +223,5 @@
     <string name="prefs_credentials_anonymous_upload_summary">匿名のアップロードを有効にします</string>
 	<string name="licences">ライセンス</string>
 	<string name="prefs_scan_mode">ワイヤレス スキャン モード</string>
-    </resources>
+    <string name="prefs_scan_mode_summary">警告: 高パフォーマンス モードを選択するとバッテリーを消耗します!</string>
+</resources>
