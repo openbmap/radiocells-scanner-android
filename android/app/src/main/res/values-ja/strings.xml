@@ -223,4 +223,6 @@
 	<string name="licences">ライセンス</string>
 	<string name="prefs_scan_mode">ワイヤレス スキャン モード</string>
     <string name="prefs_scan_mode_summary">警告: 高パフォーマンス モードを選択するとバッテリーを消耗します!</string>
+<string name="prefs_save_gpx_summary">エクスポート時に、お使いのデバイス上でローカル GPX ファイルを作成します</string>
+	<string name="saved_at">"保存しました "</string>
 </resources>
