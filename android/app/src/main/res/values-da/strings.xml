@@ -173,4 +173,11 @@
 	<string name="activity_settings_activity">Præferencer</string>
 	<string name="error_opening_wifi_catalog">Fejl ved åbning af WiFi katalog</string>
 	<string name="error_accessing_wifi_catalog">Fejl ved adgang til WiFi katalog</string>
-</resources>
+<string name="prefs_save_gpx_summary">Ved eksport, opret en GPX fil lokalt på enhed</string>
+	<string name="prefs_credentials">Legitimationsoplysninger</string>
+	<string name="prefs_credentials_anonymous_upload">Anonym overførelse</string>
+    <string name="prefs_credentials_anonymous_upload_summary">Aktiver for anonym overførelse</string>
+	<string name="prefs_simulate_upload_summary">"Eksporter kun data, overfør ikke  til serveren"</string>
+	<string name="prefs_simulate_upload">Spring overførelse til openbmap.org over</string>
+	<string name="prefs_keep_export_files_summary">"Behold en lokal kopi af overførte filer.\nFind filerne i datamappen.\n(Nyttigt til fejlfinding) "</string>
+	</resources>
