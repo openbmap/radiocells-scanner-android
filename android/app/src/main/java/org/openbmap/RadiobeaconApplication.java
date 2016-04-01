@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import org.greenrobot.eventbus.EventBus;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
 import org.mapsforge.map.model.DisplayModel;
 import org.openbmap.services.MasterBrainService;
@@ -39,6 +40,8 @@ public class RadiobeaconApplication extends Application {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+
+        EventBus.builder().addIndex(new MyEventBusIndex()).installDefaultEventBus();
 
 		Intent serviceIntent = new Intent(getApplicationContext(), MasterBrainService.class);
 		startService(serviceIntent);

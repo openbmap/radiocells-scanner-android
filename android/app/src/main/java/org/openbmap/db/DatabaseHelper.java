@@ -28,7 +28,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.openbmap.Preferences;
-import org.openbmap.RadioBeacon;
+import org.openbmap.Radiobeacon;
 import org.openbmap.utils.FileUtils;
 import org.openbmap.utils.MediaScanner;
 
@@ -315,8 +315,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private final Context mContext; 
 
 	public DatabaseHelper(final Context context) {
-		super(context, DB_NAME, null, RadioBeacon.DATABASE_VERSION);
-		Log.i(TAG, "Database scheme version " + RadioBeacon.DATABASE_VERSION);
+		super(context, DB_NAME, null, Radiobeacon.DATABASE_VERSION);
+		Log.i(TAG, "Database scheme version " + Radiobeacon.DATABASE_VERSION);
 		mContext = context.getApplicationContext();
 	}
 

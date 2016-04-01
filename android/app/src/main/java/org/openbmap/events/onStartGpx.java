@@ -35,7 +35,7 @@ package org.openbmap.events;
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import org.openbmap.RadioBeacon;
+import org.openbmap.Radiobeacon;
 
 public class onStartGpx {
     public final int session;
@@ -44,7 +44,7 @@ public class onStartGpx {
      * Default constructor: no session id provided, database will auto-assign session id
      */
      public onStartGpx() {
-        this.session = RadioBeacon.SESSION_NOT_TRACKING;
+        this.session = Radiobeacon.SESSION_NOT_TRACKING;
      }
 
     /**

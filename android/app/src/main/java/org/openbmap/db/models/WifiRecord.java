@@ -18,7 +18,7 @@
 
 package org.openbmap.db.models;
 
-import org.openbmap.RadioBeacon;
+import org.openbmap.Radiobeacon;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -76,7 +76,7 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 	 */
 	public WifiRecord(String bssid, String ssid, String capabilities, int frequency, int level, long timestamp, PositionRecord request, PositionRecord last, CatalogStatus catalogStatus)
 	{
-		this(bssid, ssid, capabilities, frequency, level, timestamp, request, last, RadioBeacon.SESSION_NOT_TRACKING, catalogStatus);
+		this(bssid, ssid, capabilities, frequency, level, timestamp, request, last, Radiobeacon.SESSION_NOT_TRACKING, catalogStatus);
 	}
 
 	public WifiRecord(String bssid, String ssid, String capabilities, int frequency, int level, long timestamp, PositionRecord request, PositionRecord last, int session, CatalogStatus catalogStatus)

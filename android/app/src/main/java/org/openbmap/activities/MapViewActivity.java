@@ -38,6 +38,8 @@ import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.Toast;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 import org.mapsforge.core.graphics.Color;
 import org.mapsforge.core.graphics.Paint;
 import org.mapsforge.core.graphics.Style;
@@ -59,7 +61,7 @@ import org.mapsforge.map.layer.overlay.Polyline;
 import org.mapsforge.map.model.common.Observer;
 import org.mapsforge.map.util.MapPositionUtil;
 import org.openbmap.R;
-import org.openbmap.RadioBeacon;
+import org.openbmap.Radiobeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.PositionRecord;
 import org.openbmap.db.models.WifiRecord;
@@ -77,8 +79,6 @@ import org.openbmap.utils.WifiCatalogObjectsLoader.OnCatalogLoadedListener;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-
-import de.greenrobot.event.EventBus;
 
 /**
  * Fragment for displaying map with session's GPX track and wifis
@@ -361,7 +361,7 @@ public class MapViewActivity extends Fragment implements
         final DataHelper dbHelper = new DataHelper(getActivity().getApplicationContext());
         mSessionId = dbHelper.getActiveSessionId();
 
-        if (mSessionId != RadioBeacon.SESSION_NOT_TRACKING) {
+        if (mSessionId != Radiobeacon.SESSION_NOT_TRACKING) {
             Log.i(TAG, "Displaying session " + mSessionId);
         } else {
             Log.w(TAG, "No active session?");
@@ -521,6 +521,7 @@ public class MapViewActivity extends Fragment implements
     /**
      * Receives GPS location updates.
      */
+    @Subscribe
     public void onEvent(onLocationUpdate event) {
         // handling GPS broadcasts
         Location location = event.location;
@@ -1128,7 +1129,7 @@ public class MapViewActivity extends Fragment implements
 
         final DataHelper dbHelper = new DataHelper(getActivity().getApplicationContext());
 
-        final PositionRecord pos = new PositionRecord(GeometryUtils.toLocation(tapLatLong), mSessionId, RadioBeacon.PROVIDER_USER_DEFINED, true);
+        final PositionRecord pos = new PositionRecord(GeometryUtils.toLocation(tapLatLong), mSessionId, Radiobeacon.PROVIDER_USER_DEFINED, true);
         dbHelper.storePosition(pos);
 
         // beep once point has been saved

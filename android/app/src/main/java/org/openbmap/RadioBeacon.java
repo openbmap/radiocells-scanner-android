@@ -24,43 +24,43 @@ package org.openbmap;
 /**
  * Constants & app-wide variables.
  */
-public final class RadioBeacon {
+public final class Radiobeacon {
 
 	/**
 	 * The full Package name of RadioBeacon returned by calling
 	 * RadioBeacon.class.getPackage().getName()
 	 */
-	public static final String PACKAGE_NAME = RadioBeacon.class.getPackage().getName();
+	public static final String PACKAGE_NAME = Radiobeacon.class.getPackage().getName();
 
 	/**
 	 * Intent to update GPS status
 	 */
-	public static final String INTENT_POSITION_SAT_INFO = RadioBeacon.PACKAGE_NAME + ".intent.POSITION_SAT_INFO";
+	public static final String INTENT_POSITION_SAT_INFO = Radiobeacon.PACKAGE_NAME + ".intent.POSITION_SAT_INFO";
 	
 	/**
 	 * Intent signaling new session has been saved
 	 */
-	public static final String INTENT_NEW_SESSION = RadioBeacon.PACKAGE_NAME + ".intent.SESSION_SAVED";
+	public static final String INTENT_NEW_SESSION = Radiobeacon.PACKAGE_NAME + ".intent.SESSION_SAVED";
 
 	/**
 	 * Intent signalling wifi has been skipped due to blacklist
 	 */
-	public static final String INTENT_WIFI_BLACKLISTED = RadioBeacon.PACKAGE_NAME + ".intent.WIFI_BLACKLISTED";
+	public static final String INTENT_WIFI_BLACKLISTED = Radiobeacon.PACKAGE_NAME + ".intent.WIFI_BLACKLISTED";
 
 	/**
 	 * Intent signalling free wifi has been found
 	 */
-	public static final String INTENT_WIFI_FREE = RadioBeacon.PACKAGE_NAME + ".intent_WIFI_FREE";
+	public static final String INTENT_WIFI_FREE = Radiobeacon.PACKAGE_NAME + ".intent_WIFI_FREE";
 	
 	/**
 	 * Intent signalling wifis have been changed (e.g. deletes)
 	 */
-	public static final String INTENT_WIFI_UPDATE = RadioBeacon.PACKAGE_NAME + ".intent.WIFI_UPDATE";
+	public static final String INTENT_WIFI_UPDATE = Radiobeacon.PACKAGE_NAME + ".intent.WIFI_UPDATE";
 	
 	/**
 	 * Intent signalling sessions have been changed (e.g. deletes)
 	 */
-	public static final String	INTENT_SESSION_UPDATE = RadioBeacon.PACKAGE_NAME + ".intent.SESSION_UPDATE";
+	public static final String	INTENT_SESSION_UPDATE = Radiobeacon.PACKAGE_NAME + ".intent.SESSION_UPDATE";
 	
 	/**
 	 * Key for extra data "location" in Intent
@@ -191,7 +191,7 @@ public final class RadioBeacon {
     /**
 	 * Private dummy constructor
 	 */
-	private RadioBeacon() {
+	private Radiobeacon() {
 		
 	}
 }

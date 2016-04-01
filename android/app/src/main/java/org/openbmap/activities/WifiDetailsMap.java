@@ -51,7 +51,7 @@ import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.model.common.Observer;
 import org.mapsforge.map.util.MapPositionUtil;
 import org.openbmap.R;
-import org.openbmap.RadioBeacon;
+import org.openbmap.Radiobeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.RadioBeaconContentProvider;
 import org.openbmap.db.Schema;
@@ -209,7 +209,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	@Override
 	public final Loader<Cursor> onCreateLoader(final int arg0, final Bundle arg1) {
 		// set query params: bssid and session id
-		final String[] args = {"-1", String.valueOf(RadioBeacon.SESSION_NOT_TRACKING)};
+		final String[] args = {"-1", String.valueOf(Radiobeacon.SESSION_NOT_TRACKING)};
 		if (mWifi != null) {
 			args[0] = mWifi.getBssid();	
 		}

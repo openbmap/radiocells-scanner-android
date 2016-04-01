@@ -22,7 +22,7 @@ import android.location.Location;
 import android.util.Log;
 
 import org.mapsforge.core.model.LatLong;
-import org.openbmap.RadioBeacon;
+import org.openbmap.Radiobeacon;
 
 public final class GeometryUtils {
 	
@@ -142,7 +142,7 @@ public final class GeometryUtils {
 	 * @return Corresponding Location
 	 */
 	public static Location toLocation(final LatLong latlon) {
-		Location result = new Location(RadioBeacon.PROVIDER_NONE);
+		Location result = new Location(Radiobeacon.PROVIDER_NONE);
 		result.setLatitude(latlon.latitude);
 		result.setLongitude(latlon.longitude);
 		if (!isValidLocation(result, false)) {
