@@ -33,7 +33,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.openbmap.Preferences;
 import org.openbmap.R;
-import org.openbmap.RadioBeacon;
+import org.openbmap.Radiobeacon;
 import org.openbmap.soapclient.AsyncUploader.FileUploadListener;
 import org.openbmap.utils.MediaScanner;
 import org.openbmap.utils.WifiCatalogUpdater;
@@ -218,7 +218,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 			Log.i(TAG, "Exporting cells");
 			// export cells
 			publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.exporting_cells), 0);
-			cellFiles = new CellSerializer(mAppContext, mSession, mTempPath, RadioBeacon.SW_VERSION).export();
+			cellFiles = new CellSerializer(mAppContext, mSession, mTempPath, Radiobeacon.SW_VERSION).export();
 
 			// upload
 			if (!mSkipUpload) {
@@ -232,7 +232,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 			Log.i(TAG, "Exporting wifis");
 			// export wifis
 			publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.exporting_wifis), 50);
-			wifiFiles = new WifiSerializer(mAppContext, mSession, mTempPath, RadioBeacon.SW_VERSION, mAnonymiseSsid).export();
+			wifiFiles = new WifiSerializer(mAppContext, mSession, mTempPath, Radiobeacon.SW_VERSION, mAnonymiseSsid).export();
 
 			// upload
 			if (!mSkipUpload) {

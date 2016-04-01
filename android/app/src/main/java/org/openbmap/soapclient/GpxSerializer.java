@@ -24,7 +24,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.openbmap.RadioBeacon;
+import org.openbmap.Radiobeacon;
 import org.openbmap.db.DatabaseHelper;
 import org.openbmap.db.Schema;
 
@@ -72,7 +72,7 @@ public class GpxSerializer {
 			+ " " + Schema.COL_ALTITUDE + ", " + Schema.COL_ACCURACY + ", " + Schema.COL_TIMESTAMP + ", " + Schema.COL_BEARING
 			+ ", " + Schema.COL_SPEED + ", " + Schema.COL_SESSION_ID + ", " + Schema.COL_SOURCE + " "
 			+ " FROM " + Schema.TBL_POSITIONS + " WHERE " + Schema.COL_SESSION_ID + " = ?"
-			+ " AND source != '" + RadioBeacon.PROVIDER_USER_DEFINED + "' " 
+			+ " AND source != '" + Radiobeacon.PROVIDER_USER_DEFINED + "' "
 			+ " ORDER BY " + Schema.COL_TIMESTAMP + " LIMIT " + CURSOR_SIZE
 			+ " OFFSET ?";
 	
@@ -80,7 +80,7 @@ public class GpxSerializer {
 			+ " " + Schema.COL_ALTITUDE + ", " + Schema.COL_ACCURACY + ", " + Schema.COL_TIMESTAMP + ", " + Schema.COL_BEARING
 			+ ", " + Schema.COL_SPEED + ", " + Schema.COL_SESSION_ID + ", " + Schema.COL_SOURCE + " "
 			+ " FROM " + Schema.TBL_POSITIONS + " WHERE " + Schema.COL_SESSION_ID + " = ?"
-			+ " AND source = '" + RadioBeacon.PROVIDER_USER_DEFINED + "' " 
+			+ " AND source = '" + Radiobeacon.PROVIDER_USER_DEFINED + "' "
 			+ " ORDER BY " + Schema.COL_TIMESTAMP + " LIMIT " + CURSOR_SIZE
 			+ " OFFSET ?";
 	

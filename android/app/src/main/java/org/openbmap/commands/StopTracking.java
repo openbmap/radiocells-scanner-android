@@ -21,10 +21,9 @@ package org.openbmap.commands;
 import android.app.Activity;
 import android.widget.Toast;
 
+import org.greenrobot.eventbus.EventBus;
 import org.openbmap.R;
 import org.openbmap.events.onStopTracking;
-
-import de.greenrobot.event.EventBus;
 
 /**
  * Dispatcher for external 'stop tracking' command

@@ -12,7 +12,7 @@ import android.net.Uri;
 import android.os.RemoteException;
 import android.util.Log;
 
-import org.openbmap.RadioBeacon;
+import org.openbmap.Radiobeacon;
 import org.openbmap.db.models.CellRecord;
 import org.openbmap.db.models.LogFile;
 import org.openbmap.db.models.PositionRecord;
@@ -493,7 +493,7 @@ public class DataHelper {
 			return session;
 		}
         cursor.close();
-		return RadioBeacon.SESSION_NOT_TRACKING;
+		return Radiobeacon.SESSION_NOT_TRACKING;
 	}
 
 	/**

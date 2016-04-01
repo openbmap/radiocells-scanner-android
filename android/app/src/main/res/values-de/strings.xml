@@ -217,7 +217,7 @@
 	<string name="build_signature">"Build-Signatur: "</string>
 <string name="prefs_credentials_anonymous_upload_summary">Für anonymes hochladen aktivieren</string>
 	<string name="licences">Lizenzen</string>
-	<string name="prefs_scan_mode">Funknetzwerk Suchmodus</string>
+	<string name="prefs_scan_mode">Wifi-Scanmodus</string>
     <string name="prefs_scan_mode_summary">Warnung: Der Akku wird viel schneller leer, wenn der Hochleistungsmodus gewählt wird!</string>
 <string name="prefs_credentials_anonymous_upload">Anonymer Upload</string>
     </resources>

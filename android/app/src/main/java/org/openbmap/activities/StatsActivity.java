@@ -42,13 +42,13 @@ import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 import com.jjoe64.graphview.series.PointsGraphSeries;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 import org.openbmap.R;
-import org.openbmap.RadioBeacon;
+import org.openbmap.Radiobeacon;
 import org.openbmap.db.models.Session;
 import org.openbmap.events.onCellUpdated;
 import org.openbmap.events.onWifiAdded;
-
-import de.greenrobot.event.EventBus;
 
 /**
  * Activity for displaying basic session infos (# of cells, wifis, etc.)
@@ -144,16 +144,16 @@ public class StatsActivity extends Fragment {
             Log.d(TAG, "Received intent " + intent.getAction());
 
             // handling cell and wifi broadcasts
-            if (RadioBeacon.INTENT_NEW_SESSION.equals(intent.getAction())) {
-                final String id = intent.getStringExtra(RadioBeacon.MSG_KEY);
+            if (Radiobeacon.INTENT_NEW_SESSION.equals(intent.getAction())) {
+                final String id = intent.getStringExtra(Radiobeacon.MSG_KEY);
                 // tbd
-            } else if (RadioBeacon.INTENT_WIFI_BLACKLISTED.equals(intent.getAction())) {
+            } else if (Radiobeacon.INTENT_WIFI_BLACKLISTED.equals(intent.getAction())) {
                 // let's display warning for 10 seconds
                 mFadeIgnoreHandler.removeCallbacks(mFadeIgnoreTask);
 
-                final String reason = intent.getStringExtra(RadioBeacon.MSG_KEY);
-                String ssid = intent.getStringExtra(RadioBeacon.MSG_SSID);
-                String bssid = intent.getStringExtra(RadioBeacon.MSG_BSSID);
+                final String reason = intent.getStringExtra(Radiobeacon.MSG_KEY);
+                String ssid = intent.getStringExtra(Radiobeacon.MSG_SSID);
+                String bssid = intent.getStringExtra(Radiobeacon.MSG_BSSID);
 
                 // can be null, so set default values
                 if (ssid == null) {
@@ -163,19 +163,19 @@ public class StatsActivity extends Fragment {
                     bssid = "";
                 }
 
-                if (reason.equals(RadioBeacon.MSG_BSSID)) {
+                if (reason.equals(Radiobeacon.MSG_BSSID)) {
                     tvIgnored.setText(ssid + " (" + bssid + ") " + getResources().getString(R.string.blacklisted_bssid));
-                } else if (reason.equals(RadioBeacon.MSG_SSID)) {
+                } else if (reason.equals(Radiobeacon.MSG_SSID)) {
                     tvIgnored.setText(ssid + " (" + bssid + ") " + getResources().getString(R.string.blacklisted_ssid));
-                } else if (reason.equals(RadioBeacon.MSG_LOCATION)) {
+                } else if (reason.equals(Radiobeacon.MSG_LOCATION)) {
                     tvIgnored.setText(R.string.blacklisted_area);
                 }
                 tvIgnored.setVisibility(View.VISIBLE);
                 ivAlert.setVisibility(View.VISIBLE);
                 mFadeIgnoreHandler.postDelayed(mFadeIgnoreTask, FADE_TIME);
-            } else if (RadioBeacon.INTENT_WIFI_FREE.equals(intent.getAction())) {
+            } else if (Radiobeacon.INTENT_WIFI_FREE.equals(intent.getAction())) {
                 mFadeFreeHandler.removeCallbacks(mFadeFreeTask);
-                final String ssid = intent.getStringExtra(RadioBeacon.MSG_SSID);
+                final String ssid = intent.getStringExtra(Radiobeacon.MSG_SSID);
                 if (ssid != null) {
                     tvFree.setText(getResources().getString(R.string.free_wifi) + "\n" + ssid);
                 }
@@ -186,6 +186,7 @@ public class StatsActivity extends Fragment {
         }
     };
 
+    @Subscribe
     public void onEvent(onWifiAdded event) {
         final String wifiDescription = event.wifiDescription;
         final int wifiStrength = event.level;
@@ -199,6 +200,7 @@ public class StatsActivity extends Fragment {
         mLastWifiUpdate = System.currentTimeMillis();
     }
 
+    @Subscribe
     public void onEvent(final onCellUpdated event) {
 
         Log.d(TAG, "Cell update received, level" + event.level);
@@ -348,9 +350,9 @@ public class StatsActivity extends Fragment {
      */
     private void registerReceiver() {
         final IntentFilter filter = new IntentFilter();
-        filter.addAction(RadioBeacon.INTENT_SESSION_UPDATE);
-        filter.addAction(RadioBeacon.INTENT_WIFI_BLACKLISTED);
-        filter.addAction(RadioBeacon.INTENT_WIFI_FREE);
+        filter.addAction(Radiobeacon.INTENT_SESSION_UPDATE);
+        filter.addAction(Radiobeacon.INTENT_WIFI_BLACKLISTED);
+        filter.addAction(Radiobeacon.INTENT_WIFI_FREE);
         getActivity().registerReceiver(mReceiver, filter);
 
         if (!EventBus.getDefault().isRegistered(this)) {

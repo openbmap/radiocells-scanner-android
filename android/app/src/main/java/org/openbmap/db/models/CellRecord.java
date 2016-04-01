@@ -22,7 +22,7 @@ import android.annotation.SuppressLint;
 import android.os.Build;
 import android.telephony.TelephonyManager;
 
-import org.openbmap.RadioBeacon;
+import org.openbmap.Radiobeacon;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -135,7 +135,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	private int mSessionId;
 
 	public CellRecord() {
-		this(RadioBeacon.SESSION_NOT_TRACKING);
+		this(Radiobeacon.SESSION_NOT_TRACKING);
 	}
 
 	public CellRecord(final int session) {

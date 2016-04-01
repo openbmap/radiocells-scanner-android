@@ -18,7 +18,7 @@
 
 package org.openbmap.db.models;
 
-import org.openbmap.RadioBeacon;
+import org.openbmap.Radiobeacon;
 
 import java.util.ArrayList;
 
@@ -41,7 +41,7 @@ public class LogFile implements Comparable<LogFile> {
 	private ArrayList<AbstractLogEntry<CellRecord>> cells;
 
 	public LogFile(final String manufacturer, final String model, final String revision, final String swId, final String swVer) {
-		this(manufacturer, model, revision, swId, swVer, RadioBeacon.SESSION_NOT_TRACKING);
+		this(manufacturer, model, revision, swId, swVer, Radiobeacon.SESSION_NOT_TRACKING);
 	}
 
 	public LogFile(final String manufacturer, final String model, final String revision, final String swId, final String swVer, final int session) {
