@@ -42,8 +42,8 @@ import android.widget.SimpleCursorAdapter.ViewBinder;
 import android.widget.TextView;
 
 import org.openbmap.R;
+import org.openbmap.db.ContentProvider;
 import org.openbmap.db.DataHelper;
-import org.openbmap.db.RadioBeaconContentProvider;
 import org.openbmap.db.Schema;
 import org.openbmap.utils.TriToggleButton;
 
@@ -297,7 +297,7 @@ public class WifiListContainer extends ListFragment implements LoaderManager.Loa
 
 		mCursorLoader = new CursorLoader(
 				getActivity().getBaseContext(), ContentUris.withAppendedId(Uri.withAppendedPath(
-						RadioBeaconContentProvider.CONTENT_URI_WIFI, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), mSession),
+						ContentProvider.CONTENT_URI_WIFI, ContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), mSession),
 						projection, mSelection, mSelectionArgs, mSortColumn + mSortOrder);
 
 		return mCursorLoader;

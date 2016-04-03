@@ -30,8 +30,8 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.openbmap.Preferences;
+import org.openbmap.db.ContentProvider;
 import org.openbmap.db.DatabaseHelper;
-import org.openbmap.db.RadioBeaconContentProvider;
 import org.openbmap.db.Schema;
 
 import java.io.File;
@@ -40,9 +40,9 @@ import java.util.ArrayList;
 /**
  * Adds new wifis to wifi catalog
  */
-public class WifiCatalogUpdater extends AsyncTask<Void, Void, Void> {
+public class CatalogUpdater extends AsyncTask<Void, Void, Void> {
 
-	private static final String	TAG	= WifiCatalogUpdater.class.getSimpleName();
+	private static final String	TAG	= CatalogUpdater.class.getSimpleName();
 
 	/**
 	 * Keeps the SharedPreferences.
@@ -53,7 +53,7 @@ public class WifiCatalogUpdater extends AsyncTask<Void, Void, Void> {
 
 	private Context	mContext;
 
-	public WifiCatalogUpdater(final Context context) {
+	public CatalogUpdater(final Context context) {
 		mContext = context;
 		// dialog = new ProgressDialog(mContext);
 		// get shared preferences
@@ -138,7 +138,7 @@ public class WifiCatalogUpdater extends AsyncTask<Void, Void, Void> {
 			
 			for (String bssid : updateLater) {
 				// reset is_new_wifi status
-				contentResolver.update(RadioBeaconContentProvider.CONTENT_URI_WIFI, updateExisting,
+				contentResolver.update(ContentProvider.CONTENT_URI_WIFI, updateExisting,
 						Schema.COL_BSSID + " = ?", new String[]{bssid.toUpperCase()});
 			}
 			// DON'T DO THIS!

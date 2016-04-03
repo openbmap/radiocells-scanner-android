@@ -34,9 +34,9 @@ import java.util.ArrayList;
 /**
  * Loads session wifis asynchronously.
  */
-public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<SessionLatLong>> {
+public class SessionObjectsLoader extends AsyncTask<Object, Void, ArrayList<SessionLatLong>> {
 
-	private static final String	TAG	= SessionMapObjectsLoader.class.getSimpleName();
+	private static final String	TAG	= SessionObjectsLoader.class.getSimpleName();
 	
 	/**
 	 * Indices for doInBackground arguments
@@ -65,7 +65,7 @@ public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<S
 	 */
 	private final ArrayList<Integer> mToLoad;
 
-	public SessionMapObjectsLoader(final Context context, final OnSessionLoadedListener listener, final ArrayList<Integer> sessions) {
+	public SessionObjectsLoader(final Context context, final OnSessionLoadedListener listener, final ArrayList<Integer> sessions) {
 		mContext = context;
 		mToLoad = sessions;
 		

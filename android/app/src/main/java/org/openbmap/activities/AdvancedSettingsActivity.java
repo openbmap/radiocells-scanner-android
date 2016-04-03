@@ -31,13 +31,13 @@ import android.widget.Toast;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.Radiobeacon;
+import org.openbmap.utils.CatalogUpdater;
 import org.openbmap.utils.CurrentLocationHelper;
 import org.openbmap.utils.CurrentLocationHelper.LocationResult;
 import org.openbmap.utils.DirectoryChooserDialog;
 import org.openbmap.utils.FileUtils;
 import org.openbmap.utils.MediaScanner;
 import org.openbmap.utils.VacuumCleaner;
-import org.openbmap.utils.WifiCatalogUpdater;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -176,7 +176,7 @@ public class AdvancedSettingsActivity extends PreferenceActivity {
 			@Override
 			public boolean onPreferenceClick(final Preference preference) {
 				Toast.makeText(AdvancedSettingsActivity.this, R.string.synchronizing, Toast.LENGTH_LONG).show();
-				new WifiCatalogUpdater(AdvancedSettingsActivity.this).execute(new Void[]{null});
+				new CatalogUpdater(AdvancedSettingsActivity.this).execute(new Void[]{null});
 				return true;
 			}
 		});
