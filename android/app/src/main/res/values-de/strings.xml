@@ -106,7 +106,7 @@
     <string name="seconds">Sekunden</string>
     <string name="prefs_min_wifi_distance_hint">Mindestabstand zwischen WLAN-Scans (in Meter)</string>
     <string name="prefs_gps_os_settings">Systemeinstellungen GPS</string>
-    <string name="prefs_download_wifi_catalog_summary">Aktuelle Größe (~1 GB)</string>
+    <string name="prefs_download_wifi_catalog_summary">Aktuelle Größe (10-400MB je nach Land)</string>
     <string name="prefs_folder_various">Sonstiges</string>
     <string name="credits">Danksagung</string>
     <string name="delete_all">ALLE LÖSCHEN</string>
@@ -142,7 +142,6 @@
     <string name="other_download_active">Bitte warten, bis der aktuelle Download fertig!</string>
     <string name="operator">Netzbetreiber</string>
     <string name="operatorCaption">Netzbetreiber</string>
-    <string name="prefs_check_map_repo">Prüfe Server...</string>
     <string name="prefs_data_map_folder_summary">Karten-Ordner auswählen</string>
     <string name="prefs_data_map_summary">Eine lokal gespeicherte Karte auswählen</string>
     <string name="prefs_data_ref_database_summary">"Wähle ein WLAN-Verzeichnis, um alle bereits bekannten WLANs auf der Karte anzuzeigen. Dies hilft dir, noch unerschlossene Gebiete zu entdecken "</string>
@@ -180,7 +179,7 @@
     <string name="prefs_block_homezone_summary">Verhindert die Aufzeichnung im Umkreis von 500m um Deinen aktuellen Standort.Wenn Du lieber XML-Dateien bearbeitest, trag die Sperrzone in die Datei custom_location.xml auf Deiner SD-Card ein</string>
     <string name="prefs_block_homezone_title">Sperrzone einrichten</string>
     <string name="prefs_check_gps_startup_summary">Zeige einen Hinweis, falls GPS deaktiviert und </string>
-    <string name="prefs_checking_map_repo">Prüfe Server...</string>
+    <string name="prefs_check_server">Prüfe Server...</string>
     <string name="prefs_clean_database_summary">Die Datenbank wächst im Laufe der Zeit. Klick hier, um nicht mehr benötigten Speicherplatz freizugeben</string>
     <string name="prefs_gps_logging_interval_summary">0 bedeutet, so schnell wie möglich (schlecht für Deine Batterie)</string>
     <string name="prefs_gps_os_settings_summary">Klick hier, um Deine GPS-Systemeinstellungen zu prüfen</string>

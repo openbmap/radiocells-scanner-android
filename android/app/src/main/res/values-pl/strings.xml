@@ -33,7 +33,7 @@
     <string name="prefs_data_ref_database">Wybierz bazę danych wifi</string>
 	<string name="prefs_data_ref_database_summary">Zainstaluj bazę danych wifi, aby zobaczyć wszystkie znane dla openbmap sieci wifi na mapie. Pomaga przy szukaniu nowych sieci.</string>
     <string name="prefs_download_wifi_catalog">Pobierz bazę danych wifi</string>
-    <string name="prefs_download_wifi_catalog_summary">Aktualny rozmiar (~1 GB)</string>
+    <string name="prefs_download_wifi_catalog_summary">Aktualny rozmiar (10-400MB)</string>
     <!-- Current size itself as a number suppose to be variable since its going to only grow and grow -->
     <!-- To not to change manualy on and on -->
     <string name="prefs_min_cell_distance">Interwał logowania sieci komórkowych</string>
@@ -215,8 +215,7 @@
     <string name="prefs_get_maps_summary">Pobierz mapy offline</string>
     <!-- Get and download in polish is the same -->
     <!-- Make no sense here so I added get and get now -->
-    <string name="prefs_checking_map_repo">Sprawdzanie serwera...</string>
-    <string name="prefs_check_map_repo">Sprawdź serwer.</string>
+    <string name="prefs_check_server">Sprawdzanie serwera...</string>
     <string name="downloading">Pobieranie</string>
     <string name="invalid_download">Niepoprawnie pobrane</string>
     <string name="prefs_gpx_verbosity_title">Szczegółowość GPX</string>

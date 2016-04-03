@@ -26,7 +26,7 @@
 	<string name="prefs_data_map_summary">"浏览您的离线地图库 "</string>
 	<string name="prefs_data_ref_database">选择 Wifi 目录</string>
 	<string name="prefs_download_wifi_catalog">下载 Wifi 目录</string>
-	<string name="prefs_download_wifi_catalog_summary">当前大小 (~1 GB)</string>
+	<string name="prefs_download_wifi_catalog_summary">当前大小 (10-400MB)</string>
 	<string name="prefs_min_cell_distance">蜂窝记录间隔</string>
 	<string name="prefs_min_wifi_distance">Wifi 日志间隔</string>
 	<string name="prefs_req_gps_accuracy">GPS 阈值</string>
@@ -176,8 +176,7 @@
 	<string name="prefs_auto_delete_tracks_summary">在上传成功后自动删除会话</string>
 	<string name="prefs_get_maps_title">获取离线地图</string>
 	<string name="prefs_get_maps_summary">下载离线地图</string>
-	<string name="prefs_checking_map_repo">正在检查服务器...</string>
-	<string name="prefs_check_map_repo">正在检查服务器...</string>
+	<string name="prefs_check_server">正在检查服务器...</string>
 	<string name="downloading">正在下载</string>
 	<string name="invalid_download">无效下载</string>
 	<string name="waypoint">路径点</string>

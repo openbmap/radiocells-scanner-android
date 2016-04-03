@@ -28,7 +28,7 @@
 	<string name="prefs_data_ref_database">Wifi カタログを選択</string>
 	<string name="prefs_data_ref_database_summary">"すべての知られた openbmap wifi をマップで確認する Wifi カタログをインストールします。新しい Wifi を探しているときに役立ちます "</string>
 	<string name="prefs_download_wifi_catalog">Wifi カタログをダウンロード</string>
-	<string name="prefs_download_wifi_catalog_summary">現在のサイズ (~1 GB)</string>
+	<string name="prefs_download_wifi_catalog_summary">現在のサイズ (10-400MB)</string>
 	<string name="prefs_min_cell_distance">基地局ログ間隔</string>
 	<string name="prefs_min_cell_distance_hint">スキャンする 2 つの基地局間の最小距離 (メートル)</string>
 	<string name="prefs_min_wifi_distance">Wifi ログ間隔</string>
@@ -199,8 +199,7 @@
 	<string name="prefs_auto_delete_tracks_summary">アップロードが自動的に成功した後、セッションを削除します</string>
 	<string name="prefs_get_maps_title">オフライン マップを取得</string>
 	<string name="prefs_get_maps_summary">オフライン マップをダウンロードします</string>
-	<string name="prefs_checking_map_repo">サーバーの確認中...</string>
-	<string name="prefs_check_map_repo">サーバーの確認中...</string>
+	<string name="prefs_check_server">サーバーの確認中...</string>
 	<string name="downloading">ダウンロード中</string>
 	<string name="invalid_download">無効なダウンロード</string>
 	<string name="prefs_gpx_verbosity_title">GPX の詳細</string>
