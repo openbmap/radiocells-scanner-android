@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>spielplatz</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>spielplatz</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path d="m0 580v-580h580v580z" fill-rule="evenodd" fill="#c1ffed"/>
+ <g fill-rule="evenodd" fill="#d9b2a9">
+  <circle cy="20.5" cx="20.5" r="20.5"/>
+  <circle cx="165.5" cy="20.5" r="20.5"/>
+  <circle cy="20.5" cx="310.5" r="20.5"/>
+  <circle cx="455.5" cy="20.5" r="20.5"/>
+  <circle cx="20.5" cy="310.5" r="20.5"/>
+  <circle cy="310.5" cx="165.5" r="20.5"/>
+  <circle cx="310.5" cy="310.5" r="20.5"/>
+  <circle cy="310.5" cx="455.5" r="20.5"/>
+  <circle cy="165.5" cx="124.5" r="20.5"/>
+  <circle cx="269.5" cy="165.5" r="20.5"/>
+  <circle cy="165.5" cx="414.5" r="20.5"/>
+  <circle cx="559.5" cy="165.5" r="20.5"/>
+  <circle cx="124.5" cy="455.5" r="20.5"/>
+  <circle cy="455.5" cx="269.5" r="20.5"/>
+  <circle cx="414.5" cy="455.5" r="20.5"/>
+  <circle cy="455.5" cx="559.5" r="20.5"/>
+ </g>
+</svg>

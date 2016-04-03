@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>ice_cream</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>ice_cream</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path opacity=".8" d="m278.68 551h28.646l136.16-319c19.098 0 31.744-14.281 33.951-29 15.56-103.77-87.71-181.88-179.66-137.93-16.98-7.777-36.78-16.029-75.68-14.85-105.39 0-113.88 94.78-113.88 152.78 7.78 21.69 23.11 29 36.78 29z" fill-rule="evenodd" fill="#fff"/>
+ <path d="m231.61 78.714c-51.481 0-93.214 41.734-93.214 93.214 0 11.047 2.2986 21.238 5.8259 31.071l174.78 0.01c3.5273-9.8332 5.8259-20.025 5.8259-31.071 0-51.481-41.733-93.214-93.214-93.214zm124.29 0c-12.548 0-24.028 3.2718-34.955 7.7679 21.376 22.322 34.955 52.099 34.955 85.446 0 10.775-2.1414 21.098-4.8549 31.071h92.243c3.5273-9.8332 5.8259-20.025 5.8259-31.071 0-51.481-41.733-93.214-93.214-93.214zm-178.66 155.36 116.52 279.64 116.52-279.64h-233.04z" fill="#00f"/>
+</svg>

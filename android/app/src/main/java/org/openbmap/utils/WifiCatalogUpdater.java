@@ -71,7 +71,7 @@ public class WifiCatalogUpdater extends AsyncTask<Void, Void, Void> {
 				return null;
 			}
 
-			SQLiteDatabase localDb = mDbHelper.getReadableDatabase();
+			final SQLiteDatabase localDb = mDbHelper.getReadableDatabase();
 			Cursor cursorWifis = localDb.rawQuery(
 					"SELECT w." + Schema.COL_BSSID +
 							", avg(p."+ Schema.COL_LATITUDE +") as latitude" +
@@ -86,7 +86,7 @@ public class WifiCatalogUpdater extends AsyncTask<Void, Void, Void> {
 					null);
 
 			// Open catalog database
-			String file = prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER, 
+			final String file = prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
 					mContext.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.CATALOG_SUBDIR)
 					+ File.separator + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_FILE);
 
@@ -139,7 +139,7 @@ public class WifiCatalogUpdater extends AsyncTask<Void, Void, Void> {
 			for (String bssid : updateLater) {
 				// reset is_new_wifi status
 				contentResolver.update(RadioBeaconContentProvider.CONTENT_URI_WIFI, updateExisting,
-						Schema.COL_BSSID + " = ?", new String[]{bssid});
+						Schema.COL_BSSID + " = ?", new String[]{bssid.toUpperCase()});
 			}
 			// DON'T DO THIS!
 			//catalogDb.execSQL("VACUUM");
@@ -150,8 +150,7 @@ public class WifiCatalogUpdater extends AsyncTask<Void, Void, Void> {
 			Log.e(TAG, "SQL exception occured: " + e.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
-		} 
-
+		}
 		return null;
 	}
 }

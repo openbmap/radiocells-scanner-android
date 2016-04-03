@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>bergwerk</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>bergwerk</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path opacity=".8" d="m396.06 61.551-93.904 93.906 37.672 37.672-45.844 45.844-47.729-47.729c13.741-11.502 28.231-22.045 42.707-32.641l-96.47-96.463c-55.08 42.963-107.24 92.333-141.17 154.15l95.975 88.941c10.513-15.272 20.952-30.548 32.369-45.096l46.57 46.58-145.14 145.15 67.74 67.73 145.14-145.14 145.14 145.14 67.74-67.73-145.09-145.1 46.04-45.73c7.9456 9.1036 18.342 19.863 31.619 17.953h81.568v-95.32l-123.53-123.53-0.7071 0.70711z" fill="#fff"/>
+ <g transform="matrix(7.9608 0 0 7.9608 39.235 51.966)">
+  <path d="m52 52-36-36" stroke="#4c4c4c" stroke-width="5" fill="none"/>
+  <path stroke-linejoin="round" d="m12 52 36-36" stroke="#4c4c4c" stroke-width="5" fill="none"/>
+  <path stroke-width="0" d="m38 13 7-7 12 12v7h-7z" fill="#4c4c4c"/>
+  <path stroke-width="0" d="m19 6 7 7c-5.1835 3.9286-9.4429 8.4732-13 13.486l-7-6.486c3.4504-5.446 8.021-9.903 13-14z" fill="#4c4c4c"/>
+ </g>
+</svg>

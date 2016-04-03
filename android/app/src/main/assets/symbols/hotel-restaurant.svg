@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>hotel-restaurant</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>hotel-restaurant</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path opacity=".8" d="m418.1 57.627c-28.23 1.174-41.1 30.352-41.1 66.953v107.42c-29-13.88-132.33-141.59-145-145h-58c-22.98 23.81-100.42 111.98-145 145-9.714 7.2-29 12.62-29 29v29c0 29 29 29 29 29v203h348v-203c10.007 15.474 33.374 22.901 47.839 33.309l-18.84 169.69h145l-21.12-170.66c16.24-16.22 48.16-31.35 48.16-60.35v-203c-8.95-25.894-40.48-41.118-71.13-17.024-15.87-20.434-43.68-16.498-58.96-1.49-8.1-7.36-18.8-12.075-29.84-11.838z" fill="#fff"/>
+ <path fill="#672400" d="m188 116c-37.963 39.02-74.298 84.782-109 116-11.117 9.636-36.361 24.476-50 29v29h29v203h290v-203h29v-29c-17.3-5.38-35.44-17.94-50-29-40.56-32.45-71.85-91.3-109-116z"/>
+ <path d="m406.19 108.72v181.01c0 28.961 50.682 28.961 50.682 57.922l-14.48 144.8h72.402l-14.48-144.8c0-28.961 50.682-28.961 50.682-57.922v-181.01c0-28.961-28.961-28.961-28.961 0v152.04c0 16.313-28.961 16.313-28.961 0v-152.04c0-28.961-28.961-28.961-28.961 0v152.04c0 15.272-28.961 15.272-28.961 0v-152.04c0-28.961-28.961-28.961-28.961 0z" fill="#672400"/>
+ <path d="m125 262v188h49v-73h58v73h49v-188h-49v72h-58v-72z" fill-rule="evenodd" fill="#fff"/>
+</svg>

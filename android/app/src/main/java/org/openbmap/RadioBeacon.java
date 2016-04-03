@@ -24,58 +24,43 @@ package org.openbmap;
 /**
  * Constants & app-wide variables.
  */
-public final class RadioBeacon {
+public final class Radiobeacon {
 
 	/**
 	 * The full Package name of RadioBeacon returned by calling
 	 * RadioBeacon.class.getPackage().getName()
 	 */
-	public static final String PACKAGE_NAME = RadioBeacon.class.getPackage().getName();
+	public static final String PACKAGE_NAME = Radiobeacon.class.getPackage().getName();
 
 	/**
 	 * Intent to update GPS status
 	 */
-	public static final String INTENT_POSITION_SAT_INFO = RadioBeacon.PACKAGE_NAME + ".intent.POSITION_SAT_INFO";
+	public static final String INTENT_POSITION_SAT_INFO = Radiobeacon.PACKAGE_NAME + ".intent.POSITION_SAT_INFO";
 	
 	/**
 	 * Intent signaling new session has been saved
 	 */
-	public static final String INTENT_NEW_SESSION = RadioBeacon.PACKAGE_NAME + ".intent.SESSION_SAVED";
-	
-	/**
-	 * Intent signalling new cell has been saved
-	 */
-	public static final String INTENT_NEW_CELL = RadioBeacon.PACKAGE_NAME + ".intent.CELL_SAVED";
+	public static final String INTENT_NEW_SESSION = Radiobeacon.PACKAGE_NAME + ".intent.SESSION_SAVED";
 
-	/**
-	 * Intent signalling new wifi has been saved
-	 */
-	public static final String INTENT_NEW_WIFI = RadioBeacon.PACKAGE_NAME + ".intent.WIFI_SAVED";
-	
 	/**
 	 * Intent signalling wifi has been skipped due to blacklist
 	 */
-	public static final String INTENT_WIFI_BLACKLISTED = RadioBeacon.PACKAGE_NAME + ".intent.WIFI_BLACKLISTED";
+	public static final String INTENT_WIFI_BLACKLISTED = Radiobeacon.PACKAGE_NAME + ".intent.WIFI_BLACKLISTED";
 
 	/**
 	 * Intent signalling free wifi has been found
 	 */
-	public static final String INTENT_WIFI_FREE = RadioBeacon.PACKAGE_NAME + ".intent_WIFI_FREE";
-	
-	/**
-	 * Intent signalling cells have been changed (e.g. deletes)
-	 */
-	public static final String INTENT_CELL_UPDATE = RadioBeacon.PACKAGE_NAME + ".intent.CELL_UPDATE";
+	public static final String INTENT_WIFI_FREE = Radiobeacon.PACKAGE_NAME + ".intent_WIFI_FREE";
 	
 	/**
 	 * Intent signalling wifis have been changed (e.g. deletes)
 	 */
-	public static final String INTENT_WIFI_UPDATE = RadioBeacon.PACKAGE_NAME + ".intent.WIFI_UPDATE";
+	public static final String INTENT_WIFI_UPDATE = Radiobeacon.PACKAGE_NAME + ".intent.WIFI_UPDATE";
 	
 	/**
 	 * Intent signalling sessions have been changed (e.g. deletes)
 	 */
-	public static final String	INTENT_SESSION_UPDATE = RadioBeacon.PACKAGE_NAME + ".intent.SESSION_UPDATE";
+	public static final String	INTENT_SESSION_UPDATE = Radiobeacon.PACKAGE_NAME + ".intent.SESSION_UPDATE";
 	
 	/**
 	 * Key for extra data "location" in Intent
@@ -126,36 +111,6 @@ public final class RadioBeacon {
 	 * Extra data key: Operator name
 	 */
 	public static final String MSG_OPERATOR = "operator";
-
-	/**
-	 * Extra data key: MCC
-	 */
-	public static final String MSG_MCC = "mcc";
-
-	/**
-	 * Extra data key: MNC
-	 */
-	public static final String MSG_MNC = "mnc";
-
-	/**
-	 * Extra data key: Area (location area code)
-	 */
-	public static final String MSG_AREA = "area";
-
-	/**
-	 * Extra data key: Cell id
-	 */
-	public static final String MSG_CELL_ID = "cellid";
-	
-	/**
-	 * Extra data key: network technology
-	 */
-	public static final String MSG_TECHNOLOGY = "network_type";
-	
-	/**
-	 * Extra data key: signal strength
-	 */
-	public static final String MSG_STRENGTH = "strength";
 
 	/**
 	 * Extra data key: ssid
@@ -214,7 +169,7 @@ public final class RadioBeacon {
      * 			- If you change client version, check whether you need to adjust current_version.xml on server and VERSION_COMPATIBILITY
      * 			- Also consider updating android:versionCode="x+1" android:versionName="XYZ" in AndroidManifest.xml (e.g. for automatic F-Droid updates)
 	 */
-	public static final String SW_VERSION = "0.8.13-beta";
+	public static final String SW_VERSION = "0.8.16";
 	
 	/**
 	 * ServerValidation compares server version against VERSION_COMPATIBILITY to check whether client is outdated.
@@ -231,12 +186,12 @@ public final class RadioBeacon {
 	/**
 	 * Database scheme version, increment to trigger database update
 	 */
-	public static final int DATABASE_VERSION = 12;
+	public static final int DATABASE_VERSION = 13;
 
     /**
 	 * Private dummy constructor
 	 */
-	private RadioBeacon() {
+	private Radiobeacon() {
 		
 	}
 }

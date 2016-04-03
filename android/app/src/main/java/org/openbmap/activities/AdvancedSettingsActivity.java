@@ -30,7 +30,7 @@ import android.widget.Toast;
 
 import org.openbmap.Preferences;
 import org.openbmap.R;
-import org.openbmap.RadioBeacon;
+import org.openbmap.Radiobeacon;
 import org.openbmap.utils.CurrentLocationHelper;
 import org.openbmap.utils.CurrentLocationHelper.LocationResult;
 import org.openbmap.utils.DirectoryChooserDialog;
@@ -79,7 +79,7 @@ public class AdvancedSettingsActivity extends PreferenceActivity {
 					@Override
 					public void gotLocation(final Location location) {
 						final String blacklistPath = AdvancedSettingsActivity.this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.BLACKLIST_SUBDIR;
-						final String filename = blacklistPath + File.separator + RadioBeacon.DEFAULT_LOCATION_BLOCK_FILE;
+						final String filename = blacklistPath + File.separator + Radiobeacon.DEFAULT_LOCATION_BLOCK_FILE;
 						final String blocker = String.format("<ignorelist>"
 								+ "<location comment=\"homezone\">"
 								+ "<latitude>%s</latitude>"
@@ -139,7 +139,7 @@ public class AdvancedSettingsActivity extends PreferenceActivity {
 	 * @return EditTextPreference with data directory.
 	 */
 	private void initMapFolderControl() {
-		final Preference button = (Preference) findPreference(Preferences.KEY_MAP_FOLDER);
+		final Preference button = findPreference(Preferences.KEY_MAP_FOLDER);
 		button.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			private String mChosenDir = MapUtils.getMapFolder(AdvancedSettingsActivity.this).getAbsolutePath();
 			private boolean mNewFolderEnabled = false;
@@ -187,7 +187,7 @@ public class AdvancedSettingsActivity extends PreferenceActivity {
 	 * @return EditTextPreference with data directory.
 	 */
 	private void initWifiCatalogFolderControl() {
-		final Preference button = (Preference) findPreference(Preferences.KEY_WIFI_CATALOG_FOLDER);
+		final Preference button = findPreference(Preferences.KEY_WIFI_CATALOG_FOLDER);
 		button.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			private String mChosenDir = MapUtils.getCatalogFolder(AdvancedSettingsActivity.this).getAbsolutePath();
 

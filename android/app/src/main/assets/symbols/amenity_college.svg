@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.0" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>college</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>college</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path stroke-linejoin="round" d="m116 507.5 174-449.5 174 449.5" stroke="#202020" stroke-linecap="round" stroke-width="30" fill="none"/>
+ <g>
+  <rect stroke-linejoin="round" ry="2.122" height="261" width="435" stroke="#202020" stroke-linecap="round" y="159.5" x="72.5" stroke-width="24" fill="#fff"/>
+  <path d="m174 377v-35c-43.5-8.5-58-37.5-58-81v-43.5h29v43.5c0 14.5 0 43.5 29 49.5v-93h29v93c29-6 29-35 29-49.5v-43.5h29v43.5c0 43.5-14.5 72.5-58 81v35z" fill="#202020"/>
+  <path d="m391.5 217.5c24.833 0 39.389 8.2503 53.5 22.5 14.18 14.25 19 32.556 19 54 0 24.072-11.015 43.001-29 54h29v29h-58v-29c2.6286-1.4526 4.9459-3.182 6.9519-5.188 11.97-12.1 22.05-31.38 22.05-48.81 0-13.281-5.2902-26.007-12-35-6.7098-8.9925-19.326-16-31.5-16s-25.79 7.0075-32.5 16c-6.7098 8.9925-11 21.719-11 35 0 17.432 10.081 36.707 22.048 48.812 2.006 2.006 4.3233 3.7354 6.9519 5.188v29h-58v-29h29c-17.985-10.999-29-29.928-29-54 0-21.444 5.8887-39.75 20-54 14.181-14.25 27.667-22.5 52.5-22.5z" fill="#202020"/>
+ </g>
+</svg>

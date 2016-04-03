@@ -38,6 +38,8 @@ import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.Toast;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 import org.mapsforge.core.graphics.Color;
 import org.mapsforge.core.graphics.Paint;
 import org.mapsforge.core.graphics.Style;
@@ -46,7 +48,6 @@ import org.mapsforge.core.model.LatLong;
 import org.mapsforge.core.model.Point;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
 import org.mapsforge.map.android.graphics.AndroidResourceBitmap;
-import org.mapsforge.map.android.rendertheme.AssetsRenderTheme;
 import org.mapsforge.map.android.util.AndroidPreferences;
 import org.mapsforge.map.android.util.AndroidUtil;
 import org.mapsforge.map.android.view.MapView;
@@ -58,11 +59,9 @@ import org.mapsforge.map.layer.download.tilesource.OnlineTileSource;
 import org.mapsforge.map.layer.overlay.Circle;
 import org.mapsforge.map.layer.overlay.Polyline;
 import org.mapsforge.map.model.common.Observer;
-import org.mapsforge.map.reader.MapFile;
-import org.mapsforge.map.rendertheme.XmlRenderTheme;
 import org.mapsforge.map.util.MapPositionUtil;
 import org.openbmap.R;
-import org.openbmap.RadioBeacon;
+import org.openbmap.Radiobeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.PositionRecord;
 import org.openbmap.db.models.WifiRecord;
@@ -78,11 +77,8 @@ import org.openbmap.utils.SessionMapObjectsLoader.OnSessionLoadedListener;
 import org.openbmap.utils.WifiCatalogObjectsLoader;
 import org.openbmap.utils.WifiCatalogObjectsLoader.OnCatalogLoadedListener;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
-
-import de.greenrobot.event.EventBus;
 
 /**
  * Fragment for displaying map with session's GPX track and wifis
@@ -365,7 +361,7 @@ public class MapViewActivity extends Fragment implements
         final DataHelper dbHelper = new DataHelper(getActivity().getApplicationContext());
         mSessionId = dbHelper.getActiveSessionId();
 
-        if (mSessionId != RadioBeacon.SESSION_NOT_TRACKING) {
+        if (mSessionId != Radiobeacon.SESSION_NOT_TRACKING) {
             Log.i(TAG, "Displaying session " + mSessionId);
         } else {
             Log.w(TAG, "No active session?");
@@ -409,7 +405,11 @@ public class MapViewActivity extends Fragment implements
             // remove all layers including base layer
             mMapView.getLayerManager().getLayers().clear();
             final Layer offlineLayer = MapUtils.createTileRendererLayer(
-                    mTileCache, mMapView.getModel().mapViewPosition, getMapFile(), this, getRenderTheme());
+                    mTileCache,
+                    mMapView.getModel().mapViewPosition,
+                    MapUtils.getMapFile(getActivity().getApplicationContext()),
+                    this,
+                    MapUtils.getRenderTheme(getActivity().getApplicationContext()));
             if (offlineLayer != null) {
                 mMapView.getLayerManager().getLayers().add(offlineLayer);
             }
@@ -504,7 +504,7 @@ public class MapViewActivity extends Fragment implements
 
     private void registerReceiver() {
         if (!EventBus.getDefault().isRegistered(this)) {
-        EventBus.getDefault().register(this);} else {
+            EventBus.getDefault().register(this);} else {
             Log.i(TAG, "Event bus receiver already registered");
         }
     }
@@ -521,6 +521,7 @@ public class MapViewActivity extends Fragment implements
     /**
      * Receives GPS location updates.
      */
+    @Subscribe
     public void onEvent(onLocationUpdate event) {
         // handling GPS broadcasts
         Location location = event.location;
@@ -621,7 +622,7 @@ public class MapViewActivity extends Fragment implements
         }
 
         for (final Iterator<Layer> iterator = sessionObjects.iterator(); iterator.hasNext(); ) {
-            final Layer layer = (Layer) iterator.next();
+            final Layer layer = iterator.next();
             this.mMapView.getLayerManager().getLayers().remove(layer);
         }
         sessionObjects.clear();
@@ -642,7 +643,7 @@ public class MapViewActivity extends Fragment implements
 
         synchronized (catalogObjects) {
             for (final Iterator<Layer> iterator = catalogObjects.iterator(); iterator.hasNext(); ) {
-                final Layer layer = (Layer) iterator.next();
+                final Layer layer = iterator.next();
                 this.mMapView.getLayerManager().getLayers().remove(layer);
             }
             catalogObjects.clear();
@@ -1015,7 +1016,7 @@ public class MapViewActivity extends Fragment implements
 
         // determine which drawable we currently
         final ImageView iv = (ImageView) getView().findViewById(R.id.position_marker);
-        final Integer id = (Integer) iv.getTag() == null ? 0 : (Integer) iv.getTag();
+        final Integer id = iv.getTag() == null ? 0 : (Integer) iv.getTag();
 
         if (location.hasBearing()) {
             // determine which drawable we currently use
@@ -1059,29 +1060,6 @@ public class MapViewActivity extends Fragment implements
     private boolean catalogLayerSelected() {
         // TODO add some ui control
         return true; //(getSherlockActivity().getSupportActionBar().getSelectedNavigationIndex() == LayersDisplayed.ALL.ordinal());
-    }
-
-    /**
-     * Opens selected map file
-     *
-     * @return a map file
-     */
-    protected final MapFile getMapFile() {
-        return MapUtils.getMapFile(getActivity().getApplicationContext());
-    }
-
-    /**
-     * Reads custom render theme from assets
-     *
-     * @return render theme
-     */
-    protected XmlRenderTheme getRenderTheme() {
-        try {
-            return new AssetsRenderTheme(this.getActivity().getApplicationContext(), "", "renderthemes/rendertheme-v4.xml");
-        } catch (final IOException e) {
-            Log.e(TAG, "Render theme failure " + e.toString());
-        }
-        return null;
     }
 
     /**
@@ -1151,7 +1129,7 @@ public class MapViewActivity extends Fragment implements
 
         final DataHelper dbHelper = new DataHelper(getActivity().getApplicationContext());
 
-        final PositionRecord pos = new PositionRecord(GeometryUtils.toLocation(tapLatLong), mSessionId, RadioBeacon.PROVIDER_USER_DEFINED, true);
+        final PositionRecord pos = new PositionRecord(GeometryUtils.toLocation(tapLatLong), mSessionId, Radiobeacon.PROVIDER_USER_DEFINED, true);
         dbHelper.storePosition(pos);
 
         // beep once point has been saved

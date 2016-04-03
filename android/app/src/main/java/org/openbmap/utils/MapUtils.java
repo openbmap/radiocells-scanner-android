@@ -35,6 +35,7 @@ import org.mapsforge.core.graphics.Style;
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.core.model.Point;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
+import org.mapsforge.map.android.rendertheme.AssetsRenderTheme;
 import org.mapsforge.map.layer.Layer;
 import org.mapsforge.map.layer.cache.FileSystemTileCache;
 import org.mapsforge.map.layer.cache.InMemoryTileCache;
@@ -73,7 +74,7 @@ public final class MapUtils {
 		}
 	}
 
-	public static interface onLongPressHandler{
+	public interface onLongPressHandler{
 		void onLongPress(LatLong tapLatLong, Point thisXY, Point tapXY);
 	}
 
@@ -159,7 +160,7 @@ public final class MapUtils {
 			return tileRendererLayer;	
 		} else {
 			// just a plain vanilla layer
-			final TileRendererLayer tileRendererLayer = new TileRendererLayer (tileCache, (MapDataStore) mapFile,
+			final TileRendererLayer tileRendererLayer = new TileRendererLayer (tileCache, mapFile,
 					mapViewPosition, false, true, AndroidGraphicFactory.INSTANCE);
 
 			//tileRendererLayer.setMapFile(mapFile);
@@ -175,6 +176,19 @@ public final class MapUtils {
 		}
 	}
 
+	/**
+	 * Reads custom render theme from assets
+	 *
+	 * @return render theme
+	 */
+	public static XmlRenderTheme getRenderTheme(Context ctx) {
+		try {
+			return new AssetsRenderTheme(ctx, "", Preferences.RENDER_THEME);
+		} catch (final IOException e) {
+			Log.e(TAG, "Render theme failure " + e.toString());
+		}
+		return null;
+	}
 	static Bitmap viewToBitmap(final Context c, final View view) {
 		view.measure(MeasureSpec.getSize(view.getMeasuredWidth()), MeasureSpec.getSize(view.getMeasuredHeight()));
 		view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());

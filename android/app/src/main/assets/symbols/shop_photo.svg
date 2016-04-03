@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.0" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>photo</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>photo</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path opacity=".8" d="m58 522h464v-464h-203v116h-87c0-29-17.983-58-58-58h-29c-42.139 0-58 29-58 58h-29z" fill-rule="evenodd" fill="#fff"/>
+ <g fill="#00f">
+  <path d="m145 203c-58 0-58 0-58 58v174c0 58 0 58 58 58h290c58 0 58 0 58-58v-174c0-58 0-58-58-58h-290zm174 29c63.72 0 116 52.28 116 116s-52.28 116-116 116-116-52.28-116-116 52.28-116 116-116z"/>
+  <path d="m145 145h29c29 0 29 29 29 43.5h-87c0-14.5 0-43.5 29-43.5z"/>
+  <path d="m391.5 348c0 39.826-32.674 72.5-72.5 72.5s-72.5-32.674-72.5-72.5 32.674-72.5 72.5-72.5 72.5 32.674 72.5 72.5z"/>
+  <path d="m377 87c-29 0-29 0-29 29v72.5h145v-72.5c0-29 0-29-29-29h-87zm0 29h87v58h-87v-58z"/>
+ </g>
+</svg>

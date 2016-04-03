@@ -28,7 +28,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.openbmap.Preferences;
-import org.openbmap.RadioBeacon;
+import org.openbmap.Radiobeacon;
 import org.openbmap.utils.FileUtils;
 import org.openbmap.utils.MediaScanner;
 
@@ -247,7 +247,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final String SQL_CREATE_IDX_WIFIS_SESSION_ID = ""
 			+  "CREATE INDEX idx_wifis_sessions_id ON "
 			+  Schema.TBL_WIFIS + "("
-			+  Schema.COL_SESSION_ID
+			+  Schema.COL_SESSION_ID + ", "
+			+  Schema.COL_BSSID
 			+  ")";
 
 	private static final String SQL_CREATE_IDX_WIFIS_BEGIN_POSITION_ID = ""
@@ -314,8 +315,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private final Context mContext; 
 
 	public DatabaseHelper(final Context context) {
-		super(context, DB_NAME, null, RadioBeacon.DATABASE_VERSION);
-		Log.i(TAG, "Database scheme version " + RadioBeacon.DATABASE_VERSION);
+		super(context, DB_NAME, null, Radiobeacon.DATABASE_VERSION);
+		Log.i(TAG, "Database scheme version " + Radiobeacon.DATABASE_VERSION);
 		mContext = context.getApplicationContext();
 	}
 
@@ -325,7 +326,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		this.mDataBase = db;
 
 		if (!db.isReadOnly()) {
-
 			// create general purpose tables
 			db.execSQL("DROP TABLE IF EXISTS " + Schema.TBL_POSITIONS);
 			db.execSQL(SQL_CREATE_TABLE_POSITIONS);
@@ -501,7 +501,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 Log.w(TAG, "Couldn't create cell position timestamp index");
             }
         }
+
+        // Rebuild wifi index (bssid added)
+        // see https://github.com/wish7code/openbmap/issues/92
+        if (oldVersion <= 12) {
+            try {
+                Log.w(TAG, "Database upgrade: rebuilding idx_wifis_sessions_id. This may take some time!!!");
+                db.execSQL("DROP INDEX IF EXISTS idx_wifis_sessions_id");
+                db.execSQL(SQL_CREATE_IDX_WIFIS_SESSION_ID);
+
+            } catch (final SQLException e) {
+                Log.w(TAG, "Couldn't create cell position timestamp index");
+            }
+        }
 	}
+
+    @Override public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        Log.wtf(TAG, "I'm here to look pretty");
+    }
 
 	@Override
 	public final synchronized void close() {

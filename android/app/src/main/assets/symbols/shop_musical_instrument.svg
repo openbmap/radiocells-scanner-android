@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.0" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>musical_instrument</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>musical_instrument</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path opacity=".8" d="m58 116v319c87 0 115.69-17.569 116-58v29c0 58 42.411 87 87 87h145c45.77 0 87-29 87-87v-58h29v-145c-42.893 0-46.571-0.11149-75.683 29h-40.32v-58h-145v58h-29c-75.75-134.45-116-116-174-116z" fill-rule="evenodd" fill="#fff"/>
+ <path d="m87 145v261c87 0 87-116 145-116h29c-29 0-58 29-58 58v58c0 29 29 58 58 58h145c29 0 58.087-30.549 58-58v-58c0-29-29-58-58-58h58c0 29 22.095 28.67 29 29v-87c-5.8616 0.48835-29 0-29 29h-87v-58h-29v58h-29v-58h-29v58h-58c-58 0-58-116-145-116zm203 145v58h29v-58h29v58h29v-58c58 29.137 58 29 58 87 0 16.184-11.443 29-29 29h-145c-14.066-1.1168-29-12.816-29-29 0-58-0.00002-58 58-87z" fill-rule="evenodd" fill="#00f"/>
+</svg>

@@ -31,14 +31,16 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 import org.openbmap.R;
-import org.openbmap.RadioBeacon;
+import org.openbmap.Radiobeacon;
 import org.openbmap.db.DataHelper;
+import org.openbmap.events.onCellUpdated;
 import org.openbmap.events.onLocationUpdate;
+import org.openbmap.events.onWifiAdded;
 
 import java.text.DecimalFormat;
-
-import de.greenrobot.event.EventBus;
 
 /**
  * Layout for the GPS status bar
@@ -76,7 +78,7 @@ public class StatusBar extends LinearLayout {
 
 	private String mProvider;
 
-	private DataHelper dataHelper;
+	private DataHelper mDataHelper;
 
 	private final TextView tvWifiCount;
 	private final TextView tvNewWifiCount;
@@ -87,7 +89,7 @@ public class StatusBar extends LinearLayout {
 
 	private final ImageView imgSatIndicator;
 
-	public StatusBar(final Context context, final AttributeSet attrs) {
+    public StatusBar(final Context context, final AttributeSet attrs) {
 		super(context, attrs);
 		LayoutInflater.from(context).inflate(R.layout.statusbar, this, true);
 
@@ -116,7 +118,7 @@ public class StatusBar extends LinearLayout {
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
 			// handle everything except location broadcasts
-			 if (RadioBeacon.INTENT_POSITION_SAT_INFO.equals(intent.getAction())) {
+			 if (Radiobeacon.INTENT_POSITION_SAT_INFO.equals(intent.getAction())) {
 
 				final String status = intent.getExtras().getString("STATUS");
 				final int satCount = intent.getExtras().getInt("SAT_COUNT");
@@ -134,7 +136,7 @@ public class StatusBar extends LinearLayout {
 							nbBars = i;
 						}
 					}
-                    mIcon = BitmapFactory.decodeResource(getResources(), getResources().getIdentifier("drawable/sat_indicator_" + nbBars, null, RadioBeacon.class.getPackage().getName()));
+                    mIcon = BitmapFactory.decodeResource(getResources(), getResources().getIdentifier("drawable/sat_indicator_" + nbBars, null, Radiobeacon.class.getPackage().getName()));
 
 				} else if ("OUT_OF_SERVICE".equals(status)) {
                     mIcon = BitmapFactory.decodeResource(getResources(), R.drawable.sat_indicator_off);
@@ -143,44 +145,54 @@ public class StatusBar extends LinearLayout {
                     mIcon = BitmapFactory.decodeResource(getResources(), R.drawable.sat_indicator_off);
 					tvAccuracy.setText(getResources().getString(R.string.no_sat_signal));
 				}
-
                 imgSatIndicator.setImageBitmap(mIcon);
-			} else if (RadioBeacon.INTENT_NEW_CELL.equals(intent.getAction())) {
-				if (dataHelper != null) {
-					tvCellCount.setText(String.valueOf(dataHelper.countCells(dataHelper.getActiveSessionId())));
-				}
-			}
-			else if (RadioBeacon.INTENT_NEW_WIFI.equals(intent.getAction())) {
-				if (dataHelper != null) {
-					tvWifiCount.setText(String.valueOf(dataHelper.countWifis(dataHelper.getActiveSessionId())));
-					tvNewWifiCount.setText(String.valueOf(dataHelper.countNewWifis(dataHelper.getActiveSessionId())));
-				}
 			}
 		}
 	};
 
+	@Subscribe
     public void onEvent(onLocationUpdate event) {
             if (event.location == null) {
                 return;
             }
 
             if (event.location.hasAccuracy()) {
+				Log.v(TAG, "GPS Accuracy " + event.location.getAccuracy());
                 tvAccuracy.setText(ACCURACY_FORMAT.format(event.location.getAccuracy()) + getResources().getString(R.string.meter));
             } else {
                 tvAccuracy.setText(getResources().getString(R.string.empty));
             }
     }
 
+    @Subscribe
+	public void onEvent(onCellUpdated event) {
+		if (mDataHelper != null) {
+			tvCellCount.setText(String.valueOf(mDataHelper.countCells(mDataHelper.getActiveSessionId())));
+		}
+	}
+
+    @Subscribe
+	public void onEvent(onWifiAdded event) {
+		if (mDataHelper != null) {
+			tvWifiCount.setText(String.valueOf(mDataHelper.countWifis(mDataHelper.getActiveSessionId())));
+			tvNewWifiCount.setText(String.valueOf(mDataHelper.countNewWifis(mDataHelper.getActiveSessionId())));
+		}
+	}
+
 	@Override 
 	protected void onAttachedToWindow() {
 		super.onAttachedToWindow();
-		dataHelper = new DataHelper(mContext);
+		mDataHelper = new DataHelper(mContext);
+
+        tvWifiCount.setText(String.valueOf(mDataHelper.countWifis(mDataHelper.getActiveSessionId())));
+        tvNewWifiCount.setText(String.valueOf(mDataHelper.countNewWifis(mDataHelper.getActiveSessionId())));
+
 		registerReceiver();
 	}
 
 	@Override
 	protected void onDetachedFromWindow() {
-		dataHelper = null;
+		mDataHelper = null;
 		unregisterReceiver();
 		super.onDetachedFromWindow();
 	}
@@ -191,9 +203,7 @@ public class StatusBar extends LinearLayout {
 			return;
 		}
 		final IntentFilter filter = new IntentFilter();
-		filter.addAction(RadioBeacon.INTENT_POSITION_SAT_INFO);
-		filter.addAction(RadioBeacon.INTENT_NEW_WIFI);
-		filter.addAction(RadioBeacon.INTENT_NEW_CELL);
+		filter.addAction(Radiobeacon.INTENT_POSITION_SAT_INFO);
 		mContext.registerReceiver(mReceiver, filter);
 	}
 

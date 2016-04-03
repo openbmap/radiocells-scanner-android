@@ -24,5 +24,5 @@ import android.os.Bundle;
 public interface LocationChangeListener {
 	void onLocationChanged(Location loc);
 	void onStatusChanged(String provider, int status, Bundle extras);
-	public void onSatInfo(int satCount);
+	void onSatInfo(int satCount);
 }

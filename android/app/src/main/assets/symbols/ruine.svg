@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>ruine</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>ruine</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g fill-rule="evenodd">
+  <path opacity=".8" d="m349 206v257h172v-259h-172v1 1z" fill="#fff"/>
+  <path opacity=".8" d="m175 90v143h-58v58h-58v172h271.34c0.77451-125 1.5538-250 2.3281-375h-157.67v1 1z" fill="#fff"/>
+  <path fill="#734a08" d="m377 232h116v203h-116z"/>
+  <path fill="#734a08" d="m87 435v-116h58v-58h58v-145h101.5l-2 319z"/>
+ </g>
+</svg>

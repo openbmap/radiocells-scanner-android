@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.0" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>pharmacy</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>pharmacy</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g fill-rule="evenodd">
+  <path opacity=".8" d="m29 29h522v522h-522z" fill="#fff"/>
+  <path fill="#00f" d="m58 58h464v464h-464z"/>
+  <path fill="#fff" d="m87 87h406v406h-406z"/>
+  <path d="m240 124h100v116h116v100h-116v116h-100v-116h-116v-100h116z" fill="#00f"/>
+ </g>
+</svg>

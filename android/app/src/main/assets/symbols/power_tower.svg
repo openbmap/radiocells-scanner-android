@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.0" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>power_tower</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>power_tower</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path opacity=".8" d="m174 174h232v232h-232z" fill-rule="evenodd" fill="#fff"/>
+ <path d="m174 174v232h232v-232h-232zm49.51 29h132.98l-66.49 66.49-66.49-66.49zm-20.51 20.51l66.49 66.49-66.49 66.49v-132.98zm174 0v132.98l-66.49-66.49 66.49-66.49zm-87 87l66.49 66.49h-132.98l66.49-66.49z" fill-rule="evenodd" fill="#777"/>
+</svg>

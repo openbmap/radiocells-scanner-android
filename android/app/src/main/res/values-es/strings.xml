@@ -1,17 +1,14 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-    <string name="app_name">Radiobeacon</string>
 <string name="prefs">Ajustes</string>
 	<string name="prefs_wifi_catalog">Catálogo WiFi</string>
 	<string name="prefs_maps">Mapas</string>
-	<string name="prefs_gps">GPS</string>
 	<string name="prefs_gps_os_settings">Ajustes del GPS del teléfono</string>
 	<string name="prefs_gps_os_settings_summary">Pulse para ver los ajustes de su teléfono</string>
 	<string name="prefs_check_gps_startup">Comprobar GPS al iniciar</string>
 	<string name="prefs_gps_logging_interval">Intervalo de registro del GPS</string>
 	<string name="prefs_gps_logging_interval_seconds">segundos</string>
-	<string name="prefs_save_gps_track">Guardar traza GPX</string>
-	<string name="prefs_save_gps_track_summary">"Crear un archivo GPX para cada subida de sesión. Encontrar traza de GPX en el directorio de dato.\n(Nota: las mismas trazas GPX nunca se cargan) "</string>
+	<string name="prefs_save_gpx">Guardar traza GPX</string>
 	<string name="prefs_ui">Interfaz de usuario</string>
 	<string name="prefs_map_none">Ninguno</string>
 	<string name="prefs_ui_keep_screen_on">Mantener la pantalla encendida</string>
@@ -32,8 +29,6 @@
 	<string name="prefs_req_gps_accuracy">Umbral del GPS</string>
 	<string name="prefs_display_always_on">Pantalla siempre encendida</string>
 	<string name="prefs_display_always_on_summary">La pantalla permanecerá encendida mientras registra. Desactivar para ahorrar batería</string>
-	<string name="prefs_gps_provider">Proveedor de GPS</string>
-	<string name="prefs_gps_provider_summary">Seleccionar fuente del GPS</string>
 
 	<string name="prefs_debug">Ajustes de depuración</string>
 	<string name="prefs_simulate_upload_summary">Exportar sólo datos, no subir al servidor</string>
@@ -51,10 +46,7 @@
 	<string name="operator">Operador</string>
 	<string name="type">Tipo</string>
 	<string name="level">Nivel</string>
-	<string name="na">S/D</string>
-	<string name="turnOnGpsQuestion">¡El GPS está apagado! ¿Desea activarlo ahora?</string>
 	<string name="networkTypeCaption">Tecnología</string>
-	<string name="baseIdCaption">Base ID</string>
 	<string name="operatorCaption">Operador</string>
 	<string name="strenghtDbmCaption">Fuerza (dbm)</string>
 	<string name="radiobeacon_licence">Licenciado bajo AGPL v3</string>
@@ -91,29 +83,7 @@
 	<string name="prefs_block_homezone_title">No analizar mi patio trasero</string>
 	<string name="prefs_anonymise_ssid_summary">"Reemplazar SSIDs en subidas con un hash MD5 para mitigar problemas de privacidad (el SSID \'John Does Wifi\' se convertiría en algo así como \'FD33531\') "</string>
 	<string name="cell">Red móvil</string>
-	<string name="dbm">dBm</string>
-	<string name="ssid">SSID</string>
-	<string name="gsm">GSM</string>
-	<string name="edge">EDGE</string>
-	<string name="umts">UMTS</string>
-	<string name="cdma">CDMA</string>
-	<string name="edvo_0">EDVO0</string>
-	<string name="edvo_a">EDVOA</string>
-	<string name="onexrtt">1xRTT</string>
-	<string name="hsdpa">HSDPA</string>
-	<string name="hsupa">HSUPA</string>
-	<string name="hspa">HSPA</string>
-	<string name="iden">IDEN</string>
-
-	<string name="edvo_b">EDVOB</string>
-	<string name="lte">LTE</string>
-	<string name="ehrpd">eHRPD</string>
-	<string name="hspa_p">HSPA+</string>
-
 	<string name="cellIdCaption">Cell Id</string>
-	<string name="isServingCellCaption">¿La red móvil está operando?</string>
-	<string name="id">#</string>
-	<string name="total_empty">(--)</string>
 	<string name="activity_settings_activity">Preferencias</string>
 	<string name="activity_map_view_activity">Mapas</string>
 	<string name="is_serving_cell_caption">¿La red móvil está funcionando?</string>
@@ -216,7 +186,7 @@
 	<string name="activity_wifi_details_activity">Detalles de WiFi</string>
 	<string name="activity_wifi_list_container">WiFis</string>
 	<string name="activity_stats_activity">Resumen</string>
-	<string name="wifi_catalog_up_to_date">¡Ya tienes instalada la última versión!</string>
+	<string name="wifi_catalog_up_to_date">¡Ya tienes instalada la última versión (%s)!</string>
 	<string name="prefs_folder_various">Varios</string>
 	<string name="graph_title">Potencia de red móvil</string>
 	<string name="warning_bad_password">¡Nombre de usuario o contraseña erróneas!</string>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>moorgebiet</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>moorgebiet</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path d="m0 0v580h580v-580z" fill-rule="evenodd" fill="#d6d99f"/>
+ <g stroke="#017fff" stroke-width="18.125" stroke-linecap="round" fill="none">
+  <path d="m63.567 462.19h36.16"/>
+  <path d="m462.29 63.438h72.266"/>
+  <path d="m462.32 280.94h108.49"/>
+  <path d="m353.55 172.19h90.392"/>
+  <path d="m172.32 462.19h72.266"/>
+  <path d="m172.29 317.19h72.266"/>
+  <path d="m244.79 9.0634h72.266"/>
+ </g>
+</svg>

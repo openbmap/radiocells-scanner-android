@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.0" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>newsagent</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>newsagent</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path opacity=".8" fill="#fff" d="m58 58h435v464h-435z" fill-rule="evenodd"/>
+ <path fill="#00f" d="m87 87v406h377v-406h-377zm29 29h319v348h-319v-348z"/>
+ <path fill="#00f" d="m145 145v72.5h261v-72.5h-261zm0 116v14.5h116v-14.5h-116zm145 0v87h116v-87h-116zm-145 29v14.5h116v-14.5h-116zm0 29v14.5h116v-14.5h-116zm0 29v14.5h116v-14.5h-116zm0 29v14.5h116v-14.5h-116zm145 0v14.5h116v-14.5h-116zm-145 29v14.5h116v-14.5h-116zm145 0v14.5h116v-14.5h-116z"/>
+</svg>

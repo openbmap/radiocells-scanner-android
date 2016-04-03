@@ -9,13 +9,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical" >
 
-        <TextView
-            android:id="@+id/credits_credits"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/credits"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
@@ -25,29 +18,71 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/app_name"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
-
-            <TextView
-                android:id="@+id/credits_client_version"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="5dp"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
-
-            <TextView
-                android:id="@+id/credits_build"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="5dp"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
+                android:textAppearance="?android:attr/textAppearanceLarge" />
         </LinearLayout>
+
+        <ImageView
+            android:layout_gravity="center_horizontal"
+            android:paddingTop="10px"
+            android:paddingBottom="5px"
+            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:src="@android:drawable/divider_horizontal_bright" />
 
         <TextView
             android:id="@+id/credits_app_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/app_description"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:weightSum="1">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="Version:"
+                android:id="@+id/credits_version" />
+
+            <TextView
+            android:id="@+id/credits_client_version"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/n_a"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+                android:gravity="center" />
+
+        <TextView
+            android:id="@+id/credits_build"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="@string/n_a"
+            android:gravity="left" />
+        </LinearLayout>
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/credits_build_signature_description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/build_signature"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="Small Text"
+                android:id="@+id/credits_build_signature" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/credits_bug_report"
@@ -64,79 +99,131 @@
             android:text="@string/link_repository" />
 
         <TextView
-            android:id="@+id/credits_radiobeacon_caption"
+            android:id="@+id/credits_credits"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/radiobeacon_licence_caption"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:text="@string/credits"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_gravity="center_horizontal|left" />
 
-        <TextView
-            android:id="@+id/credits_radiobeacon_license"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/radiobeacon_licence"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
-
-        <TextView
-            android:id="@+id/credits_openbmap_licence_caption"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/openbmap_licence_caption"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-        <TextView
-            android:id="@+id/credits_openbmap_license"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/openbmap_license"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
-
-        <TextView
-            android:id="@+id/credits_mapsforge_caption"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/mapsforge_source"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-        <TextView
-            android:id="@+id/credits_mapsforge_licence"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/mapsforge_license"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
-
-        <TextView
-            android:id="@+id/credits_map_data_source"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/map_data_source"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-        <TextView
-            android:id="@+id/credits_map_data_license"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/map_data_license"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
-		<TextView
-            android:id="@+id/credits_library"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/chart_library"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-        <TextView
-            android:id="@+id/credits_chart_library_license"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/chart_library_license"
-            android:textAppearance="?android:attr/textAppearanceSmall" />	
         <TextView
             android:id="@+id/credits_other_credits"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/other_credits"
+            android:text="@string/other_credits" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/licences"
             android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal">
+            <TextView
+                android:id="@+id/credits_radiobeacon_caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/radiobeacon_licence_caption"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+
+            <TextView
+                android:id="@+id/credits_radiobeacon_license"
+                android:layout_width="fill_parent"
+                android:gravity="right"
+                android:layout_height="wrap_content"
+                android:text="@string/radiobeacon_licence"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal">
+            <TextView
+                android:id="@+id/credits_openbmap_licence_caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/openbmap_licence_caption"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <TextView
+                android:id="@+id/credits_openbmap_license"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/openbmap_license"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:gravity="right" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal">
+            <TextView
+                android:id="@+id/credits_mapsforge_caption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/mapsforge_source"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <TextView
+                android:id="@+id/credits_mapsforge_licence"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/mapsforge_license"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:gravity="right" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal">
+            <TextView
+                android:id="@+id/credits_map_data_source"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/map_data_source"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <TextView
+                android:id="@+id/credits_map_data_license"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/map_data_license"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:gravity="right" />
+        </LinearLayout>
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal">
+            <TextView
+                android:id="@+id/credits_library"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/chart_library"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <TextView
+                android:id="@+id/credits_chart_library_license"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/chart_library_license"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:gravity="right" />
+        </LinearLayout>
+
+
     </LinearLayout>
 
 </ScrollView>

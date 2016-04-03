@@ -5,8 +5,7 @@
     android:layout_height="40dp"
     android:clickable="true"
     android:orientation="vertical"
-    android:paddingLeft="40dp"
-    tools:context=".MainActivity" >
+    android:paddingLeft="40dp">
 
     <TextView
         android:id="@+id/textView1"

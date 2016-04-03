@@ -68,8 +68,8 @@ public class SsidBlackList {
 	private final ArrayList<String>	mSuffixes;
 
 	public SsidBlackList() {
-		mPrefixes = new ArrayList<String>();
-		mSuffixes = new ArrayList<String>();
+		mPrefixes = new ArrayList<>();
+		mSuffixes = new ArrayList<>();
 	}
 
 	/**

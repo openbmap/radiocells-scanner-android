@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.0" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>bar</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>bar</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path opacity=".8" d="m116 522h319v-52l-115.29-79-0.71-117 194.27-187-35.83-29h-405.29l-33.711 29 193.56 187v117l-116 79z" fill-rule="evenodd" fill="#fff"/>
+ <path d="m406 493-116-75v-167l165-155c1.2703-1.3653 9-9 0-9h-357c-11 0-2.9292 6.1274 0 9l163 155v167l-116 75m135.52-279.43c-2.895 2.679-7.631 2.679-10.526 0l-95.99-90.57c-2.895-2.679-3.945-7 0-7h203c3.944 0 2.895 4.32 0 7l-96.479 90.57z" fill="#672400"/>
+</svg>

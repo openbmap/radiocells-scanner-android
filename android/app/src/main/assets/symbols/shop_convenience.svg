@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.0" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>convenience</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>convenience</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path d="m522 203h-435c-23.874 4.5296-36.275 35.529-29 58l56 212.6c12.846 18.212 39.487 21.704 60 19.4h290c28.781 0.59961 38.66-32.703 41-53l46-179c8.4878-29-7.8557-58.626-29-58z" fill="#fff"/>
+ <path stroke-linejoin="round" d="m509.14 246.58-408.14 0.42l49 203h310l49-203z" stroke="#00f" stroke-linecap="round" stroke-width="29" fill="#00f"/>
+ <g stroke-linejoin="round" stroke-linecap="round" fill="none">
+  <path d="m302.73 246.58 87.27-145.68" stroke="#fff" stroke-width="100"/>
+  <path d="m302.73 246.58 87.27-145.68" stroke="#00f" stroke-width="50"/>
+  <g stroke="#fff" stroke-width="29">
+   <path d="m187.5 304.5v87"/>
+   <path d="m274.5 304.5v87"/>
+   <path d="m361.5 304.5v87"/>
+   <path d="m448.5 304.5v87"/>
+  </g>
+ </g>
+</svg>

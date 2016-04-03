@@ -44,7 +44,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.openbmap.R;
-import org.openbmap.RadioBeacon;
+import org.openbmap.Radiobeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.RadioBeaconContentProvider;
 import org.openbmap.db.Schema;
@@ -113,10 +113,10 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		void uploadAllCommand();
 
 		/**
-		 * Exports GPX track of selected session
+		 * Saves GPX track of selected session
 		 * @param id
 		 */
-		void exportGpxCommand(int id);
+		void saveGpxCommand(int id);
 		
 		void reloadListFragment();
 	}
@@ -161,7 +161,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		mAdapter.setViewBinder(new SessionViewBinder());
 
 		// Trying to add a Header View.
-		final View header = (View) getLayoutInflater(savedInstanceState).inflate(
+		final View header = getLayoutInflater(savedInstanceState).inflate(
 				R.layout.sessionlistheader, null);
 		this.getListView().addHeaderView(header);
 
@@ -174,7 +174,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 			@Override
 			public void onChange(final boolean selfChange) {
 				refreshAdapter();
-			};
+			}
 		};
 
 		getListView().setLongClickable(true);
@@ -343,8 +343,8 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 					((SessionFragementListener) getActivity()).uploadCommand(id);
 				}
 				return true;
-			case R.id.menu_export_gpx:
-				((SessionFragementListener) getActivity()).exportGpxCommand(id);
+			case R.id.menu_save_gpx:
+				((SessionFragementListener) getActivity()).saveGpxCommand(id);
 				return true;
 			case R.id.menu_delete_session:
 				((SessionFragementListener) getActivity()).deleteCommand(id);
@@ -434,7 +434,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	public void onAlertPositiveClick(final int alertId, final String args) {
 		if (alertId == ID_MULTIPLE_UPLOADS) {
 			// just all pending
-			final int id = (args != null ? Integer.valueOf(args) : RadioBeacon.SESSION_NOT_TRACKING);
+			final int id = (args != null ? Integer.valueOf(args) : Radiobeacon.SESSION_NOT_TRACKING);
 			stop(id);
 			((SessionFragementListener) getActivity()).uploadAllCommand();
 		}
@@ -447,7 +447,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	public void onAlertNegativeClick(final int alertId, final String args) {
 		if (alertId == ID_MULTIPLE_UPLOADS) {
 			// just upload selected
-			final int id = (args != null ? Integer.valueOf(args) : RadioBeacon.SESSION_NOT_TRACKING);
+			final int id = (args != null ? Integer.valueOf(args) : Radiobeacon.SESSION_NOT_TRACKING);
 			stop(id);
 			((SessionFragementListener) getActivity()).uploadCommand(id);
 		}

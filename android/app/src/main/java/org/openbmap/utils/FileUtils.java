@@ -46,11 +46,7 @@ public final class FileUtils {
 	public static boolean isSdCardMounted() {
 		boolean externalStorageAvailable = false;
 		final String state = Environment.getExternalStorageState();
-		if (Environment.MEDIA_MOUNTED.equals(state)) {
-			externalStorageAvailable = true;
-		} else {
-			externalStorageAvailable = false;
-		}
+		externalStorageAvailable = Environment.MEDIA_MOUNTED.equals(state);
 		return externalStorageAvailable;
 	}
 

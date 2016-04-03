@@ -33,7 +33,7 @@
         android:title="@string/delete_all">
     </item>
     <item
-        android:id="@+id/menu_export_gpx"
+        android:id="@+id/menu_save_gpx"
         android:icon="@drawable/ic_gpx"
         app:showAsAction="ifRoom"
         android:title="@string/export_gpx">

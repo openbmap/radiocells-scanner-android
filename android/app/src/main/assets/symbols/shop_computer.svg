@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.0" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>computer</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>computer</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g>
+  <path opacity=".8" d="m127.32 522h324.66c70.231 2.0758 60.829-29 50.998-57.08l-38.98-116.92v-203c0-29-29-58-58-58h-232c-29 0-58 29-58 58v203l-38.902 116.71c-7.94 28.29-14.724 57.29 50.222 57.29z" fill-rule="evenodd" fill="#fff"/>
+  <path d="m145 377c-7.2712 0-9.3241 4.2961-12.96 11.567l-31.56 90.783c-5.402 7.25 8.25 13.65 15.52 13.65h348c7.2712 0 17.961-7.2593 15.52-13.65l-32.44-91.72c-3.64-6.37-4.81-10.63-12.08-10.63z" fill="#00f"/>
+  <path d="m174 116c-14.053 0-29 14.982-29 29v174c0 14.018 14.982 29 29 29h232c14.02 0 29-14.98 29-29v-174c0-14.018-14.982-29-29-29h-232zm0 29h232v174h-232v-174z" fill="#00f"/>
+ </g>
+</svg>

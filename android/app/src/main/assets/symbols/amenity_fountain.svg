@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   height="580"
+   width="580"
+   version="1.0"
+   id="svg2"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="amenity_fountain.svg">
+  <defs
+     id="defs14" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1498"
+     inkscape:window-height="1042"
+     id="namedview12"
+     showgrid="false"
+     inkscape:zoom="0.40689655"
+     inkscape:cx="232.24576"
+     inkscape:cy="290"
+     inkscape:window-x="185"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg2" />
+  <title
+     id="title4">fountain</title>
+  <metadata
+     id="metadata6">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>fountain</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path
+     opacity=".8"
+     d="m217.78 53.963c-38.528 0.03465-71.863 31.15-81.211 67.42-12.391 39.607-5.8033 62.3 8.496 90.871-25.511 21.341-37.885 54.897-38.736 87.539 0.18305 25.53-1.7783 60.495 15.816 77.111h-88.771c-4.379 87.1 140.62 145.1 256.62 145.1s232-58 225.13-145.5c-28.239 1.0115-58.982 0.0965-87.084 0.38777 12.341-10.502 17.636-31.068 17.25-46.898-0.58304-51.18-7.9544-86.713-38.643-119.22 16.192-12.972 19.43-35.782 16.521-55.202-2.9923-26.882-12.786-53.768-30.663-74.341-20.17-21.642-53.02-32.521-81.43-21.99-13.17 4.249-25.2 11.917-35.02 21.51-15.18-15.639-36.07-27.072-58.29-26.787z"
+     fill-rule="evenodd"
+     fill="#fff"
+     id="path8" />
+  <path
+     d="m73 404.91h406c-29 58.06-145 87.09-203 87.09s-165.26-29.03-203-87.09zm261-317.58c-29 0-48.58 30.053-58.34 52.653-9.79-23.71-28.66-53.98-57.66-53.98-43.511 0-58 55.852-58 84.883 0 29.032 22.998 19.336 29 0.88546 29-58.063 58-46.857 65.024 44.931v10.15c-11.107-5.4931-23.548-8.9589-36.024-8.9589-42.545 0-79.75 29.975-79.75 87.095v29.032c0 29.032 43.5 29.032 43.5 0v-29.032c0-28.043 19.808-43.547 36.25-43.547 15.935 0 34.859 15.566 36.024 41.166v1.1903 72.08c21.976-16.786 21.976-17.25 43.058 0l0.6699-70.889v-3.629c1.189-25.565 20.101-41.109 36.024-41.109 16.442 0 36.25 15.504 36.25 43.547v29.032c0 29.032 43.5 29.032 43.5 0v-29.032c0-57.12-37.206-87.095-79.75-87.095-12.482 0-24.912 3.5178-36.024 9.0158 0-2.607-0.4843-5.262 0-7.8249 7.25-79.669 36.25-103.3 65.25-45.238 6.5019 14.821 29 26.82 29-2.2122s-14.489-83.114-58-83.114z"
+     fill-rule="evenodd"
+     fill="#c00"
+     id="path10"
+     style="fill:#0069b6;fill-opacity:1" />
+</svg>

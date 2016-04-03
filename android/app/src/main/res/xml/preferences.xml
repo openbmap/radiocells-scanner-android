@@ -16,6 +16,11 @@
             android:password="true"
             android:summary="@string/prefs_credentials_password_summary"
             android:title="@string/prefs_credentials_password" />
+        <CheckBoxPreference
+            android:key="credentials.anonymous_upload"
+            android:password="false"
+            android:summary="@string/prefs_credentials_anonymous_upload_summary"
+            android:title="@string/prefs_credentials_anonymous_upload" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/prefs_logging" >

@@ -24,7 +24,7 @@ public class onLocationUpdate {
     public final Location location;
     public final String source = "GPS";
 
-        public onLocationUpdate(Location location) {
+        public onLocationUpdate(final Location location) {
             this.location = location;
         }
     }

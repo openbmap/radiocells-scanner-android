@@ -76,7 +76,12 @@ public final class Preferences {
 	 * Openbmap password
 	 */
 	public static final String KEY_CREDENTIALS_PASSWORD = "credentials.password";
-	
+
+	/**
+	 * Anonymous upload
+	 */
+	public static final String KEY_ANONYMOUS_UPLOAD = "credentials.anonymous_upload";
+
 	/**
 	 * Shall cells be saved?
 	 */
@@ -96,7 +101,12 @@ public final class Preferences {
 	 * Minimum distance between wifis logged.
 	 */
 	public static final String KEY_MIN_WIFI_DISTANCE = "logging.wifi_distance";
-	
+
+	/**
+	 * Minimum distance between wifis logged.
+	 */
+	public static final String KEY_WIFI_SCAN_MODE = "logging.wifi_scan_mode";
+
 	/**
 	 * Required GPS accuracy
 	 */
@@ -142,6 +152,7 @@ public final class Preferences {
      */
     public static final String KEY_DELETE_SESSIONS = "delete_tracks";
 
+	public static final String KEY_SAVE_GPX = "gpx.save_track";
     /**
      * Level of detail for GPX exports (track + waypoints, waypoints only, track + waypoints + wifis/cells
      */
@@ -152,6 +163,15 @@ public final class Preferences {
 	 */
 
     /**
+     * Default: upload using username / password
+     */
+    public static final boolean VAL_ANONYMOUS_UPLOAD = false;
+    /**
+     * Default: background wifi scanning
+     */
+    public static final String VAL_WIFI_SCAN_MODE = "1";
+
+    /**
      * Default: stop tracking on low battery
      */
     public static final boolean VAL_IGNORE_BATTERY = false;
@@ -160,6 +180,11 @@ public final class Preferences {
      * Default: don't delete sessions after successful upload
      */
     public static final boolean VAL_DELETE_SESSIONS = false;
+
+    /**
+     * Default: don't create a GPX file
+     */
+    public static final boolean VAL_SAVE_GPX = false;
 
     /**
      * Default: export track and waypoints
@@ -304,6 +329,11 @@ public final class Preferences {
 	public static final String PASSWORD_VALIDATION_URL = "https://radiocells.org/uploads/check_login";
 
 	/**
+	 * Mapsforge render theme
+	 */
+	public static final String RENDER_THEME = "renderthemes/freizeitkarte-v4.xml";
+
+    /**
 	 * Private dummy constructor
 	 */
 	private Preferences() {

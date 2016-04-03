@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.0" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>library</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>library</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g fill-rule="evenodd">
+  <path d="m29.5 260.4-0.5-86.4c0-29 0-29 29-45.242l211.37-117.3c28.461-14.609 42.887-19.498 62.582 3.9932l206.21 245.95c12.84 14.06 12.84 16.1 12.94 38.52l0.40509 105.53c-0.51 29.55-0.51 29.55-29.29 46.63l-183.14 108.68c-49.08 26.24-62.08 19.24-89.31-9.99l-192.07-213.51c-28.7-30.26-28.7-18.26-28.2-76.86z" fill="#202020"/>
+  <path stroke-linejoin="round" d="m73.931 159.89 228.5 259.48 218.82-125.87-222.69-257.54-224.63 123.93z" stroke="#fff" stroke-linecap="round" stroke-width="10" fill="#fff"/>
+  <path stroke-linejoin="round" d="m286 444.21v96.82l-226-256.09v-96.34z" stroke="#fff" stroke-linecap="round" stroke-width="10" fill="#fff"/>
+ </g>
+ <g stroke-linejoin="round" fill-rule="evenodd" stroke="#d4d4d4" stroke-linecap="round" stroke-width="16.477" fill="#9f9fff">
+  <path d="m519.51 327.14-206.25 120.85-0.14425 3.1853 206.08-120.77 0.31735-3.2719z"/>
+  <path d="m519.51 367.14-206.25 120.85-0.14425 3.1853 206.08-120.77 0.31735-3.2719z"/>
+  <path d="m519.51 407.14-206.25 120.85-0.14425 3.1853 206.08-120.77 0.31735-3.2719z"/>
+ </g>
+</svg>

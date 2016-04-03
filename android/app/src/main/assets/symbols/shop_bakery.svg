@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.0" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>bakery</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>bakery</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path opacity=".8" d="m377 145h-203c-96.902 29-124.49 116-115.08 200.96 0.63894 20.583-2.579 43.375 8.5762 61.881 12.398 19.519 36.919 29.57 59.551 26.244 116.72-1.0494 233.48 1.5996 350.18-1.3983 32.69-8.3 46.77-26.69 46.77-68.21 0.8-41.23 7.42-93.66-12.26-131.33-25.8-53-67.8-88.15-134.74-88.15z" fill="#fff"/>
+ <path d="m282.75 174 43.5 116h-43.5l-43.5-116h-50.75l43.5 116h-43.5l-38.37-99.29c-25.69 19.95-63.13 76.04-63.13 128.29v58c0 17.203 12.288 29 29 29h348c16.712 0 29-12.288 29-29v-58c0-71.47-50.09-128.02-116-145l43.5 116h-43.5l-43.5-116h-50.75z" fill="#00f"/>
+</svg>

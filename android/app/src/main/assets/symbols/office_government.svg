@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.0" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>government</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>government</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path opacity=".8" d="m246.5 101.5v95.099l-159.5 78.9v101.5h29v58h-29v87h406v-87h-29v-58h29l-0.47-101.51-144.53-72.49h87c29 0 43.5-29 29-43.5l-37.37-29 37.37-29c14.5-14.5 0-43.5-29-43.5h-145c-29 0-43.5 14.5-43.5 43.5z" fill="#fff"/>
+ <path d="m290 87c-8.71 0-14.5 5.792-14.5 14.5v116l-159.5 72.5h348l-159.5-72.5v-116c0-10.885-7.97-14.5-14.5-14.5zm29 0v87h116l-58-43.5 58-43.5h-116zm-203 232v29h29v116h-29v29h348v-29h-29v-116h29v-29h-348zm58 29h58v116h-58v-116zm87 0h58v116h-58v-116zm87.57 0.07h57.36v115.86h-57.36v-115.86z" fill="#c00"/>
+</svg>

@@ -27,12 +27,12 @@ import android.util.Log;
 
 import org.openbmap.Preferences;
 import org.openbmap.R;
-import org.openbmap.RadioBeacon;
-import org.openbmap.soapclient.ExportDataTask;
-import org.openbmap.soapclient.ExportDataTask.UploadTaskListener;
-import org.openbmap.soapclient.ServerCheckTask;
-import org.openbmap.soapclient.ServerCheckTask.ServerAnswer;
-import org.openbmap.soapclient.ServerCheckTask.ServerCheckerListener;
+import org.openbmap.Radiobeacon;
+import org.openbmap.soapclient.ExportSessionTask;
+import org.openbmap.soapclient.ExportSessionTask.UploadTaskListener;
+import org.openbmap.soapclient.CheckServerTask;
+import org.openbmap.soapclient.CheckServerTask.ServerAnswer;
+import org.openbmap.soapclient.CheckServerTask.ServerCheckerListener;
 import org.openbmap.utils.FileUtils;
 
 import java.io.File;
@@ -48,12 +48,11 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
 
     private enum CheckResult {UNKNOWN, FAILED, PASSED}
 
-    ;
     private CheckResult sdCardWritable = CheckResult.UNKNOWN;
     private CheckResult serverReply = CheckResult.UNKNOWN;
 
     private final Vector<Integer> toExport = new Vector<Integer>();
-    private ExportDataTask mExportDataTask;
+    private ExportSessionTask mExportDataTask;
 
     private String mTitle;
     private String mMessage;
@@ -147,18 +146,28 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
     private void process(final int session) {
 
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        final String user = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_USER, null);
-        final String password = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
+        final boolean anonymousUpload = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_ANONYMOUS_UPLOAD, false);
+
+        String user = null;
+        String password = null;
+        if (!anonymousUpload) {
+            user = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_USER, null);
+            password = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
+        }
+
         final String targetPath = getActivity().getExternalFilesDir(null).getAbsolutePath() + File.separator;
         final boolean skipUpload = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_SKIP_UPLOAD, Preferences.VAL_SKIP_UPLOAD);
         final boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_KEEP_XML, Preferences.VAL_KEEP_XML);
         final boolean anonymiseSsid = prefs.getBoolean(Preferences.KEY_ANONYMISE_SSID, Preferences.VAL_ANONYMISE_SSID);
+        final boolean saveGpx = prefs.getBoolean(Preferences.KEY_SAVE_GPX, Preferences.VAL_SAVE_GPX);
 
-        mExportDataTask = new ExportDataTask(getActivity(), this, session,
-                targetPath, user, password, anonymiseSsid);
+        mExportDataTask = new ExportSessionTask(getActivity(), this, session, targetPath, user, password, anonymousUpload);
 
+        // set extras
         mExportDataTask.setExportCells(true);
         mExportDataTask.setExportWifis(true);
+        mExportDataTask.setAnonymiseSsid(anonymiseSsid);
+        mExportDataTask.setSaveGpx(saveGpx);
         // currently deactivated to prevent crashes
         mExportDataTask.setUpdateWifiCatalog(false);
 
@@ -178,8 +187,8 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
             final String user = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_USER, null);
             final String password = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
 
-            final String[] params = {RadioBeacon.VERSION_COMPATIBILITY, user, password};
-            new ServerCheckTask(getActivity(), this).execute(params);
+            final String[] params = {Radiobeacon.VERSION_COMPATIBILITY, user, password};
+            new CheckServerTask(getActivity(), this).execute(params);
         } else if (serverReply == CheckResult.PASSED) {
             stageLocalChecks();
         }
@@ -205,21 +214,21 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
         } else if (serverReply == CheckResult.FAILED) {
             // version is outdated or wrong credentials
             if (mBadPasswordFlag) {
-                final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
+                final int id = toExport.size() > 0 ? toExport.get(0) : Radiobeacon.SESSION_NOT_TRACKING;
                 onUploadFailed(id, getResources().getString(R.string.warning_bad_password));
             } else {
-                final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
+                final int id = toExport.size() > 0 ? toExport.get(0) : Radiobeacon.SESSION_NOT_TRACKING;
                 onUploadFailed(id, getResources().getString(R.string.warning_outdated_client));
             }
         } else if (serverReply == CheckResult.UNKNOWN) {
             // couldn't verify online version
-            final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
+            final int id = toExport.size() > 0 ? toExport.get(0) : Radiobeacon.SESSION_NOT_TRACKING;
             onUploadFailed(id, getResources().getString(R.string.warning_client_version_not_checked));
         } else if (sdCardWritable == CheckResult.FAILED) {
-            final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
+            final int id = toExport.size() > 0 ? toExport.get(0) : Radiobeacon.SESSION_NOT_TRACKING;
             onUploadFailed(id, getResources().getString(R.string.warning_sd_not_writable));
         } else {
-            final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
+            final int id = toExport.size() > 0 ? toExport.get(0) : Radiobeacon.SESSION_NOT_TRACKING;
             onUploadFailed(id, "Unknown error");
         }
 

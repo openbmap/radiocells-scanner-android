@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.0" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>copyshop</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>copyshop</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path opacity=".8" d="m87 58v348h116v116h290v-232l-116-116v-116z" fill-rule="evenodd" fill="#fff"/>
+ <path fill="#00f" d="m116 87v290h87v-29h-58v-232h174v58h29v-87h-232zm58 58v14.5h116v-14.5h-116zm0 29v14.5h29v-14.5h-29zm0 29v14.5h29v-14.5h-29zm58 0v290h232v-195l-95-95h-137zm-58 29v14.5h29v-14.5h-29zm87 0h87v87h87v145h-174v-232zm116 20l38 38h-38v-38zm-203 9v14.5h29v-14.5h-29zm116 0v14.5h29v-14.5h-29zm-116 29v14.5h29v-14.5h-29zm116 0v14.5h29v-14.5h-29zm0 29v14.5h29v-14.5h-29zm0 29v14.5h116v-14.5h-116zm0 29v14.5h116v-14.5h-116zm0 29v14.5h116v-14.5h-116z"/>
+</svg>

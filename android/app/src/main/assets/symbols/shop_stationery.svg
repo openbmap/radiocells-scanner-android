@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.0" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>stationery</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>stationery</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path opacity=".8" d="m232 58c-40.317 0-58 19.805-58 58v261c0 29 15.022 57.326 29 71.439l58 59.415c29 14.146 58 14.146 87 0l58-60.829c22.73-20.44 29-41.03 29-70.03v-233.41c0-27.59 0-27.59-29-27.59h-29c0-29-15.43-58-58-58z" fill-rule="evenodd" fill="#fff"/>
+ <path d="m232 377v-232c0-29 0-29 29-29h29c29 0 29 0 29 29l-0.3074 203.24h-29l0.31-174.24h-29c0 48.333-0.3074 125.91-0.3074 174.24 0 29 0 28.506 29.308 28.755l28.691 0.232c29 0 29 0 29-29l0.30738-203.23c0.0871-57.999 0-57.999-57.999-57.999h-29c-57.999 0-57.999 0-57.999 57.999v232c0 29 0 29 76.98 106.4 6.0096 8.6819 10.019 9.5998 25.594 9.5998 13.425 0 19.099 0.47269 28.018-9.1201 72.407-77.879 72.407-77.879 72.407-106.88v-232h-29v232c0 14.186-57.999 93.48-70.678 86.999-16.321 4.6292-74.321-68.184-74.321-86.999z" fill="#00f"/>
+</svg>

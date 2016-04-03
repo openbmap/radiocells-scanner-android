@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.0" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>fastfood</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>fastfood</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path opacity=".8" fill="#fff" d="m232 116c-87 0-145 58-145 116v43.854c-29 14.15-29 43.15 0 57.3v14.85c0 58 36.78 87 65.78 87h269.49c29 0 70.73-29 70.73-87v-15.561c29-13.44 29-42.44 0-56.59v-43.85c0-58-58-116-145-116z" fill-rule="evenodd"/>
+ <g fill="#672400">
+  <path d="m232 145c-87 0-116 58-116 87v29h348v-29c0-29.001-28.999-87-116-87z"/>
+  <path d="m117.49 289.95c-28.9-0.004-28.9 28.887 0 28.9l346.51 0.15c29 0.0126 29-28.996 0-29z"/>
+  <path d="m116 348v18.715c0 19.77 25.06 39.28 44.84 39.28h260.1c19.77 0 43.06-19.51 43.06-39.29v-18.71z"/>
+ </g>
+</svg>

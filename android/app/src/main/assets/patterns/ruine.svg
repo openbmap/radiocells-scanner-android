@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>ruine</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>ruine</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path d="m0 580v-580h580v580z" fill-rule="evenodd" fill="#c1afaf"/>
+ <path d="m126.88 0v126.88h-126.88v18.12h126.88v126.88h-126.88v18.12h126.88v126.88h-126.88v18.12h126.88v126.88h-126.88v18.12h580v-18.12-416.88-18.12-126.88h-18.12v126.88h-126.88v-126.88h-18.12v126.88h-126.88v-126.88h-18.12v126.88h-126.88v-126.88h-18.12zm18.12 145h126.88v126.88h-126.88v-126.88zm145 0h126.88v126.88h-126.88v-126.88zm145 0h126.88v126.88h-126.88v-126.88zm-290 145h126.88v126.88h-126.88v-126.88zm145 0h126.88v126.88h-126.88v-126.88zm145 0h126.88v126.88h-126.88v-126.88zm-290 145h126.88v126.88h-126.88v-126.88zm145 0h126.88v126.88h-126.88v-126.88zm145 0h126.88v126.88h-126.88v-126.88z" fill-rule="evenodd" fill="#ccc"/>
+</svg>

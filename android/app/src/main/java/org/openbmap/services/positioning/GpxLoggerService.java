@@ -24,15 +24,15 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import org.openbmap.RadioBeacon;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.openbmap.Radiobeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.PositionRecord;
 import org.openbmap.events.onLocationUpdate;
 import org.openbmap.events.onStartGpx;
 import org.openbmap.events.onStopTracking;
 import org.openbmap.services.AbstractService;
-
-import de.greenrobot.event.EventBus;
 
 /**
  * Saves GPX track. This is mainly for debugging purposes and functionally not needed for wifi tracking.
@@ -65,7 +65,7 @@ public class GpxLoggerService extends AbstractService {
 	/**
 	 * Current session id
 	 */
-	private int mSessionId = RadioBeacon.SESSION_NOT_TRACKING;
+	private int mSessionId = Radiobeacon.SESSION_NOT_TRACKING;
 
 	/*
 	 * DataHelper for persisting recorded information in database
@@ -140,7 +140,7 @@ public class GpxLoggerService extends AbstractService {
 	private void stopTracking() {
 		Log.d(TAG, "Stop tracking on session " + mSessionId);
 		mIsTracking = false;
-		mSessionId = RadioBeacon.SESSION_NOT_TRACKING;
+		mSessionId = Radiobeacon.SESSION_NOT_TRACKING;
 	}
 
 	/**
@@ -151,17 +151,20 @@ public class GpxLoggerService extends AbstractService {
 		return mIsTracking;
 	}
 
+    @Subscribe
     public void onEvent(onStartGpx event) {
         Log.d(TAG, "ACK onStartGpx event");
         startTracking(event.session);
     }
 
+    @Subscribe
     public void onEvent(onStopTracking event){
         Log.d(TAG, "ACK onStopTracking event");
         stopTracking();
         this.stopSelf();
     }
 
+    @Subscribe
 	public void onEvent(onLocationUpdate event){
 		//Log.d(TAG, "ACK onLocationUpdate event");
         if (!mIsTracking) {

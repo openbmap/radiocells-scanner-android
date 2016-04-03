@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>deponie</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>deponie</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path d="m0 0v580h580v-580z" fill-rule="evenodd" fill="#b2977f"/>
+ <g fill-rule="evenodd" fill="#c1a389">
+  <ellipse rx="36.25" ry="27.188" cy="154.06" cx="145"/>
+  <ellipse rx="36.25" ry="27.188" cy="154.06" cx="435"/>
+  <ellipse rx="36.25" ry="27.188" cy="444.06" cx="145"/>
+  <ellipse rx="36.25" ry="27.188" cy="444.06" cx="435"/>
+  <ellipse rx="36.25" ry="27.188" cy="299.06" cx="290"/>
+ </g>
+</svg>

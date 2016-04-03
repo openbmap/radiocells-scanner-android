@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>camping</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>camping</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path d="m169.05 146.59 96.19 96.2-192.21 192.21h434.47l-192.21-192.21 96.195-96.193h-50.043l-71.172 71.174-71.174-71.174z" fill-rule="evenodd" fill="#0069b6"/>
+ <path d="m174.23 403.15c77.294-0.0625 154.59-0.125 231.88-0.1875-38.61-38.61-77.23-77.22-115.84-115.84-38.68 38.68-77.36 77.36-116.04 116.03z" fill-rule="evenodd" fill="#fff"/>
+</svg>

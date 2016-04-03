@@ -11,13 +11,12 @@
     <!-- You used word phones GPS settings. I would recommend using word devices better -->
     <!-- I translated as phones for now -->
     <string name="prefs_check_gps_startup">Sprawdź status GPS na starcie</string>
-	<string name="prefs_check_gps_startup_summary">Ostrzeż jeżeli  GPS jest wyłączony na starcie i zaoferuj aby aktywować</string>
+	<string name="prefs_check_gps_startup_summary">Ostrzeż jeżeli GPS jest wyłączony na starcie</string>
     <string name="prefs_gps_logging_interval">Interwał logowania GPS</string>
 	<string name="prefs_gps_logging_interval_summary">Użyj 0 dla najmniejszego możliwego (wpływa na zużycie baterii)</string>
     <string name="prefs_gps_logging_interval_seconds">sekund</string>
-    <string name="prefs_save_gps_track">Zapisz szlak GPX</string>
-	<string name="prefs_save_gps_track_summary">Utwórz plik GPX dla każdej wysłanej sesji. Szukaj plików GPX w folderze danych.\n(Uwaga: Pliki GPX same w sobie nigdy nie zostaną wysłane)</string>
-    <string name="prefs_ui">Interfejs użytkownika</string>
+    <string name="prefs_save_gpx">Zapisz szlak GPX</string>
+	<string name="prefs_ui">Interfejs użytkownika</string>
     <string name="prefs_map_none">Brak</string>
     <string name="prefs_ui_keep_screen_on">Trzymaj ekran włączony</string>
 	<string name="prefs_ui_keep_screen_on_summary">Zapobiegaj blokowaniu ekranu po czasie bezczynnośći</string>
@@ -25,7 +24,6 @@
     <string name="prefs_credentials_user">Użytkownik</string>
     <string name="prefs_credentials_user_summary">Jeżeli nie masz jeszcze konta, stwórz je na https://radiocells.org (Wymagane tylko przy wysyłaniu)</string>
     <string name="prefs_credentials_password">Hasło</string>
-    <string name="prefs_credentials_password_summary" translatable="false"/>
     <string name="prefs_save_cells">Śledź sieci komórkowe</string>
 	<string name="prefs_save_cells_summary">Aktywuj, aby skanować sieci komórkowe</string>
     <string name="prefs_save_wifis_summary">Aktywuj, aby skanować sieci wifi</string>
@@ -39,10 +37,10 @@
     <!-- Current size itself as a number suppose to be variable since its going to only grow and grow -->
     <!-- To not to change manualy on and on -->
     <string name="prefs_min_cell_distance">Interwał logowania sieci komórkowych</string>
-    <string name="prefs_min_cell_distance_hint">Minimalny dystans między dwoma skanami dla sieci komórkowych (w metrach)</string>
+    <string name="prefs_min_cell_distance_hint">Minimalny dystans między dwoma skanami komórek (w metrach)</string>
     <string name="prefs_min_wifi_distance">Interwał logowania sieci wifi</string>
 	<string name="prefs_min_wifi_distance_hint">Minimalny dystans między dwoma skanami dla sieci wifi (w metrach)</string>
-	    <string name="prefs_req_gps_accuracy">Próg dokładnośći GPS</string>
+	    <string name="prefs_req_gps_accuracy">Próg dokładności GPS</string>
 	<string name="prefs_req_gps_accuracy_hint">Jeżeli dokładność pozycji GPS jest gorsza niż podany próg, wyniki skanowania zostaną pominięte (w metrach)</string>
     <string name="prefs_display_always_on">Ekran zawsze włączony</string>
     <string name="prefs_display_always_on_summary">Ekran będzie włączony podczas śledzenia. Wyłącz, aby oszczędzić baterię</string>
@@ -160,10 +158,10 @@
     <string name="blacklisted_area">Ignorowana: w obrębie lokalizacji pomijania</string>
     <string name="download_failed">Pobieranie zakończone niepowodzeniem</string>
     <string name="cleaning_database">Reorganizowanie..</string>
-    <string name="database_lock_error">Nie można zablokować bazy danych. Spróbuj ponownie..</string>
+    <string name="database_lock_error">Nie można zablokować bazy danych. Spróbuj ponownie później.</string>
     <string name="please_stay_patient">Proszę czekać..</string>
     <string name="export_error_title">Błąd eksportowania</string>
-	<string name="export_error">Spróbuj ponownie. Jeżeli problem dalej występuje proszę zgłoś problem na\nhttp://code.google.com/p/openbmap/issues/list</string>
+	<string name="export_error">"Spróbuj ponownie. Jeżeli problem dalej występuje proszę zgłoś problem na\nhttps://github.com/wish7code/openbmap/issues "</string>
     <string name="location_blacklist_saved">Zapisano lokację do pomijania!</string>
     <string name="error_writing_location_blacklist">Błąd, przy zapisywaniu lokacji do pomijania</string>
     <string name="stats_new_wifis">Nowe sieci wifi</string>
@@ -203,7 +201,7 @@
     <string name="prefs_ignore_battery_title">Ignoruj słabą beterię</string>
     <string name="other_download_active">Proszę zaczekaj na zakończenie pobierania!</string>
     <string name="sort_by_timestamp">Sortuj po czasie</string>
-    <string name="sort_by_ssid">Sortuj po SSID</string>
+    <string name="sort_by_ssid">Sortowanie A-Z</string>
     <string name="show_only_new">Pokaż tylko nowe</string>
     <string name="show_only_free">Pokaż tylko otwarte</string>
     <string name="show_all">Pokaż wszystkie</string>
@@ -223,7 +221,7 @@
     <string name="invalid_download">Niepoprawnie pobrane</string>
     <string name="prefs_gpx_verbosity_title">Szczegółowość GPX</string>
     <string name="prefs_gpx_verbosity_summary">Wybierz jakie szczegóły są eksportowane do pliku GPX</string>
-    <string name="wifi_catalog_up_to_date">Aktualna wersja jest zainstalowana!</string>
+    <string name="wifi_catalog_up_to_date">Aktualna wersja jest zainstalowana (%s)!</string>
     <string name="waypoint">WP</string>
     <!-- out of context so I leave for now? -->
     <string name="activity_stats_activity">Podsumowanie</string>

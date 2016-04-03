@@ -34,32 +34,29 @@ import android.view.MenuItem;
 import android.widget.TabHost;
 import android.widget.Toast;
 
+import org.greenrobot.eventbus.EventBus;
 import org.openbmap.Preferences;
 import org.openbmap.R;
-import org.openbmap.RadioBeacon;
+import org.openbmap.Radiobeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.Session;
 import org.openbmap.events.onStartTracking;
 import org.openbmap.events.onStopTracking;
-import org.openbmap.soapclient.ExportDataTask.UploadTaskListener;
-import org.openbmap.soapclient.ExportGpxTask.ExportGpxTaskListener;
+import org.openbmap.soapclient.ExportSessionTask.UploadTaskListener;
+import org.openbmap.soapclient.GpxSerializer;
+import org.openbmap.soapclient.SaveGpxTask.SaveGpxTaskListener;
 import org.openbmap.utils.AlertDialogUtils;
 import org.openbmap.utils.OnAlertClickInterface;
 import org.openbmap.utils.TabManager;
 import org.openbmap.utils.TempFileUtils;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
-
-import de.greenrobot.event.EventBus;
 
 /**
  * Parent screen for hosting main screen
  */
 public class StartscreenActivity extends AppCompatActivity
-implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, UploadTaskListener, ExportGpxTaskListener {
+implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, UploadTaskListener, SaveGpxTaskListener {
 
 	private static final String TAG = StartscreenActivity.class.getSimpleName();
 
@@ -67,7 +64,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 *
 	 */
 	private static final String UPLOAD_TASK = "upload_task";
-	private static final String EXPORT_GPX_TASK = "export_gpx_task";
+	private static final String SAVE_GPX_TASK = "export_gpx_task";
 
 	private static final String	WIFILOCK_NAME = "UploadLock";
 
@@ -108,7 +105,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	/**
 	 * Persistent fragment saving export gpx task across activity re-creation
 	 */
-	private ExportGpxTaskFragment mExportGpxTaskFragment;
+	private SaveGpxTaskFragment mSaveGpxTaskFragment;
 
 	private FragmentManager	fm;
 
@@ -120,7 +117,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	/**
 	 * Dialog indicating export gpx progress
 	 */
-	private ProgressDialog mExportGpxProgress;
+	private ProgressDialog mSaveGpxProgress;
 
 	/**
 	 * List of all pending exports
@@ -165,7 +162,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	private void initPersistantFragments() {
 		fm = getSupportFragmentManager();
 		mUploadTaskFragment = (UploadTaskFragment) fm.findFragmentByTag(UPLOAD_TASK);
-		mExportGpxTaskFragment = (ExportGpxTaskFragment) fm.findFragmentByTag(EXPORT_GPX_TASK);
+		mSaveGpxTaskFragment = (SaveGpxTaskFragment) fm.findFragmentByTag(SAVE_GPX_TASK);
 
 		if (mUploadTaskFragment == null) {
 			Log.d(TAG, "Task fragment not found. Creating..");
@@ -183,19 +180,19 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		}
 
 
-		if (mExportGpxTaskFragment == null) {
+		if (mSaveGpxTaskFragment == null) {
 			Log.d(TAG, "Task fragment not found. Creating..");
-			mExportGpxTaskFragment = new ExportGpxTaskFragment();
+			mSaveGpxTaskFragment = new SaveGpxTaskFragment();
             // was commitAllowingStateLoss()
-            fm.beginTransaction().add(mExportGpxTaskFragment, EXPORT_GPX_TASK).commit();
+            fm.beginTransaction().add(mSaveGpxTaskFragment, SAVE_GPX_TASK).commit();
             // https://stackoverflow.com/questions/7469082/getting-exception-illegalstateexception-can-not-perform-this-action-after-onsa
 			fm.executePendingTransactions();
 
-			initExportGpxTaskDialog(true);
+			initSaveGpxTaskDialog(true);
 		} else {
 			Log.d(TAG, "Showing existings export gpx task fragment");
-			initExportGpxTaskDialog(false);
-			showExportGpxTaskDialog();
+			initSaveGpxTaskDialog(false);
+			showSaveGpxTaskDialog();
 		}
 	}
 
@@ -296,24 +293,24 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	}
 
 	/* (non-Javadoc)
-	 * @see org.openbmap.activities.SessionListFragment.SessionFragementListener#exportGpxCommand(int)
+	 * @see org.openbmap.activities.SessionListFragment.SessionFragementListener#saveGpxCommand(int)
 	 */
 	@Override
-	public void exportGpxCommand(final int id) {
+	public void saveGpxCommand(final int id) {
 		Log.i(TAG, "Exporting gpx");
 
 		final String path = this.getExternalFilesDir(null).getAbsolutePath();
 
-		final SimpleDateFormat date = new SimpleDateFormat("yyyyMMddhhmmss", Locale.US);
-		final String filename = date.format(new Date(System.currentTimeMillis())) + "(" + String.valueOf(id) + ")" + ".gpx";
+        final String filename = GpxSerializer.suggestGpxFilename(id);
 
-		showExportGpxTaskDialog();
-		mExportGpxTaskFragment.execute(id, path, filename);
+		showSaveGpxTaskDialog();
+		mSaveGpxTaskFragment.execute(id, path, filename);
 	}
 
-	/*
-	 * Stops all active session
-	 */
+
+    /*
+     * Stops all active session
+     */
 	@Override
 	public final void stopCommand(final int id) {
 		mDataHelper.invalidateActiveSessions();
@@ -353,7 +350,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * @param id
 	 */
 	public final void deleteConfirmed(final int id) {
-		if (id == RadioBeacon.SESSION_NOT_TRACKING) {
+		if (id == Radiobeacon.SESSION_NOT_TRACKING) {
 			return;
 		}
 
@@ -403,10 +400,8 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
 		// Force update on list fragements' adapters.
 		// TODO check if we really need this
-		final Intent intent1 = new Intent(RadioBeacon.INTENT_WIFI_UPDATE);
+		final Intent intent1 = new Intent(Radiobeacon.INTENT_WIFI_UPDATE);
 		sendBroadcast(intent1);
-		final Intent intent2 = new Intent(RadioBeacon.INTENT_CELL_UPDATE);
-		sendBroadcast(intent2);
 	}
 
 	/**
@@ -518,11 +513,11 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	@Override
 	public void onAlertPositiveClick(final int alertId, final String args) {
 		if (alertId == ID_DELETE_ALL) {
-			final int id = (args != null ? Integer.valueOf(args) : RadioBeacon.SESSION_NOT_TRACKING);
+			final int id = (args != null ? Integer.valueOf(args) : Radiobeacon.SESSION_NOT_TRACKING);
 			stopCommand(id);
 			deleteAllConfirmed();
 		} else if (alertId == ID_DELETE_SESSION) {
-			final int id = (args != null ? Integer.valueOf(args) : RadioBeacon.SESSION_NOT_TRACKING);
+			final int id = (args != null ? Integer.valueOf(args) : Radiobeacon.SESSION_NOT_TRACKING);
 			stopCommand(id);
 			deleteConfirmed(id);
 		} else if (alertId == ID_DELETE_PROCESSED) {
@@ -721,40 +716,40 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * This dialog is not shown until calling showExportDialog() explicitly
 	 * @param newDialog
 	 */
-	private void initExportGpxTaskDialog(final boolean newDialog) {
+	private void initSaveGpxTaskDialog(final boolean newDialog) {
 		if (newDialog) {
-			mExportGpxProgress = new ProgressDialog(this);
-			mExportGpxProgress.setCancelable(false);
-			mExportGpxProgress.setIndeterminate(true);
+			mSaveGpxProgress = new ProgressDialog(this);
+			mSaveGpxProgress.setCancelable(false);
+			mSaveGpxProgress.setIndeterminate(true);
 
 			final String defaultTitle = getResources().getString(R.string.exporting_gpx);
 			final String defaultMessage = getResources().getString(R.string.please_stay_patient);
-			mExportGpxProgress.setTitle(defaultTitle);
-			mExportGpxProgress.setMessage(defaultMessage);
+			mSaveGpxProgress.setTitle(defaultTitle);
+			mSaveGpxProgress.setMessage(defaultMessage);
 
-			mUploadTaskFragment.retainProgress(defaultTitle, defaultMessage, (int) mExportGpxProgress.getProgress());
+			mUploadTaskFragment.retainProgress(defaultTitle, defaultMessage, mSaveGpxProgress.getProgress());
 		} else {
-			mExportGpxProgress = new ProgressDialog(this);
-			mExportGpxProgress.setCancelable(false);
-			mExportGpxProgress.setIndeterminate(true);
+			mSaveGpxProgress = new ProgressDialog(this);
+			mSaveGpxProgress.setCancelable(false);
+			mSaveGpxProgress.setIndeterminate(true);
 
-			mExportGpxTaskFragment.restoreProgress(mExportGpxProgress);
+			mSaveGpxTaskFragment.restoreProgress(mSaveGpxProgress);
 		}
 	}
 
 	/**
 	 * Opens export gpx dialog, if any
 	 */
-	private void showExportGpxTaskDialog() {
-		if (mExportGpxProgress == null) {
+	private void showSaveGpxTaskDialog() {
+		if (mSaveGpxProgress == null) {
 			throw new IllegalArgumentException("Export progress dialog must not be null");
 		}
 
-		if (mExportGpxTaskFragment.isExecuting()) {
-			mExportGpxTaskFragment.restoreProgress(mExportGpxProgress);
+		if (mSaveGpxTaskFragment.isExecuting()) {
+			mSaveGpxTaskFragment.restoreProgress(mSaveGpxProgress);
 
-			if (!mExportGpxProgress.isShowing()) {
-				mExportGpxProgress.show();
+			if (!mSaveGpxProgress.isShowing()) {
+				mSaveGpxProgress.show();
 			}
 		}
 	}
@@ -776,7 +771,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 			mUploadProgress.setTitle(defaultTitle);
 			mUploadProgress.setMessage(defaultMessage);
 
-			mUploadTaskFragment.retainProgress(defaultTitle, defaultMessage, (int) mUploadProgress.getProgress());
+			mUploadTaskFragment.retainProgress(defaultTitle, defaultMessage, mUploadProgress.getProgress());
 		} else {
 			mUploadProgress = new ProgressDialog(this);
 			mUploadProgress.setCancelable(false);
@@ -816,8 +811,8 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
      * Closes upload dialog
      */
     private void hideGpxTaskDialog() {
-        if (mExportGpxProgress != null) {
-            mExportGpxProgress.dismiss();
+        if (mSaveGpxProgress != null) {
+            mSaveGpxProgress.dismiss();
         }
     }
 	/**
@@ -858,8 +853,9 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * Fired once gpx export task has finished
 	 */
 	@Override
-	public void onExportGpxCompleted(final int id) {
+	public void onSaveGpxCompleted(final String filename) {
 		Log.i(TAG, "GPX export completed");
+        Toast.makeText(this, getString(R.string.saved_at) + filename, Toast.LENGTH_LONG).show();
         hideGpxTaskDialog();
 	}
 
@@ -867,23 +863,23 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * Fired once gpx export task has failed
 	 */
 	@Override
-	public void onExportGpxFailed(final int id, final String error) {
+	public void onSaveGpxFailed(final int id, final String error) {
 		Log.e(TAG, "GPX export failed: " + error);
         hideGpxTaskDialog();
 		Toast.makeText(this, R.string.gpx_export_failed, Toast.LENGTH_LONG).show();
 	}
 
 	/* (non-Javadoc)
-	 * @see org.openbmap.soapclient.ExportGpxTask.ExportGpxTaskListener#onExportGpxProgressUpdate(java.lang.Object[])
+	 * @see org.openbmap.soapclient.ExportGpxTask.ExportGpxTaskListener#onSaveGpxProgressUpdate(java.lang.Object[])
 	 */
 	@Override
-	public void onExportGpxProgressUpdate(final Object[] values) {
-		if (mExportGpxProgress != null) {
-			mExportGpxProgress.setTitle((CharSequence) values[0]);
-			mExportGpxProgress.setMessage((CharSequence) values[1]);
-			mExportGpxProgress.setProgress((Integer) values[2]);
+	public void onSaveGpxProgressUpdate(final Object[] values) {
+		if (mSaveGpxProgress != null) {
+			mSaveGpxProgress.setTitle((CharSequence) values[0]);
+			mSaveGpxProgress.setMessage((CharSequence) values[1]);
+			mSaveGpxProgress.setProgress((Integer) values[2]);
 		}
-		mExportGpxTaskFragment.retainProgress((String) values[0], (String) values[1], (Integer) values[2]);
+		mSaveGpxTaskFragment.retainProgress((String) values[0], (String) values[1], (Integer) values[2]);
 
 	}
 }

@@ -150,7 +150,7 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 	}
 
 	private void colorize(final float x, final float y) {
-		final int[] pixels = new int[(int) (this.mWidth * this.mHeight)];
+		final int[] pixels = new int[this.mWidth * this.mHeight];
 
 		mBackbuffer.getPixels(pixels, 0, this.mWidth, 0, 0, this.mWidth, this.mHeight);
 
@@ -181,7 +181,7 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 					} else {
 						b = 255;
 					}
-					pixels[i] = Color.argb((int) alpha / 2, r, g, b);
+					pixels[i] = Color.argb(alpha / 2, r, g, b);
 		}
 
 		mBackbuffer.setPixels(pixels, 0, this.mWidth, 0, 0, this.mWidth, this.mHeight);

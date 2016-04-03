@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>krankenhaus</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>krankenhaus</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path d="m0 580v-580h580v580z" fill-rule="evenodd" fill="#edeecd"/>
+ <path d="m271.88 199.38v54.375h-54.375v54.375h54.375v54.375h54.375v-54.375h54.375v-54.375h-54.375v-54.375z" fill-rule="evenodd" fill="#d9b2a9"/>
+</svg>

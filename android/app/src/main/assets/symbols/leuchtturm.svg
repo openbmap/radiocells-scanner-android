@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>leuchtturm</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>leuchtturm</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g fill-rule="evenodd">
+  <rect height="87" width="116" y="435" x="174" fill="#ff0020"/>
+  <rect height="116" width="116" y="290" x="174" fill="#fff"/>
+  <path d="m232 116c29 0 29 0 29 29h-58c0-29 0-29 29-29z" fill="#b4b4b4"/>
+  <path d="m261 145c29 0 29 0 29 29h-116c0-29 0-29 29-29z" fill="#7b3000"/>
+  <rect height="87.5" width="116" y="174" x="174" fill="#ff0020"/>
+  <path d="m145 435v-144.5c0-29 0-29 29-29h116c29 0 29 0 29 29v144.5h-29v-144.5h-116v144.5z" fill="#b4b4b4"/>
+  <rect height="29" width="116" y="261" x="174" fill="#7b3000"/>
+  <path d="m145 522v-87c0-29 0-29 29-29h116c29 0 29 0 29 29v87h-29v-87h-116v87z" fill="#7b3000"/>
+  <path d="m290 174h43.5l101.5-101.5v232l-101.5-101.5h-43.5z" fill="#ffca20"/>
+ </g>
+</svg>

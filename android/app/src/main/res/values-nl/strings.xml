@@ -14,11 +14,6 @@
     <string name="prefs_gps_logging_interval">GPS logging interval</string>
 	<string name="prefs_gps_logging_interval_summary">"Gebruik 0 voor de kortst mogelijke (invloed op de levensduur van de batterij) "</string>
     <string name="prefs_gps_logging_interval_seconds">seconden</string>
-    <string name="prefs_save_gps_track">GPX track opslaan</string>
-	<string name="prefs_save_gps_track_summary">Create a GPX file for each uploaded session.Find
-		gpx tracks in data directory.\n(Note: GPX tracks themselves are never
-		uploaded)
-	</string>
     <string name="prefs_ui">User interface</string>
     <string name="prefs_map_none">Geen</string>
     <string name="prefs_ui_keep_screen_on">Keep screen on</string>
@@ -28,7 +23,7 @@
     <string name="prefs_credentials_user">Login</string>
     <string name="prefs_credentials_user_summary">If you don\'t have an account yet, create on at https://radiocells.org (Required for upload only)</string>
     <string name="prefs_credentials_password">Wachtwoord</string>
-    <string name="prefs_credentials_password_summary" translatable="false"/>
+    <string name="prefs_credentials_password_summary"/>
     <string name="prefs_save_cells">Cellen opslaan</string>
 	<string name="prefs_save_cells_summary">Activate to scan for cells
 	</string>
@@ -239,7 +234,6 @@
     <string name="chart_library">Chart library: GraphView</string>
     <string name="no_map_file_selected">No map file selected!</string>
     <string name="saved_waypoint">Saved waypoint</string>
-    <string name="at">" at "</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="gpx_export_failed">GPX export failed</string>
@@ -269,7 +263,7 @@
     <string name="invalid_download">Invalid download</string>
     <string name="prefs_gpx_verbosity_title">GPX verbosity</string>
     <string name="prefs_gpx_verbosity_summary">Select which details are exported to GPX files</string>
-    <string name="wifi_catalog_up_to_date">Already have the latest version installed!</string>
+    <string name="wifi_catalog_up_to_date">Already have the latest version installed (%s)!</string>
     <string name="waypoint">WP</string>
     <string name="activity_stats_activity">Overview</string>
     <string name="activity_wifi_list_container">Wifis</string>
@@ -280,5 +274,4 @@
     <string name="activity_settings_activity">Preferences</string>
     <string name="activity_credits_activity">Credits</string>
     <string name="error_opening_wifi_catalog">Error while opening wifi catalog</string>
-<string name="prefs_gps"/>
 	</resources>

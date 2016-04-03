@@ -10,8 +10,7 @@
 	<string name="prefs_gps_logging_interval">GPS ログ間隔</string>
 	<string name="prefs_gps_logging_interval_summary">"最短は 0 を使用してください (バッテリーの寿命に影響を与えます) "</string>
 	<string name="prefs_gps_logging_interval_seconds">秒</string>
-	<string name="prefs_save_gps_track">GPX 追跡を保存</string>
-	<string name="prefs_save_gps_track_summary">"アップロード セッションごとに GPX ファイルを作成します。データ ディレクトリで gpx 追跡を見つけます。\n(注: GPX 追跡自体がアップロードされることはありません) "</string>
+	<string name="prefs_save_gpx">GPX 追跡を保存</string>
 	<string name="prefs_ui">ユーザー インターフェイス</string>
 	<string name="prefs_map_none">なし</string>
 	<string name="prefs_ui_keep_screen_on">画面をオンのままにする</string>
@@ -76,7 +75,7 @@
 	<string name="credits">クレジット</string>
 	<string name="map_data_source">マップ データ: Openstreetmap</string>
 	<string name="map_data_license">Odbl ライセンス</string>
-	<string name="other_credits">"いくつかの素晴らしいアイデアは、OSMTracker、 stack overflow の議論、その他の多くから得ました "</string>
+	<string name="other_credits">"すべての貢献者と翻訳者のおかげです!\n特に Mapsforge の人々と OSMTracker の開発者に感謝します。 "</string>
 	<string name="bug_report">"常に最新バージョン (およびバグ追跡システム) を見つける "</string>
 	<string name="subtitle">OpenBmap Wifi &amp; 基地局ログ取得</string>
 	<string name="sessions">セッション</string>
@@ -127,7 +126,7 @@
 	<string name="app_description">Openbmap.org Wifi と基地局のログ取得</string>
 	<string name="error">エラー</string>
 	<string name="no_data_connection">データ接続がありません!</string>
-	<string name="radiobeacon_licence_caption">クライアント ライセンス</string>
+	<string name="radiobeacon_licence_caption">クライアント</string>
 	<string name="session_uploaded">セッションをアップロードしました</string>
 	<string name="do_you_want_to_delete_this_session">このセッションを削除しますか?</string>
 	<string name="do_you_want_to_delete_processed_sessions">アップロードしたセッションを削除しますか?</string>
@@ -206,7 +205,7 @@
 	<string name="invalid_download">無効なダウンロード</string>
 	<string name="prefs_gpx_verbosity_title">GPX の詳細</string>
 	<string name="prefs_gpx_verbosity_summary">GPX ファイルにエクスポートする詳細を選択します</string>
-	<string name="wifi_catalog_up_to_date">すでに最新バージョンがインストールされています!</string>
+	<string name="wifi_catalog_up_to_date">すでに最新バージョンがインストールされています (%s)!</string>
 	<string name="waypoint">WP</string>
 	<string name="activity_stats_activity">概要</string>
 	<string name="activity_wifi_list_container">Wifi</string>
@@ -218,4 +217,10 @@
 	<string name="activity_credits_activity">クレジット</string>
 	<string name="error_opening_wifi_catalog">Wifi カタログを開く際にエラーが発生しました</string>
 	<string name="error_accessing_wifi_catalog">Wifi カタログにアクセス中にエラーが発生しました</string>
+<string name="build_signature">"ビルド署名: "</string>
+<string name="prefs_credentials_anonymous_upload">匿名のアップロード</string>
+    <string name="prefs_credentials_anonymous_upload_summary">匿名のアップロードを有効にします</string>
+	<string name="licences">ライセンス</string>
+	<string name="prefs_scan_mode">ワイヤレス スキャン モード</string>
+    <string name="prefs_scan_mode_summary">警告: 高パフォーマンス モードを選択するとバッテリーを消耗します!</string>
 </resources>

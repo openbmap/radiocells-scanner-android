@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.0" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>furniture</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>furniture</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path opacity=".8" fill="#fff" d="m174 116h232c47.39 0 87 40.317 87 87 43.146 29 42.439 87 0 116v58c0 29-29 58-58 58 0 45.268-87 45.976-87 0h-116c0 47.39-87 43.854-87 0-29 0-58-29-58-58v-58c-43.146-29-41.024-87 0-116 0-49.512 40.317-87 87-87z" fill-rule="evenodd"/>
+ <path fill="#00f" d="m116 232c-29 0-29 29-29 29 0 15.027 13.973 29 29 29v87c0 18.712 12.277 29 29 29h14.5c0 14.5 14.5 29 29 29s29-14.5 29-29h145c0 14.5 14.5 29 29 29s29-14.5 29-29h14.5c14.775 0 29-14.043 29-29v-87c14.344 0 29-11.241 29-29 0 0 0-29-29-29s-58 29-58 87h-232c0-58-29-87-58-87zm58-87c-29 0-58 29-58 58 58 0 87 45.705 87 87h174c0-44.027 29-87 87-87 0-29-29-58-58-58z"/>
+</svg>

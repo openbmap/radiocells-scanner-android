@@ -108,10 +108,10 @@ public class SessionMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<S
 					+ " FROM " + Schema.TBL_WIFIS + " as w "
 					+ " JOIN " + Schema.TBL_POSITIONS + " as b ON " + Schema.COL_BEGIN_POSITION_ID + " = b." + Schema.COL_ID 
 					+ " WHERE w." + Schema.COL_SESSION_ID + " IN (" + selected + ") AND " 
-					+ " b.longitude >= " + (Double) args[MIN_LON_COL] + " AND "
-					+ " b.longitude <= " + (Double) args[MAX_LON_COL] + " AND " 
-					+ " b.latitude >= " + (Double) args[MIN_LAT_COL] + " AND "
-					+ " b.latitude <= " + (Double) args[MAX_LAT_COL] + " GROUP BY w." + Schema.COL_BSSID;
+					+ " b.longitude >= " + args[MIN_LON_COL] + " AND "
+					+ " b.longitude <= " + args[MAX_LON_COL] + " AND "
+					+ " b.latitude >= " + args[MIN_LAT_COL] + " AND "
+					+ " b.latitude <= " + args[MAX_LAT_COL] + " GROUP BY w." + Schema.COL_BSSID;
 			
 			final Cursor cursor = mDbHelper.getReadableDatabase().rawQuery(query, null);
 			final int colLat = cursor.getColumnIndex(Schema.COL_LATITUDE);

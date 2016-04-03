@@ -121,7 +121,7 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
     @SuppressLint("NewApi")
     private void initDownloadManager() {
 
-        mDownloadManager = (DownloadManager) getContext().getSystemService(getContext().DOWNLOAD_SERVICE);
+        mDownloadManager = (DownloadManager) getContext().getSystemService(Context.DOWNLOAD_SERVICE);
 
         mReceiver = new BroadcastReceiver() {
             @SuppressLint("NewApi")

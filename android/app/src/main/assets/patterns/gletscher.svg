@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>gletscher</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>gletscher</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path d="m0 0v580h580v-580z" fill-rule="evenodd" fill="#d5e7e7"/>
+ <path stroke-linejoin="round" d="m81.654 280.94 36.25-36.25h18.125l36.25 36.25h18.125l36.25-36.25h18.125l36.25 36.25h18.125l36.25-36.25h18.125l36.25 36.25h18.125l36.25-36.25h18.125l36.25 36.25" stroke="#9bb2b2" stroke-linecap="round" stroke-width="18.125" fill="none"/>
+</svg>

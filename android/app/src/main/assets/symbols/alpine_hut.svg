@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="580" width="580" version="1.0" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <title>alpine_hut</title>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title>alpine_hut</dc:title>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g fill-rule="evenodd">
+  <path fill="#333" d="m304.5 116c-8.383 0-14.943 6.9707-20 13l-139.5 161.5h29v144.5c-29-0.5-29-0.5-29 28.5h58l203 0.5h58c0-29 0-29-29-29v-144.5l29-0.5-139.5-160.5c-5.2748-6.4031-11.617-13.5-20-13.5z"/>
+  <path d="m203 290h203v145h-203z" fill="#fff"/>
+  <path d="m215 261h179l-89.5-100z" fill="#ff656a"/>
+ </g>
+</svg>
