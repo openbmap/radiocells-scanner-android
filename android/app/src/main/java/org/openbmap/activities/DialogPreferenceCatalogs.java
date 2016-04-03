@@ -49,8 +49,8 @@ import org.json.JSONObject;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.Radiobeacon;
+import org.openbmap.utils.CatalogDownload;
 import org.openbmap.utils.FileUtils;
-import org.openbmap.utils.MapDownload;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -61,32 +61,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class DialogPreferenceMaps extends DialogPreference implements IMapsListAdapterListener {
-    private static String TAG = DialogPreferenceMaps.class.getSimpleName();
+public class DialogPreferenceCatalogs extends DialogPreference implements ICatalogsListAdapterListener {
 
-    public static final String LIST_DOWNLOADS_URL = Radiobeacon.SERVER_BASE + "/downloads/map_downloads.json";
+    private static String TAG = DialogPreferenceCatalogs.class.getSimpleName();
+
+    public static final String LIST_DOWNLOADS_URL = Radiobeacon.SERVER_BASE + "/downloads/catalog_downloads.json";
 
     private static SharedPreferences pref;
-    private DialogPreferenceMapsListAdapter mAdapter;
+    private DialogPreferenceCatalogsListAdapter mAdapter;
     private final Context mContext;
-    private SparseArray<DialogPreferenceMapsGroup> groups;
-    private List<MapDownload> mOnlineResults;
+    private SparseArray<DialogPreferenceCatalogsGroup> groups;
+    private List<CatalogDownload> mOnlineResults;
     private DownloadManager mDownloadManager;
 
     private ProgressDialog checkDialog;
 
     /*
-     * Id of the active map download or -1 if no active download
+     * Id of the active Catalog download or -1 if no active download
      */
-    private long mCurrentMapDownloadId = -1;
+    private long mCurrentCatalogDownloadId = -1;
 
     private BroadcastReceiver mReceiver = null;
 
-    public DialogPreferenceMaps(Context context, AttributeSet attrs) {
+    public DialogPreferenceCatalogs(Context context, AttributeSet attrs) {
         super(context, attrs);
         mContext = context;
         pref = PreferenceManager.getDefaultSharedPreferences(context);
-        setDialogLayoutResource(R.layout.dialogpreference_maps);
+        setDialogLayoutResource(R.layout.dialogpreference_catalogs);
 
         initDownloadManager();
     }
@@ -96,14 +97,14 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
         super.onBindDialogView(v);
         groups = new SparseArray<>();
         ExpandableListView listView = (ExpandableListView) v.findViewById(R.id.list);
-        mAdapter = new DialogPreferenceMapsListAdapter(getContext(), groups, this);
+        mAdapter = new DialogPreferenceCatalogsListAdapter(getContext(), groups, this);
         listView.setAdapter(mAdapter);
 
         if (checkDialog == null || !checkDialog.isShowing()) {
             checkDialog = new ProgressDialog(getContext());
         }
-        // retrieve online maps
-        GetAvailableMapsTask data = new GetAvailableMapsTask();
+        // retrieve online Catalogs
+        GetAvailableCatalogsTask data = new GetAvailableCatalogsTask();
         data.execute();
     }
 
@@ -149,7 +150,7 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
     }
 
     /**
-     * Selects downloaded file either as wifi catalog / active map (based on file extension).
+     * Selects downloaded file either as wifi catalog / active Catalog (based on file extension).
      * @param file
      */
     public final void handleDownloads(String file) {
@@ -161,30 +162,30 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
         // replace prefix file:// in filename string
         file = file.replace("file://", "");
 
-        if (extension.equals(org.openbmap.Preferences.MAP_FILE_EXTENSION)) {
-            mCurrentMapDownloadId = -1;
+        if (extension.equals(Preferences.CATALOG_FILE_EXTENSION)) {
+            mCurrentCatalogDownloadId = -1;
             if (file.indexOf(getContext().getExternalCacheDir().getPath()) > -1) {
                 // file has been downloaded to cache folder, so move..
-                file = moveToFolder(file, FileUtils.getMapFolder(getContext()).getAbsolutePath());
+                file = moveToFolder(file, FileUtils.getCatalogFolder(getContext()).getAbsolutePath());
             }
 
-            //-initActiveMapControl();
-            // handling map files
-            activateMap(file);
+            //-initActiveCatalogControl();
+            // handling Catalog files
+            activateCatalog(file);
         }
     }
 
     /**
-     * Changes map preference item to given filename.
+     * Changes Catalog preference item to given filename.
      * Helper method to activate map after successful download
      *
      * @param file absolute filename (including path)
      */
-    private void activateMap(String file) {
+    private void activateCatalog(String file) {
         Log.d(TAG, "Activating " + new File(file).getName());
-        SharedPreferences sharedPref = getContext().getSharedPreferences(Preferences.KEY_MAP_FILE, Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = getContext().getSharedPreferences(Preferences.KEY_CATALOG_FILE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(Preferences.KEY_MAP_FILE, new File(file).getName());
+        editor.putString(Preferences.KEY_CATALOG_FILE, new File(file).getName());
         editor.commit();
     }
 
@@ -210,19 +211,19 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
     }
 
     public void populateListView() {
-        DialogPreferenceMapsGroup group = null;
+        DialogPreferenceCatalogsGroup group = null;
         String name;
         int j = 0;
         for (int i = 0; i < mOnlineResults.size(); i++) {
             if (i==0) {
                 name = (mOnlineResults.get(i).getRegion() != null) ? mOnlineResults.get(i).getRegion() : "Unsorted";
-                group = new DialogPreferenceMapsGroup(name);
+                group = new DialogPreferenceCatalogsGroup(name);
                 Log.d(TAG, "Added group " + name);
             } else if (!mOnlineResults.get(i).getRegion().equals(mOnlineResults.get(i - 1).getRegion())) {
                 name = (mOnlineResults.get(i).getRegion() != null) ? mOnlineResults.get(i).getRegion() : "Unsorted";
                 Log.d(TAG, "Added group " + name);
                 groups.append(groups.size(), group);
-                group = new DialogPreferenceMapsGroup(name);
+                group = new DialogPreferenceCatalogsGroup(name);
             }
             group.children.add(mOnlineResults.get(i));
         }
@@ -232,20 +233,20 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
     }
 
     @Override
-    public void onItemClicked(MapDownload map) {
-        if (mCurrentMapDownloadId > -1) {
+    public void onItemClicked(CatalogDownload catalog) {
+        if (mCurrentCatalogDownloadId > -1) {
             Toast.makeText(getContext(), getContext().getString(R.string.other_download_active), Toast.LENGTH_LONG).show();
             return;
         }
 
-        if (map.getUrl() == null) {
+        if (catalog.getUrl() == null) {
             Toast.makeText(getContext(), R.string.invalid_download, Toast.LENGTH_LONG).show();
             return;
         }
 
-        Toast.makeText(getContext(), getContext().getString(R.string.downloading) + " " + map.getUrl(), Toast.LENGTH_LONG).show();
+        Toast.makeText(getContext(), getContext().getString(R.string.downloading) + " " + catalog.getUrl(), Toast.LENGTH_LONG).show();
         // try to create directory
-        final File folder = FileUtils.getMapFolder(getContext());
+        final File folder = FileUtils.getCatalogFolder(getContext());
         Log.d(TAG, "Download destination" + folder.getAbsolutePath());
 
         boolean folderAccessible = false;
@@ -257,28 +258,28 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
             folderAccessible = folder.mkdirs();
         }
         if (folderAccessible) {
-            final String filename = map.getUrl().substring(map.getUrl().toString().lastIndexOf('/') + 1);
+            final String filename = catalog.getUrl().substring(catalog.getUrl().toString().lastIndexOf('/') + 1);
 
             final File target = new File(folder.getAbsolutePath() + File.separator + filename);
             if (target.exists()) {
-                Log.i(TAG, "Map file " + filename + " already exists. Overwriting..");
+                Log.i(TAG, "Catalog file " + filename + " already exists. Overwriting..");
                 target.delete();
             }
 
             try {
                 // try to download to target. If target isn't below Environment.getExternalStorageDirectory(),
                 // e.g. on second SD card a security exception is thrown
-                final DownloadManager.Request request = new DownloadManager.Request(Uri.parse(map.getUrl().toString()));
+                final DownloadManager.Request request = new DownloadManager.Request(Uri.parse(Radiobeacon.SERVER_BASE + catalog.getUrl().toString()));
                 request.setDestinationUri(Uri.fromFile(target));
-                mCurrentMapDownloadId = mDownloadManager.enqueue(request);
+                mCurrentCatalogDownloadId = mDownloadManager.enqueue(request);
             } catch (final SecurityException sec) {
                 // download to temp dir and try to move to target later
                 Log.w(TAG, "Security exception, can't write to " + target + ", using " + getContext().getExternalCacheDir());
                 final File tempFile = new File(getContext().getExternalCacheDir() + File.separator + filename);
 
-                final DownloadManager.Request request = new DownloadManager.Request(Uri.parse(map.getUrl().toString()));
+                final DownloadManager.Request request = new DownloadManager.Request(Uri.parse(catalog.getUrl().toString()));
                 request.setDestinationUri(Uri.fromFile(tempFile));
-                mCurrentMapDownloadId = mDownloadManager.enqueue(request);
+                mCurrentCatalogDownloadId = mDownloadManager.enqueue(request);
                 getDialog().dismiss();
             }
         } else {
@@ -287,7 +288,7 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
         getDialog().dismiss();
     }
 
-    private class GetAvailableMapsTask extends AsyncTask<String, Void, List<MapDownload>> {
+    private class GetAvailableCatalogsTask extends AsyncTask<String, Void, List<CatalogDownload>> {
 
         @Override
         protected void onPreExecute() {
@@ -299,8 +300,8 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
         }
 
         @Override
-        protected List<MapDownload> doInBackground(String... params) {
-            List<MapDownload> result = new ArrayList<MapDownload>();
+        protected List<CatalogDownload> doInBackground(String... params) {
+            List<CatalogDownload> result = new ArrayList<CatalogDownload>();
 
             DefaultHttpClient httpclient = new DefaultHttpClient(new BasicHttpParams());
             HttpGet httpGet = new HttpGet(LIST_DOWNLOADS_URL);
@@ -323,7 +324,7 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
                 }
 
                 JSONObject jObject = new JSONObject(sb.toString());
-                JSONArray arr = jObject.getJSONArray("map_downloads");
+                JSONArray arr = jObject.getJSONArray("downloads");
                 for (int i = 0; i < arr.length(); i++) {
                     result.add(jsonToDownload(arr.getJSONObject(i)));
                 }
@@ -344,7 +345,7 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
         }
 
         @Override
-        protected void onPostExecute(List<MapDownload> result) {
+        protected void onPostExecute(List<CatalogDownload> result) {
             super.onPostExecute(result);
 
             if (checkDialog.isShowing()) {
@@ -356,18 +357,18 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
         }
 
         /**
-         * Converts server json in a MapDownload record
+         * Converts server json in a CatalogDownload record
          * @param obj server reply
          * @return parsed server reply
          * @throws JSONException
          */
-        private MapDownload jsonToDownload(JSONObject obj) throws JSONException {
-            String updated = obj.getString("updated");
+        private CatalogDownload jsonToDownload(JSONObject obj) throws JSONException {
+            String updated = obj.getString("last_updated");
             String title = obj.getString("title");
             String region = obj.getString("region");
             String url = obj.getString("url");
             String id = obj.getString("id");
-            return new MapDownload(title, region, url, id, updated);
+            return new CatalogDownload(title, region, url, id, updated);
         }
     }
 }

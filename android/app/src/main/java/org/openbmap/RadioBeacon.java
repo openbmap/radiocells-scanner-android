@@ -189,6 +189,11 @@ public final class Radiobeacon {
 	public static final int DATABASE_VERSION = 13;
 
     /**
+     * Server host name excluding final slash
+     */
+	public static final String SERVER_BASE = "https://radiocells.org";
+
+	/**
 	 * Private dummy constructor
 	 */
 	private Radiobeacon() {

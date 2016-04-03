@@ -21,16 +21,12 @@ package org.openbmap.activities;
 import android.annotation.SuppressLint;
 import android.app.DownloadManager;
 import android.app.DownloadManager.Query;
-import android.app.DownloadManager.Request;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
@@ -39,28 +35,19 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
-import android.widget.Toast;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.BasicHttpParams;
-import org.json.JSONObject;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.utils.FileUtils;
-import org.openbmap.utils.MapUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import static android.os.Build.VERSION.SDK_INT;
+import static android.os.Build.VERSION_CODES.GINGERBREAD;
 
 /**
  * Preferences activity.
@@ -91,11 +78,10 @@ public class SettingsActivity extends PreferenceActivity {
         addPreferencesFromResource(R.xml.preferences);
 
         // with versions >= GINGERBREAD use download manager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+        if (SDK_INT >= GINGERBREAD) {
             initDownloadManager();
         }
 
-        initCatalogDownloadControl();
         initActiveCatalogControl();
 
         initActiveMapControl();
@@ -105,6 +91,7 @@ public class SettingsActivity extends PreferenceActivity {
         initAdvancedSettingsButton();
 
         DialogPreferenceMaps maps = (DialogPreferenceMaps) findPreference(Preferences.KEY_MAPS_DIALOG);
+        DialogPreferenceCatalogs catalogs = (DialogPreferenceCatalogs) findPreference(Preferences.KEY_CATALOGS_DIALOG);
     }
 
     /**
@@ -202,7 +189,7 @@ public class SettingsActivity extends PreferenceActivity {
         String[] values;
 
         // Check for presence of maps directory
-        final File folder = MapUtils.getMapFolder(SettingsActivity.this);
+        final File folder = FileUtils.getMapFolder(SettingsActivity.this);
         Log.d(TAG, "Listing maps in " + folder.getAbsolutePath());
 
         // List each map file
@@ -240,137 +227,6 @@ public class SettingsActivity extends PreferenceActivity {
     }
 
     /**
-     * Initializes wifi catalog source preference
-     */
-    private void initCatalogDownloadControl() {
-        final Preference pref = findPreference(Preferences.KEY_DOWNLOAD_WIFI_CATALOG);
-        pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(final Preference preference) {
-                if (!getLocalCatalogVersion().equals(Preferences.CATALOG_VERSION_NONE) && !isNewerCatalogAvailable(getLocalCatalogVersion())) {
-                    Log.d(TAG, "Latest version already installed" + getLocalCatalogVersion());
-                    Toast.makeText(SettingsActivity.this, getString(R.string.wifi_catalog_up_to_date), Toast.LENGTH_LONG).show();
-                    return true;
-                } else {
-                    Log.v(TAG, "Local version " + getLocalCatalogVersion() + ", downloading newer version");
-                }
-
-                if (mCurrentCatalogDownloadId > -1  ) {
-                    Toast.makeText(SettingsActivity.this, getString(R.string.other_download_active), Toast.LENGTH_LONG).show();
-                    return true;
-                }
-
-                // try to create directory
-                final File folder = getCatalogFolder();
-
-                boolean folderAccessible = false;
-                if (folder.exists() && folder.canWrite()) {
-                    Log.i(TAG, "Folder writable " + folder);
-                    folderAccessible = true;
-                }
-
-                if (!folder.exists()) {
-                    Log.i(TAG, "Creating folder" + folder);
-                    folderAccessible = folder.mkdirs();
-                }
-                if (folderAccessible) {
-                    setLocalCatalogVersion(Preferences.CATALOG_VERSION_NONE);
-
-                    final File target = new File(folder.getAbsolutePath() + File.separator + Preferences.CATALOG_FILE);
-                    if (target.exists()) {
-                        Log.i(TAG, "Catalog already exists. Overwriting..");
-                        target.delete();
-                    }
-
-                    try {
-                        // try to download to target. If target isn't below Environment.getExternalStorageDirectory(),
-                        // e.g. on second SD card a security exception is thrown
-                        Log.i(TAG, "Downloading " + Preferences.CATALOG_DOWNLOAD_URL);
-                        final Request request = new Request(Uri.parse(Preferences.CATALOG_DOWNLOAD_URL));
-                        request.setDestinationUri(Uri.fromFile(target));
-                        mCurrentCatalogDownloadId = mDownloadManager.enqueue(request);
-                    } catch (final SecurityException sec) {
-                        Log.e(TAG, "Security exception: " + sec.getMessage());
-                        mCurrentCatalogDownloadId = -1;
-                        // download to temp dir and try to move to target later
-                        Log.w(TAG, "Security exception, can't write to " + target + ", using " + SettingsActivity.this.getExternalCacheDir()
-                                + File.separator + Preferences.CATALOG_FILE);
-                        final File tempFile = new File(SettingsActivity.this.getExternalCacheDir() + File.separator + Preferences.CATALOG_FILE);
-                        final Request request = new Request(Uri.parse(Preferences.CATALOG_DOWNLOAD_URL));
-                        request.setDestinationUri(Uri.fromFile(tempFile));
-                        mDownloadManager.enqueue(request);
-                    }
-                } else {
-                    mCurrentCatalogDownloadId = -1;
-                    Toast.makeText(preference.getContext(), R.string.error_save_file_failed, Toast.LENGTH_SHORT).show();
-                }
-                return true;
-            }
-        });
-    }
-
-    private String getServerCatalogVersion(){
-        Log.i(TAG, "Checking server version");
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
-
-        DefaultHttpClient httpclient = new DefaultHttpClient(new BasicHttpParams());
-        HttpPost httppost = new HttpPost(Preferences.CATALOG_VERSION_URL);
-        httppost.setHeader("Content-type", "application/json");
-
-        InputStream inputStream = null;
-        String result = null;
-        try {
-            HttpResponse response = httpclient.execute(httppost);
-            HttpEntity entity = response.getEntity();
-
-            inputStream = entity.getContent();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
-            StringBuilder sb = new StringBuilder();
-
-            String line = null;
-            while ((line = reader.readLine()) != null)
-            {
-                sb.append(line + "\n");
-            }
-            JSONObject jObj = new JSONObject(sb.toString());
-            return jObj.getString("version");
-        } catch (Exception e) {
-            Log.e(TAG, "Error getting server version");
-        } finally {
-            try{
-                if (inputStream != null) {inputStream.close();}
-            } catch (Exception squish) {
-                return Preferences.SERVER_CATALOG_VERSION_NONE;
-            }
-        }
-        return Preferences.SERVER_CATALOG_VERSION_NONE;
-    }
-
-    /**
-     * Compares local and server wifi catalog versions
-     * @param local
-     * @return true, if server has a newer version
-     */
-    private boolean isNewerCatalogAvailable(String local){
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            Date currentDate = sdf.parse(local);
-            Date serverVersion = sdf.parse(getServerCatalogVersion());
-            if (serverVersion != null && currentDate != null && serverVersion.after(currentDate)) {
-                Log.i(TAG, String.format("Local version %s: Newer version available %s", local, serverVersion));
-                return  true;
-            } else {
-                Log.d(TAG, String.format(getString(R.string.wifi_catalog_up_to_date), local));
-                return false;
-            }
-        } catch  (ParseException e) {
-            Log.e(TAG, "Error parsing version");
-            return false;
-        }
-    }
-
-    /**
      * Gets a file reference for wifi catalog folder
      * @return map folder
      */
@@ -389,6 +245,10 @@ public class SettingsActivity extends PreferenceActivity {
         return PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_CATALOG_VERSION, Preferences.CATALOG_VERSION_NONE);
     }
 
+    /**
+     * Saves local catalog version
+     * @param version
+     */
     private void setLocalCatalogVersion(String version) {
         PreferenceManager.getDefaultSharedPreferences(this).edit().putString(Preferences.KEY_CATALOG_VERSION, version).commit();
     }
@@ -401,7 +261,7 @@ public class SettingsActivity extends PreferenceActivity {
         String[] values;
 
         // Check for presence of database directory
-        final File folder = MapUtils.getCatalogFolder(SettingsActivity.this);
+        final File folder = FileUtils.getCatalogFolder(SettingsActivity.this);
         Log.d(TAG, "Listing catalogs in " + folder.getAbsolutePath());
 
         if (folder.exists() && folder.canRead()) {

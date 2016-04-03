@@ -21,10 +21,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
-import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -36,6 +33,7 @@ import org.mapsforge.core.model.LatLong;
 import org.mapsforge.core.model.Point;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
 import org.mapsforge.map.android.rendertheme.AssetsRenderTheme;
+import org.mapsforge.map.datastore.MapDataStore;
 import org.mapsforge.map.layer.Layer;
 import org.mapsforge.map.layer.cache.FileSystemTileCache;
 import org.mapsforge.map.layer.cache.InMemoryTileCache;
@@ -44,7 +42,6 @@ import org.mapsforge.map.layer.cache.TwoLevelTileCache;
 import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.layer.renderer.TileRendererLayer;
 import org.mapsforge.map.model.MapViewPosition;
-import org.mapsforge.map.datastore.MapDataStore;
 import org.mapsforge.map.reader.MapFile;
 import org.mapsforge.map.rendertheme.InternalRenderTheme;
 import org.mapsforge.map.rendertheme.XmlRenderTheme;
@@ -52,6 +49,9 @@ import org.openbmap.Preferences;
 
 import java.io.File;
 import java.io.IOException;
+
+import static android.os.Build.VERSION.SDK_INT;
+import static android.os.Build.VERSION_CODES.HONEYCOMB;
 
 /**
  * Utility functions that can be used across different mapsforge based activities
@@ -66,9 +66,9 @@ public final class MapUtils {
 	 * @param a
 	 *            the current activity
 	 */
-	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+	@TargetApi(HONEYCOMB)
 	public static void enableHome(final Activity a) {
-		if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+		if (SDK_INT >= HONEYCOMB) {
 			// Show the Up button in the action bar.
 			a.getActionBar().setDisplayHomeAsUpEnabled(true);
 		}
@@ -110,18 +110,6 @@ public final class MapUtils {
 		paint.setStyle(style);
 		return paint;
 	}
-
-	/**
-	 * @param c
-	 *            the Android context
-	 * @return a new cache
-	 */
-	/*static TileCache createTileCache(Context c, String id) {
-		TileCache firstLevelTileCache = new InMemoryTileCache(32);
-		File cacheDirectory = c.getDir(id, Context.MODE_PRIVATE);
-		TileCache secondLevelTileCache = new FileSystemTileCache(1024, cacheDirectory, AndroidGraphicFactory.INSTANCE);
-		return new TwoLevelTileCache(firstLevelTileCache, secondLevelTileCache);
-	};*/
 
 	/**
 	 * Creates a tile layer, which optionally supports long press actions and custom render themes
@@ -210,60 +198,19 @@ public final class MapUtils {
 	}
 
 	/**
-	 * Gets a file reference for map folder
-	 * @return map folder
-	 */
-	@NonNull
-	public static File getMapFolder(final Context context) {
-        externalStorageWritable();
-		return new File(PreferenceManager.getDefaultSharedPreferences(context).getString(Preferences.KEY_MAP_FOLDER,
-				context.getExternalFilesDir(null) + File.separator + Preferences.MAPS_SUBDIR + File.separator));
-	}
-
-    /**
-     * Gets a file reference for catalog folder
-     * @return map folder
-     */
-    @NonNull
-    public static File getCatalogFolder(final Context context) {
-        externalStorageWritable();
-        return new File(PreferenceManager.getDefaultSharedPreferences(context).getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
-                context.getExternalFilesDir(null) + File.separator + Preferences.CATALOG_SUBDIR + File.separator));
-    }
-
-    private static boolean externalStorageWritable() {
-        String state = Environment.getExternalStorageState();
-
-        if (Environment.MEDIA_MOUNTED.equals(state)) {
-            // We can read and write the media
-            Log.d(TAG, "External storage properly mounted");
-            return true;
-        } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-            // We can only read the media
-            Log.d(TAG, "External storage mounted readonly");
-            return false;
-        } else {
-            // Something else is wrong. It may be one of many other states, but all we need
-            //  to know is we can neither read nor write
-            Log.d(TAG, "External storage not available");
-            return false;
-        }
-    }
-
-	/**
 	 * Opens map file
 	 * @param context
 	 * @return
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public static MapFile getMapFile(final Context context) {
 		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		File file = new File(getMapFolder(context).getAbsolutePath(),
+		File file = new File(FileUtils.getMapFolder(context).getAbsolutePath(),
 				prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE));
-		
+
 		if (file.exists()) {
 			return new MapFile(file);
-		} else { 
+		} else {
 			Log.e(TAG, "Map file doesn't exist");
 			return null;
 		}
