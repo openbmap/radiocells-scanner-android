@@ -126,6 +126,8 @@ public final class SsidBlackListBootstraper {
 		{"Swiss Post Auto Wifi", "PostAuto"},
 		{"Swiss Post Auto Wifi French", "CarPostal"},
 		{"Swiss Post Auto Wifi Italian", "AutoPostale"},
+		{"Huawei Smartphones", "Huawei"},
+		{"Huawei Smartphones", "huawei"}
 		
 		// mobile hotspots
 		{"German 1und1 mobile hotspots", "1und1 mobile"},
