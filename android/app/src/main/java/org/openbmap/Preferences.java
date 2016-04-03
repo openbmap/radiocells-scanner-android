@@ -25,8 +25,11 @@ public final class Preferences {
 	// 'Button id' Advanced settings
 	public static final String KEY_ADVANCED_SETTINGS = "advanced_settings";
 
-	// 'Button id' Maps preference
+	// 'Button id' map download preference
 	public static final String KEY_MAPS_DIALOG = "maps_dialog";
+
+	// 'Button id' catalog download preference
+	public static final String KEY_CATALOGS_DIALOG = "catalogs_dialog";
 
 	public static final String KEY_GPS_LOGGING_INTERVAL = "gps.interval";
 
@@ -306,7 +309,7 @@ public final class Preferences {
 	/**
 	 * URL, where wifi catalog with openbmap's preprocessed wifi positions can be downloaded
 	 */
-	public static final String CATALOG_DOWNLOAD_URL = "https://www.radiocells.org/static/openbmap.sqlite";
+	public static final String CATALOG_DOWNLOAD_URL = Radiobeacon.SERVER_BASE + "/static/openbmap.sqlite";
 	
 	/**
 	 * Filename catalog database
@@ -316,17 +319,12 @@ public final class Preferences {
 	/**
 	 * URL, which is called to check whether this client version is up-to-date
 	 */
-	public static final String VERSION_CHECK_URL = "https://radiocells.org/uploads/version.xml";
-
-    /**
-     * URL to check for newer catalog files
-     */
-    public static final String CATALOG_VERSION_URL = "https://radiocells.org/default/database_version.json";
+	public static final String VERSION_CHECK_URL = Radiobeacon.SERVER_BASE + "/uploads/version.xml";
 
     /**
      * URL, which is called to validate user credentials
      */
-	public static final String PASSWORD_VALIDATION_URL = "https://radiocells.org/uploads/check_login";
+	public static final String PASSWORD_VALIDATION_URL = Radiobeacon.SERVER_BASE + "/uploads/check_login";
 
 	/**
 	 * Mapsforge render theme

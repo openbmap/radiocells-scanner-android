@@ -22,7 +22,11 @@ import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.os.Environment;
+import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.util.Log;
+
+import org.openbmap.Preferences;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -184,4 +188,49 @@ public final class FileUtils {
 
 	}
 
+	/**
+	 * Gets a file reference for map folder
+	 * @return map folder
+	 */
+	@NonNull
+	public static File getMapFolder(final Context context) {
+        infoExternalStoragePermission();
+
+		return new File(PreferenceManager.getDefaultSharedPreferences(context).getString(Preferences.KEY_MAP_FOLDER,
+				context.getExternalFilesDir(null) + File.separator + Preferences.MAPS_SUBDIR + File.separator));
+	}
+
+	/**
+     * Gets a file reference for catalog folder
+     * @return map folder
+     */
+    @NonNull
+    public static File getCatalogFolder(final Context context) {
+        infoExternalStoragePermission();
+        return new File(PreferenceManager.getDefaultSharedPreferences(context).getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
+                context.getExternalFilesDir(null) + File.separator + Preferences.CATALOG_SUBDIR + File.separator));
+    }
+
+    /**
+     * Prints external storage permssions
+     * @return true if external storage mounted writable
+     */
+	private static boolean infoExternalStoragePermission() {
+        String state = Environment.getExternalStorageState();
+
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            // We can read and write the media
+            Log.i(TAG, "External storage properly mounted");
+            return true;
+        } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+            // We can only read the media
+            Log.i(TAG, "External storage mounted readonly");
+            return false;
+        } else {
+            // Something else is wrong. It may be one of many other states, but all we need
+            //  to know is we can neither read nor write
+            Log.i(TAG, "External storage not available");
+            return false;
+        }
+    }
 }

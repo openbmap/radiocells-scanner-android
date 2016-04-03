@@ -126,7 +126,7 @@
         </service>
 
         <provider
-            android:name=".db.RadioBeaconContentProvider"
+            android:name=".db.ContentProvider"
             android:authorities="org.openbmap.provider"
             android:exported="false" >
         </provider>

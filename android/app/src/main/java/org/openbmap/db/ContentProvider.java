@@ -18,7 +18,6 @@
 
 package org.openbmap.db;
 
-import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
@@ -35,11 +34,11 @@ import java.util.List;
 
 /**
  * Content provider
- * {@link ContentProvider} mechanism.
+ * {@link android.content.ContentProvider} mechanism.
  */
-public class RadioBeaconContentProvider extends ContentProvider {
+public class ContentProvider extends android.content.ContentProvider {
 
-	private static final String TAG = RadioBeaconContentProvider.class.getSimpleName();
+	private static final String TAG = ContentProvider.class.getSimpleName();
 
 	/**
 	 * Authority for Uris
@@ -199,7 +198,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 			final long rowId = mDbHelper.getWritableDatabase().insert(Schema.TBL_CELLS, null, values);
 			if (rowId > 0) {
 				final Uri cellUri = ContentUris.withAppendedId(baseUri, rowId);
-				getContext().getContentResolver().notifyChange(RadioBeaconContentProvider.CONTENT_URI_CELL, null);
+				getContext().getContentResolver().notifyChange(ContentProvider.CONTENT_URI_CELL, null);
 				return cellUri;
 			}
 		} else {
@@ -219,7 +218,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 			final long rowId = mDbHelper.getWritableDatabase().insert(Schema.TBL_WIFIS, null, values);
 			if (rowId > 0) {
 				final Uri wifiUri = ContentUris.withAppendedId(baseUri, rowId);
-				getContext().getContentResolver().notifyChange(RadioBeaconContentProvider.CONTENT_URI_WIFI, null);
+				getContext().getContentResolver().notifyChange(ContentProvider.CONTENT_URI_WIFI, null);
 				return wifiUri;
 			}
 		} else {
@@ -242,7 +241,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 			final long rowId = mDbHelper.getWritableDatabase().insert(Schema.TBL_POSITIONS, null, values);
 			if (rowId > 0) {
 				final Uri positionUri = ContentUris.withAppendedId(baseUri, rowId);
-				getContext().getContentResolver().notifyChange(RadioBeaconContentProvider.CONTENT_URI_POSITION, null);
+				getContext().getContentResolver().notifyChange(ContentProvider.CONTENT_URI_POSITION, null);
 				return positionUri;
 			}
 		} else {
@@ -262,7 +261,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 			final long rowId = mDbHelper.getWritableDatabase().insert(Schema.TBL_LOGS, null, values);
 			if (rowId > 0) {
 				final Uri logUri = ContentUris.withAppendedId(baseUri, rowId);
-				getContext().getContentResolver().notifyChange(RadioBeaconContentProvider.CONTENT_URI_LOGFILE, null);
+				getContext().getContentResolver().notifyChange(ContentProvider.CONTENT_URI_LOGFILE, null);
 				return logUri;
 			}
 		} else {
@@ -283,7 +282,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
 		final long rowId = mDbHelper.getWritableDatabase().insert(Schema.TBL_SESSIONS, null, values);
 		if (rowId > 0) {
 			final Uri sessionUri = ContentUris.withAppendedId(baseUri, rowId);
-			getContext().getContentResolver().notifyChange(RadioBeaconContentProvider.CONTENT_URI_SESSION, null);
+			getContext().getContentResolver().notifyChange(ContentProvider.CONTENT_URI_SESSION, null);
 			return sessionUri;
 		}
 		//} else {
@@ -303,13 +302,13 @@ public class RadioBeaconContentProvider extends ContentProvider {
 		switch (uriMatcher.match(uri)) {
 			case Schema.URI_CODE_WIFIS:
 				// Returns all recorded wifis.
-				return queryTable(RadioBeaconContentProvider.CONTENT_URI_WIFI, Schema.TBL_WIFIS, projection, selectionIn, selectionArgsIn, sortOrder, null, null);
+				return queryTable(ContentProvider.CONTENT_URI_WIFI, Schema.TBL_WIFIS, projection, selectionIn, selectionArgsIn, sortOrder, null, null);
 			case Schema.URI_CODE_WIFIS_EXTENDED:
 				// Returns all wifis including position data
-				return queryTable(RadioBeaconContentProvider.CONTENT_URI_WIFI_EXTENDED, Schema.VIEW_WIFIS_EXTENDED, projection, selectionIn, selectionArgsIn, sortOrder, null, null);
+				return queryTable(ContentProvider.CONTENT_URI_WIFI_EXTENDED, Schema.VIEW_WIFIS_EXTENDED, projection, selectionIn, selectionArgsIn, sortOrder, null, null);
 			case Schema.URI_CODE_CELLS_EXTENDED:
 				// Returns all wifis including position data
-				return queryTable(RadioBeaconContentProvider.CONTENT_URI_CELL_EXTENDED, Schema.VIEW_CELLS_EXTENDED, projection, selectionIn, selectionArgsIn, sortOrder, null, null);
+				return queryTable(ContentProvider.CONTENT_URI_CELL_EXTENDED, Schema.VIEW_CELLS_EXTENDED, projection, selectionIn, selectionArgsIn, sortOrder, null, null);
 
 			case Schema.URI_CODE_WIFI_OVERVIEW:
 				/**
@@ -344,7 +343,7 @@ public class RadioBeaconContentProvider extends ContentProvider {
                         null);
 			case Schema.URI_CODE_WIFI_ID:
 				// returns given wifi
-				return queryTable(RadioBeaconContentProvider.CONTENT_URI_WIFI,
+				return queryTable(ContentProvider.CONTENT_URI_WIFI,
                         Schema.TBL_WIFIS, projection,
                         addColumntoSelection(Schema.COL_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn),
                         sortOrder,
@@ -352,10 +351,10 @@ public class RadioBeaconContentProvider extends ContentProvider {
                         null);
 			case Schema.URI_CODE_WIFIS_BY_SESSION:
 				// returns wifis for given session.
-				return queryTable(RadioBeaconContentProvider.CONTENT_URI_WIFI, Schema.TBL_WIFIS, projection, addColumntoSelection(Schema.COL_SESSION_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);
+				return queryTable(ContentProvider.CONTENT_URI_WIFI, Schema.TBL_WIFIS, projection, addColumntoSelection(Schema.COL_SESSION_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);
 			case Schema.URI_CODE_CELLS:
 				//  returns all recorded cells.
-				return queryTable(RadioBeaconContentProvider.CONTENT_URI_CELL, Schema.TBL_CELLS, projection, selectionIn, selectionArgsIn, sortOrder, null, null);
+				return queryTable(ContentProvider.CONTENT_URI_CELL, Schema.TBL_CELLS, projection, selectionIn, selectionArgsIn, sortOrder, null, null);
 			case Schema.URI_CODE_CELL_OVERVIEW:
 				/**
 				 *  if several measurements for specific cell are available only strongest
@@ -401,33 +400,33 @@ public class RadioBeaconContentProvider extends ContentProvider {
 
 			case Schema.URI_CODE_CELL_ID:
 				//  Returns given cell.
-				return queryTable(RadioBeaconContentProvider.CONTENT_URI_CELL, Schema.TBL_CELLS, projection, addColumntoSelection(Schema.COL_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);
+				return queryTable(ContentProvider.CONTENT_URI_CELL, Schema.TBL_CELLS, projection, addColumntoSelection(Schema.COL_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);
 			case Schema.URI_CODE_CELLS_BY_SESSION:
 				// Returns cells for given session.
-				return queryTable(RadioBeaconContentProvider.CONTENT_URI_CELL, Schema.TBL_CELLS, projection, addColumntoSelection(Schema.COL_SESSION_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);
+				return queryTable(ContentProvider.CONTENT_URI_CELL, Schema.TBL_CELLS, projection, addColumntoSelection(Schema.COL_SESSION_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);
 			case Schema.URI_CODE_POSITIONS:
 				// Returns all positions.
-				return queryTable(RadioBeaconContentProvider.CONTENT_URI_POSITION, Schema.TBL_POSITIONS, projection, selectionIn, selectionArgsIn, sortOrder, null, null);
+				return queryTable(ContentProvider.CONTENT_URI_POSITION, Schema.TBL_POSITIONS, projection, selectionIn, selectionArgsIn, sortOrder, null, null);
 			case Schema.URI_CODE_POSITION_ID:
 				// returns given position
-				return queryTable(RadioBeaconContentProvider.CONTENT_URI_POSITION, Schema.TBL_POSITIONS, projection, addColumntoSelection(Schema.COL_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);
+				return queryTable(ContentProvider.CONTENT_URI_POSITION, Schema.TBL_POSITIONS, projection, addColumntoSelection(Schema.COL_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);
             case Schema.URI_CODE_WAYPOINTS_BY_SESSION:
                 // returns session's trackpoints (i.e long press points).
                 String column = addColumntoSelection(Schema.COL_SESSION_ID, selectionIn);
                 column = addColumntoSelection(Schema.COL_SOURCE, column);
                 String[] args = addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn);
                 args = addtoSelectionArgs(Radiobeacon.PROVIDER_USER_DEFINED, args);
-       		    return queryTable(RadioBeaconContentProvider.CONTENT_URI_POSITION, Schema.TBL_POSITIONS, projection, column, args, sortOrder, null, null);
+       		    return queryTable(ContentProvider.CONTENT_URI_POSITION, Schema.TBL_POSITIONS, projection, column, args, sortOrder, null, null);
             case Schema.URI_CODE_LOGS_BY_SESSION:
 				// Returns all log files for given session.
-				return queryTable(RadioBeaconContentProvider.CONTENT_URI_LOGFILE, Schema.TBL_LOGS, projection, addColumntoSelection(Schema.COL_SESSION_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);
+				return queryTable(ContentProvider.CONTENT_URI_LOGFILE, Schema.TBL_LOGS, projection, addColumntoSelection(Schema.COL_SESSION_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);
 			case Schema.URI_CODE_SESSIONS:
 				// Returns all log files.
-				return queryTable(RadioBeaconContentProvider.CONTENT_URI_SESSION, Schema.TBL_SESSIONS, projection, selectionIn, selectionArgsIn, sortOrder, null, null);
+				return queryTable(ContentProvider.CONTENT_URI_SESSION, Schema.TBL_SESSIONS, projection, selectionIn, selectionArgsIn, sortOrder, null, null);
 			case Schema.URI_CODE_SESSION_ID:
-				return queryTable(RadioBeaconContentProvider.CONTENT_URI_SESSION, Schema.TBL_SESSIONS, projection, addColumntoSelection(Schema.COL_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);
+				return queryTable(ContentProvider.CONTENT_URI_SESSION, Schema.TBL_SESSIONS, projection, addColumntoSelection(Schema.COL_ID, selectionIn), addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn), sortOrder, null, null);
 			case Schema.URI_CODE_SESSION_ACTIVE:
-				return queryTable(RadioBeaconContentProvider.CONTENT_URI_SESSION, Schema.TBL_SESSIONS, projection, addColumntoSelection(Schema.COL_IS_ACTIVE, selectionIn), addtoSelectionArgs("1", selectionArgsIn), sortOrder, null, null);
+				return queryTable(ContentProvider.CONTENT_URI_SESSION, Schema.TBL_SESSIONS, projection, addColumntoSelection(Schema.COL_IS_ACTIVE, selectionIn), addtoSelectionArgs("1", selectionArgsIn), sortOrder, null, null);
 			default:
 				throw new IllegalArgumentException("Unknown URI: " + uri);
 		}
@@ -555,18 +554,18 @@ public class RadioBeaconContentProvider extends ContentProvider {
 				// Delete selected wifi and delete all related entities (positions etc.).
 				final String wifiId = Long.toString(ContentUris.parseId(uri));
 				final int wRows = mDbHelper.getWritableDatabase().delete(Schema.TBL_WIFIS, Schema.COL_ID + " = ?", new String[] {wifiId});
-				getContext().getContentResolver().notifyChange(RadioBeaconContentProvider.CONTENT_URI_WIFI, null);
+				getContext().getContentResolver().notifyChange(ContentProvider.CONTENT_URI_WIFI, null);
 				return wRows;
 			case Schema.URI_CODE_SESSION_ID:
 				// Deletes selected session.
 				final String sessionId = Long.toString(ContentUris.parseId(uri));
 				final int sRows = mDbHelper.getWritableDatabase().delete(Schema.TBL_SESSIONS, Schema.COL_ID + " = ?", new String[] {sessionId});
-				getContext().getContentResolver().notifyChange(RadioBeaconContentProvider.CONTENT_URI_SESSION, null);
+				getContext().getContentResolver().notifyChange(ContentProvider.CONTENT_URI_SESSION, null);
 				return sRows;
 			case Schema.URI_CODE_SESSIONS:
 				// Deletes all sessions.
 				final int aRows =  mDbHelper.getWritableDatabase().delete(Schema.TBL_SESSIONS, null, null);
-				getContext().getContentResolver().notifyChange(RadioBeaconContentProvider.CONTENT_URI_SESSION, null);
+				getContext().getContentResolver().notifyChange(ContentProvider.CONTENT_URI_SESSION, null);
 				return aRows;
 			default:
 				throw new IllegalArgumentException("Unknown URI: " + uri);

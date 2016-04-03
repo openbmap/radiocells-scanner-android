@@ -42,7 +42,7 @@
 		wifis on the map. This helps you, when you\'re looking for new wifis
 	</string>
 	<string name="prefs_download_wifi_catalog">Download Wifi Catalog</string>
-	<string name="prefs_download_wifi_catalog_summary">Current size (~1 GB)</string>
+	<string name="prefs_download_wifi_catalog_summary">Current size (10-400MB depending on country)</string>
 	<string name="prefs_min_cell_distance">Cell log interval</string>
 	<string name="prefs_min_cell_distance_hint">Minimum distance between two cell scans (in meter)</string>
 	<string name="prefs_min_wifi_distance">Wifi log interval</string>
@@ -296,8 +296,7 @@
 	<string name="prefs_auto_delete_tracks_summary">Delete sessions after successful upload automatically</string>
 	<string name="prefs_get_maps_title">Get offline map</string>
 	<string name="prefs_get_maps_summary">Download offline map</string>
-	<string name="prefs_checking_map_repo">Checking server...</string>
-	<string name="prefs_check_map_repo">Checking server...</string>
+	<string name="prefs_check_server">Checking server...</string>
 	<string name="downloading">Downloading</string>
 	<string name="invalid_download">Invalid download</string>
 	<string name="prefs_gpx_verbosity_title">GPX verbosity</string>

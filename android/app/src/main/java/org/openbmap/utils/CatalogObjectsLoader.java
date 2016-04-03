@@ -24,7 +24,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import org.mapsforge.core.model.LatLong;
-import org.openbmap.db.WifiCatalogDatabaseHelper;
+import org.openbmap.db.CatalogDatabaseHelper;
 
 import java.util.ArrayList;
 
@@ -32,9 +32,9 @@ import java.util.ArrayList;
  * Loads reference wifis asynchronously.
  * Upon completion callback mListener in activity is invoked.
  */
-public class WifiCatalogObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatLong>> {
+public class CatalogObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatLong>> {
 
-	private static final String	TAG	= WifiCatalogObjectsLoader.class.getSimpleName();
+	private static final String	TAG	= CatalogObjectsLoader.class.getSimpleName();
 
     /**
      * Arguments (indices) for doInBackground arguments
@@ -61,7 +61,7 @@ public class WifiCatalogObjectsLoader extends AsyncTask<Object, Void, ArrayList<
 	private OnCatalogLoadedListener mListener;
 	private final Context mAppContext;
 
-	public WifiCatalogObjectsLoader(final Context context, final OnCatalogLoadedListener listener) {
+	public CatalogObjectsLoader(final Context context, final OnCatalogLoadedListener listener) {
 		setOnCatalogLoadedListener(listener);
 		mAppContext = context.getApplicationContext();
 	}
@@ -86,7 +86,7 @@ public class WifiCatalogObjectsLoader extends AsyncTask<Object, Void, ArrayList<
 		ArrayList<LatLong> points = new ArrayList<LatLong>();
 
 		try {
-            WifiCatalogDatabaseHelper databaseHelper = WifiCatalogDatabaseHelper.getInstance(mAppContext);
+            CatalogDatabaseHelper databaseHelper = CatalogDatabaseHelper.getInstance(mAppContext);
 
 			// return empty result list if reference database not available
 			if (databaseHelper.getFilename() == null) {

@@ -35,8 +35,8 @@ import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.Radiobeacon;
 import org.openbmap.soapclient.AsyncUploader.FileUploadListener;
+import org.openbmap.utils.CatalogUpdater;
 import org.openbmap.utils.MediaScanner;
-import org.openbmap.utils.WifiCatalogUpdater;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -65,22 +65,22 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	/**
 	 * OpenBmap cell upload address
 	 */
-	private static final String CELL_WEBSERVICE = "https://radiocells.org/uploads/cells";
+	private static final String CELL_WEBSERVICE = Radiobeacon.SERVER_BASE + "/uploads/cells";
 
     /**
      * OpenBmap cell anonymous upload address
      */
-    private static final String CELL_ANONYMOUS_WEBSERVICE = "https://radiocells.org/uploads/share_cells";
+    private static final String CELL_ANONYMOUS_WEBSERVICE = Radiobeacon.SERVER_BASE + "/uploads/share_cells";
 
 	/**
 	 * OpenBmap wifi upload address
 	 */
-	private static final String WIFI_WEBSERVICE = "https://radiocells.org/uploads/wifis";
+	private static final String WIFI_WEBSERVICE = Radiobeacon.SERVER_BASE + "/uploads/wifis";
 
     /**
      * OpenBmap cell anonymous upload address
      */
-    private static final String WIFI_ANONYMOUS_WEBSERVICE = "https://radiocells.org/uploads/share_wifis";
+    private static final String WIFI_ANONYMOUS_WEBSERVICE = Radiobeacon.SERVER_BASE + "/uploads/share_wifis";
 
     private Context mAppContext;
 
@@ -273,7 +273,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 
 		if (mUpdateWifiCatalog) {
 			Log.i(TAG, "Updating wifi catalog");
-			new WifiCatalogUpdater(mAppContext).execute((Void[]) null);
+			new CatalogUpdater(mAppContext).execute((Void[]) null);
 		}
 
         if (mSaveGpx) {

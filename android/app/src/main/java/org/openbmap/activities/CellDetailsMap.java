@@ -50,8 +50,8 @@ import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.model.common.Observer;
 import org.mapsforge.map.util.MapPositionUtil;
 import org.openbmap.R;
+import org.openbmap.db.ContentProvider;
 import org.openbmap.db.DataHelper;
-import org.openbmap.db.RadioBeaconContentProvider;
 import org.openbmap.db.Schema;
 import org.openbmap.db.models.CellRecord;
 import org.openbmap.heatmap.HeatLatLong;
@@ -208,7 +208,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 		// query data from content provider
 		final CursorLoader cursorLoader =
 				new CursorLoader(getActivity().getBaseContext(),
-						RadioBeaconContentProvider.CONTENT_URI_CELL_EXTENDED, projection, selectSql, args.toArray(new String[args.size()]), Schema.COL_STRENGTHDBM + " DESC");
+						ContentProvider.CONTENT_URI_CELL_EXTENDED, projection, selectSql, args.toArray(new String[args.size()]), Schema.COL_STRENGTHDBM + " DESC");
 		return cursorLoader;
 	}
 

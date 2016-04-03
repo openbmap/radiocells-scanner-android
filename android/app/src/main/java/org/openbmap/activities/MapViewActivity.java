@@ -66,16 +66,16 @@ import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.PositionRecord;
 import org.openbmap.db.models.WifiRecord;
 import org.openbmap.events.onLocationUpdate;
+import org.openbmap.utils.CatalogObjectsLoader;
+import org.openbmap.utils.CatalogObjectsLoader.OnCatalogLoadedListener;
 import org.openbmap.utils.GeometryUtils;
 import org.openbmap.utils.GpxMapObjectsLoader;
 import org.openbmap.utils.GpxMapObjectsLoader.OnGpxLoadedListener;
 import org.openbmap.utils.MapUtils;
 import org.openbmap.utils.MapUtils.onLongPressHandler;
 import org.openbmap.utils.SessionLatLong;
-import org.openbmap.utils.SessionMapObjectsLoader;
-import org.openbmap.utils.SessionMapObjectsLoader.OnSessionLoadedListener;
-import org.openbmap.utils.WifiCatalogObjectsLoader;
-import org.openbmap.utils.WifiCatalogObjectsLoader.OnCatalogLoadedListener;
+import org.openbmap.utils.SessionObjectsLoader;
+import org.openbmap.utils.SessionObjectsLoader.OnSessionLoadedListener;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -709,7 +709,7 @@ public class MapViewActivity extends Fragment implements
             minLongitude -= lonSpan * 0.5;
             maxLongitude += lonSpan * 0.5;
         }
-        final WifiCatalogObjectsLoader task = new WifiCatalogObjectsLoader(getActivity(), this);
+        final CatalogObjectsLoader task = new CatalogObjectsLoader(getActivity(), this);
         task.execute(minLatitude, maxLatitude, minLongitude, maxLongitude);
 
     }
@@ -837,14 +837,14 @@ public class MapViewActivity extends Fragment implements
                 maxLongitude += lonSpan * 0.5;
             }
 
-            final SessionMapObjectsLoader task = new SessionMapObjectsLoader(getActivity().getApplicationContext(), this, sessions);
+            final SessionObjectsLoader task = new SessionObjectsLoader(getActivity().getApplicationContext(), this, sessions);
             task.execute(minLatitude, maxLatitude, minLongitude, maxLongitude, null);
         } else {
             // draw specific wifi
             final ArrayList<Integer> sessions = new ArrayList<Integer>();
             sessions.add(mSessionId);
 
-            final SessionMapObjectsLoader task = new SessionMapObjectsLoader(getActivity().getApplicationContext(), this, sessions);
+            final SessionObjectsLoader task = new SessionObjectsLoader(getActivity().getApplicationContext(), this, sessions);
             task.execute(bbox.minLatitude, bbox.maxLatitude, bbox.minLongitude, bbox.maxLatitude, highlight.getBssid());
         }
     }

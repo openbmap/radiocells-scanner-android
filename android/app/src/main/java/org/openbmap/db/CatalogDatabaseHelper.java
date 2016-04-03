@@ -14,8 +14,8 @@ import org.openbmap.Preferences;
 import java.io.File;
 import java.util.ArrayList;
 
-public class WifiCatalogDatabaseHelper extends SQLiteOpenHelper {
-    private static final String TAG = WifiCatalogDatabaseHelper.class.getSimpleName();
+public class CatalogDatabaseHelper extends SQLiteOpenHelper {
+    private static final String TAG = CatalogDatabaseHelper.class.getSimpleName();
 
     public static final String VERBOSE_QUERY = "SELECT _id, latitude as grouped_lat, longitude as grouped_lon FROM wifi_zone WHERE "
             + "(latitude > ? AND latitude < ? AND longitude > ? AND longitude < ?)";
@@ -29,11 +29,11 @@ public class WifiCatalogDatabaseHelper extends SQLiteOpenHelper {
      */
     private static final int MAX_REFS = 5000;
 
-    private static WifiCatalogDatabaseHelper sInstance;
+    private static CatalogDatabaseHelper sInstance;
 
     private static String mFileLocation;
 
-    public static synchronized WifiCatalogDatabaseHelper getInstance(Context context) {
+    public static synchronized CatalogDatabaseHelper getInstance(Context context) {
         // Use the application context, which will ensure that you
         // don't accidentally leak an Activity's context.
         // See this article for more information: http://bit.ly/6LRzfx
@@ -43,7 +43,7 @@ public class WifiCatalogDatabaseHelper extends SQLiteOpenHelper {
             mFileLocation = prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
                     context.getApplicationContext().getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.CATALOG_SUBDIR)
                     + File.separator + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_FILE);
-            sInstance = new WifiCatalogDatabaseHelper(context.getApplicationContext());
+            sInstance = new CatalogDatabaseHelper(context.getApplicationContext());
         }
         return sInstance;
     }
@@ -56,7 +56,7 @@ public class WifiCatalogDatabaseHelper extends SQLiteOpenHelper {
      * Constructor should be private to prevent direct instantiation.
      * Make a call to the static method "getInstance()" instead.
      */
-    private WifiCatalogDatabaseHelper(Context context) {
+    private CatalogDatabaseHelper(Context context) {
         super(context, mFileLocation, null, 1);
     }
 

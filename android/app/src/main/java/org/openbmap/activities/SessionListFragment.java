@@ -45,8 +45,8 @@ import android.widget.Toast;
 
 import org.openbmap.R;
 import org.openbmap.Radiobeacon;
+import org.openbmap.db.ContentProvider;
 import org.openbmap.db.DataHelper;
-import org.openbmap.db.RadioBeaconContentProvider;
 import org.openbmap.db.Schema;
 import org.openbmap.db.models.Session;
 import org.openbmap.utils.ActionModeUtils;
@@ -187,7 +187,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	@Override
 	public final void onResume() {
 		super.onResume();
-		getActivity().getContentResolver().registerContentObserver(RadioBeaconContentProvider.CONTENT_URI_SESSION, true, mObserver);
+		getActivity().getContentResolver().registerContentObserver(ContentProvider.CONTENT_URI_SESSION, true, mObserver);
 	}
 
 	@Override
@@ -247,7 +247,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
                 Schema.COL_NUMBER_OF_WAYPOINTS
 		};
 		final CursorLoader cursorLoader = new CursorLoader(getActivity().getBaseContext(),
-				RadioBeaconContentProvider.CONTENT_URI_SESSION, projection, null, null, Schema.COL_CREATED_AT + " DESC");
+				ContentProvider.CONTENT_URI_SESSION, projection, null, null, Schema.COL_CREATED_AT + " DESC");
 		return cursorLoader;
 	}
 

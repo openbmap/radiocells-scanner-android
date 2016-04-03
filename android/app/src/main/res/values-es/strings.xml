@@ -23,7 +23,7 @@
 	<string name="prefs_data_ref_database">Selecciona el catálogo de WiFi</string>
 	<string name="prefs_download_wifi_catalog">Descargar catálogo de WiFi</string>
 	<string name="prefs_data_ref_database_summary">"Instalar un catálogo de WiFi para ver todos los WiFis conocidos en el mapa de openbmap. Esto le ayuda, cuando busca nuevos WiFis "</string>
-	<string name="prefs_download_wifi_catalog_summary">Tamaño actual (~1 GB)</string>
+	<string name="prefs_download_wifi_catalog_summary">Tamaño actual (10-400MB)</string>
 	<string name="prefs_min_wifi_distance">Intervalo de registro de WiFi</string>
 	<string name="prefs_min_wifi_distance_hint">"Distancia mínima entre dos análisis de WiFi (en metros) "</string>
 	<string name="prefs_req_gps_accuracy">Umbral del GPS</string>
@@ -174,8 +174,7 @@
 	<string name="prefs_auto_delete_sessions_title">Limpiar sesiones viejas</string>
 	<string name="prefs_get_maps_title">Obtener mapa sin conexión</string>
 	<string name="prefs_get_maps_summary">Descargar mapa sin conexión</string>
-	<string name="prefs_checking_map_repo">Comprobando servidor...</string>
-	<string name="prefs_check_map_repo">Comprobando servidor...</string>
+	<string name="prefs_check_server">Comprobando servidor...</string>
 	<string name="downloading">Descargando</string>
 	<string name="invalid_download">Descarga inválida</string>
 	<string name="activity_credits_activity">Créditos</string>

@@ -36,8 +36,8 @@ import android.widget.SimpleCursorAdapter.ViewBinder;
 import android.widget.TextView;
 
 import org.openbmap.R;
+import org.openbmap.db.ContentProvider;
 import org.openbmap.db.DataHelper;
-import org.openbmap.db.RadioBeaconContentProvider;
 import org.openbmap.db.Schema;
 import org.openbmap.db.models.CellRecord;
 
@@ -168,7 +168,7 @@ public class CellsListContainer extends ListFragment implements LoaderManager.Lo
 
 		// TODO: mSelection and mSelectionArgs are yet ignored
 		final CursorLoader cursorLoader = new CursorLoader(getActivity().getBaseContext(), ContentUris.withAppendedId(Uri.withAppendedPath(
-						RadioBeaconContentProvider.CONTENT_URI_CELL, RadioBeaconContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
+						ContentProvider.CONTENT_URI_CELL, ContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
 						projection, mSelection, mSelectionArgs, null);
 		return cursorLoader;
 	}

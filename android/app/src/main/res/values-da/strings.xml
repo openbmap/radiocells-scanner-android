@@ -26,7 +26,7 @@
 	<string name="prefs_data_ref_database">Vælg Wifi katalog</string>
 	<string name="prefs_data_ref_database_summary">"Installer et wifi-katalog for at se alle kendte openbmap wifi på kortet. Hjælper med at finde nye wifi "</string>
 	<string name="prefs_download_wifi_catalog">Hent Wifi katalog</string>
-	<string name="prefs_download_wifi_catalog_summary">Nuværende størrelse (~ 1 GB)</string>
+	<string name="prefs_download_wifi_catalog_summary">Nuværende størrelse ( 10-400MB)</string>
 	<string name="prefs_min_cell_distance">Celle loginterval</string>
 	<string name="prefs_min_cell_distance_hint">Mindste afstand mellem to celle scanninger (i meter)</string>
 	<string name="prefs_min_wifi_distance">WiFi logintervallet</string>

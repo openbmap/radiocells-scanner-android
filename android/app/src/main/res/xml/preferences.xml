@@ -88,15 +88,17 @@
             android:title="@string/prefs_ui_keep_screen_on" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/prefs_wifi_catalog">
+        <org.openbmap.activities.DialogPreferenceCatalogs
+            android:selectable="true"
+            android:enabled="true"
+            android:title="@string/prefs_download_wifi_catalog"
+            android:summary="@string/prefs_download_wifi_catalog_summary"
+            android:key="catalogs_dialog"/>
         <ListPreference
             android:defaultValue="none"
             android:key="data.ref_database"
             android:summary="@string/prefs_data_ref_database_summary"
             android:title="@string/prefs_data_ref_database"/>
-
-        <Preference android:key="data.download_wifi_catalog"
-            android:summary="@string/prefs_download_wifi_catalog_summary"
-            android:title="@string/prefs_download_wifi_catalog"/>
     </PreferenceCategory>
 
     <Preference

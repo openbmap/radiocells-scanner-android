@@ -52,8 +52,8 @@ import org.mapsforge.map.model.common.Observer;
 import org.mapsforge.map.util.MapPositionUtil;
 import org.openbmap.R;
 import org.openbmap.Radiobeacon;
+import org.openbmap.db.ContentProvider;
 import org.openbmap.db.DataHelper;
-import org.openbmap.db.RadioBeaconContentProvider;
 import org.openbmap.db.Schema;
 import org.openbmap.db.models.WifiRecord;
 import org.openbmap.heatmap.HeatLatLong;
@@ -218,7 +218,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 		final String[] projection = { Schema.COL_ID, Schema.COL_SSID, Schema.COL_LEVEL,  "begin_" + Schema.COL_LATITUDE, "begin_" + Schema.COL_LONGITUDE};
 		final CursorLoader cursorLoader =
-				new CursorLoader(getActivity().getBaseContext(),  RadioBeaconContentProvider.CONTENT_URI_WIFI_EXTENDED,
+				new CursorLoader(getActivity().getBaseContext(),  ContentProvider.CONTENT_URI_WIFI_EXTENDED,
 						projection, Schema.COL_BSSID + " = ? AND " + Schema.COL_SESSION_ID + " = ?", args, Schema.COL_LEVEL + " ASC");
 		return cursorLoader;
 	}
