@@ -116,6 +116,11 @@ public class LocationServiceImpl implements LocationService {
 			LocationProvider p = it.next();
 			p.unsetLocationService(this);
 		}
+		try {
+			super.finalize();
+		} catch (Throwable throwable) {
+			throwable.printStackTrace();
+		}
 	}
 
 	@Override
