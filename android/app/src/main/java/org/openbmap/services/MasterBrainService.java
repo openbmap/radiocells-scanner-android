@@ -248,6 +248,7 @@ public class MasterBrainService extends Service {
      * Called when start tracking is requested on the message bus
      * @param event
      */
+    @Subscribe
     public void onEvent(onStartTracking event){
         Log.d(TAG, "Received StartTracking event");
         mSession = event.session;
