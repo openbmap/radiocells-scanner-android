@@ -24,7 +24,6 @@ import android.util.Log;
 import org.openbmap.services.positioning.providers.LocationProvider;
 import org.openbmap.utils.GeometryUtils;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
@@ -50,7 +49,7 @@ public class LocationServiceImpl implements LocationService {
 	 * 
 	 */
 	public LocationServiceImpl() {
-		mProviders = new Vector<LocationProvider>();
+		mProviders = new Vector<>();
 		mLocation = new Location("dummy");
 		LocationServiceFactory.setLocationService(this);
 	}
@@ -111,16 +110,13 @@ public class LocationServiceImpl implements LocationService {
 		}
 	}
 
-	protected final void finalize() {
-		for (Iterator<LocationProvider> it = mProviders.iterator(); it.hasNext();) {
-			LocationProvider p = it.next();
-			p.unsetLocationService(this);
+    @Override
+	protected void finalize() throws Throwable {
+        for (LocationProvider lp : mProviders ) {
+            lp.unsetLocationService(this);
 		}
-		try {
-			super.finalize();
-		} catch (Throwable throwable) {
-			throwable.printStackTrace();
-		}
+
+		super.finalize();
 	}
 
 	@Override
