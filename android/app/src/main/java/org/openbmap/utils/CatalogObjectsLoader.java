@@ -39,10 +39,10 @@ public class CatalogObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatL
     /**
      * Arguments (indices) for doInBackground arguments
      */
-    private static final int MIN_LAT_COL	= 0;
-    private static final int MAX_LAT_COL	= 1;
-    private static final int MIN_LON_COL	= 2;
-    private static final int MAX_LON_COL	= 3;
+    private static final int MIN_LAT_COL = 0;
+    private static final int MAX_LAT_COL = 1;
+    private static final int MIN_LON_COL = 2;
+    private static final int MAX_LON_COL = 3;
 
 	/**
 	 * Interface for activity.

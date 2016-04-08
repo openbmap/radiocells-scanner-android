@@ -33,7 +33,7 @@ public class CatalogDatabaseHelper extends SQLiteOpenHelper {
 
     private static String mFileLocation;
 
-    public static synchronized CatalogDatabaseHelper getInstance(Context context) {
+    public static synchronized CatalogDatabaseHelper getInstance(final Context context) {
         // Use the application context, which will ensure that you
         // don't accidentally leak an Activity's context.
         // See this article for more information: http://bit.ly/6LRzfx
@@ -56,7 +56,7 @@ public class CatalogDatabaseHelper extends SQLiteOpenHelper {
      * Constructor should be private to prevent direct instantiation.
      * Make a call to the static method "getInstance()" instead.
      */
-    private CatalogDatabaseHelper(Context context) {
+    private CatalogDatabaseHelper(final Context context) {
         super(context, mFileLocation, null, 1);
     }
 
@@ -72,6 +72,20 @@ public class CatalogDatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    /**
+     * Returns a readable database with disabled journaling
+     * @return SQLiteDatabase
+     */
+    private SQLiteDatabase getDatabase() {
+        SQLiteDatabase db = getReadableDatabase();
+
+        // disable journaling
+        Log.v(TAG, "Disable journaling on catalog database");
+        Cursor pragma = db.rawQuery("PRAGMA journal_mode=OFF", null);
+        pragma.close();
+        return db;
+    }
+
     // Get all points in the database
     public ArrayList<LatLong> getPoints(Double min_lat, Double max_lat, Double min_lon, Double max_lon) {
         ArrayList<LatLong> points = new ArrayList<>();
@@ -82,8 +96,10 @@ public class CatalogDatabaseHelper extends SQLiteOpenHelper {
                         String.valueOf(min_lon),
                         String.valueOf(max_lon)};
 
-        // "getReadableDatabase()" and "getWriteableDatabase()" return the same object (except under low disk space scenarios)
-        SQLiteDatabase db = getReadableDatabase();
+
+        // TODO: do we really need to open database on each query???
+        SQLiteDatabase db = getDatabase();
+
         Cursor cursor = db.rawQuery(VERBOSE_QUERY, args);
         try {
             int i = 0;
@@ -116,7 +132,8 @@ public class CatalogDatabaseHelper extends SQLiteOpenHelper {
                 String.valueOf(max_lon)};
 
         // "getReadableDatabase()" and "getWriteableDatabase()" return the same object (except under low disk space scenarios)
-        SQLiteDatabase db = getReadableDatabase();
+        SQLiteDatabase db = getDatabase();
+
         Cursor cursor = db.rawQuery(HIGHSPEED_QUERY, args);
         try {
             int i = 0;

@@ -35,7 +35,6 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.WifiLock;
 import android.os.Build;
-import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -1605,15 +1604,5 @@ public class WirelessLoggerService extends AbstractService {
         return (current.distanceTo(last) > Float.parseFloat(
                 prefs.getString(Preferences.KEY_MIN_WIFI_DISTANCE, Preferences.VAL_MIN_WIFI_DISTANCE))
                 || DEMO_MODE);
-    }
-
-    /**
-     * TODO: remove, not needed with greenrobot
-     *
-     * @param msg
-     */
-    @Override
-    public void onReceiveMessage(Message msg) {
-
     }
 }
