@@ -20,7 +20,6 @@ package org.openbmap.services.positioning;
 
 import android.content.SharedPreferences;
 import android.location.Location;
-import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -179,13 +178,4 @@ public class GpxLoggerService extends AbstractService {
         }
         mMostCurrentLocation = location;
 	}
-
-    /**
-     * TODO: remove, not needed with greenrobot
-     * @param msg
-     */
-    @Override
-    public void onReceiveMessage(Message msg) {
-
-    }
 }

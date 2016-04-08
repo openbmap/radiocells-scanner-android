@@ -21,7 +21,6 @@ package org.openbmap.services.positioning;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Message;
 import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
@@ -263,14 +262,5 @@ public class PositioningService extends AbstractService implements LocationChang
 		i.putExtras(b);
 		sendBroadcast(i);	
 	}
-
-    /**
-     * TODO: remove, not needed with greenrobot
-     * @param msg
-     */
-    @Override
-    public void onReceiveMessage(Message msg) {
-
-    }
 
 }
