@@ -144,7 +144,7 @@ public class ContentProvider extends android.content.ContentProvider {
 
 	@Override
 	public final boolean onCreate() {
-		mDbHelper = new DatabaseHelper(getContext());
+		mDbHelper = new DatabaseHelper(getContext().getApplicationContext());
 		final SQLiteDatabase db = mDbHelper.getWritableDatabase();
 		
 		// Enable foreign key constraints (per connection)

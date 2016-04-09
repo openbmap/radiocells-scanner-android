@@ -54,6 +54,8 @@ public class DataHelper {
 
 		if (wifis == null || wifis.size() == 0) {
 			return;
+		} else {
+			Log.d(TAG, "Inserting " + wifis.size() + " wifis with " + begin + end + " positions");
 		}
 
 		final ArrayList<ContentProviderOperation> operations = new ArrayList<ContentProviderOperation>();

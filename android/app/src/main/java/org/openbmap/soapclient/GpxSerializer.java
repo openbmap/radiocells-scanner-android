@@ -137,7 +137,7 @@ public class GpxSerializer {
 	 */
 	public final void doExport(final String trackName, final File target, int verbosity) throws IOException {
 		Log.i(TAG, "Exporting gpx file" + target.getAbsolutePath());
-		mDbHelper = new DatabaseHelper(mContext);
+		mDbHelper = new DatabaseHelper(mContext.getApplicationContext());
 
 		final BufferedWriter bw = new BufferedWriter(new FileWriter(target));
 

@@ -51,12 +51,7 @@ public final class Radiobeacon {
 	 * Intent signalling free wifi has been found
 	 */
 	public static final String INTENT_WIFI_FREE = Radiobeacon.PACKAGE_NAME + ".intent_WIFI_FREE";
-	
-	/**
-	 * Intent signalling wifis have been changed (e.g. deletes)
-	 */
-	public static final String INTENT_WIFI_UPDATE = Radiobeacon.PACKAGE_NAME + ".intent.WIFI_UPDATE";
-	
+
 	/**
 	 * Intent signalling sessions have been changed (e.g. deletes)
 	 */

@@ -397,11 +397,6 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 */
 	private void updateUI() {
 		reloadListFragment();
-
-		// Force update on list fragements' adapters.
-		// TODO check if we really need this
-		final Intent intent1 = new Intent(Radiobeacon.INTENT_WIFI_UPDATE);
-		sendBroadcast(intent1);
 	}
 
 	/**

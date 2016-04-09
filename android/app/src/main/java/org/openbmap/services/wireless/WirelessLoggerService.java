@@ -334,7 +334,6 @@ public class WirelessLoggerService extends AbstractService {
         Log.i(TAG, "Booting telephony manager");
         mTelephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
 
-
         if (SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             final PackageManager pm = getApplicationContext().getPackageManager();
             //Log.i(TAG, mTelephonyManager.getPhoneCount() == 1 ? "Single SIM mode" : "Dual SIM mode");
@@ -470,7 +469,6 @@ public class WirelessLoggerService extends AbstractService {
         final IntentFilter filter = new IntentFilter();
 
         filter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
-
         registerReceiver(mReceiver, filter);
     }
 
@@ -543,7 +541,7 @@ public class WirelessLoggerService extends AbstractService {
                         }
 
                         if (pendingWifiScanResults) {
-                            Log.i(TAG, "Wifi scan results arrived..");
+                            Log.d(TAG, "Wifi scan results arrived..");
                             final List<ScanResult> scanlist = mWifiManager.getScanResults();
                             if (scanlist != null) {
 
@@ -561,8 +559,7 @@ public class WirelessLoggerService extends AbstractService {
                                     return;
                                 }
 
-                                final ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>();
-
+                                final ArrayList<WifiRecord> wifis = new ArrayList<>();
                                 final PositionRecord begin = new PositionRecord(mBeginLocation, mSessionId, mBeginLocationProvider);
                                 final PositionRecord end = new PositionRecord(mMostCurrentLocation, mSessionId, mMostCurrentLocationProvider);
 
@@ -608,7 +605,6 @@ public class WirelessLoggerService extends AbstractService {
                                 // take last seen wifi and broadcast infos in ui
                                 if (wifis.size() > 0) {
                                     broadcastWifiInfos(wifis);
-                                    broadcastWifiUpdate();
                                 }
 
                                 mWifiSavedAt = mBeginLocation;
@@ -622,14 +618,6 @@ public class WirelessLoggerService extends AbstractService {
                 };
             }
         }
-    }
-
-    /**
-     * Broadcasts signal to refresh UI.
-     */
-    private void broadcastWifiUpdate() {
-        final Intent intent = new Intent(Radiobeacon.INTENT_WIFI_UPDATE);
-        sendBroadcast(intent);
     }
 
     /**

@@ -312,12 +312,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	private SQLiteDatabase mDataBase;
 
-	private final Context mContext; 
+	private final Context mContext;
 
-	public DatabaseHelper(final Context context) {
-		super(context, DB_NAME, null, Radiobeacon.DATABASE_VERSION);
+	/**
+	 * Initializes DatabaseHelper
+	 * @param appContext Application context
+     */
+	public DatabaseHelper(final Context appContext) {
+		super(appContext, DB_NAME, null, Radiobeacon.DATABASE_VERSION);
 		Log.i(TAG, "Database scheme version " + Radiobeacon.DATABASE_VERSION);
-		mContext = context.getApplicationContext();
+		mContext = appContext.getApplicationContext();
 	}
 
 	@Override
@@ -482,7 +486,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		}
 		
 		if (oldVersion <= 9) {
-			moveFilesToAndroidDefaultFolders();
+			cleanupFolders();
 		}
 
         if (oldVersion <= 10) {
@@ -534,7 +538,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	 * Moves maps, gpx tracks and wifi database catalogs from Preferences.KEY_DATA_FOLDER to /sdcard/Android/data/org.openbmap
 	 * Thus, when uninstalling Radiobeacon they get automatically cleaned up
 	 */
-	private void moveFilesToAndroidDefaultFolders() {
+	private void cleanupFolders() {
 		Log.d(TAG, "Resetting Radiobeacon folders to Android standard");
 		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
 		final String currentFolder = prefs.getString("data.dir", "/org.openbmap");

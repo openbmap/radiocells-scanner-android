@@ -58,7 +58,7 @@ public class CatalogUpdater extends AsyncTask<Void, Void, Void> {
 		// dialog = new ProgressDialog(mContext);
 		// get shared preferences
 		prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		mDbHelper = new DatabaseHelper(context);
+		mDbHelper = new DatabaseHelper(mContext.getApplicationContext());
 	}
 
 	@Override

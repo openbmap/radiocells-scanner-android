@@ -248,7 +248,7 @@ public class WifiSerializer {
 
 		final LogFile headerRecord = mDataHelper.loadLogFileBySession(mSession);
 
-		final DatabaseHelper mDbHelper = new DatabaseHelper(mContext);
+		final DatabaseHelper mDbHelper = new DatabaseHelper(mContext.getApplicationContext());
 
 		final ArrayList<String> generatedFiles = new ArrayList<String>();
 
