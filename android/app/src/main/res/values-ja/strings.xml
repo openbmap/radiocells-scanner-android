@@ -199,7 +199,7 @@
 	<string name="prefs_auto_delete_tracks_summary">アップロードが自動的に成功した後、セッションを削除します</string>
 	<string name="prefs_get_maps_title">オフライン マップを取得</string>
 	<string name="prefs_get_maps_summary">オフライン マップをダウンロードします</string>
-	<string name="prefs_check_server">サーバーの確認中...</string>
+	<string name="prefs_check_server">サーバーに通信中...</string>
 	<string name="downloading">ダウンロード中</string>
 	<string name="invalid_download">無効なダウンロード</string>
 	<string name="prefs_gpx_verbosity_title">GPX の詳細</string>
