@@ -119,6 +119,7 @@ public class CatalogDatabaseHelper extends SQLiteOpenHelper {
                 cursor.close();
             }
         }
+        db.close();
         return points;
     }
 
