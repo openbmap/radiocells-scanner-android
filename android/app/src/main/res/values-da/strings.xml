@@ -180,4 +180,43 @@
 	<string name="prefs_simulate_upload_summary">"Eksporter kun data, overfør ikke  til serveren"</string>
 	<string name="prefs_simulate_upload">Spring overførelse til openbmap.org over</string>
 	<string name="prefs_keep_export_files_summary">"Behold en lokal kopi af overførte filer.\nFind filerne i datamappen.\n(Nyttigt til fejlfinding) "</string>
-	</resources>
+	<string name="prefs_ui_keep_screen_on">Hold skærmen tændt</string>
+	<string name="prefs_credentials_password_summary">Adgangskoder:</string>
+	<string name="prefs_block_homezone_title">Indstilling af udelukkelseszone</string>
+	<string name="prefs_anonymise_ssid_summary">"Erstatter navnet på det trådløse netværk med en MD5 hash for at sikre privatlivets fred for de trådløse operatører (SSID \'John Does Wifi\' vil blive til noget i retning af \'FD33531\') "</string>
+	<string name="is_serving_cell_caption">Virker det mobile netværk?</string>
+	<string name="bug_report">"Find den nyeste version (og issue tracker) på "</string>
+	<string name="subtitle">OpenBmap Wifi &amp; celle logger</string>
+	<string name="n_a">N/A</string>
+	<string name="warning_sd_not_writable">"Kan ikke skrive til SD-kort. Måske bruges det af PC? "</string>
+	<string name="notification_caption">Skanner</string>
+	<string name="upload_skipped">"Overførelse springes over (hvis det sker ved et uheld, tjek fejlfindingsindstillingerne) "</string>
+	<string name="licences">Licenser</string>
+	<string name="blacklisted_bssid">er sortlisted (BSSID)</string>
+	<string name="blacklisted_ssid">er sortlisted (SSID)</string>
+	<string name="blacklisted_area">Ignoreret: i sortlistet område</string>
+	<string name="please_stay_patient">Vent…</string>
+	<string name="export_error">"Prøv igen senere. Hvis problemet fortsætter, indsend en fejl på https://github.com/wish7code/openbmap/issues "</string>
+	<string name="location_blacklist_saved">Placeringssortliste er gemt!</string>
+	<string name="error_writing_location_blacklist">Fejl ved skrivning af placeringssortliste</string>
+
+	<string name="prefs_update_catalog_summary">Tilføjer scannede wifi til lokalt wifikatalog</string>
+	<string name="prefs_update_catalog">Synkroniser wifikatalog lokalt</string>
+	<string name="time_since_last_wifi_update">Sidste wifi opdatering %s siden</string>
+	<string name="dialog_found_pending_uploads_title">Fandt flere sessioner, der endnu ikke er overført</string>
+	<string name="dialog_found_pending_uploads_message">"Skal alle ventende sessioner overføres nu? "</string>
+	<string name="dialog_delete_all_sessions_message">Skal alle sessioner slettes?</string>
+	<string name="chart_library">Diagrambibliotek: GraphView</string>
+	<string name="vacuuming">Optimerer</string>
+	<string name="prefs_ignore_battery_summary">Fortsæt scanning selv med lavt batteriniveau (kan kun anbefales med ekstern strømforsyning)</string>
+	<string name="other_download_active">Vent på at nuværende hentning bliver færdig!</string>
+	<string name="show_only_free">Vis kun åbne WLAN</string>
+	<string name="graph_title">Signalstyrke radiocelle</string>
+	<string name="prefs_auto_delete_tracks_summary">Slet sessioner automatisk efter succesfuld overførelse</string>
+	<string name="prefs_check_server">Kontrollerer server...</string>
+	<string name="invalid_download">Ugyldig hentning</string>
+	<string name="prefs_gpx_verbosity_title">GPX detaljeringsgrad</string>
+	<string name="prefs_scan_mode">Wifi scanningstilstand</string>
+    <string name="prefs_scan_mode_summary">Advarsel: Valg af højtydendetilstand vil hurtigt dræne batteriet!</string>
+	<string name="saved_at">"Gemt på "</string>
+</resources>
