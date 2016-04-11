@@ -85,7 +85,7 @@
     <string name="dialog_found_pending_uploads_message">"Möchtest du alle neuen Sitzungen hochladen? "</string>
     <string name="exporting_wifis">Exportiere WLANs</string>
     <string name="exporting_gpx">Exportiere GPX Track</string>
-    <string name="prefs_credentials_user_summary">Wenn Du noch keine Account hast, meld Dich unter https://radiocells.org an (nur für Upload benötigt)</string>
+    <string name="prefs_credentials_user_summary">Wenn Du noch keinen Account hast, melde Dich unter https://radiocells.org an (nur für Upload benötigt)</string>
     <string name="prefs_data_map">Offline-Karten</string>
     <string name="prefs_credentials">Login-Daten</string>
     <string name="prefs_save_wifis">WLANs scannen</string>
