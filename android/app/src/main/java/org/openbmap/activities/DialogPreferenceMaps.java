@@ -109,7 +109,7 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
 
     @Override
     protected void onDialogClosed(boolean positiveResult) {
-        if (checkDialog.isShowing()) {
+        if (checkDialog != null && checkDialog.isShowing()) {
             checkDialog.dismiss();
         }
         checkDialog = null;
@@ -279,6 +279,7 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
                 final DownloadManager.Request request = new DownloadManager.Request(Uri.parse(map.getUrl().toString()));
                 request.setDestinationUri(Uri.fromFile(tempFile));
                 mCurrentMapDownloadId = mDownloadManager.enqueue(request);
+
                 getDialog().dismiss();
             }
         } else {
@@ -347,7 +348,7 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
         protected void onPostExecute(List<MapDownload> result) {
             super.onPostExecute(result);
 
-            if (checkDialog.isShowing()) {
+            if (checkDialog != null && checkDialog.isShowing()) {
                 checkDialog.dismiss();
             }
 
