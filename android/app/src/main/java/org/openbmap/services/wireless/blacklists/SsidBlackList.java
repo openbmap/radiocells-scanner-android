@@ -165,7 +165,7 @@ public class SsidBlackList {
 			}
 		}
 
-		// don't look anyfurther
+		// don't look any further
 		if (match) {
 			return match;
 		}

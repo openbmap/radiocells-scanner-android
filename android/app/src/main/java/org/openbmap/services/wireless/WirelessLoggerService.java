@@ -310,8 +310,7 @@ public class WirelessLoggerService extends AbstractService {
                 + Preferences.BLACKLIST_SUBDIR;
 
         mLocationBlacklist = new LocationBlackList();
-        mLocationBlacklist.openFile(
-                mBlacklistPath + File.separator + Radiobeacon.DEFAULT_LOCATION_BLOCK_FILE);
+        mLocationBlacklist.openFile(mBlacklistPath + File.separator + Radiobeacon.DEFAULT_LOCATION_BLOCK_FILE);
 
         mSsidBlackList = new SsidBlackList();
         mSsidBlackList.openFile(
@@ -333,7 +332,6 @@ public class WirelessLoggerService extends AbstractService {
     private void registerPhoneStateManager() {
         Log.i(TAG, "Booting telephony manager");
         mTelephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
-
 
         if (SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             final PackageManager pm = getApplicationContext().getPackageManager();
@@ -470,7 +468,6 @@ public class WirelessLoggerService extends AbstractService {
         final IntentFilter filter = new IntentFilter();
 
         filter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
-
         registerReceiver(mReceiver, filter);
     }
 
@@ -543,7 +540,7 @@ public class WirelessLoggerService extends AbstractService {
                         }
 
                         if (pendingWifiScanResults) {
-                            Log.i(TAG, "Wifi scan results arrived..");
+                            Log.d(TAG, "Wifi scan results arrived..");
                             final List<ScanResult> scanlist = mWifiManager.getScanResults();
                             if (scanlist != null) {
 
@@ -561,8 +558,7 @@ public class WirelessLoggerService extends AbstractService {
                                     return;
                                 }
 
-                                final ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>();
-
+                                final ArrayList<WifiRecord> wifis = new ArrayList<>();
                                 final PositionRecord begin = new PositionRecord(mBeginLocation, mSessionId, mBeginLocationProvider);
                                 final PositionRecord end = new PositionRecord(mMostCurrentLocation, mSessionId, mMostCurrentLocationProvider);
 
@@ -608,7 +604,6 @@ public class WirelessLoggerService extends AbstractService {
                                 // take last seen wifi and broadcast infos in ui
                                 if (wifis.size() > 0) {
                                     broadcastWifiInfos(wifis);
-                                    broadcastWifiUpdate();
                                 }
 
                                 mWifiSavedAt = mBeginLocation;
@@ -622,14 +617,6 @@ public class WirelessLoggerService extends AbstractService {
                 };
             }
         }
-    }
-
-    /**
-     * Broadcasts signal to refresh UI.
-     */
-    private void broadcastWifiUpdate() {
-        final Intent intent = new Intent(Radiobeacon.INTENT_WIFI_UPDATE);
-        sendBroadcast(intent);
     }
 
     /**
@@ -1374,6 +1361,9 @@ public class WirelessLoggerService extends AbstractService {
         EventBus.getDefault().post(new onCellUpdated(recent.getOperatorName(),
                 recent.getMcc(),
                 recent.getMnc(),
+                recent.getSystemId(),
+                recent.getNetworkId(),
+                recent.getBaseId(),
                 recent.getArea(),
                 cellId,
                 CellRecord.TECHNOLOGY_MAP().get(recent.getNetworkType()),

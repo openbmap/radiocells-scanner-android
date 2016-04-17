@@ -59,7 +59,7 @@ public class VacuumCleaner extends AsyncTask<Void, Void, Boolean> {
 
 		Log.i(TAG, "Cleaning database");
 		try {
-			final SQLiteDatabase db = new DatabaseHelper(mContext).getWritableDatabase();
+			final SQLiteDatabase db = new DatabaseHelper(mContext.getApplicationContext()).getWritableDatabase();
 			db.execSQL("VACUUM");
 			Log.i(TAG, "Finished cleaning");
 			db.close();

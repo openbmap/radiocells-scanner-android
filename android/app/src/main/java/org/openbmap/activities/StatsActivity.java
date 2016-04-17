@@ -46,6 +46,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.openbmap.R;
 import org.openbmap.Radiobeacon;
+import org.openbmap.db.models.CellRecord;
 import org.openbmap.db.models.Session;
 import org.openbmap.events.onCellUpdated;
 import org.openbmap.events.onWifiAdded;
@@ -210,12 +211,19 @@ public class StatsActivity extends Fragment {
         mLastCellUpdate = System.currentTimeMillis();
 
         String description = event.operator;
-        if (event.mcc != null && event.mnc != null) {
-            if (description.length() > 0) {
-                description += "\n";
-            }
-            description += String.format("%s/%s/%s/%s", event.mcc, event.mnc, event.area, event.cell_id);
+
+        if (description.length() > 0) {
+            description += "\n";
         }
+        if (event.mcc != CellRecord.MCC_UNKNOWN && event.mnc != CellRecord.MNC_UNKNOWN) {
+            // typical available information for GSM/LTE cells: MCC, MNC and area
+            description += String.format("%s/%s/%s/%s", event.mcc, event.mnc, event.area);
+        }
+        if (event.sid != CellRecord.SYSTEM_ID_UNKNOWN && event.nid != CellRecord.NETWORK_ID_UNKOWN && event.bid != CellRecord.BASE_ID_UNKNOWN) {
+            // typical available information for CDMA cells: system id, network id and base id
+            description += String.format("%s/%s/%s", event.sid, event.nid, event.bid);
+        }
+        description += String.format("/%s", event.cell_id);
 
         tvCellDescription.setText(description);
         tvCellStrength.setText(String.format("%d dBm", mCurrentLevel));

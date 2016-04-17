@@ -86,7 +86,9 @@ public class CatalogDatabaseHelper extends SQLiteOpenHelper {
         return db;
     }
 
-    // Get all points in the database
+    /**
+     * Returns all points in the database
+      */
     public ArrayList<LatLong> getPoints(Double min_lat, Double max_lat, Double min_lon, Double max_lon) {
         ArrayList<LatLong> points = new ArrayList<>();
 
@@ -119,6 +121,7 @@ public class CatalogDatabaseHelper extends SQLiteOpenHelper {
                 cursor.close();
             }
         }
+        db.close();
         return points;
     }
 

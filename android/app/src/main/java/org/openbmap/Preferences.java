@@ -45,16 +45,6 @@ public final class Preferences {
 	 */
 	public static final String KEY_MAP_FILE = "data.map";
 
-	/**
-	 * Map download button
-	 */
-	public static final String KEY_DOWNLOAD_MAP = "data.download";	
-	
-	/**
-	 * Wifi catalog download button
-	 */
-	public static final String KEY_DOWNLOAD_WIFI_CATALOG = "data.download_wifi_catalog";
-
     /**
      * Catalog download date
      */
@@ -155,7 +145,11 @@ public final class Preferences {
      */
     public static final String KEY_DELETE_SESSIONS = "delete_tracks";
 
+	/**
+	 * Saves gpx track after successful upload
+	 */
 	public static final String KEY_SAVE_GPX = "gpx.save_track";
+
     /**
      * Level of detail for GPX exports (track + waypoints, waypoints only, track + waypoints + wifis/cells
      */
@@ -329,7 +323,7 @@ public final class Preferences {
 	/**
 	 * Mapsforge render theme
 	 */
-	public static final String RENDER_THEME = "renderthemes/freizeitkarte-v4.xml";
+	public static final String RENDER_THEME = "renderthemes/rendertheme-v4.xml";
 
     /**
 	 * Private dummy constructor

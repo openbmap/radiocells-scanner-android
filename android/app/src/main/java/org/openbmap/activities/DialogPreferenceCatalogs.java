@@ -30,7 +30,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.DialogPreference;
-import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseArray;
@@ -67,7 +66,6 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
 
     public static final String LIST_DOWNLOADS_URL = Radiobeacon.SERVER_BASE + "/downloads/catalog_downloads.json";
 
-    private static SharedPreferences pref;
     private DialogPreferenceCatalogsListAdapter mAdapter;
     private final Context mContext;
     private SparseArray<DialogPreferenceCatalogsGroup> groups;
@@ -86,7 +84,6 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
     public DialogPreferenceCatalogs(Context context, AttributeSet attrs) {
         super(context, attrs);
         mContext = context;
-        pref = PreferenceManager.getDefaultSharedPreferences(context);
         setDialogLayoutResource(R.layout.dialogpreference_catalogs);
 
         initDownloadManager();
@@ -110,7 +107,7 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
 
     @Override
     protected void onDialogClosed(boolean positiveResult) {
-        if (checkDialog.isShowing()) {
+        if (checkDialog != null && checkDialog.isShowing()) {
             checkDialog.dismiss();
         }
         checkDialog = null;
@@ -121,7 +118,6 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
      */
     @SuppressLint("NewApi")
     private void initDownloadManager() {
-
         mDownloadManager = (DownloadManager) getContext().getSystemService(Context.DOWNLOAD_SERVICE);
 
         mReceiver = new BroadcastReceiver() {
@@ -140,6 +136,9 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
                             // we're not checking download id here, that is done in handleDownloads
                             final String uriString = c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
                             handleDownloads(uriString);
+                        } else {
+                            final int reason = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_REASON));
+                            Log.e(TAG, "Download failed: " + reason);
                         }
                     }
                 }
@@ -151,6 +150,7 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
 
     /**
      * Selects downloaded file either as wifi catalog / active Catalog (based on file extension).
+     *
      * @param file
      */
     public final void handleDownloads(String file) {
@@ -215,7 +215,7 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
         String name;
         int j = 0;
         for (int i = 0; i < mOnlineResults.size(); i++) {
-            if (i==0) {
+            if (i == 0) {
                 name = (mOnlineResults.get(i).getRegion() != null) ? mOnlineResults.get(i).getRegion() : "Unsorted";
                 group = new DialogPreferenceCatalogsGroup(name);
                 Log.d(TAG, "Added group " + name);
@@ -318,8 +318,7 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
                 StringBuilder sb = new StringBuilder();
 
                 String line = null;
-                while ((line = reader.readLine()) != null)
-                {
+                while ((line = reader.readLine()) != null) {
                     sb.append(line + "\n");
                 }
 
@@ -330,15 +329,13 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
                 }
             } catch (Exception e) {
                 Log.e(TAG, "Error parsing server reply:" + e.getMessage());
-            }
-            finally {
-                try{
-                    if(inputStream != null) {
+            } finally {
+                try {
+                    if (inputStream != null) {
                         inputStream.close();
                     }
                     return result;
-                }
-                catch(Exception squish){
+                } catch (Exception squish) {
                     return null;
                 }
             }
@@ -358,6 +355,7 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
 
         /**
          * Converts server json in a CatalogDownload record
+         *
          * @param obj server reply
          * @return parsed server reply
          * @throws JSONException
