@@ -118,7 +118,6 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
      */
     @SuppressLint("NewApi")
     private void initDownloadManager() {
-
         mDownloadManager = (DownloadManager) getContext().getSystemService(Context.DOWNLOAD_SERVICE);
 
         mReceiver = new BroadcastReceiver() {
@@ -137,6 +136,9 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
                             // we're not checking download id here, that is done in handleDownloads
                             final String uriString = c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
                             handleDownloads(uriString);
+                        } else {
+                            final int reason = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_REASON));
+                            Log.e(TAG, "Download failed: " + reason);
                         }
                     }
                 }

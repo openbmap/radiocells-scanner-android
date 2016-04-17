@@ -139,7 +139,10 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
                             // we're not checking download id here, that is done in handleDownloads
                             final String uriString = c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
                             handleDownloads(uriString);
-                        }
+                        } else {
+                        final int reason = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_REASON));
+                        Log.e(TAG, "Download failed: " + reason);
+                    }
                     }
                 }
             }
