@@ -176,7 +176,7 @@
 	<string name="prefs_auto_delete_tracks_summary">在上传成功后自动删除会话</string>
 	<string name="prefs_get_maps_title">获取离线地图</string>
 	<string name="prefs_get_maps_summary">下载离线地图</string>
-	<string name="prefs_check_server">正在检查服务器...</string>
+	<string name="prefs_check_server">正在连接服务器...</string>
 	<string name="downloading">正在下载</string>
 	<string name="invalid_download">无效下载</string>
 	<string name="waypoint">路径点</string>
@@ -190,7 +190,7 @@
 	<string name="activity_credits_activity">制作人员</string>
 	<string name="error_opening_wifi_catalog">打开 Wifi 目录时出错</string>
 	<string name="error_accessing_wifi_catalog">访问 Wifi 目录时出错</string>
-	<string name="build_signature">构建签名：</string>
+	<string name="build_signature">"构建签名: "</string>
 <string name="prefs_credentials_user_summary">如果您还没有账号，请在 https://radiocells.org 上注册（仅上传所需）</string>
 	<string name="prefs_data_ref_database_summary">"插入一个 wifi 目录以在地图上查看已知的 openbmap wifi。这有助于您寻找新的 wifi "</string>
 	<string name="prefs_min_cell_distance_hint">两个蜂窝扫描之间的最小距离（米）</string>
@@ -222,4 +222,5 @@
 <string name="prefs_save_gpx_summary">在导出时，在您的设备上创建一个 GPX 文件</string>
 	<string name="saved_at">"已保存在 "</string>
 <string name="warning_sd_not_writable">"无法写入 SD 卡。也许它已共享到其他设备？ "</string>
+	<string name="prefs_credentials_password_summary">密码：</string>
 	</resources>
