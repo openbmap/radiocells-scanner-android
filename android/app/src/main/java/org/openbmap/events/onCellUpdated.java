@@ -18,12 +18,19 @@
 
 package org.openbmap.events;
 
+import org.openbmap.db.models.CellRecord;
+
 public class onCellUpdated {
 
     public String operator;
-    public String mcc;
-    public String mnc;
-    public int area;
+    public String mcc = CellRecord.MCC_UNKNOWN;
+    public String mnc = CellRecord.MNC_UNKNOWN;
+
+    public String sid = CellRecord.SYSTEM_ID_UNKNOWN;
+    public String bid = CellRecord.BASE_ID_UNKNOWN;
+    public String nid = CellRecord.NETWORK_ID_UNKOWN;
+
+    public int area = CellRecord.AREA_UNKNOWN;
     public String cell_id;
     public String technology;
     public int level;
@@ -31,14 +38,17 @@ public class onCellUpdated {
     /**
      * Fired when new cells scan is available
      * @param operatorName
-     * @param mcc
-     * @param mnc
-     * @param area
-     * @param cell_id
-     * @param technology
-     * @param level
+     * @param mcc MCC
+     * @param mnc MNC
+     * @param sid system id (CDMA only)
+     * @param bid base station id (CDMA only)
+     * @param nid network id (CDMA only)
+     * @param area location area
+     * @param cell_id cell id
+     * @param technology cell technology
+     * @param level level (in dbm)
      */
-    public onCellUpdated(final String operatorName, final String mcc, final String mnc, final int area, final String cell_id, final String technology, final int level) {
+    public onCellUpdated(final String operatorName, final String mcc, final String mnc, final String sid, final String nid, final String bid, final int area, final String cell_id, final String technology, final int level) {
         this.operator = operatorName;
         this.mcc = mcc;
         this.mnc = mnc;
@@ -46,6 +56,9 @@ public class onCellUpdated {
         this.cell_id = cell_id;
         this.technology = technology;
         this.level = level;
+        this.sid = sid;
+        this.nid = nid;
+        this.bid = bid;
     }
 
 }
