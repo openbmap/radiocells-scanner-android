@@ -30,6 +30,8 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -37,6 +39,7 @@ import android.os.Messenger;
 import android.os.PowerManager;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -446,19 +449,35 @@ public class MasterBrainService extends Service {
      * Shows Android notification while this service is running.
      */
     private void showNotification() {
+        PendingIntent intent = PendingIntent.getActivity(this, 0, new Intent(this, TabHostActivity.class), 0);
+
         // Set the icon, scrolling text and timestamp
-        final Notification notification = new Notification(R.drawable.icon_greyed_25x25, getString(R.string.notification_caption),
-                System.currentTimeMillis());
+        //final Notification notification = new Notification(R.drawable.icon_greyed_25x25, getString(R.string.notification_caption),
+        //        System.currentTimeMillis());
+        //notification.setLatestEventInfo(this, getString(R.string.app_name), getString(R.string.notification_caption), contentIntent);
 
-        // The PendingIntent to launch our activity if the user selects this notification
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(this, TabHostActivity.class), 0);
         // Set the info for the views that show in the notification panel.
-        notification.setLatestEventInfo(this, getString(R.string.app_name), getString(R.string.notification_caption), contentIntent);
 
-        /**
-         * TODO display additional infos / actions
-         */
-        mNotificationManager.notify(NOTIFICATION_ID, notification);
+
+        if (VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN) {
+            Notification.Builder builder = new Notification.Builder(this.getApplicationContext());
+            builder.setAutoCancel(false);
+            builder.setContentTitle(getString(R.string.app_name));
+            builder.setContentText(getString(R.string.notification_caption));
+            builder.setSmallIcon(R.drawable.icon_greyed_25x25);
+            builder.setContentIntent(intent);
+            builder.setOngoing(true);
+            mNotificationManager.notify(NOTIFICATION_ID, builder.build());
+        } else if (VERSION.SDK_INT < VERSION_CODES.JELLY_BEAN) {
+            NotificationCompat.Builder compat = new NotificationCompat.Builder(getApplicationContext());
+            compat.setAutoCancel(false);
+            compat.setContentTitle(getString(R.string.app_name));
+            compat.setContentText(getString(R.string.notification_caption));
+            compat.setSmallIcon(R.drawable.icon_greyed_25x25);
+            compat.setContentIntent(intent);
+            compat.setOngoing(true);
+            mNotificationManager.notify(NOTIFICATION_ID, compat.build());
+        }
     }
 
     /**
