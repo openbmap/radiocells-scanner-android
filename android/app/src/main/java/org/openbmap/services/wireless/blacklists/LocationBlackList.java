@@ -73,12 +73,12 @@ public class LocationBlackList {
 	/**
 	 * List of blocked locations
 	 */
-	private final ArrayList<DeadArea> mLocations;
+	private final ArrayList<ForbiddenArea> mBlockList;
 
 	/**
-	 * Dead area is defined by center point and radius
+	 * Dead zone is defined by center point and radius
 	 */
-	private class DeadArea {
+	private class ForbiddenArea {
 		protected Location location;
 		protected long radius;
 
@@ -86,29 +86,29 @@ public class LocationBlackList {
 		 * @param loc
 		 * @param rad
 		 */
-		public DeadArea(final Location loc, final long rad) {
+		public ForbiddenArea(final Location loc, final long rad) {
 			location = loc;
 			radius = rad;
 		}
 	}
 
 	public LocationBlackList() {
-		mLocations = new ArrayList<DeadArea>();
+		mBlockList = new ArrayList<>();
 	}
 
 	/**
 	 * Loads blacklist from xml file
-	 * @param extraUserList - user-provided list (e.g. own homezone)
+	 * @param filename - user-provided list (e.g. own homezone)
 	 * @throws XmlPullParserException
 	 */
-	public final void openFile(final String extraUserList) {
-		if (extraUserList != null) {
+	public final void openFile(final String filename) {
+		if (filename != null) {
 			try {
-				final File file = new File(extraUserList);
-				final FileInputStream userStream = new FileInputStream(file);
-				add(userStream);
+				final File file = new File(filename);
+				final FileInputStream stream = new FileInputStream(file);
+				parseBlocklist(stream);
 			} catch (final FileNotFoundException e) {
-				Log.w(TAG, "User-defined blacklist " + extraUserList + " not found. Skipping");
+				Log.w(TAG, "User-defined blacklist " + filename + " not found. Skipping");
 			} 
 		} else {
 			Log.i(TAG, "No user-defined blacklist provided");
@@ -116,10 +116,10 @@ public class LocationBlackList {
 	}
 
 	/**
-	 * Parses xml file
+	 * Load location blacklist
 	 * @param file
 	 */
-	private void add(final FileInputStream file) {
+	private void parseBlocklist(final FileInputStream file) {
 		try {
 			final XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
 			factory.setNamespaceAware(true);
@@ -168,7 +168,7 @@ public class LocationBlackList {
 					} else if (eventType == XmlPullParser.END_TAG) {
 						if (LOCATION_TAG.equals(xpp.getName())) {
 							if (GeometryUtils.isValidLocation(loc, false)) {
-								mLocations.add(new DeadArea(loc, radius));
+								mBlockList.add(new ForbiddenArea(loc, radius));
 							} else {
 								Log.e(TAG, "Invalid location");
 							}
@@ -182,18 +182,18 @@ public class LocationBlackList {
 		} catch (final XmlPullParserException e) {
 			Log.e(TAG, "Error parsing blacklist");
 		}
-		Log.i(TAG, "Loaded " + mLocations.size() + " location blacklist entries");
+		Log.i(TAG, "Loaded " + mBlockList.size() + " location blacklist entries");
 	}
 
 	/**
-	 * Checks whether given ssid is in ignore list
-	 * @param bssid SSID to check
+	 * Checks whether given location is in ignore list
+	 * @param location location
 	 * @return true, if in ignore list
 	 */
 	@SuppressLint("DefaultLocale")
 	public final boolean contains(final Location location) {
 		boolean match = false;
-		for (final DeadArea dead : mLocations) {
+		for (final ForbiddenArea dead : mBlockList) {
 			if (location.distanceTo(dead.location) < dead.radius) {
 				match = true; 
 				break;

@@ -296,7 +296,7 @@
 	<string name="prefs_auto_delete_tracks_summary">Delete sessions after successful upload automatically</string>
 	<string name="prefs_get_maps_title">Get offline map</string>
 	<string name="prefs_get_maps_summary">Download offline map</string>
-	<string name="prefs_check_server">Checking server...</string>
+	<string name="prefs_check_server">Contacting server...</string>
 	<string name="downloading">Downloading</string>
 	<string name="invalid_download">Invalid download</string>
 	<string name="prefs_gpx_verbosity_title">GPX verbosity</string>

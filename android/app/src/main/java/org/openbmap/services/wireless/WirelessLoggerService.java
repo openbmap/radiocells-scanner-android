@@ -310,8 +310,7 @@ public class WirelessLoggerService extends AbstractService {
                 + Preferences.BLACKLIST_SUBDIR;
 
         mLocationBlacklist = new LocationBlackList();
-        mLocationBlacklist.openFile(
-                mBlacklistPath + File.separator + Radiobeacon.DEFAULT_LOCATION_BLOCK_FILE);
+        mLocationBlacklist.openFile(mBlacklistPath + File.separator + Radiobeacon.DEFAULT_LOCATION_BLOCK_FILE);
 
         mSsidBlackList = new SsidBlackList();
         mSsidBlackList.openFile(
@@ -1362,6 +1361,9 @@ public class WirelessLoggerService extends AbstractService {
         EventBus.getDefault().post(new onCellUpdated(recent.getOperatorName(),
                 recent.getMcc(),
                 recent.getMnc(),
+                recent.getSystemId(),
+                recent.getNetworkId(),
+                recent.getBaseId(),
                 recent.getArea(),
                 cellId,
                 CellRecord.TECHNOLOGY_MAP().get(recent.getNetworkType()),

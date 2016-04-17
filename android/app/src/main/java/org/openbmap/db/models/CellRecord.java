@@ -33,11 +33,15 @@ import java.util.Map;
  */
 public class CellRecord extends AbstractLogEntry<CellRecord> {
 
-	private static final int AREA_UNKNOWN = -1;
-	private static final int PSC_UNKNOWN = -1;
-	private static final String SYSTEM_ID_UNKNOWN = "-1";
-	private static final String NETWORK_ID_UNKOWN = "-1";
-	private static final String BASE_ID_UNKNOWN = "-1";
+    public static final String MCC_UNKNOWN = "-1";
+    public static final String MNC_UNKNOWN = "-1";
+    public static final String SYSTEM_ID_UNKNOWN = "-1";
+    public static final String NETWORK_ID_UNKOWN = "-1";
+    public static final String BASE_ID_UNKNOWN = "-1";
+
+	public static final int AREA_UNKNOWN = -1;
+	public static final int PSC_UNKNOWN = -1;
+
 	private static final int STRENGTH_UNKNOWN = -1;
 	/**
 	 * GSM cell id; UMTS and other UTRAN networks LCID; -1 if unknown
@@ -141,25 +145,31 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	public CellRecord(final int session) {
 		setSessionId(session);
 
-		setLogicalCellId(-1);
+        setMnc(MNC_UNKNOWN);
+        setMcc(MCC_UNKNOWN);
+        setSystemId(SYSTEM_ID_UNKNOWN);
+        setNetworkId(NETWORK_ID_UNKOWN);
+        setBaseId(BASE_ID_UNKNOWN);
+
+        setLogicalCellId(-1);
         setArea(AREA_UNKNOWN);
         setUtranRnc(-1);
         setActualCid(-1);
         setPsc(PSC_UNKNOWN);
-		setSystemId(SYSTEM_ID_UNKNOWN);
-		setNetworkId(NETWORK_ID_UNKOWN);
-		setBaseId(BASE_ID_UNKNOWN);
 		setNetworkType(TelephonyManager.NETWORK_TYPE_UNKNOWN);
-		
 	}
 
 	/**
-	 * used for contains method
+	 * Checks if two cells are equal
+     * used for contains method
 	 */
     public final boolean equals(final CellRecord arg) {
         return (getMcc().equals(arg.getMcc()))
                 && (getMnc().equals(arg.getMnc()))
                 && (getArea() == arg.getArea())
+                && (getSystemId() == arg.getSystemId())
+                && (getNetworkId() == arg.getNetworkId())
+                && (getBaseId() == arg.getBaseId())
                 && (getLogicalCellId() == arg.getLogicalCellId());
     }
 
@@ -174,6 +184,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	@Override
 	public final String toString() {
         return "Cell " + mLogicalCellId + " / Operator " + mOperatorName + ", " + mOperator + " / MCC " + mMcc + " / MNC " + mMnc
+                + " / SID " + mSystemId + " / NID " + mNetworkId + " / BID " + mBaseId
                 + " / Type " + mNetworkType + " / LAC " + mArea + " / PSC " + mPsc + " / dbm " + mStrengthdBm + " / Session Id " + mSessionId;
     }
 
@@ -185,18 +196,34 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 		return -1;
 	}
 
+    /**
+     * Gets operator name
+     * @return operator name
+     */
 	public final String getOperatorName() {
 		return mOperatorName;
 	}
 
+    /**
+     * Sets operator name
+     * @param operatorName operator name
+     */
 	public final void setOperatorName(final String operatorName) {
 		this.mOperatorName = operatorName;
 	}
 
+    /**
+     * Gets operator (don't mixup with operator name!)
+     * @return
+     */
 	public final String getOperator() {
 		return mOperator;
 	}
 
+    /**
+     * Sets operator (don't mixup with operator name!)
+     * @param operator
+     */
 	public final void setOperator(final String operator) {
 		this.mOperator = operator;
 	}
@@ -205,15 +232,28 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 		return mMcc;
 	}
 
+    /**
+     * Sets MCC (mobile country code)
+     * @param mcc MCC
+     */
 	public final void setMcc(final String mcc) {
 		this.mMcc = mcc;
 	}
 
+    /**
+     * Gets MNC (mobile network code)
+     * @return mnc Mobile network code
+     */
 	public final String getMnc() {
 		return mMnc;
 	}
 
-	public final void setMnc(final String mnc) {
+    /**
+     * Sets MNC (mobile network code)
+     * @param mnc MNC
+     */
+
+    public final void setMnc(final String mnc) {
 		this.mMnc = mnc;
 	}
 
@@ -329,7 +369,11 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	public final void setStrengthAsu(final int strengthAsu) {
 		this.mStrengthAsu = strengthAsu;
 	}
-	
+
+    /**
+     * Checks if cell a CDMA
+     * @return true if CDMA cell
+     */
 	public final boolean isCdma() {
 		return mIsCdma;
 	}
@@ -338,6 +382,10 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 		this.mIsCdma = isCdma;
 	}
 
+    /**
+     * Checks if cell is serving cell (instead of neighboring cell)
+     * @return
+     */
 	public final boolean isServing() {
 		return mIsServing;
 	}
@@ -346,6 +394,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 		this.mIsServing = isServing;
 	}
 
+    // TODO drop... Should always be opposite of isServing()??
 	public final boolean isNeighbor() {
 		return mIsNeighbor;
 	}
@@ -417,26 +466,50 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 
 	}
 
+	/**
+	 * Gets base station id (CDMA only)
+	 * @return base station id
+     */
 	public final String getBaseId() {
 		return mBaseId;
 	}
 
+    /**
+     * Sets base station id (CDMA only)
+     * @param baseId base station id
+     */
 	public final void setBaseId(final String baseId) {
 		this.mBaseId = baseId;
 	}
 
-	public final String getNetworkId() {
+    /**
+     * Get network id (CDMA only)
+     * @return network id
+     */
+    public final String getNetworkId() {
 		return mNetworkId;
 	}
 
+    /**
+     * Sets network id (CDMA only)
+     * @param networkId network id
+     */
 	public final void setNetworkId(final String networkId) {
 		this.mNetworkId = networkId;
 	}
 
+    /**
+     * Gets system id (CDMA only)
+     * @return system id
+     */
 	public final String getSystemId() {
 		return mSystemId;
 	}
 
+    /**
+     * Sets system id (CDMA only)
+     * @param systemId system id
+     */
 	public final void setSystemId(final String systemId) {
 		this.mSystemId = systemId;
 	}

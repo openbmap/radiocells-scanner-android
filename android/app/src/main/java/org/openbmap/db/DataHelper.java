@@ -695,10 +695,10 @@ public class DataHelper {
 		cell.setLogicalCellId(cursor.getInt(colLogicalCellId));
 		cell.setActualCid(cursor.getInt(colActualCellId));
 		cell.setUtranRnc(cursor.getInt(colUtranRnc));
-		cell.setPsc(cursor.getInt(colPsc)); 
+		cell.setPsc(cursor.getInt(colPsc));
 		cell.setOperatorName(cursor.getString(colOperatorName));
-		cell.setOperator(cursor.getString(colOperator)); 
-		cell.setMcc(cursor.getString(colMcc)); 
+		cell.setOperator(cursor.getString(colOperator));
+		cell.setMcc(cursor.getString(colMcc));
 		cell.setMnc(cursor.getString(colMnc));
 		cell.setArea(cursor.getInt(colLac));
 		cell.setBaseId(cursor.getString(colBaseId));
