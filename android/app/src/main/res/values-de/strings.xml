@@ -179,7 +179,7 @@
     <string name="prefs_block_homezone_summary">Verhindert die Aufzeichnung im Umkreis von 500m um Deinen aktuellen Standort.Wenn Du lieber XML-Dateien bearbeitest, trag die Sperrzone in die Datei custom_location.xml auf Deiner SD-Card ein</string>
     <string name="prefs_block_homezone_title">Sperrzone einrichten</string>
     <string name="prefs_check_gps_startup_summary">Zeige einen Hinweis, falls GPS deaktiviert und </string>
-    <string name="prefs_check_server">Prüfe Server...</string>
+    <string name="prefs_check_server">Kontaktiere Server...</string>
     <string name="prefs_clean_database_summary">Die Datenbank wächst im Laufe der Zeit. Klick hier, um nicht mehr benötigten Speicherplatz freizugeben</string>
     <string name="prefs_gps_logging_interval_summary">0 bedeutet, so schnell wie möglich (schlecht für Deine Batterie)</string>
     <string name="prefs_gps_os_settings_summary">Klick hier, um Deine GPS-Systemeinstellungen zu prüfen</string>
@@ -220,4 +220,5 @@
     <string name="prefs_scan_mode_summary">Warnung: Der Akku wird viel schneller leer, wenn der Hochleistungsmodus gewählt wird!</string>
 <string name="prefs_credentials_anonymous_upload">Anonymer Upload</string>
     <string name="saved_at">"Gespeichert unter "</string>
-</resources>
+<string name="prefs_credentials_password_summary">Passwörter:</string>
+	</resources>
