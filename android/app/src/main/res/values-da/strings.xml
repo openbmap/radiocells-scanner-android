@@ -66,7 +66,7 @@
 	<string name="mapsforge_license">GNU LGPL3 licens</string>
 	<string name="map_data_source">Kortdata: Openstreetmap</string>
 	<string name="map_data_license">ODbL licens</string>
-	<string name="other_credits">"Nogle gode ideer blev taget fra OSMTracker, stack overflow drøftelser og mange, mange andre "</string>
+	<string name="other_credits">"Mange tak til alle bidragydere og oversættere!\nEn særlig tak til mapsforge og OSMTracker-udviklere. "</string>
 	<string name="sessions">Sessioner</string>
 	<string name="capabilities">Kapaciteter</string>
 	<string name="frequency">Frekvens</string>
@@ -111,7 +111,7 @@
 	<string name="app_description">Openbmap.org WiFi og celle logger</string>
 	<string name="error">Fejl</string>
 	<string name="no_data_connection">Ingen dataforbindelse!</string>
-	<string name="radiobeacon_licence_caption">Klient licens</string>
+	<string name="radiobeacon_licence_caption">Klient</string>
 	<string name="session_uploaded">Session overført</string>
 	<string name="do_you_want_to_delete_this_session">Slet sessionen?</string>
 	<string name="do_you_want_to_delete_processed_sessions">Slet overførte sessioner?</string>
@@ -213,10 +213,16 @@
 	<string name="show_only_free">Vis kun åbne WLAN</string>
 	<string name="graph_title">Signalstyrke radiocelle</string>
 	<string name="prefs_auto_delete_tracks_summary">Slet sessioner automatisk efter succesfuld overførelse</string>
-	<string name="prefs_check_server">Kontrollerer server...</string>
+	<string name="prefs_check_server">Kontakter server...</string>
 	<string name="invalid_download">Ugyldig hentning</string>
 	<string name="prefs_gpx_verbosity_title">GPX detaljeringsgrad</string>
 	<string name="prefs_scan_mode">Wifi scanningstilstand</string>
     <string name="prefs_scan_mode_summary">Advarsel: Valg af højtydendetilstand vil hurtigt dræne batteriet!</string>
 	<string name="saved_at">"Gemt på "</string>
-</resources>
+<string name="error_version_check_body">"Kontroller online-forbindelsen!\n(fx. i browseren).\nPrøv en automatisk rettelse nu?\n(Skifter mellem wifi tilstand for at udløse en reconnect) "</string>
+	<string name="time_since_last_cell_update">Sidste celle opdatering %s siden</string>
+	<string name="stopped_tracking">Stoppet sporing</string>
+	<string name="activity_credits_activity">Medvirkende</string>
+	<string name="build_signature">"Version signatur "</string>
+    <string name="credits">Medvirkende</string>
+	</resources>
