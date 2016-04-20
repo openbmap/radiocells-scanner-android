@@ -2,7 +2,7 @@
 <resources>
     <!-- Preferences -->
     <string name="prefs">Ustawienia</string>
-    <string name="prefs_logging">Logging</string>
+    <string name="prefs_logging">Logowanie</string>
     <string name="prefs_wifi_catalog">Baza danych wifi</string>
     <!-- I translated wifi catalog as wifi database. In polish it sound more profesional and human friendly -->
     <string name="prefs_maps">Mapy</string>
@@ -31,7 +31,7 @@
     <string name="prefs_data_map">Mapa offline</string>
 	<string name="prefs_data_map_summary">Przeglądaj mapy offline</string>
     <string name="prefs_data_ref_database">Wybierz bazę danych wifi</string>
-	<string name="prefs_data_ref_database_summary">Zainstaluj bazę danych wifi, aby zobaczyć wszystkie znane dla openbmap sieci wifi na mapie. Pomaga przy szukaniu nowych sieci.</string>
+	<string name="prefs_data_ref_database_summary">"Zainstaluj bazę danych wifi, aby zobaczyć wszystkie znane dla openbmap sieci wifi na mapie. Pomaga przy szukaniu nowych sieci "</string>
     <string name="prefs_download_wifi_catalog">Pobierz bazę danych wifi</string>
     <string name="prefs_download_wifi_catalog_summary">Aktualny rozmiar (10-400MB)</string>
     <!-- Current size itself as a number suppose to be variable since its going to only grow and grow -->
@@ -59,7 +59,7 @@
 	<string name="prefs_clean_database_summary">Baza danych rośnie z czasem. Kliknij aby odzyskać nieużywane miejsce poprzez reorganizację bazy danych</string>
     <string name="prefs_clean_database_title">Reorganizuj bazę danych</string>
     <string name="prefs_privacy">Prywatność</string>
-	<string name="prefs_block_homezone_summary">Blokuj logowanie w obrębe 500m od aktualnej pozycji. Możesz również bezpośrednio zmodyfikować custom_location.xml na Twojej karcie SD.</string>
+	<string name="prefs_block_homezone_summary">"Nie loguj w promieniu 500m od aktualnej pozycji. Możesz również bezpośrednio zmodyfikować custom_location.xml na karcie SD "</string>
     <string name="prefs_block_homezone_title">Nie skanuj mojego podwórka</string>
 	<string name="prefs_anonymise_ssid_summary">Zastąp SSID przy wysyłaniu przez MD5 w celu złagodzenia problemów związanych z prywatnością (SSID \'John Does Wifi\' będzie wyglądać podobnie do \'FD33531\')</string>
     <string name="prefs_anonymise_ssid">Anonimizuj SSID w wysyłanych plikach</string>
@@ -99,12 +99,12 @@
     <string name="channel">Kanał</string>
     <string name="date">Data</string>
     <string name="please_select_map">Proszę najpierw wybierz plik mapy!!</string>
-	<string name="error_dowload_error">Błąd: Pobieranie przerwane. Może połączenie zostało zerwane?</string>
+	<string name="error_dowload_error">"Błąd: Pobieranie przerwane. Może połączenie zostało zerwane? "</string>
     <string name="warning_outdated_client">Wersja Twojego klienta jest przestarzała.\nProszę zaktualizuj!</string>
     <string name="warning_no_server_connection">Nie można było połączyć się z serwerem. Czy jesteś online?</string>
 	<string name="warning_client_version_not_checked">Nie można było połączyć się z serwerem. Jesteś offline albo serwer nie odpowiada!</string>
-	<string name="warning_session_closed">Nie można kontynuować. Sesja została już wysłana.</string>
-	<string name="warning_already_uploaded">Pomijanie sesji. Sesja została już wysłana!</string>
+	<string name="warning_session_closed">"Nie można kontynuować. Sesja została już wysłana. "</string>
+	<string name="warning_already_uploaded">"Pomijanie sesji. Sesja została już wysłana! "</string>
     <string name="question_delete_session">Czy chcesz usunąć sesję?</string>
     <string name="session_already_uploaded">Sesja została już wysłana</string>
     <string name="confirmation">Potwierdzenie</string>
