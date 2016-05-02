@@ -1,3 +1,0 @@
-[submodule "lua-nginx-osm"]
-	path = lua-nginx-osm
-	url = https://github.com/miurahr/lua-nginx-osm.git
