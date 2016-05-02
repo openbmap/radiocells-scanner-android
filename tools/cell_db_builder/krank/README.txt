@@ -1,1 +1,0 @@
-Folder for files which couldn't be parsed due to invalid structure
