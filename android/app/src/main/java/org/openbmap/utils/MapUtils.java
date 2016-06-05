@@ -214,8 +214,7 @@ public final class MapUtils {
     /**
 	 * Opens map file
 	 * @param context
-	 * @return
-	 * @throws IOException
+	 * @return map file, null if file not found or error while opening map file
 	 */
 	public static MapFile getMapFile(final Context context) {
 		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -225,7 +224,7 @@ public final class MapUtils {
 		if (file.exists()) {
 			try {
 				return new MapFile(file);
-			} catch(MapFileException mfe) {
+			} catch (MapFileException mfe) {
 				Toast.makeText(context,
 							   context.getString(R.string.failed_to_load_map_file_can_be_damaged),
 							   Toast.LENGTH_SHORT).show();
