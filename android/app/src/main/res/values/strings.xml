@@ -318,4 +318,5 @@
     <string name="prefs_scan_mode_summary">Warning: Selecting high performance mode will massively drain battery!</string>
 	<string name="saved_at">"Saved at "</string>
 	<string name="prefs_map_online">Online (Mapquest)</string>
+	<string name="failed_to_load_map_file_can_be_damaged">Failed to load map. File can be damaged.</string>
 </resources>

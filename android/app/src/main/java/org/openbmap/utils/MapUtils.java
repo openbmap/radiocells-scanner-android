@@ -48,6 +48,7 @@ import org.mapsforge.map.reader.header.MapFileException;
 import org.mapsforge.map.rendertheme.InternalRenderTheme;
 import org.mapsforge.map.rendertheme.XmlRenderTheme;
 import org.openbmap.Preferences;
+import org.openbmap.R;
 
 import java.io.File;
 import java.io.IOException;
@@ -225,7 +226,9 @@ public final class MapUtils {
 			try {
 				return new MapFile(file);
 			} catch(MapFileException mfe) {
-				Toast.makeText(context, "Failed to load map. File can be damaged.", Toast.LENGTH_SHORT).show();
+				Toast.makeText(context,
+							   context.getString(R.string.failed_to_load_map_file_can_be_damaged),
+							   Toast.LENGTH_SHORT).show();
 				Log.e(TAG, "Failed to load map, file can be damaged " + mfe.getMessage(), mfe);
 				return null;
 			}
