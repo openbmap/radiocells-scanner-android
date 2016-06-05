@@ -27,7 +27,7 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.util.Log;
 
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +43,7 @@ public class ContentProvider extends android.content.ContentProvider {
 	/**
 	 * Authority for Uris
 	 */
-	public static final String AUTHORITY = Radiobeacon.class.getPackage().getName() + ".provider";
+	public static final String AUTHORITY = RadioBeacon.class.getPackage().getName() + ".provider";
 
 	/**
 	 * Uri for wifi measurements
@@ -84,7 +84,7 @@ public class ContentProvider extends android.content.ContentProvider {
 	 * Can be appended to certain URIs to get overview instead of all items
 	 * Typically this are sort of SELECT DISTINCT queries
 	 */
-	public static final String CONTENT_URI_OVERVIEW_SUFFIX = "overview"; 
+	public static final String CONTENT_URI_OVERVIEW_SUFFIX = "overview";
 
 	/**
 	 * Can be appended to certain URIs to get only items of specific session
@@ -108,7 +108,7 @@ public class ContentProvider extends android.content.ContentProvider {
 
 
 	/**
-	 * URI matcher - defines how URIs are translated to URI_CODE which is used internally 
+	 * URI matcher - defines how URIs are translated to URI_CODE which is used internally
 	 */
 	static {
 		uriMatcher.addURI(AUTHORITY, Schema.TBL_SESSIONS, Schema.URI_CODE_SESSIONS);
@@ -146,9 +146,9 @@ public class ContentProvider extends android.content.ContentProvider {
 	public final boolean onCreate() {
 		mDbHelper = new DatabaseHelper(getContext().getApplicationContext());
 		final SQLiteDatabase db = mDbHelper.getWritableDatabase();
-		
+
 		// Enable foreign key constraints (per connection)
-		db.execSQL("PRAGMA foreign_keys = ON"); 
+		db.execSQL("PRAGMA foreign_keys = ON");
 		return true;
 	}
 
@@ -165,7 +165,7 @@ public class ContentProvider extends android.content.ContentProvider {
 	/**
 	 * INSERT Statements
 	 * @param uri base uri
-	 * @return return uri + appended id 
+	 * @return return uri + appended id
 	 */
 	@Override
 	public final Uri insert(final Uri uri, final ContentValues values) {
@@ -211,7 +211,7 @@ public class ContentProvider extends android.content.ContentProvider {
 	 * Inserts a wifi measurement
 	 * @param baseUri
 	 * @param values
-	 * @return 
+	 * @return
 	 */
 	private Uri insertWifiMeasurement(final Uri baseUri, final ContentValues values) {
 		if (values.containsKey(Schema.COL_BEGIN_POSITION_ID) && values.containsKey(Schema.COL_END_POSITION_ID) && values.containsKey(Schema.COL_TIMESTAMP)) {
@@ -231,7 +231,7 @@ public class ContentProvider extends android.content.ContentProvider {
 	 * Inserts a position
 	 * @param baseUri
 	 * @param values
-	 * @return 
+	 * @return
 	 */
 	private Uri insertPosition(final Uri baseUri, final ContentValues values) {
 		if (values.containsKey(Schema.COL_LONGITUDE)
@@ -254,7 +254,7 @@ public class ContentProvider extends android.content.ContentProvider {
 	 * Inserts a log record
 	 * @param baseUri
 	 * @param values
-	 * @return 
+	 * @return
 	 */
 	private Uri insertLog(final Uri baseUri, final ContentValues values) {
 		if (values.containsKey(Schema.COL_TIMESTAMP)) {
@@ -274,7 +274,7 @@ public class ContentProvider extends android.content.ContentProvider {
 	 * Inserts a session record
 	 * @param baseUri
 	 * @param values
-	 * @return 
+	 * @return
 	 */
 	private Uri insertSession(final Uri baseUri, final ContentValues values) {
 		// Check that mandatory columns are present.
@@ -415,7 +415,7 @@ public class ContentProvider extends android.content.ContentProvider {
                 String column = addColumntoSelection(Schema.COL_SESSION_ID, selectionIn);
                 column = addColumntoSelection(Schema.COL_SOURCE, column);
                 String[] args = addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn);
-                args = addtoSelectionArgs(Radiobeacon.PROVIDER_USER_DEFINED, args);
+                args = addtoSelectionArgs(RadioBeacon.PROVIDER_USER_DEFINED, args);
        		    return queryTable(ContentProvider.CONTENT_URI_POSITION, Schema.TBL_POSITIONS, projection, column, args, sortOrder, null, null);
             case Schema.URI_CODE_LOGS_BY_SESSION:
 				// Returns all log files for given session.
@@ -441,9 +441,9 @@ public class ContentProvider extends android.content.ContentProvider {
 	 */
 	private String addColumntoSelection(final String colName, final String selectionIn) {
 		String selection = colName + " = ?";
-		// Deal with any additional selection info provided by the caller 
+		// Deal with any additional selection info provided by the caller
 		if (null != selectionIn) {
-			selection += " AND " + selectionIn;      
+			selection += " AND " + selectionIn;
 		}
 		return selection;
 	}
@@ -480,8 +480,8 @@ public class ContentProvider extends android.content.ContentProvider {
 	 * @param selectionIn
 	 * @param selectionArgsIn
 	 * @param sortOrder
-	 * @param limit 
-	 * @param groupBy 
+	 * @param limit
+	 * @param groupBy
 	 * @return
 	 */
 	private Cursor queryTable(
@@ -494,7 +494,7 @@ public class ContentProvider extends android.content.ContentProvider {
             final String groupBy, final String limit) {
 
 		SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
-		qb.setTables(tableName); 
+		qb.setTables(tableName);
 		final Cursor cursor = qb.query(mDbHelper.getReadableDatabase(), projection, selectionIn, selectionArgsIn, groupBy, null, sortOrder, limit);
 		qb = null;
 
@@ -525,11 +525,11 @@ public class ContentProvider extends android.content.ContentProvider {
 				return updateTable(uri, Schema.TBL_WIFIS, values, selectionIn, selectionArgsIn);
 			default:
 				throw new IllegalArgumentException("Unknown URI: " + uri);
-		} 
+		}
 	}
 
 	/**
-	 * id is passed as uri's last path segment 
+	 * id is passed as uri's last path segment
 	 * @param uri
 	 * @param values
 	 * @param selection

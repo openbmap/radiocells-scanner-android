@@ -19,7 +19,7 @@
 package org.openbmap.utils;
 
 import org.mapsforge.core.model.LatLong;
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 
 /**
  * LatLong type with support for session
@@ -34,7 +34,7 @@ public class SessionLatLong extends LatLong {
 		 */
 		public SessionLatLong(final double latitude, final double longitude) {
 			super(latitude, longitude);
-			setSession(Radiobeacon.SESSION_NOT_TRACKING);
+			setSession(RadioBeacon.SESSION_NOT_TRACKING);
 		}
 		public SessionLatLong(final double latitude, final double longitude, final int session) {
 			super(latitude, longitude);
@@ -46,5 +46,5 @@ public class SessionLatLong extends LatLong {
 		public final void setSession(final int session) {
 			this.mSession = session;
 		}
-		
+
 	}

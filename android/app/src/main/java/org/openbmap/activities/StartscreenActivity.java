@@ -37,7 +37,7 @@ import android.widget.Toast;
 import org.greenrobot.eventbus.EventBus;
 import org.openbmap.Preferences;
 import org.openbmap.R;
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.Session;
 import org.openbmap.events.onStartTracking;
@@ -350,7 +350,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 * @param id
 	 */
 	public final void deleteConfirmed(final int id) {
-		if (id == Radiobeacon.SESSION_NOT_TRACKING) {
+		if (id == RadioBeacon.SESSION_NOT_TRACKING) {
 			return;
 		}
 
@@ -508,11 +508,11 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	@Override
 	public void onAlertPositiveClick(final int alertId, final String args) {
 		if (alertId == ID_DELETE_ALL) {
-			final int id = (args != null ? Integer.valueOf(args) : Radiobeacon.SESSION_NOT_TRACKING);
+			final int id = (args != null ? Integer.valueOf(args) : RadioBeacon.SESSION_NOT_TRACKING);
 			stopCommand(id);
 			deleteAllConfirmed();
 		} else if (alertId == ID_DELETE_SESSION) {
-			final int id = (args != null ? Integer.valueOf(args) : Radiobeacon.SESSION_NOT_TRACKING);
+			final int id = (args != null ? Integer.valueOf(args) : RadioBeacon.SESSION_NOT_TRACKING);
 			stopCommand(id);
 			deleteConfirmed(id);
 		} else if (alertId == ID_DELETE_PROCESSED) {

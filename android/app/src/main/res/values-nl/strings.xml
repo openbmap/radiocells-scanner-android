@@ -1,20 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
     <!-- Preferences -->
-    <string name="prefs">Instellingen</string>
     <string name="prefs_logging">Logging</string>
     <string name="prefs_wifi_catalog">Wifi Catalog</string>
     <string name="prefs_maps">Kaarten</string>
-    <string name="prefs_gps_os_settings">Phone\'s GPS settings</string>
-    <string name="prefs_gps_os_settings_summary">Click to see your phone\'s GPS settings</string>
-    <string name="prefs_check_gps_startup">Check GPS at startup</string>
-	<string name="prefs_check_gps_startup_summary">Warn if GPS is disabled at startup, and offer to
-		enable it
-	</string>
     <string name="prefs_gps_logging_interval">GPS logging interval</string>
 	<string name="prefs_gps_logging_interval_summary">"Gebruik 0 voor de kortst mogelijke (invloed op de levensduur van de batterij) "</string>
     <string name="prefs_gps_logging_interval_seconds">seconden</string>
-    <string name="prefs_ui">User interface</string>
     <string name="prefs_map_none">Geen</string>
     <string name="prefs_ui_keep_screen_on">Keep screen on</string>
 	<string name="prefs_ui_keep_screen_on_summary">Prevent screen locking after idle time

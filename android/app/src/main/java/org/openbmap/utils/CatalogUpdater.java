@@ -62,10 +62,10 @@ public class CatalogUpdater extends AsyncTask<Void, Void, Void> {
 	}
 
 	@Override
-	protected final Void doInBackground(final Void... args) {         
+	protected final Void doInBackground(final Void... args) {
 
 		try {
-			// skipping if no reference database set 
+			// skipping if no reference database set
 			if (prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_NONE).equals(Preferences.VAL_CATALOG_NONE)) {
 				Log.w(TAG, "Nothing to update: no wifi catalog set");
 				return null;
@@ -113,29 +113,29 @@ public class CatalogUpdater extends AsyncTask<Void, Void, Void> {
 				newWifi.put("longitude", cursorWifis.getDouble(2));
 				newWifi.put("source", 99);
 				newWifis.add(newWifi);
-				
+
 				updateLater.add(cursorWifis.getString(0));
 			}
-			
+
 			Log.i(TAG, "Pending inserts " + cursorWifis.getCount());
 			cursorWifis.close();
 			localDb.close();
-			
+
 			catalogDb.beginTransaction();
 			try {
 				for (ContentValues add : newWifis) {
 					catalogDb.insertWithOnConflict("wifi_zone", null, add, SQLiteDatabase.CONFLICT_IGNORE);
 				}
 				catalogDb.setTransactionSuccessful();
-			} finally {         
+			} finally {
 				catalogDb.endTransaction();
 		    }
-			
+
 			Log.i(TAG, "Added wifis to catalog, updating known wifi tag for all sessions");
 			ContentResolver contentResolver = mContext.getContentResolver();
 			ContentValues updateExisting = new ContentValues();
 			updateExisting.put(Schema.COL_KNOWN_WIFI, 2);
-			
+
 			for (String bssid : updateLater) {
 				// reset is_new_wifi status
 				contentResolver.update(ContentProvider.CONTENT_URI_WIFI, updateExisting,
@@ -147,9 +147,9 @@ public class CatalogUpdater extends AsyncTask<Void, Void, Void> {
 			catalogDb.close();
 			Log.i(TAG, "Catalog update finished ");
 		} catch (SQLiteException e) {
-			Log.e(TAG, "SQL exception occured: " + e.toString());
+			Log.e(TAG, "SQL exception occurred: " + e.toString(), e);
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.e(TAG, "Unexpected exception occurred: " + e.toString(), e);
 		}
 		return null;
 	}

@@ -1,17 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<resources><string name="prefs">設定</string>
+<resources>
 	<string name="prefs_logging">ログ</string>
 	<string name="prefs_wifi_catalog">Wifi カタログ</string>
 	<string name="prefs_maps">マップ</string>
-	<string name="prefs_gps_os_settings">電話の GPS 設定</string>
-	<string name="prefs_gps_os_settings_summary">クリックすると、お使いの電話の GPS 設定を参照します</string>
-	<string name="prefs_check_gps_startup">起動時に GPS をチェック</string>
-	<string name="prefs_check_gps_startup_summary">起動時に GPS が無効になっている場合に警告します</string>
 	<string name="prefs_gps_logging_interval">GPS ログ間隔</string>
 	<string name="prefs_gps_logging_interval_summary">"最短は 0 を使用してください (バッテリーの寿命に影響を与えます) "</string>
 	<string name="prefs_gps_logging_interval_seconds">秒</string>
 	<string name="prefs_save_gpx">GPX 追跡を保存</string>
-	<string name="prefs_ui">ユーザー インターフェイス</string>
 	<string name="prefs_map_none">なし</string>
 	<string name="prefs_ui_keep_screen_on">画面をオンのままにする</string>
 	<string name="prefs_ui_keep_screen_on_summary">"アイドル時間後の画面ロックを防止します "</string>
@@ -35,8 +30,6 @@
 	<string name="prefs_min_wifi_distance_hint">"スキャンする 2 つの wifi 間の最小距離 (メートル) "</string>
 	<string name="prefs_req_gps_accuracy">GPS しきい値</string>
 	<string name="prefs_req_gps_accuracy_hint">"しきい値より GPS の精度が悪い場合、スキャン結果が破棄されます (メートル単位) "</string>
-	<string name="prefs_display_always_on">常に画面をオン</string>
-	<string name="prefs_display_always_on_summary">追跡中に画面を常にオンにします。バッテリーを節約するには無効にしてください</string>
 	<string name="prefs_debug">デバッグ設定</string>
 	<string name="prefs_simulate_upload_summary">データをエクスポートするのみ。サーバーにアップロードしません</string>
 	<string name="prefs_simulate_upload">openbmap.org へのアップロードをスキップ</string>
@@ -82,33 +75,17 @@
 	<string name="n_a">N/A</string>
 	<string name="capabilities">機能</string>
 	<string name="frequency">周期</string>
-	<string name="channel">チャネル</string>
 	<string name="date">日付</string>
-	<string name="please_select_map">まずマップのファイルを選択してください!</string>
-	<string name="error_dowload_error">"エラー: ダウンロードに失敗しました。接続が中断されませんでしたか? "</string>
 	<string name="warning_outdated_client">クライアントのバージョンが古すぎます。\nアップデートしてください!</string>
-	<string name="warning_no_server_connection">サーバーに接続できませんでした。オンラインになっていますか?</string>
 	<string name="warning_client_version_not_checked">サーバーに接続できませんでした。オフラインまたはサーバーがダウンしています!</string>
 	<string name="warning_session_closed">"再開できません!セッションは既にアップロードされています。 "</string>
-	<string name="warning_already_uploaded">"セッションはアップロードされません。既にアップロードされています! "</string>
-	<string name="question_delete_session">セッションを削除しますか?</string>
-	<string name="session_already_uploaded">セッションはすでにアップロード済です</string>
-	<string name="confirmation">確認</string>
-	<string name="user_or_password_missing">ユーザー名またはパスワードが間違っています!</string>
-	<string name="question_enter_user">今、ユーザー名とパスワードを入力しますか?</string>
 	<string name="deleted">削除しました!</string>
 	<string name="warning_sd_not_writable">"SD カードに書き込むことができません。おそらくデスクトップ PC にマウントされていませんか? "</string>
 	<string name="error_save_file_failed">"ダウンロードに失敗しました! SD カード / アクセス許可を確認してください! "</string>
-	<string name="error_create_directory_failed">データ ディレクトリーを作成できませんでした</string>
 	<string name="tap_hotspot_to_see_details">Wifi をタップすると、詳細を表示します</string>
-	<string name="start_tracking">追跡を開始</string>
 	<string name="stop_tracking">追跡を停止</string>
 	<string name="battery_warning">バッテリー残量低: 追跡を停止します</string>
-	<string name="version">バージョン:</string>
 
-	<string name="warning">警告!</string>
-	<string name="hint_notification">ここをタップすると、メイン画面を表示します</string>
-	<string name="notification">ラジオビーコンの追跡中 (#{0})</string>
 	<string name="notification_caption">ラジオビーコンのスキャン中</string>
 	<string name="exporting_wifis">Wifi のエクスポート中</string>
 	<string name="uploading_wifis">Wifi のアップロード中</string>
@@ -124,24 +101,16 @@
 	<string name="upload_skipped">"アップロードをスキップしました (誤って発生した場合は、デバッグ設定を確認してください) "</string>
 	<string name="preparing_export">エクスポートの準備中..</string>
 	<string name="app_description">Openbmap.org Wifi と基地局のログ取得</string>
-	<string name="error">エラー</string>
-	<string name="no_data_connection">データ接続がありません!</string>
 	<string name="radiobeacon_licence_caption">クライアント</string>
-	<string name="session_uploaded">セッションをアップロードしました</string>
 	<string name="do_you_want_to_delete_this_session">このセッションを削除しますか?</string>
 	<string name="do_you_want_to_delete_processed_sessions">アップロードしたセッションを削除しますか?</string>
-	<string name="encryption">暗号化</string>
 	<string name="unknown">不明</string>
-	<string name="error_version_check_title">バージョン チェック時にエラー</string>
-	<string name="error_version_check_body">"オンライン接続を確認してください!\n(例えば、ブラウザーで)。\n今すぐ自動的に修正しますか?\n(Wifi アダプターの状態を切り替えて、再接続をトリガーします) "</string>
-	<string name="accuracy">精度</string>
 	<string name="no_sat_signal">衛星の信号がありません</string>
 	<string name="no_measurements"># 測定</string>
 	<string name="blacklisted_bssid">はブラックリスト (BSSID)</string>
 	<string name="blacklisted_ssid">はブラックリスト (SSID)</string>
 	<string name="is_new">新規?</string>
 	<string name="blacklisted_area">無視しました: ブラックリスト領域</string>
-	<string name="download_failed">ダウンロードに失敗しました</string>
 	<string name="cleaning_database">再編成中..</string>
 	<string name="database_lock_error">データベースをロックできませんでした。後でもう一度やり直してください..</string>
 	<string name="please_stay_patient">しばらくお待ちください..</string>
@@ -150,12 +119,9 @@
 	<string name="location_blacklist_saved">場所のブラックリストを保存しました!</string>
 	<string name="error_writing_location_blacklist">場所のブラックリストの書き込みエラー</string>
 
-	<string name="stats_new_wifis">新しい Wifi</string>
 	<string name="prefs_update_catalog_summary">スキャンした Wifi をローカル Wifi カタログに追加します</string>
 	<string name="prefs_update_catalog">Wifi カタログをローカルに同期</string>
 	<string name="synchronizing">同期中..</string>
-	<string name="time_since_last_cell_update">最後の基地局更新は %s 前</string>
-	<string name="time_since_last_wifi_update">最後の Wifi 更新は %s 前</string>
 	<string name="seconds">" 秒"</string>
 	<string name="minutes">" 分"</string>
 	<string name="stopped_tracking">追跡を停止しました</string>
@@ -174,7 +140,6 @@
 	<string name="dialog_delete_all_sessions_title">すべてのセッションを削除しますか?</string>
 	<string name="dialog_delete_all_sessions_message">すべてのセッションを削除してもよろしいですか?</string>
 	<string name="chart_library">チャート ライブラリー: GraphView</string>
-	<string name="no_map_file_selected">マップ ファイルが選択されていません!</string>
 	<string name="saved_waypoint">経路地点を保存しました</string>
 	<string name="yes">はい</string>
 	<string name="no">いいえ</string>
@@ -204,7 +169,6 @@
 	<string name="invalid_download">無効なダウンロード</string>
 	<string name="prefs_gpx_verbosity_title">GPX の詳細</string>
 	<string name="prefs_gpx_verbosity_summary">GPX ファイルにエクスポートする詳細を選択します</string>
-	<string name="wifi_catalog_up_to_date">すでに最新バージョンがインストールされています (%s)!</string>
 	<string name="waypoint">WP</string>
 	<string name="activity_stats_activity">概要</string>
 	<string name="activity_wifi_list_container">Wifi</string>
