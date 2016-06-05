@@ -59,9 +59,8 @@ public class CatalogDownload {
     }
 
     /**
-     * Returns catalog's download url relative to server base
-     * e.g. /static/us.sqlite
-     * @return
+     * Returns catalog's download url
+     * @return download url
      */
     public String getUrl() {
         return mUrl;

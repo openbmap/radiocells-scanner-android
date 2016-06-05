@@ -219,4 +219,5 @@
 	<string name="prefs_scan_mode">Wifi-Scanmodus</string>
     <string name="prefs_scan_mode_summary">Warnung: Der Akku wird viel schneller leer, wenn der Hochleistungsmodus gewählt wird!</string>
 <string name="prefs_credentials_anonymous_upload">Anonymer Upload</string>
-    </resources>
+    <string name="prefs_map_online">Online (Mapquest)</string>
+</resources>

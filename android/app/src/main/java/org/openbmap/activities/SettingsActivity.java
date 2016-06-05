@@ -207,16 +207,25 @@ public class SettingsActivity extends PreferenceActivity {
 
             // Create default / none entry
             entries[0] = getResources().getString(R.string.prefs_map_none);
-            values[0] = org.openbmap.Preferences.VAL_MAP_NONE;
+            values[0] = Preferences.VAL_MAP_NONE;
+
+            entries[1] = getResources().getString(R.string.prefs_map_online);
+            values[1] = Preferences.VAL_MAP_ONLINE;
 
             for (int i = 0; i < mapFiles.length; i++) {
-                entries[i + 1] = mapFiles[i].substring(0, mapFiles[i].length() - org.openbmap.Preferences.MAP_FILE_EXTENSION.length());
-                values[i + 1] = mapFiles[i];
+                entries[i + 2] = mapFiles[i].substring(0, mapFiles[i].length() - Preferences.MAP_FILE_EXTENSION.length());
+                values[i + 2] = mapFiles[i];
             }
         } else {
             // No map found, populate values with just the default entry.
-            entries = new String[]{getResources().getString(R.string.prefs_map_none)};
-            values = new String[]{org.openbmap.Preferences.VAL_MAP_NONE};
+            entries = new String[2];
+            values = new String[2];
+
+            entries[0] = getResources().getString(R.string.prefs_map_none);
+            values[0] = Preferences.VAL_MAP_NONE;
+
+            entries[1] = getResources().getString(R.string.prefs_map_online);
+            values[1] = Preferences.VAL_MAP_ONLINE;
         }
 
         Log.d(TAG, "Found " + entries.length + " files");

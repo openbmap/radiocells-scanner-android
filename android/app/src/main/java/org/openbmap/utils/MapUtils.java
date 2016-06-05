@@ -192,12 +192,23 @@ public final class MapUtils {
 	 * @param context
 	 * @return true, if map file is not none
 	 */
-	public static Boolean isMapSelected(final Context context) {
+	public static Boolean hasOfflineMap(final Context context) {
 		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		return (!prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE).equals(Preferences.VAL_MAP_NONE));
 	}
 
-	/**
+    /**
+     * Checks whether online maps been selected
+     * @param context
+     * @return true, if online mode
+     */
+    public static Boolean useOnlineMaps(final Context context) {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return (prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE).equals(Preferences.VAL_MAP_ONLINE));
+    }
+
+
+    /**
 	 * Opens map file
 	 * @param context
 	 * @return

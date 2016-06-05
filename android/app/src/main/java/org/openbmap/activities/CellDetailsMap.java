@@ -19,15 +19,18 @@
 package org.openbmap.activities;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -49,6 +52,7 @@ import org.mapsforge.map.layer.download.tilesource.OnlineTileSource;
 import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.model.common.Observer;
 import org.mapsforge.map.util.MapPositionUtil;
+import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.db.ContentProvider;
 import org.openbmap.db.DataHelper;
@@ -124,7 +128,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 	@Override
 	public final View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
-		final View view = inflater.inflate(R.layout.celldetailsmap, container, false);	
+		final View view = inflater.inflate(R.layout.celldetailsmap, container, false);
 		this.mMapView = (MapView) view.findViewById(R.id.map);
 
 		return view;
@@ -327,37 +331,26 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	private void initMap() {
 		this.mTileCache = createTileCache();
 
-		if (MapUtils.isMapSelected(this.getActivity())) {
-			final Layer offlineLayer = MapUtils.createTileRendererLayer(
-					this.mTileCache,
-					this.mMapView.getModel().mapViewPosition,
-					MapUtils.getMapFile(this.getActivity()),
-                    null,
-                    MapUtils.getRenderTheme(this.getActivity()));
-			if (offlineLayer != null) this.mMapView.getLayerManager().getLayers().add(offlineLayer);
-		} else {
-			//this.mMapView.getModel().displayModel.setBackgroundColor(0xffffffff);
+		if (MapUtils.hasOfflineMap(this.getActivity())) {
+            addOfflineLayer();
+		} else if (MapUtils.useOnlineMaps(this.getActivity())) {
 			Toast.makeText(this.getActivity(), R.string.info_using_online_map, Toast.LENGTH_LONG).show();
-
-			final OnlineTileSource onlineTileSource = new OnlineTileSource(new String[]{
-					"otile1.mqcdn.com", "otile2.mqcdn.com", "otile3.mqcdn.com", "otile4.mqcdn.com"}, 80);
-			onlineTileSource.setName("MapQuest")
-			.setAlpha(false)
-			.setBaseUrl("/tiles/1.0.0/map/")
-			.setExtension("png")
-			.setParallelRequestsLimit(8)
-			.setProtocol("http")
-			.setTileSize(256)
-			.setZoomLevelMax((byte) 18)
-			.setZoomLevelMin((byte) 0);
-
-			mapDownloadLayer = new TileDownloadLayer(mTileCache,
-					mMapView.getModel().mapViewPosition, onlineTileSource,
-					AndroidGraphicFactory.INSTANCE);
-			mMapView.getLayerManager().getLayers().add(mapDownloadLayer);
-			mapDownloadLayer.onResume();
+            addOnlineLayer();
+		} else {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    PreferenceManager.getDefaultSharedPreferences(getActivity()).edit().putString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_ONLINE).commit();
+                    addOnlineLayer();
+                }
+            });
+            builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    // User cancelled the dialog
+                }
+            });
+            AlertDialog dialog = builder.create();
 		}
-
 
 		// register for layout finalization - we need this to get width and height
 		final ViewTreeObserver vto = mMapView.getViewTreeObserver();
@@ -412,36 +405,43 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 		this.mMapView.getModel().mapViewPosition.setZoomLevel((byte) 16);
 	}
 
-	/** 
+    private void addOfflineLayer() {
+        final Layer offlineLayer = MapUtils.createTileRendererLayer(
+                this.mTileCache,
+                this.mMapView.getModel().mapViewPosition,
+                MapUtils.getMapFile(this.getActivity()),
+                null,
+                MapUtils.getRenderTheme(this.getActivity()));
+
+        if (offlineLayer != null) this.mMapView.getLayerManager().getLayers().add(offlineLayer);
+    }
+
+    private void addOnlineLayer() {
+        final OnlineTileSource onlineTileSource = new OnlineTileSource(new String[]{
+                "otile1.mqcdn.com", "otile2.mqcdn.com", "otile3.mqcdn.com", "otile4.mqcdn.com"}, 80);
+        onlineTileSource.setName("MapQuest")
+        .setAlpha(false)
+        .setBaseUrl("/tiles/1.0.0/map/")
+        .setExtension("png")
+        .setParallelRequestsLimit(8)
+        .setProtocol("http")
+        .setTileSize(256)
+        .setZoomLevelMax((byte) 18)
+        .setZoomLevelMin((byte) 0);
+
+        mapDownloadLayer = new TileDownloadLayer(mTileCache,
+                mMapView.getModel().mapViewPosition, onlineTileSource,
+                AndroidGraphicFactory.INSTANCE);
+        mMapView.getLayerManager().getLayers().add(mapDownloadLayer);
+        mapDownloadLayer.onResume();
+    }
+
+    /**
 	 * Creates a separate map tile cache
 	 * @return
 	 */
 	protected final TileCache createTileCache() {
 		return AndroidUtil.createTileCache(this.getActivity(), "mapcache", mMapView.getModel().displayModel.getTileSize(), 1f, this.mMapView.getModel().frameBufferModel.getOverdrawFactor());
 	}
-
-	/**
-	 * Saves heatmap to SD card
-	 * @param bitmap
-	 */
-	/*
-	@SuppressLint("NewApi")
-	private void saveHeatmapToFile(final Bitmap backbuffer) {
-		try {
-			FileOutputStream out = new FileOutputStream("/sdcard/result.png");
-			backbuffer.compress(Bitmap.CompressFormat.PNG, 90, out);
-			out.close();
-
-			// rescan SD card on honeycomb devices
-			// Otherwise files may not be visible when connected to desktop pc (MTP cache problem)
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-				Log.i(TAG, "Re-indexing SD card temp folder");
-				new MediaScanner(getActivity(), new File("/sdcard/"));
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	 */
 
 }

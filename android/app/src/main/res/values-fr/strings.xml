@@ -10,4 +10,5 @@
 	<string name="error_opening_wifi_catalog"/>
 <string name="activity_settings_activity">Préférences</string>
 	<string name="prefs_logging">saisie</string>
-	</resources>
+	<string name="prefs_map_online"></string>
+</resources>

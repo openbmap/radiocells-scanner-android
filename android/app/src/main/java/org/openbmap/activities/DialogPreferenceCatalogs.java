@@ -269,7 +269,7 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
             try {
                 // try to download to target. If target isn't below Environment.getExternalStorageDirectory(),
                 // e.g. on second SD card a security exception is thrown
-                final DownloadManager.Request request = new DownloadManager.Request(Uri.parse(Radiobeacon.SERVER_BASE + catalog.getUrl().toString()));
+                final DownloadManager.Request request = new DownloadManager.Request(Uri.parse(catalog.getUrl().toString()));
                 request.setDestinationUri(Uri.fromFile(target));
                 mCurrentCatalogDownloadId = mDownloadManager.enqueue(request);
             } catch (final SecurityException sec) {

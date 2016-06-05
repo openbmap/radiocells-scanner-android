@@ -192,7 +192,12 @@ public final class Preferences {
 	 * No map set
 	 */
 	public static final String VAL_MAP_NONE = "none";
-	
+
+	/**
+	 * No map set
+	 */
+	public static final String VAL_MAP_ONLINE = "online";
+
 	/**
 	 * Default map file name
 	 */
@@ -299,17 +304,7 @@ public final class Preferences {
 	 * File extension for wifi and cell log files
 	 */
 	public static final String LOG_FILE_EXTENSION = ".xml";
-	
-	/**
-	 * URL, where wifi catalog with openbmap's preprocessed wifi positions can be downloaded
-	 */
-	public static final String CATALOG_DOWNLOAD_URL = Radiobeacon.SERVER_BASE + "/static/openbmap.sqlite";
-	
-	/**
-	 * Filename catalog database
-	 */
-	public static final String CATALOG_FILE = "openbmap.sqlite";
-	
+
 	/**
 	 * URL, which is called to check whether this client version is up-to-date
 	 */

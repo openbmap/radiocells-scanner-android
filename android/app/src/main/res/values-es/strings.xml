@@ -201,4 +201,5 @@
 	<string name="prefs_update_catalog">Sincronizar localmente el catalogo de WiFi</string>
 	<string name="export_error">"Pruebe de nuevo. Si el problema persiste, envíe el archivo de error a\nhttps://github.com/wish7code/openbmap/issues "</string>
 	<string name="resume">Reanudar</string>
-	</resources>
+	<string name="prefs_map_online">Online (Mapquest)</string>
+</resources>

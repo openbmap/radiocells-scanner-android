@@ -20,6 +20,7 @@ package org.openbmap.activities;
 
 import android.app.ActionBar;
 import android.app.Fragment;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Matrix;
 import android.location.Location;
@@ -27,6 +28,7 @@ import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -60,6 +62,7 @@ import org.mapsforge.map.layer.overlay.Circle;
 import org.mapsforge.map.layer.overlay.Polyline;
 import org.mapsforge.map.model.common.Observer;
 import org.mapsforge.map.util.MapPositionUtil;
+import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.Radiobeacon;
 import org.openbmap.db.DataHelper;
@@ -401,38 +404,27 @@ public class MapViewActivity extends Fragment implements
             mMapView.getModel().mapViewPosition.setZoomLevel((byte) 15);
         }
 
-        if (MapUtils.isMapSelected(this.getActivity().getApplicationContext())) {
-            // remove all layers including base layer
+
+        if (MapUtils.hasOfflineMap(this.getActivity())) {
             mMapView.getLayerManager().getLayers().clear();
-            final Layer offlineLayer = MapUtils.createTileRendererLayer(
-                    mTileCache,
-                    mMapView.getModel().mapViewPosition,
-                    MapUtils.getMapFile(getActivity().getApplicationContext()),
-                    this,
-                    MapUtils.getRenderTheme(getActivity().getApplicationContext()));
-            if (offlineLayer != null) {
-                mMapView.getLayerManager().getLayers().add(offlineLayer);
-            }
-        } else {
+            addOfflineLayer();
+        } else if (MapUtils.useOnlineMaps(this.getActivity())) {
             Toast.makeText(this.getActivity(), R.string.info_using_online_map, Toast.LENGTH_LONG).show();
-
-            final OnlineTileSource onlineTileSource = new OnlineTileSource(new String[]{
-                    "otile1.mqcdn.com", "otile2.mqcdn.com", "otile3.mqcdn.com", "otile4.mqcdn.com"}, 80);
-            onlineTileSource.setName("MapQuest")
-                    .setAlpha(false)
-                    .setBaseUrl("/tiles/1.0.0/map/")
-                    .setExtension("png")
-                    .setParallelRequestsLimit(8)
-                    .setProtocol("http")
-                    .setTileSize(256)
-                    .setZoomLevelMax((byte) 18)
-                    .setZoomLevelMin((byte) 0);
-
-            mMapDownloadLayer = new TileDownloadLayer(mTileCache,
-                    mMapView.getModel().mapViewPosition, onlineTileSource,
-                    AndroidGraphicFactory.INSTANCE);
-            this.mMapView.getLayerManager().getLayers().add(mMapDownloadLayer);
-            mMapDownloadLayer.onResume();
+            addOnlineLayer();
+        } else {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    PreferenceManager.getDefaultSharedPreferences(getActivity()).edit().putString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_ONLINE).commit();
+                    addOnlineLayer();
+                }
+            });
+            builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    // User cancelled the dialog
+                }
+            });
+            AlertDialog dialog = builder.create();
         }
 
         mMapObserver = new Observer() {
@@ -1135,6 +1127,37 @@ public class MapViewActivity extends Fragment implements
         // beep once point has been saved
         ToneGenerator toneG = new ToneGenerator(AudioManager.STREAM_ALARM, 100);
         toneG.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 200);
+    }
+
+    private void addOfflineLayer() {
+        final Layer offlineLayer = MapUtils.createTileRendererLayer(
+                this.mTileCache,
+                this.mMapView.getModel().mapViewPosition,
+                MapUtils.getMapFile(this.getActivity()),
+                null,
+                MapUtils.getRenderTheme(this.getActivity()));
+
+        if (offlineLayer != null) this.mMapView.getLayerManager().getLayers().add(offlineLayer);
+    }
+
+    private void addOnlineLayer() {
+        final OnlineTileSource onlineTileSource = new OnlineTileSource(new String[]{
+                "otile1.mqcdn.com", "otile2.mqcdn.com", "otile3.mqcdn.com", "otile4.mqcdn.com"}, 80);
+        onlineTileSource.setName("MapQuest")
+                .setAlpha(false)
+                .setBaseUrl("/tiles/1.0.0/map/")
+                .setExtension("png")
+                .setParallelRequestsLimit(8)
+                .setProtocol("http")
+                .setTileSize(256)
+                .setZoomLevelMax((byte) 18)
+                .setZoomLevelMin((byte) 0);
+
+        mMapDownloadLayer = new TileDownloadLayer(mTileCache,
+                mMapView.getModel().mapViewPosition, onlineTileSource,
+                AndroidGraphicFactory.INSTANCE);
+        mMapView.getLayerManager().getLayers().add(mMapDownloadLayer);
+        mMapDownloadLayer.onResume();
     }
 }
 
