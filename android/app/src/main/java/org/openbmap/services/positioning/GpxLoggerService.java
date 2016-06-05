@@ -25,7 +25,7 @@ import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.PositionRecord;
 import org.openbmap.events.onLocationUpdate;
@@ -64,7 +64,7 @@ public class GpxLoggerService extends AbstractService {
 	/**
 	 * Current session id
 	 */
-	private int mSessionId = Radiobeacon.SESSION_NOT_TRACKING;
+	private int mSessionId = RadioBeacon.SESSION_NOT_TRACKING;
 
 	/*
 	 * DataHelper for persisting recorded information in database
@@ -107,7 +107,7 @@ public class GpxLoggerService extends AbstractService {
 
 		final PositionRecord pos = new PositionRecord(gpsLocation, mSessionId, source);
 
-		// so far we set end position = begin position 
+		// so far we set end position = begin position
 		mDataHelper.storePosition(pos);
 	}
 
@@ -124,7 +124,7 @@ public class GpxLoggerService extends AbstractService {
 
     /**
 	 * Starts gps logging .
-	 * @param sessionId 
+	 * @param sessionId
 	 */
 	private void startTracking(final int sessionId) {
 		Log.d(TAG, "Start tracking on session " + sessionId);
@@ -139,7 +139,7 @@ public class GpxLoggerService extends AbstractService {
 	private void stopTracking() {
 		Log.d(TAG, "Stop tracking on session " + mSessionId);
 		mIsTracking = false;
-		mSessionId = Radiobeacon.SESSION_NOT_TRACKING;
+		mSessionId = RadioBeacon.SESSION_NOT_TRACKING;
 	}
 
 	/**

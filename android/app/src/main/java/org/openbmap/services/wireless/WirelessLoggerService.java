@@ -60,7 +60,7 @@ import android.util.Log;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.openbmap.Preferences;
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.CellRecord;
 import org.openbmap.db.models.LogFile;
@@ -180,7 +180,7 @@ public class WirelessLoggerService extends AbstractService {
     /**
      * Current session id
      */
-    private int mSessionId = Radiobeacon.SESSION_NOT_TRACKING;
+    private int mSessionId = RadioBeacon.SESSION_NOT_TRACKING;
 
     /**
      * Is WifiRecord enabled ?
@@ -310,12 +310,12 @@ public class WirelessLoggerService extends AbstractService {
                 + Preferences.BLACKLIST_SUBDIR;
 
         mLocationBlacklist = new LocationBlackList();
-        mLocationBlacklist.openFile(mBlacklistPath + File.separator + Radiobeacon.DEFAULT_LOCATION_BLOCK_FILE);
+        mLocationBlacklist.openFile(mBlacklistPath + File.separator + RadioBeacon.DEFAULT_LOCATION_BLOCK_FILE);
 
         mSsidBlackList = new SsidBlackList();
         mSsidBlackList.openFile(
-                mBlacklistPath + File.separator + Radiobeacon.DEFAULT_SSID_BLOCK_FILE,
-                mBlacklistPath + File.separator + Radiobeacon.CUSTOM_SSID_BLOCK_FILE);
+                mBlacklistPath + File.separator + RadioBeacon.DEFAULT_SSID_BLOCK_FILE,
+                mBlacklistPath + File.separator + RadioBeacon.CUSTOM_SSID_BLOCK_FILE);
     }
 
     /**
@@ -357,14 +357,14 @@ public class WirelessLoggerService extends AbstractService {
                     cdmaStrengthDbm = signalStrength.getCdmaDbm();
                     cdmaEcIo = signalStrength.getCdmaEcio();
                 } catch (final Exception e) {
-                    e.printStackTrace();
+                    Log.e(TAG, e.toString(), e);
                 }
                 try {
                     signalStrengthEvdodBm = signalStrength.getEvdoDbm();
                     signalStrengthEvdoEcio = signalStrength.getEvdoEcio();
                     signalStrengthSnr = signalStrength.getEvdoSnr();
                 } catch (final Exception e) {
-                    e.printStackTrace();
+                    Log.e(TAG, e.toString(), e);
                 }
 
                 try {
@@ -372,7 +372,7 @@ public class WirelessLoggerService extends AbstractService {
                     gsmStrengthAsu = signalStrength.getGsmSignalStrength();
                     gsmStrengthDbm = -113 + 2 * gsmStrengthAsu; // conversion ASU in dBm
                 } catch (final Exception e) {
-                    e.printStackTrace();
+                    Log.e(TAG, e.toString(), e);
                 }
             }
 
@@ -386,7 +386,7 @@ public class WirelessLoggerService extends AbstractService {
                             final Date now = new Date();
                             final String date = formatter.format(now);
                         } catch (final Exception e) {
-                            e.printStackTrace();
+                            Log.e(TAG, e.toString(), e);
                         }
 
                         //	powerOff = true;
@@ -397,7 +397,7 @@ public class WirelessLoggerService extends AbstractService {
                             final Date now = new Date();
                             final String date = formatter.format(now);
                         } catch (final Exception e) {
-                            e.printStackTrace();
+                            Log.e(TAG, e.toString(), e);
                         }
 
                         //outOfService = true;
@@ -635,7 +635,7 @@ public class WirelessLoggerService extends AbstractService {
      * @param because reason
      */
     private void broadcastBlacklisted(final String ssid, final String bssid, final BlacklistReasonType because) {
-        final Intent intent = new Intent(Radiobeacon.INTENT_WIFI_BLACKLISTED);
+        final Intent intent = new Intent(RadioBeacon.INTENT_WIFI_BLACKLISTED);
 
         // MSG_KEY contains the block reason:
         // 		RadioBeacon.MSG_BSSID for bssid blacklist,
@@ -644,22 +644,22 @@ public class WirelessLoggerService extends AbstractService {
 
         if (because == BlacklistReasonType.BssidBlocked) {
             // invalid bssid
-            intent.putExtra(Radiobeacon.MSG_KEY, Radiobeacon.MSG_BSSID);
+            intent.putExtra(RadioBeacon.MSG_KEY, RadioBeacon.MSG_BSSID);
         } else if (because == BlacklistReasonType.SsidBlocked) {
             // invalid ssid
-            intent.putExtra(Radiobeacon.MSG_KEY, Radiobeacon.MSG_SSID);
+            intent.putExtra(RadioBeacon.MSG_KEY, RadioBeacon.MSG_SSID);
         } else if (because == BlacklistReasonType.LocationBad) {
             // invalid location
-            intent.putExtra(Radiobeacon.MSG_KEY, Radiobeacon.MSG_LOCATION);
+            intent.putExtra(RadioBeacon.MSG_KEY, RadioBeacon.MSG_LOCATION);
         } else {
-            intent.putExtra(Radiobeacon.MSG_KEY, "Unknown reason");
+            intent.putExtra(RadioBeacon.MSG_KEY, "Unknown reason");
         }
 
         if (bssid != null) {
-            intent.putExtra(Radiobeacon.MSG_BSSID, bssid);
+            intent.putExtra(RadioBeacon.MSG_BSSID, bssid);
         }
         if (ssid != null) {
-            intent.putExtra(Radiobeacon.MSG_SSID, ssid);
+            intent.putExtra(RadioBeacon.MSG_SSID, ssid);
         }
         sendBroadcast(intent);
     }
@@ -670,8 +670,8 @@ public class WirelessLoggerService extends AbstractService {
      * @param ssid
      */
     private void broadcastFree(final String ssid) {
-        final Intent intent = new Intent(Radiobeacon.INTENT_WIFI_FREE);
-        intent.putExtra(Radiobeacon.MSG_SSID, ssid);
+        final Intent intent = new Intent(RadioBeacon.INTENT_WIFI_FREE);
+        intent.putExtra(RadioBeacon.MSG_SSID, ssid);
         sendBroadcast(intent);
     }
 
@@ -789,7 +789,7 @@ public class WirelessLoggerService extends AbstractService {
         } else if (cell instanceof CdmaCellLocation) {
             final CdmaCellLocation cdmaLocation = (CdmaCellLocation) cell;
             if (isValidCdmaCell(cdmaLocation)) {
-				/* 
+				/*
 				 * In case of CDMA network set CDMA specific values
 				 * Assume CDMA network, if cdma location and basestation, network and system id are available
 				 */
@@ -1035,7 +1035,7 @@ public class WirelessLoggerService extends AbstractService {
         } else if (cell instanceof CellInfoCdma) {
             final CellIdentityCdma cdmaIdentity = ((CellInfoCdma) cell).getCellIdentity();
             if (isValidCdmaCell(cdmaIdentity)) {
-				/* 
+				/*
 				 * In case of CDMA network set CDMA specific values
 				 * Assume CDMA network, if cdma location and basestation, network and system id are available
 				 */
@@ -1095,7 +1095,7 @@ public class WirelessLoggerService extends AbstractService {
                 // TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
                 result.setOpenBmapTimestamp(position.getOpenBmapTimestamp());
                 result.setBeginPosition(position);
-                // so far we set end position = begin position 
+                // so far we set end position = begin position
                 result.setEndPosition(position);
                 result.setIsServing(true);
 
@@ -1181,8 +1181,8 @@ public class WirelessLoggerService extends AbstractService {
 				 * TelephonyManager doesn't provide all data for NEIGHBOURING cells:
 				 * MCC, MNC, Operator and Operator name are missing.
 				 * Thus, use data from last SERVING cell.
-				 * 
-				 * In typical cases this won't cause any problems, nevertheless problems can occur 
+				 *
+				 * In typical cases this won't cause any problems, nevertheless problems can occur
 				 * 	- near country border, where NEIGHBOURING cell can have a different MCC, MNC or Operator
 				 *   - ... ?
 				 */
@@ -1407,11 +1407,11 @@ public class WirelessLoggerService extends AbstractService {
         pendingWifiScanResults = false;
 
         mLogFile = new LogFile(
-                Build.MANUFACTURER,
-                Build.MODEL,
-                Build.VERSION.RELEASE,
-                Radiobeacon.SWID,
-                Radiobeacon.SW_VERSION, sessionId);
+                                      Build.MANUFACTURER,
+                                      Build.MODEL,
+                                      Build.VERSION.RELEASE,
+                                      RadioBeacon.SWID,
+                                      RadioBeacon.SW_VERSION, sessionId);
 
         mDataHelper.storeLogFile(mLogFile, sessionId);
     }
@@ -1422,7 +1422,7 @@ public class WirelessLoggerService extends AbstractService {
     private void stopTracking() {
         Log.d(TAG, "Stop tracking on session " + mSessionId);
         mIsTracking = false;
-        mSessionId = Radiobeacon.SESSION_NOT_TRACKING;
+        mSessionId = RadioBeacon.SESSION_NOT_TRACKING;
         mWifiScanResults = null;
         mLogFile = null;
     }
@@ -1530,7 +1530,7 @@ public class WirelessLoggerService extends AbstractService {
 			/*
 			 * Caution:
 			 * 		Requires wifi catalog's bssid in LOWER CASE. Otherwise no records are returned
-			 * 
+			 *
 			 *		If wifi catalog's bssid aren't in LOWER case, consider SELECT bssid FROM wifi_zone WHERE LOWER(bssid) = ?
 			 *		Drawback: can't use indices then
 			 */

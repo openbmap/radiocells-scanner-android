@@ -20,7 +20,7 @@ package org.openbmap.db.models;
 
 import android.net.Uri;
 
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 
 /**
  * Model for general session meta data: create at, updated at, etc.
@@ -77,10 +77,10 @@ public class Session {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	public Session() {
-		this(Radiobeacon.SESSION_NOT_TRACKING);
+		this(RadioBeacon.SESSION_NOT_TRACKING);
 	}
 
     /**
@@ -188,7 +188,7 @@ public class Session {
 
 	@Override
 	public final String toString() {
-		return getId() + " / " + getDescription() + " / Created at " + getCreatedAt() + " / Updated at " + getLastUpdated() + " / Exported? " + hasBeenExported() + " / Active? " + isActive(); 
+		return getId() + " / " + getDescription() + " / Created at " + getCreatedAt() + " / Updated at " + getLastUpdated() + " / Exported? " + hasBeenExported() + " / Active? " + isActive();
 	}
 
 

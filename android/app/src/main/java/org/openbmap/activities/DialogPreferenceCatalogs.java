@@ -47,7 +47,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.openbmap.Preferences;
 import org.openbmap.R;
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 import org.openbmap.utils.CatalogDownload;
 import org.openbmap.utils.FileUtils;
 
@@ -64,7 +64,7 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
 
     private static String TAG = DialogPreferenceCatalogs.class.getSimpleName();
 
-    public static final String LIST_DOWNLOADS_URL = Radiobeacon.SERVER_BASE + "/downloads/catalog_downloads.json";
+    public static final String LIST_DOWNLOADS_URL = RadioBeacon.SERVER_BASE + "/downloads/catalog_downloads.json";
 
     private DialogPreferenceCatalogsListAdapter mAdapter;
     private final Context mContext;
@@ -269,7 +269,8 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
             try {
                 // try to download to target. If target isn't below Environment.getExternalStorageDirectory(),
                 // e.g. on second SD card a security exception is thrown
-                final DownloadManager.Request request = new DownloadManager.Request(Uri.parse(Radiobeacon.SERVER_BASE + catalog.getUrl().toString()));
+                final DownloadManager.Request request = new DownloadManager.Request(Uri.parse(
+                        RadioBeacon.SERVER_BASE + catalog.getUrl().toString()));
                 request.setDestinationUri(Uri.fromFile(target));
                 mCurrentCatalogDownloadId = mDownloadManager.enqueue(request);
             } catch (final SecurityException sec) {

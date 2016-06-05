@@ -36,7 +36,7 @@ public class MediaScanner implements MediaScannerConnectionClient {
 
 	private final MediaScannerConnection mScanner;
 	private final File mFolder;
-	
+
 	public MediaScanner(final Context context, final File folder) {
 		mFolder = folder;
 		mScanner = new MediaScannerConnection(context, this);
@@ -50,11 +50,8 @@ public class MediaScanner implements MediaScannerConnectionClient {
 	public final void onMediaScannerConnected() {
 		final File[] files = mFolder.listFiles();
 		for (final File file : files) {
-			if (
-					file.getName().endsWith(".xml") ||
-					file.getName().endsWith(".gpx") ||
-					file.getName().endsWith(".map") ||
-					file.getName().endsWith(".sqlite")) {
+			if (file.getName().endsWith(".xml") || file.getName().endsWith(".gpx") ||
+				file.getName().endsWith(".map") || file.getName().endsWith(".sqlite")) {
 				mScanner.scanFile(file.getAbsolutePath(), null);
 			}
 		}

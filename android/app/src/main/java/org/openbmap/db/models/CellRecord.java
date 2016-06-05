@@ -22,7 +22,7 @@ import android.annotation.SuppressLint;
 import android.os.Build;
 import android.telephony.TelephonyManager;
 
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,23 +45,23 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	private static final int STRENGTH_UNKNOWN = -1;
 	/**
 	 * GSM cell id; UMTS and other UTRAN networks LCID; -1 if unknown
-	 * Please note: may contain values > 0xffff (max legal value) when in UTRAN network 
+	 * Please note: may contain values > 0xffff (max legal value) when in UTRAN network
 	 */
 	private int mLogicalCellId;
-	
+
 	/**
 	 * For GSM networks equals cellid. In UMTS and other UTRAN networks it's the actual cell id (as opposed to lcid).
 	 */
 	private int mActualCellId;
-	
+
 	/**
 	 * Radio network controller id in UMTS and other UTRAN networks
 	 * see http://en.wikipedia.org/wiki/Radio_Network_Controller
 	 */
 	private int mUtranRncId;
-	
+
 	/**
-	 * Alphabetic name of current registered operator. 
+	 * Alphabetic name of current registered operator.
 	 */
 	private String mOperatorName;
 
@@ -101,7 +101,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	private int mNetworkType = TelephonyManager.NETWORK_TYPE_UNKNOWN;
 
 	/**
-	 * GSM location area code, -1 if unknown, 0xffff max legal value 
+	 * GSM location area code, -1 if unknown, 0xffff max legal value
 	 */
     private int mArea = AREA_UNKNOWN;
 
@@ -120,7 +120,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	 * see e.g. http://www.lte-anbieter.info/technik/asu.php
 	 */
 	private int	mStrengthAsu = STRENGTH_UNKNOWN;
-	
+
 	/**
 	 * Timestamp in openbmap format: YYYYMMDDHHMMSS
 	 */
@@ -139,7 +139,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	private int mSessionId;
 
 	public CellRecord() {
-		this(Radiobeacon.SESSION_NOT_TRACKING);
+		this(RadioBeacon.SESSION_NOT_TRACKING);
 	}
 
 	public CellRecord(final int session) {
@@ -272,7 +272,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
     public final int getLogicalCellId() {
 		return mLogicalCellId;
 	}
-	
+
 	/**
 	 * Sets cell id (as returned by android.telephony.gsmlocation.getCid(). Be careful: by default this is the LCID)
 	 * @param logicalCellId GSM cell id; UMTS and other UTRAN networks LCID; -1 if unknown, 0xffff max legal value
@@ -280,14 +280,14 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	public final void setLogicalCellId(final int logicalCellId) {
 		this.mLogicalCellId = logicalCellId;
 	}
-	
+
 	/**
 	 * For GSM networks equals cell id; for UMTS and other UTRAN networks this is the actual cell id (as opposed to lcid)
 	 */
 	public final int getActualCellId() {
 		return mActualCellId;
 	}
-	
+
 	/**
 	 * On GSM networks equals cell id;
 	 * On UMTS and other UTRAN networks this is the actual cell id (as opposed to lcid)
@@ -302,7 +302,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	public final int getUtranRnc() {
 		return mUtranRncId;
 	}
-	
+
 	public final void setUtranRnc(final int utranRncId) {
 		this.mUtranRncId = utranRncId;
 	}
@@ -444,11 +444,11 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 		result.put(TelephonyManager.NETWORK_TYPE_EVDO_0, "EDVO_0");
 		result.put(TelephonyManager.NETWORK_TYPE_EVDO_A, "EDVO_A");
 		result.put(TelephonyManager.NETWORK_TYPE_1xRTT, "1xRTT");
-		
+
 		result.put(TelephonyManager.NETWORK_TYPE_HSDPA, "HSDPA");
 		result.put(TelephonyManager.NETWORK_TYPE_HSUPA, "HSUPA");
 		result.put(TelephonyManager.NETWORK_TYPE_HSPA, "HSPA");
-		result.put(TelephonyManager.NETWORK_TYPE_IDEN, "IDEN"); 
+		result.put(TelephonyManager.NETWORK_TYPE_IDEN, "IDEN");
 
 		// add new network types not available in all revisions
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
@@ -461,7 +461,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
 			result.put(TelephonyManager.NETWORK_TYPE_HSPAP, "HSPA+");
 		}
-		
+
 		return Collections.unmodifiableMap(result);
 
 	}

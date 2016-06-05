@@ -81,7 +81,7 @@ public class CatalogObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatL
 	 *			args[3]: max longitude as double
 	 */
 	@Override
-	protected final ArrayList<LatLong> doInBackground(final Object... args) {         
+	protected final ArrayList<LatLong> doInBackground(final Object... args) {
 
 		ArrayList<LatLong> points = new ArrayList<LatLong>();
 
@@ -102,9 +102,9 @@ public class CatalogObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatL
 			}
 
 		} catch (final SQLiteException e) {
-			Log.e(TAG, "Sql exception occured: " + e.toString());
+			Log.e(TAG, "Sql exception occured: " + e.toString(), e);
 		} catch (final Exception e) {
-			e.printStackTrace();
+			Log.e(TAG, e.toString(), e);
 		}
 
 		return points;

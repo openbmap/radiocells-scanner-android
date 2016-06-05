@@ -14,7 +14,7 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    
+
     Credits for this piece of code:
  	Gregory Shpitalnik
  	http://www.codeproject.com/Articles/547636/Android-Ready-to-use-simple-directory-chooser-dial?msg=4923192#xx4923192xx
@@ -28,6 +28,7 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface.OnKeyListener;
 import android.text.Editable;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -49,6 +50,9 @@ import java.util.Comparator;
 import java.util.List;
 
 public class DirectoryChooserDialog {
+
+    private static final String TAG = DirectoryChooserDialog.class.getSimpleName();
+
     private boolean mIsNewFolderEnabled = true;
     private String mSdcardDirectory = "";
     private final Context mContext;
@@ -110,7 +114,7 @@ public class DirectoryChooserDialog {
 
         class DirectoryOnClickListener implements DialogInterface.OnClickListener {
             public void onClick(final DialogInterface dialog, final int item) {
-            	// handle folder up clicks 
+            	// handle folder up clicks
             	if (((AlertDialog) dialog).getListView().getAdapter().getItem(item).equals("..")) {
             		// handle '..' (directory up) clicks
             		mDir = mDir.substring(0, mDir.lastIndexOf("/"));
@@ -174,7 +178,7 @@ public class DirectoryChooserDialog {
     }
 
     private List<String> getDirectories(final String dir) {
-        final List<String> dirs = new ArrayList<String>();
+        final List<String> dirs = new ArrayList<>();
         dirs.add("..");
         try {
             final File dirFile = new File(dir);
@@ -188,6 +192,7 @@ public class DirectoryChooserDialog {
                 }
             }
         } catch (final Exception e) {
+            Log.e(TAG, e.toString(), e);
         }
 
         Collections.sort(dirs, new Comparator<String>() {

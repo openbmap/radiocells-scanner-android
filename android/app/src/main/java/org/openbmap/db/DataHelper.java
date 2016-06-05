@@ -12,7 +12,7 @@ import android.net.Uri;
 import android.os.RemoteException;
 import android.util.Log;
 
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 import org.openbmap.db.models.CellRecord;
 import org.openbmap.db.models.LogFile;
 import org.openbmap.db.models.PositionRecord;
@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Data helper for talking to content resolver 
+ * Data helper for talking to content resolver
  */
 public class DataHelper {
 
@@ -37,7 +37,7 @@ public class DataHelper {
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param context (Application) context used for acquiring content resolver
 	 */
 	public DataHelper(final Context context) {
@@ -49,7 +49,7 @@ public class DataHelper {
 	 * @param begin	begin position which is equal across all wifis
 	 * @param end end posistion which is equal across all wifis
 	 * @param wifis list of wifis sharing same begin and end position (i.e. all wifis from one scan)
-	 */	
+	 */
 	public final void storeWifiScanResults(final PositionRecord begin, final PositionRecord end, final ArrayList<WifiRecord> wifis) {
 
 		if (wifis == null || wifis.size() == 0) {
@@ -100,15 +100,15 @@ public class DataHelper {
 					.withValue(Schema.COL_SESSION_ID, wifi.getSessionId())
 					//.withValue(Schema.COL_IS_NEW_WIFI, wifi.isNew() ? 1 : 0)
 					.withValue(Schema.COL_KNOWN_WIFI, wifi.getCatalogStatusInt())
-					.build());	
+					.build());
 		}
 
 		try {
 			final ContentProviderResult[] results = contentResolver.applyBatch("org.openbmap.provider", operations);
 		} catch (final RemoteException e) {
-			e.printStackTrace();
+			Log.e(TAG, e.toString(), e);
 		} catch (final OperationApplicationException e) {
-			e.printStackTrace();
+			Log.e(TAG, e.toString(), e);
 		}
 	}
 
@@ -126,7 +126,7 @@ public class DataHelper {
 				ContentProvider.CONTENT_URI_WIFI, ContentProvider.CONTENT_URI_SESSION_SUFFIX), session),
 				null, null, null, sort);
 
-		// Performance tweaking: don't call ca.getColumnIndex on each iteration 
+		// Performance tweaking: don't call ca.getColumnIndex on each iteration
 		final int columnIndex = cursor.getColumnIndex(Schema.COL_BSSID);
 		final int columnIndex2 = cursor.getColumnIndex(Schema.COL_SSID);
 		final int columnIndex3 = cursor.getColumnIndex(Schema.COL_CAPABILITIES);
@@ -234,7 +234,7 @@ public class DataHelper {
 
 		final Cursor cursor = contentResolver.query(ContentProvider.CONTENT_URI_WIFI, null, selectSql, null, null);
 
-		// Performance tweaking: don't call ca.getColumnIndex on each iteration 
+		// Performance tweaking: don't call ca.getColumnIndex on each iteration
 		final int columnIndex = cursor.getColumnIndex(Schema.COL_BSSID);
 		final int columnIndex2 = cursor.getColumnIndex(Schema.COL_SSID);
 		final int columnIndex3 = cursor.getColumnIndex(Schema.COL_CAPABILITIES);
@@ -288,8 +288,8 @@ public class DataHelper {
 		String[] selectionArgs = null;
 
 		if (minLon != null && maxLon != null && minLat != null && maxLat != null) {
-			selection = "b." + Schema.COL_LONGITUDE + " >= ?" 
-					+ " AND b." + Schema.COL_LONGITUDE + " <= ?" 
+			selection = "b." + Schema.COL_LONGITUDE + " >= ?"
+					+ " AND b." + Schema.COL_LONGITUDE + " <= ?"
 					+ " AND b." + Schema.COL_LATITUDE + " >= ?"
 					+ " AND b." + Schema.COL_LATITUDE + " <= ?";
 			selectionArgs = new String[]{String.valueOf(minLon), String.valueOf(maxLon), String.valueOf(minLat), String.valueOf(maxLat)};
@@ -299,7 +299,7 @@ public class DataHelper {
 				ContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
 				null, selection, selectionArgs, null);
 
-		// Performance tweaking: don't call ca.getColumnIndex on each iteration 
+		// Performance tweaking: don't call ca.getColumnIndex on each iteration
 		final int columnIndex = cursor.getColumnIndex(Schema.COL_BSSID);
 		final int columnIndex2 = cursor.getColumnIndex(Schema.COL_SSID);
 		final int columnIndex3 = cursor.getColumnIndex(Schema.COL_CAPABILITIES);
@@ -353,7 +353,7 @@ public class DataHelper {
 					cursor.getInt(cursor.getColumnIndex(Schema.COL_NUMBER_OF_CELLS)),
 					cursor.getInt(cursor.getColumnIndex(Schema.COL_NUMBER_OF_WIFIS)),
                     cursor.getInt(cursor.getColumnIndex(Schema.COL_NUMBER_OF_WAYPOINTS)));
-		} 
+		}
 		cursor.close();
 		return session;
 	}
@@ -428,14 +428,14 @@ public class DataHelper {
 	 *            Session to delete
 	 * @return number of delete rows
 	 */
-	public final long deleteSession(final long id) {	
+	public final long deleteSession(final long id) {
 		return contentResolver.delete(ContentUris.withAppendedId(ContentProvider.CONTENT_URI_SESSION, id), null, null);
 	}
 
 	/**
 	 * Deletes all sessions. This will also delete all objects referencing this session as foreign key
 	 */
-	public final long deleteAllSession() {	
+	public final long deleteAllSession() {
 		return contentResolver.delete(ContentProvider.CONTENT_URI_SESSION, null, null);
 	}
 
@@ -477,7 +477,7 @@ public class DataHelper {
 		final Cursor cursor = contentResolver.query(ContentProvider.CONTENT_URI_SESSION, new String[]{Schema.COL_ID}, null, null, null);
 		while (cursor.moveToNext()) {
 			sessions.add(cursor.getInt(cursor.getColumnIndex(Schema.COL_ID)));
-		} 
+		}
 		cursor.close();
 		return sessions;
 	}
@@ -495,7 +495,7 @@ public class DataHelper {
 			return session;
 		}
         cursor.close();
-		return Radiobeacon.SESSION_NOT_TRACKING;
+		return RadioBeacon.SESSION_NOT_TRACKING;
 	}
 
 	/**
@@ -579,7 +579,7 @@ public class DataHelper {
 						.withValue(Schema.COL_CDMA_SYSTEMID, -1)
 						.withValue(Schema.COL_CDMA_BASEID, -1)
 
-						.build());	
+						.build());
 			} else {
 				// store CDMA cell
 				operations.add(ContentProviderOperation.newInsert(ContentProvider.CONTENT_URI_CELL)
@@ -607,16 +607,16 @@ public class DataHelper {
 						// set unused (GSM) fields to -1
 						.withValue(Schema.COL_LOGICAL_CELLID, -1)
 						.withValue(Schema.COL_AREA, -1)
-						.build());	
+						.build());
 			}
 		}
 
 		try {
 			final ContentProviderResult[] results = contentResolver.applyBatch("org.openbmap.provider", operations);
 		} catch (final RemoteException e) {
-			e.printStackTrace();
+			Log.e(TAG, e.toString(), e);
 		} catch (final OperationApplicationException e) {
-			e.printStackTrace();
+			Log.e(TAG, e.toString(), e);
 		}
 	}
 
@@ -660,7 +660,7 @@ public class DataHelper {
 
 	/**
 	 * Creates a CellRecord from cursor row.
-	 * @param cursor 
+	 * @param cursor
 	 * @return CellRecord
 	 */
 	private CellRecord cursorToCell(final Cursor cursor) {
@@ -689,9 +689,9 @@ public class DataHelper {
 		final int columnIndex18 = cursor.getColumnIndex(Schema.COL_SESSION_ID);
 
 		cell.setNetworkType(cursor.getInt(colNetworkType));
-		cell.setIsCdma(cursor.getInt(colIsCdma) != 0); 
-		cell.setIsServing(cursor.getInt(colIsServing) != 0); 
-		cell.setIsNeighbor(cursor.getInt(colIsNeigbor) != 0); 
+		cell.setIsCdma(cursor.getInt(colIsCdma) != 0);
+		cell.setIsServing(cursor.getInt(colIsServing) != 0);
+		cell.setIsNeighbor(cursor.getInt(colIsNeigbor) != 0);
 		cell.setLogicalCellId(cursor.getInt(colLogicalCellId));
 		cell.setActualCid(cursor.getInt(colActualCellId));
 		cell.setUtranRnc(cursor.getInt(colUtranRnc));
@@ -704,9 +704,9 @@ public class DataHelper {
 		cell.setBaseId(cursor.getString(colBaseId));
 		cell.setNetworkId(cursor.getString(colNetworkId));
 		cell.setSystemId(cursor.getString(colSystemId));
-		cell.setStrengthdBm(cursor.getInt(colStrengthDbm)); 
+		cell.setStrengthdBm(cursor.getInt(colStrengthDbm));
 		cell.setStrengthAsu(cursor.getInt(colStrengthAsu));
-		cell.setOpenBmapTimestamp(cursor.getLong(colTimestamp)); 
+		cell.setOpenBmapTimestamp(cursor.getLong(colTimestamp));
 		// TODO: dirty ...
 		cell.setBeginPosition(loadPositionById(cursor.getString(colBeginPositionId)));
 		cell.setEndPosition(loadPositionById(cursor.getString(colEndPositionId)));
@@ -791,7 +791,7 @@ public class DataHelper {
 		String selection = Schema.COL_SESSION_ID + " = ?";
 
 		Cursor cursor = null;
-		List<String> selectionArgs = null; 
+		List<String> selectionArgs = null;
 		if (minLat != null & maxLat != null && minLon != null && maxLon != null) {
 			// if boundaries provided..
 			selectionArgs = new ArrayList<String>();
@@ -829,7 +829,7 @@ public class DataHelper {
 	 * @return
 	 */
 	private PositionRecord positionFromCursor(final Cursor cursor) {
-		// Performance tweaking: don't call ca.getColumnIndex on each iteration 
+		// Performance tweaking: don't call ca.getColumnIndex on each iteration
 		final int columnIndex = cursor.getColumnIndex(Schema.COL_LATITUDE);
 		final int columnIndex2 = cursor.getColumnIndex(Schema.COL_LONGITUDE);
 		final int columnIndex3 = cursor.getColumnIndex(Schema.COL_ALTITUDE);

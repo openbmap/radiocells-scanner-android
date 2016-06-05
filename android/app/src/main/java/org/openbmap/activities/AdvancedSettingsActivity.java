@@ -30,7 +30,7 @@ import android.widget.Toast;
 
 import org.openbmap.Preferences;
 import org.openbmap.R;
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 import org.openbmap.utils.CatalogUpdater;
 import org.openbmap.utils.CurrentLocationHelper;
 import org.openbmap.utils.CurrentLocationHelper.LocationResult;
@@ -79,7 +79,7 @@ public class AdvancedSettingsActivity extends PreferenceActivity {
 					@Override
 					public void gotLocation(final Location location) {
 						final String blacklistPath = AdvancedSettingsActivity.this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.BLACKLIST_SUBDIR;
-						final String filename = blacklistPath + File.separator + Radiobeacon.DEFAULT_LOCATION_BLOCK_FILE;
+						final String filename = blacklistPath + File.separator + RadioBeacon.DEFAULT_LOCATION_BLOCK_FILE;
 						final String blocker = String.format("<ignorelist>"
 								+ "<location comment=\"homezone\">"
 								+ "<latitude>%s</latitude>"

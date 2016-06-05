@@ -20,10 +20,11 @@ package org.openbmap.activities;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 
 import org.openbmap.R;
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 import org.openbmap.utils.CertificateUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -44,7 +45,7 @@ public class CreditsActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.credits);
 		final TextView tvClientVersion = (TextView) findViewById(R.id.credits_client_version);
-		tvClientVersion.setText(Radiobeacon.SW_VERSION);
+		tvClientVersion.setText(RadioBeacon.SW_VERSION);
 		final TextView tvBuild = (TextView) findViewById(R.id.credits_build);
 		tvBuild.setText("(" + readBuildInfo() + ")");
 		final TextView tvSignature = (TextView) findViewById(R.id.credits_build_signature);
@@ -54,23 +55,23 @@ public class CreditsActivity extends Activity {
 	public final String readBuildInfo() {
 		final InputStream buildInStream = getResources().openRawResource(R.raw.build);
 	    final ByteArrayOutputStream buildOutStream = new ByteArrayOutputStream();
-	
+
 	    int i;
-	 
-	    try { 
+
+	    try {
 	        i = buildInStream.read();
 	        while (i != -1) {
 	            buildOutStream.write(i);
 	            i = buildInStream.read();
 	        }
-	 
+
 	        buildInStream.close();
 	    } catch (final IOException e) {
-	        e.printStackTrace();
+			Log.e(TAG, e.toString(), e);
 	    }
-	 
+
 	    return buildOutStream.toString();
-	    // use buildOutStream.toString() to get the data 
+	    // use buildOutStream.toString() to get the data
 
 	}
 

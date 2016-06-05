@@ -20,7 +20,7 @@ package org.openbmap.db.models;
 
 import android.location.Location;
 
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 import org.openbmap.utils.GeometryUtils;
 
 import java.text.ParseException;
@@ -42,16 +42,16 @@ public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 	 * Timestamp in openbmap format: YYYYMMDDHHMMSS
 	 */
 	private long mOpenBmapTimestamp;
-	
+
 	/**
 	 * Timestamp in millis
 	 */
 	private long mMillisTimestamp = 0;
-	
+
 	private double mBearing = 0.0;
 	private double mSpeed = 0.0;
-	private int	mSession = Radiobeacon.SESSION_NOT_TRACKING;
-	private String mSource = Radiobeacon.PROVIDER_NONE;
+	private int	mSession = RadioBeacon.SESSION_NOT_TRACKING;
+	private String mSource = RadioBeacon.PROVIDER_NONE;
 	private boolean mIsWaypoint = false;
 
 	/**
@@ -74,11 +74,11 @@ public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 	}
 
 	public PositionRecord(){
-		
+
 	}
-	
+
 	/**
-	 * @param location 
+	 * @param location
 	 * @param session Session Id
 	 * @param source Provider used
 	 * @param isWaypoint Point is a waypoint
@@ -99,7 +99,7 @@ public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 		setSource(source);
 		setIsWaypoint(isWaypoint);
 	}
-	
+
 	public final double getLatitude() {
 		return mLatitude;
 	}
@@ -147,14 +147,14 @@ public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 	public final long getMillisTimestamp() {
 		return mMillisTimestamp;
 	}
-	
+
 	/**
 	 * Sets time stamp. The time stamp is converted from UTC to human readable format here, i.e. YYYYMMDDHHMMSS <p>
 	 * The conversion itself is considered bad. It's considered as good practice to store time stamp UTC system mills,
 	 * but this conversion is necessary for historical reasons and the fact that the openbmap server expects
 	 * time stamps in YYYYMMDDHHMMSS format <p>
 	 * If you change something here, don't forget reworking the gpx exporter
-	 * @param millis Time stamp in UTC, i.e. in milliseconds since January 1, 1970. 
+	 * @param millis Time stamp in UTC, i.e. in milliseconds since January 1, 1970.
 	 */
 	public final void setTimestampByMillis(final long millis) {
 		this.mMillisTimestamp = millis;
@@ -174,9 +174,9 @@ public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 			this.mMillisTimestamp = converted.getTime();
 		} catch (ParseException e) {
 			this.mMillisTimestamp = 0;
-		}		
+		}
 	}
-	
+
 	public final double getBearing() {
 		return mBearing;
 	}
@@ -204,22 +204,22 @@ public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 	public final String getSource() {
 		return mSource;
 	}
-	
+
 	public final void setSource(final String source) {
 		this.mSource = source;
 	}
-	
+
 	/**
 	 * @param isWaypoint
 	 */
 	private void setIsWaypoint(boolean isWaypoint) {
 		mIsWaypoint = isWaypoint;
 	}
-	
+
 	private boolean isWaypoint() {
 		return mIsWaypoint;
 	}
-	
+
 	public final String toString() {
 		return "Lat " + getLatitude() + " / Lon " + getLongitude() + " / Alt " + getAltitude() + " / Acc " + getAccuracy();
 	}

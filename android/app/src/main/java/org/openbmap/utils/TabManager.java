@@ -44,7 +44,7 @@ public class TabManager implements TabHost.OnTabChangeListener {
 	private final FragmentActivity mActivity;
 	private final TabHost mTabHost;
 	private final int mContainerId;
-	private final HashMap<String, TabInfo> mTabs = new HashMap<String, TabInfo>();
+	private final HashMap<String, TabInfo> mTabs = new HashMap<>();
 	TabInfo mLastTab;
 
 	static final class TabInfo {

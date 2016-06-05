@@ -46,7 +46,7 @@ import android.widget.Toast;
 import org.greenrobot.eventbus.EventBus;
 import org.openbmap.Preferences;
 import org.openbmap.R;
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 import org.openbmap.events.onStopTracking;
 import org.openbmap.services.MasterBrainService;
 import org.openbmap.utils.ActivityUtils;
@@ -83,10 +83,10 @@ public class TabHostActivity extends AppCompatActivity {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case Radiobeacon.MSG_SERVICE_SHUTDOWN:
+                case RadioBeacon.MSG_SERVICE_SHUTDOWN:
                     int reason = msg.arg1;
 
-                    if (reason == Radiobeacon.SHUTDOWN_REASON_LOW_POWER) {
+                    if (reason == RadioBeacon.SHUTDOWN_REASON_LOW_POWER) {
                         Toast.makeText(TabHostActivity.this, getString(R.string.battery_warning), Toast.LENGTH_LONG).show();
                     }
 
@@ -121,7 +121,7 @@ public class TabHostActivity extends AppCompatActivity {
             // We want to monitor the service for as long as we are
             // connected to it.
             try {
-                Message msg = Message.obtain(null, Radiobeacon.MSG_REGISTER_CLIENT);
+                Message msg = Message.obtain(null, RadioBeacon.MSG_REGISTER_CLIENT);
                 msg.replyTo = mMessenger;
                 mService.send(msg);
 
@@ -166,7 +166,7 @@ public class TabHostActivity extends AppCompatActivity {
             // it, then now is the time to unregister.
             if (mService != null) {
                 try {
-                    Message msg = Message.obtain(null, Radiobeacon.MSG_UNREGISTER_CLIENT);
+                    Message msg = Message.obtain(null, RadioBeacon.MSG_UNREGISTER_CLIENT);
                     msg.replyTo = mMessenger;
                     mService.send(msg);
                 } catch (RemoteException e) {
@@ -250,7 +250,7 @@ public class TabHostActivity extends AppCompatActivity {
                 stopTracking();
 				break;
 			default:
-				break; 
+				break;
 		}
 		return super.onOptionsItemSelected(item);
 	}

@@ -22,12 +22,12 @@ import android.location.Location;
 import android.util.Log;
 
 import org.mapsforge.core.model.LatLong;
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 
 public final class GeometryUtils {
-	
+
 	private static final String TAG = GeometryUtils.class.getSimpleName();
-	
+
 	/**
 	 * Maximum altitude (in meter), used for checking gps integrity
 	 */
@@ -55,7 +55,7 @@ public final class GeometryUtils {
 
 	/**
 	 * Normalizes the mAngle to the range 0 to 2 pi
-	 * @param mAngle in radiant
+	 * @param angle in radiant
 	 * @return normalized mAngle
 	 */
 	public static float normalizeAngle(float angle) {
@@ -75,22 +75,22 @@ public final class GeometryUtils {
 			Log.w(TAG, "Invalid location: Location is null");
 			return false;
 		}
-	
+
 		if (test.getLatitude() == 0 && test.getLongitude() == 0) {
 			Log.w(TAG, "Invalid location: only default values provided");
-			return false;	
+			return false;
 		}
-	
+
 		if (test.getLongitude() > 180 || test.getLongitude() < -180) {
 			Log.w(TAG, "Invalid longitude: " + test.getLongitude());
 			return false;
 		}
-	
+
 		if (test.getLatitude() > 90 || test.getLatitude() < -90) {
 			Log.w(TAG, "Invalid latitude: " + test.getLatitude());
 			return false;
 		}
-	
+
 		// now we can also check optional parameters (not available on every device)
 		if (strictMode) {
 			final long tomorrow = System.currentTimeMillis() + GeometryUtils.MILLIS_PER_DAY;
@@ -98,12 +98,12 @@ public final class GeometryUtils {
 				Log.w(TAG, "Invalid timestamp: either to old or more than one day in the future");
 				return false;
 			}
-			
+
 			if ((test.hasAltitude()) && (test.getAltitude() < GeometryUtils.MIN_ALTITUDE || test.getAltitude() > MAX_ALTITUDE)) {
 				Log.w(TAG, "Altitude out-of-range [" + GeometryUtils.MIN_ALTITUDE + ".." + MAX_ALTITUDE + "]:" + test.getAltitude());
 				return false;
 			}
-	
+
 			if ((test.hasSpeed()) && (test.getSpeed() < GeometryUtils.MIN_SPEED || test.getSpeed() > GeometryUtils.MAX_SPEED)) {
 				Log.w(TAG, "Speed out-of-range [" + GeometryUtils.MIN_SPEED + ".." + GeometryUtils.MAX_SPEED + "]:" + test.getSpeed());
 				return false;
@@ -125,7 +125,7 @@ public final class GeometryUtils {
 	/**
 	 * Converts Location to LatLong
 	 * @throws IllegalArgumentException on invalid location
-	 * @param location 
+	 * @param location
 	 * @return Corresponding LatLong
 	 */
 	public static LatLong toLatLong(final Location location) {
@@ -142,7 +142,7 @@ public final class GeometryUtils {
 	 * @return Corresponding Location
 	 */
 	public static Location toLocation(final LatLong latlon) {
-		Location result = new Location(Radiobeacon.PROVIDER_NONE);
+		Location result = new Location(RadioBeacon.PROVIDER_NONE);
 		result.setLatitude(latlon.latitude);
 		result.setLongitude(latlon.longitude);
 		if (!isValidLocation(result, false)) {
@@ -150,8 +150,8 @@ public final class GeometryUtils {
 		}
 		return result;
 	}
-	
+
 	private GeometryUtils() {
-		
+
 	}
 }
