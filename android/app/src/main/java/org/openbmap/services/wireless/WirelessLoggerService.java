@@ -357,14 +357,14 @@ public class WirelessLoggerService extends AbstractService {
                     cdmaStrengthDbm = signalStrength.getCdmaDbm();
                     cdmaEcIo = signalStrength.getCdmaEcio();
                 } catch (final Exception e) {
-                    e.printStackTrace();
+                    Log.e(TAG, e.toString(), e);
                 }
                 try {
                     signalStrengthEvdodBm = signalStrength.getEvdoDbm();
                     signalStrengthEvdoEcio = signalStrength.getEvdoEcio();
                     signalStrengthSnr = signalStrength.getEvdoSnr();
                 } catch (final Exception e) {
-                    e.printStackTrace();
+                    Log.e(TAG, e.toString(), e);
                 }
 
                 try {
@@ -372,7 +372,7 @@ public class WirelessLoggerService extends AbstractService {
                     gsmStrengthAsu = signalStrength.getGsmSignalStrength();
                     gsmStrengthDbm = -113 + 2 * gsmStrengthAsu; // conversion ASU in dBm
                 } catch (final Exception e) {
-                    e.printStackTrace();
+                    Log.e(TAG, e.toString(), e);
                 }
             }
 
@@ -386,7 +386,7 @@ public class WirelessLoggerService extends AbstractService {
                             final Date now = new Date();
                             final String date = formatter.format(now);
                         } catch (final Exception e) {
-                            e.printStackTrace();
+                            Log.e(TAG, e.toString(), e);
                         }
 
                         //	powerOff = true;
@@ -397,7 +397,7 @@ public class WirelessLoggerService extends AbstractService {
                             final Date now = new Date();
                             final String date = formatter.format(now);
                         } catch (final Exception e) {
-                            e.printStackTrace();
+                            Log.e(TAG, e.toString(), e);
                         }
 
                         //outOfService = true;

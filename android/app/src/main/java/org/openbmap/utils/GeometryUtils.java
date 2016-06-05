@@ -55,7 +55,7 @@ public final class GeometryUtils {
 
 	/**
 	 * Normalizes the mAngle to the range 0 to 2 pi
-	 * @param mAngle in radiant
+	 * @param angle in radiant
 	 * @return normalized mAngle
 	 */
 	public static float normalizeAngle(float angle) {

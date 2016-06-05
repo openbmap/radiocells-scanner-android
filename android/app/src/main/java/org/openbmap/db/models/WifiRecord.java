@@ -18,6 +18,8 @@
 
 package org.openbmap.db.models;
 
+import android.util.Log;
+
 import org.openbmap.RadioBeacon;
 
 import java.security.MessageDigest;
@@ -64,15 +66,6 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 
 	/**
 	 * Initialises Wifi Record without setting session id
-	 *
-	 * @param bssid
-	 * @param ssid
-	 * @param capabilities
-	 * @param frequency
-	 * @param level
-	 * @param timestamp
-	 * @param request
-	 * @param last
 	 */
 	public WifiRecord(String bssid, String ssid, String capabilities, int frequency, int level, long timestamp, PositionRecord request, PositionRecord last, CatalogStatus catalogStatus)
 	{
@@ -234,7 +227,7 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 			return hexString.toString();
 
 		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
+			Log.e(TAG, e.toString(), e);
 		}
 		return "";
 	}

@@ -22,6 +22,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.util.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -39,6 +40,8 @@ import java.security.cert.X509Certificate;
  */
 public class CertificateUtils {
 
+    private static final String TAG = CertificateUtils.class.getSimpleName();
+
     public static String getCertificateSHA1Fingerprint(Context context) {
         PackageManager pm = context.getPackageManager();
         String packageName = context.getPackageName();
@@ -47,7 +50,7 @@ public class CertificateUtils {
         try {
             packageInfo = pm.getPackageInfo(packageName, flags);
         } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.toString(), e);
         }
         Signature[] signatures = packageInfo.signatures;
         byte[] cert = signatures[0].toByteArray();
@@ -56,13 +59,13 @@ public class CertificateUtils {
         try {
             cf = CertificateFactory.getInstance("X509");
         } catch (CertificateException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.toString(), e);
         }
         X509Certificate c = null;
         try {
             c = (X509Certificate) cf.generateCertificate(input);
         } catch (CertificateException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.toString(), e);
         }
         String hexString = null;
         try {
@@ -70,9 +73,9 @@ public class CertificateUtils {
             byte[] publicKey = md.digest(c.getEncoded());
             hexString = byte2HexFormatted(publicKey);
         } catch (NoSuchAlgorithmException e1) {
-            e1.printStackTrace();
+            Log.e(TAG, e1.toString(), e1);
         } catch (CertificateEncodingException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.toString(), e);
         }
         return hexString;
     }
@@ -82,10 +85,17 @@ public class CertificateUtils {
         for (int i = 0; i < arr.length; i++) {
             String h = Integer.toHexString(arr[i]);
             int l = h.length();
-            if (l == 1) h = "0" + h;
-            if (l > 2) h = h.substring(l - 2, l);
+
+            if (l == 1)
+                h = "0" + h;
+
+            if (l > 2)
+                h = h.substring(l - 2, l);
+
             str.append(h.toUpperCase());
-            if (i < (arr.length - 1)) str.append(':');
+
+            if (i < (arr.length - 1))
+                str.append(':');
         }
         return str.toString();
     }

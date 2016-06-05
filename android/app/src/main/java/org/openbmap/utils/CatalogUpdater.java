@@ -95,15 +95,14 @@ public class CatalogUpdater extends AsyncTask<Void, Void, Void> {
 				catalogDb = SQLiteDatabase.openDatabase(file, null, SQLiteDatabase.OPEN_READWRITE);
 			}
 			catch (SQLiteException e) {
-				e.printStackTrace();
-				Log.e(TAG, "Can't open wifi catalog database");
+				Log.e(TAG, "Can't open wifi catalog database " + e.toString(), e);
 				return null;
 			}
 
 			catalogDb.rawQuery("PRAGMA journal_mode=DELETE", null);
 
-			ArrayList<String> updateLater = new ArrayList<String>();
-			ArrayList<ContentValues> newWifis = new ArrayList<ContentValues>();
+			ArrayList<String> updateLater = new ArrayList<>();
+			ArrayList<ContentValues> newWifis = new ArrayList<>();
 			while (cursorWifis.moveToNext()) {
 				//Log.d(TAG, "Inserting " + cursorWifis.getString(0).replace(":", "") );
 
@@ -141,9 +140,7 @@ public class CatalogUpdater extends AsyncTask<Void, Void, Void> {
 				contentResolver.update(ContentProvider.CONTENT_URI_WIFI, updateExisting,
 						Schema.COL_BSSID + " = ?", new String[]{bssid.toUpperCase()});
 			}
-			// DON'T DO THIS!
-			//catalogDb.execSQL("VACUUM");
-			//catalogDb.execSQL("COMMIT");
+
 			catalogDb.close();
 			Log.i(TAG, "Catalog update finished ");
 		} catch (SQLiteException e) {

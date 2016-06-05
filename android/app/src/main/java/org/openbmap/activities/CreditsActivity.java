@@ -20,6 +20,7 @@ package org.openbmap.activities;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 
 import org.openbmap.R;
@@ -66,7 +67,7 @@ public class CreditsActivity extends Activity {
 
 	        buildInStream.close();
 	    } catch (final IOException e) {
-	        e.printStackTrace();
+			Log.e(TAG, e.toString(), e);
 	    }
 
 	    return buildOutStream.toString();

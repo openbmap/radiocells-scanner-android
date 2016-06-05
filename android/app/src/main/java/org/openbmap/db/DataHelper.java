@@ -106,9 +106,9 @@ public class DataHelper {
 		try {
 			final ContentProviderResult[] results = contentResolver.applyBatch("org.openbmap.provider", operations);
 		} catch (final RemoteException e) {
-			e.printStackTrace();
+			Log.e(TAG, e.toString(), e);
 		} catch (final OperationApplicationException e) {
-			e.printStackTrace();
+			Log.e(TAG, e.toString(), e);
 		}
 	}
 
@@ -614,9 +614,9 @@ public class DataHelper {
 		try {
 			final ContentProviderResult[] results = contentResolver.applyBatch("org.openbmap.provider", operations);
 		} catch (final RemoteException e) {
-			e.printStackTrace();
+			Log.e(TAG, e.toString(), e);
 		} catch (final OperationApplicationException e) {
-			e.printStackTrace();
+			Log.e(TAG, e.toString(), e);
 		}
 	}
 
