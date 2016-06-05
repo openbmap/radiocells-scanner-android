@@ -47,7 +47,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.openbmap.Preferences;
 import org.openbmap.R;
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 import org.openbmap.activities.TabHostActivity;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.Session;
@@ -111,7 +111,7 @@ public class MasterBrainService extends Service {
     /**
      * Current session
      */
-    private int mSession = Radiobeacon.SESSION_NOT_TRACKING;
+    private int mSession = RadioBeacon.SESSION_NOT_TRACKING;
     private int mShutdownReason;
 
     /**
@@ -121,10 +121,10 @@ public class MasterBrainService extends Service {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case Radiobeacon.MSG_REGISTER_CLIENT:
+                case RadioBeacon.MSG_REGISTER_CLIENT:
                     mClients.add(msg.replyTo);
                     break;
-                case Radiobeacon.MSG_UNREGISTER_CLIENT:
+                case RadioBeacon.MSG_UNREGISTER_CLIENT:
                     mClients.remove(msg.replyTo);
                     break;
                 default:
@@ -266,8 +266,8 @@ public class MasterBrainService extends Service {
     @Subscribe
     public void onEvent(onStopTracking event){
         Log.d(TAG, "Received StopTrackingEvent event");
-        stopTracking(Radiobeacon.SHUTDOWN_REASON_NORMAL);
-        mSession = Radiobeacon.SESSION_NOT_TRACKING;
+        stopTracking(RadioBeacon.SHUTDOWN_REASON_NORMAL);
+        mSession = RadioBeacon.SESSION_NOT_TRACKING;
         releasePowerLock();
     }
 
@@ -307,7 +307,7 @@ public class MasterBrainService extends Service {
                 final boolean ignoreBattery = mPrefs.getBoolean(Preferences.KEY_IGNORE_BATTERY, Preferences.VAL_IGNORE_BATTERY);
                 if (!ignoreBattery) {
                     Toast.makeText(context, getString(R.string.battery_warning), Toast.LENGTH_LONG).show();
-                    stopTracking(Radiobeacon.SHUTDOWN_REASON_LOW_POWER);
+                    stopTracking(RadioBeacon.SHUTDOWN_REASON_LOW_POWER);
                 } else {
                   Log.i(TAG, "Battery low but ignoring due to settings");
                 }
@@ -322,7 +322,7 @@ public class MasterBrainService extends Service {
      * @param session
      */
     private void startTracking(final int session) {
-        if (session != Radiobeacon.SESSION_NOT_TRACKING) {
+        if (session != RadioBeacon.SESSION_NOT_TRACKING) {
             Log.d(TAG, "Preparing session " + session);
             mSession = session;
             resumeSession(session);
@@ -345,7 +345,7 @@ public class MasterBrainService extends Service {
 
         for (int i = mClients.size() - 1; i >= 0; i--) {
             try {
-                mClients.get(i).send(Message.obtain(null, Radiobeacon.MSG_SERVICE_SHUTDOWN, reason, 0));
+                mClients.get(i).send(Message.obtain(null, RadioBeacon.MSG_SERVICE_SHUTDOWN, reason, 0));
             } catch (RemoteException e) {
                 // The client is dead.  Remove it from the list;
                 // we are going through the list from back to front

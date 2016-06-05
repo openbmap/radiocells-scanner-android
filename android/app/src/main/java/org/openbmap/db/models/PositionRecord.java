@@ -20,7 +20,7 @@ package org.openbmap.db.models;
 
 import android.location.Location;
 
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 import org.openbmap.utils.GeometryUtils;
 
 import java.text.ParseException;
@@ -50,8 +50,8 @@ public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 
 	private double mBearing = 0.0;
 	private double mSpeed = 0.0;
-	private int	mSession = Radiobeacon.SESSION_NOT_TRACKING;
-	private String mSource = Radiobeacon.PROVIDER_NONE;
+	private int	mSession = RadioBeacon.SESSION_NOT_TRACKING;
+	private String mSource = RadioBeacon.PROVIDER_NONE;
 	private boolean mIsWaypoint = false;
 
 	/**

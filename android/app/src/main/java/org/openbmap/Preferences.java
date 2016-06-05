@@ -36,7 +36,7 @@ public final class Preferences {
 	public static final String KEY_MAP_FOLDER = "data.folder_map";
 
 	public static final String KEY_WIFI_CATALOG_FOLDER = "data.folder_catalog";
-	
+
 	/**
 	 * Selected map file
 	 */
@@ -46,22 +46,22 @@ public final class Preferences {
      * Catalog download date
      */
     public static final String KEY_CATALOG_VERSION = "data.ref_database_version";
-	
+
 	/**
 	 * Selected wifi catalog file
 	 */
 	public static final String KEY_CATALOG_FILE = "data.ref_database";
-	
+
 	/**
 	 * Keeps screen on during logging?
 	 */
 	public static final String KEY_KEEP_SCREEN_ON = "ui.keep_screen_on";
-	
+
 	/**
 	 * Openbmap user name
 	 */
 	public static final String KEY_CREDENTIALS_USER = "credentials.user";
-	
+
 	/**
 	 * Openbmap password
 	 */
@@ -76,17 +76,17 @@ public final class Preferences {
 	 * Shall cells be saved?
 	 */
 	public static final String KEY_LOG_CELLS = "save_cells";
-	
+
 	/**
 	 * Shall wifis be saved?
 	 */
 	public static final String KEY_LOG_WIFIS = "save_wifis";
-	
+
 	/**
 	 * Minimum distance between cells logged.
 	 */
 	public static final String KEY_MIN_CELL_DISTANCE = "logging.cell_distance";
-	
+
 	/**
 	 * Minimum distance between wifis logged.
 	 */
@@ -101,32 +101,32 @@ public final class Preferences {
 	 * Required GPS accuracy
 	 */
 	public static final String KEY_REQ_GPS_ACCURACY = "logging.gps_accuracy";
-	
+
 	/**
 	 * Simulate upload only?
 	 */
 	public static final String	KEY_SKIP_UPLOAD = "debug.simulate_upload";
-	
+
 	/**
 	 * Clean database button
 	 */
 	public static final String	KEY_CLEAN_DATABASE = "debug.clean_database";
-	
+
 	/**
 	 * Update wifi catalog button
 	 */
 	public static final String KEY_UPDATE_CATALOG = "debug.update_catalog";
-	
+
 	/**
 	 * Keep local temp files after upload?
 	 */
 	public static final String KEY_KEEP_XML = "debug.keep_export_files";
-	
+
 	/**
 	 * Blocks wifi and cell scan around current location
 	 */
 	public static final String KEY_BLOCK_HOMEZONE = "privacy.block_homezone";
-	
+
 	/**
 	 * Replace SSIDS by md5 hash on upload
 	 */
@@ -199,14 +199,14 @@ public final class Preferences {
 	 * Default map file name
 	 */
 	public static final String VAL_MAP_FILE = VAL_MAP_NONE;
-	
+
 	/**
 	 * Default reference database filename
 	 */
 	public static final String VAL_CATALOG_FILE = "openbmap.sqlite";
-	
+
 	/**
-	 * Reference database not set 
+	 * Reference database not set
 	 */
 	public static final String VAL_CATALOG_NONE = "none";
 
@@ -224,37 +224,37 @@ public final class Preferences {
 	 * Default minimum distance cells
 	 */
 	public static final String VAL_MIN_CELL_DISTANCE = "35";
-	
+
 	/**
 	 * Default minimum distance wifis
 	 */
 	public static final String VAL_MIN_WIFI_DISTANCE = "5";
-	
+
 	/**
 	 * Default GPS accuracy
 	 */
 	public static final String VAL_REQ_GPS_ACCURACY = "25";
-	
+
 	/**
 	 * Default screen lock settings
 	 */
 	public static final boolean VAL_KEY_KEEP_SCREEN_ON = true;
-	
+
 	/**
 	 * By default upload session
 	 */
 	public static final boolean	VAL_SKIP_UPLOAD = false;
-	
+
 	/**
 	 * By default delete local temp files after upload
 	 */
 	public static final boolean VAL_KEEP_XML = false;
-	
+
 	/**
 	 * Save cells by default
 	 */
 	public static final boolean VAL_SAVE_CELLS = true;
-	
+
 	/**
 	 * Save wifis by default
 	 */
@@ -264,24 +264,24 @@ public final class Preferences {
 	 * GPS update frequence in seconds, 0 = update position as often as possible by default
 	 */
 	public static final String VAL_GPS_LOGGING_INTERVAL = "0";
-	
+
 	/**
 	 * Don't anonymise SSIDS by default
 	 */
 	public static final boolean VAL_ANONYMISE_SSID = false;
-	
+
 	/**
 	 * Default maps folder name, relative to application root dir.
 	 * Can be overwritten in settings by specifying KEY_MAP_FOLDER
 	 */
 	public static final String MAPS_SUBDIR = "maps";
-	
+
 	/**
 	 * Default wifi catalog folder name, relative to application root dir.
 	 * Can be overwritten in settings by specifying KEY_WIFI_CATALOG_FOLDER
 	 */
 	public static final String CATALOG_SUBDIR = "databases";
-	
+
 	/**
 	 * Directory containing wifi blacklists, relative to application root dir.
 	 */
@@ -291,12 +291,12 @@ public final class Preferences {
 	 * File extension for maps
 	 */
 	public static final String MAP_FILE_EXTENSION = ".map";
-	
+
 	/**
 	 * File extension for wifi catalog
 	 */
 	public static final String CATALOG_FILE_EXTENSION = ".sqlite";
-	
+
 	/**
 	 * File extension for wifi and cell log files
 	 */
@@ -305,12 +305,12 @@ public final class Preferences {
 	/**
 	 * URL, which is called to check whether this client version is up-to-date
 	 */
-	public static final String VERSION_CHECK_URL = Radiobeacon.SERVER_BASE + "/uploads/version.xml";
+	public static final String VERSION_CHECK_URL = RadioBeacon.SERVER_BASE + "/uploads/version.xml";
 
     /**
      * URL, which is called to validate user credentials
      */
-	public static final String PASSWORD_VALIDATION_URL = Radiobeacon.SERVER_BASE + "/uploads/check_login";
+	public static final String PASSWORD_VALIDATION_URL = RadioBeacon.SERVER_BASE + "/uploads/check_login";
 
 	/**
 	 * Mapsforge render theme
@@ -321,6 +321,6 @@ public final class Preferences {
 	 * Private dummy constructor
 	 */
 	private Preferences() {
-	
+
 	}
 }

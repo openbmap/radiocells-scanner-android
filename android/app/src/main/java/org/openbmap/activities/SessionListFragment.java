@@ -44,7 +44,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.openbmap.R;
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 import org.openbmap.db.ContentProvider;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.Schema;
@@ -434,7 +434,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	public void onAlertPositiveClick(final int alertId, final String args) {
 		if (alertId == ID_MULTIPLE_UPLOADS) {
 			// just all pending
-			final int id = (args != null ? Integer.valueOf(args) : Radiobeacon.SESSION_NOT_TRACKING);
+			final int id = (args != null ? Integer.valueOf(args) : RadioBeacon.SESSION_NOT_TRACKING);
 			stop(id);
 			((SessionFragementListener) getActivity()).uploadAllCommand();
 		}
@@ -447,7 +447,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	public void onAlertNegativeClick(final int alertId, final String args) {
 		if (alertId == ID_MULTIPLE_UPLOADS) {
 			// just upload selected
-			final int id = (args != null ? Integer.valueOf(args) : Radiobeacon.SESSION_NOT_TRACKING);
+			final int id = (args != null ? Integer.valueOf(args) : RadioBeacon.SESSION_NOT_TRACKING);
 			stop(id);
 			((SessionFragementListener) getActivity()).uploadCommand(id);
 		}

@@ -55,7 +55,7 @@ import org.mapsforge.map.model.common.Observer;
 import org.mapsforge.map.util.MapPositionUtil;
 import org.openbmap.Preferences;
 import org.openbmap.R;
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 import org.openbmap.db.ContentProvider;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.Schema;
@@ -99,7 +99,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	 * Online tile layer, used when no offline map available
 	 */
 	private static TileDownloadLayer mapDownloadLayer = null;
-	
+
 	//[end]
 
 	// [start] Dynamic map variables
@@ -137,17 +137,17 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 	@Override
 	public final View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
-		final View view = inflater.inflate(R.layout.wifidetailsmap, container, false);	
+		final View view = inflater.inflate(R.layout.wifidetailsmap, container, false);
 		this.mMapView = (MapView) view.findViewById(R.id.map);
 		return view;
 	}
 
 	@Override
 	public final void onActivityCreated(final Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);	
-		
+		super.onActivityCreated(savedInstanceState);
+
 		initMap();
-		
+
 		mWifi = ((WifiDetailsActivity) getActivity()).getWifi();
 
 		if (savedInstanceState != null) {
@@ -166,7 +166,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 		if (mapDownloadLayer != null) {
 			mapDownloadLayer.onResume();
 		}
-		
+
 		// register for zoom changes
 		this.mapObserver = new Observer() {
 			@Override
@@ -191,7 +191,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 		this.mMapView.getModel().mapViewPosition.addObserver(mapObserver);
 	}
 
-	
+
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
@@ -206,16 +206,16 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 		mMapView.getModel().mapViewPosition.removeObserver(mapObserver);
 		if ((mapDownloadLayer != null)) {
 			mapDownloadLayer.onResume();
-		}	
+		}
 		super.onPause();
 	}
 
 	@Override
 	public final Loader<Cursor> onCreateLoader(final int arg0, final Bundle arg1) {
 		// set query params: bssid and session id
-		final String[] args = {"-1", String.valueOf(Radiobeacon.SESSION_NOT_TRACKING)};
+		final String[] args = {"-1", String.valueOf(RadioBeacon.SESSION_NOT_TRACKING)};
 		if (mWifi != null) {
-			args[0] = mWifi.getBssid();	
+			args[0] = mWifi.getBssid();
 		}
 		final DataHelper dbHelper = new DataHelper(this.getActivity());
 		args[1] = String.valueOf(dbHelper.getActiveSessionId());
@@ -250,7 +250,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	private void proceedAfterHeatmapCompleted() {
 		if (pointsLoaded  && layoutInflated && !updatePending) {
@@ -301,7 +301,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 		//saveHeatmapToFile(backbuffer);
 	}
 
-	/** 
+	/**
 	 * Callback function when heatmap generation has failed
 	 */
 	@Override
@@ -421,7 +421,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 	}
 
-	/** 
+	/**
 	 * Creates a separate tile cache
 	 * @return
 	 */
