@@ -24,39 +24,39 @@ package org.openbmap;
 /**
  * Constants & app-wide variables.
  */
-public final class Radiobeacon {
+public final class RadioBeacon {
 
 	/**
 	 * The full Package name of RadioBeacon returned by calling
 	 * RadioBeacon.class.getPackage().getName()
 	 */
-	public static final String PACKAGE_NAME = Radiobeacon.class.getPackage().getName();
+	public static final String PACKAGE_NAME = RadioBeacon.class.getPackage().getName();
 
 	/**
 	 * Intent to update GPS status
 	 */
-	public static final String INTENT_POSITION_SAT_INFO = Radiobeacon.PACKAGE_NAME + ".intent.POSITION_SAT_INFO";
-	
+	public static final String INTENT_POSITION_SAT_INFO = RadioBeacon.PACKAGE_NAME + ".intent.POSITION_SAT_INFO";
+
 	/**
 	 * Intent signaling new session has been saved
 	 */
-	public static final String INTENT_NEW_SESSION = Radiobeacon.PACKAGE_NAME + ".intent.SESSION_SAVED";
+	public static final String INTENT_NEW_SESSION = RadioBeacon.PACKAGE_NAME + ".intent.SESSION_SAVED";
 
 	/**
 	 * Intent signalling wifi has been skipped due to blacklist
 	 */
-	public static final String INTENT_WIFI_BLACKLISTED = Radiobeacon.PACKAGE_NAME + ".intent.WIFI_BLACKLISTED";
+	public static final String INTENT_WIFI_BLACKLISTED = RadioBeacon.PACKAGE_NAME + ".intent.WIFI_BLACKLISTED";
 
 	/**
 	 * Intent signalling free wifi has been found
 	 */
-	public static final String INTENT_WIFI_FREE = Radiobeacon.PACKAGE_NAME + ".intent_WIFI_FREE";
+	public static final String INTENT_WIFI_FREE = RadioBeacon.PACKAGE_NAME + ".intent_WIFI_FREE";
 
 	/**
 	 * Intent signalling sessions have been changed (e.g. deletes)
 	 */
-	public static final String	INTENT_SESSION_UPDATE = Radiobeacon.PACKAGE_NAME + ".intent.SESSION_UPDATE";
-	
+	public static final String	INTENT_SESSION_UPDATE = RadioBeacon.PACKAGE_NAME + ".intent.SESSION_UPDATE";
+
 	/**
 	 * Key for extra data "location" in Intent
 	 */
@@ -86,9 +86,9 @@ public final class Radiobeacon {
     public static final int MSG_UNREGISTER_CLIENT = 3;
 
 	public static final int MSG_START_TRACKING = 4;
-	
+
 	public static final int MSG_STOP_TRACKING = 5;
-	
+
 	public static final int MSG_SERVICE_READY = 5;
 
     public static final int MSG_SERVICE_SHUTDOWN = 999;
@@ -101,7 +101,7 @@ public final class Radiobeacon {
 	 * Extra data key: Generic key
 	 */
 	public static final String MSG_KEY = "msg";
-	
+
 	/**
 	 * Extra data key: Operator name
 	 */
@@ -111,32 +111,32 @@ public final class Radiobeacon {
 	 * Extra data key: ssid
 	 */
 	public static final String MSG_SSID = "ssid";
-	
+
 	/**
 	 * Extra data key: bssid
 	 */
 	public static final String MSG_BSSID = "bssid";
-	
+
 	/**
 	 * Extra data key: location
 	 */
 	public static final String MSG_LOCATION = "location";
-	
+
 	/**
 	 * Session Id, when not currently tracking
 	 */
 	public static final int SESSION_NOT_TRACKING = 0;
-	
+
 	/**
 	 * Default provider name
 	 */
 	public static final String PROVIDER_NONE = "NONE";
-	
+
 	/**
 	 * Provider used for manual gps positioning
 	 */
 	public static final String PROVIDER_USER_DEFINED = "WAYPOINT";
-	
+
 	/**
 	 * Default ssid blacklist's filename
 	 */
@@ -151,13 +151,13 @@ public final class Radiobeacon {
 	 * Location blacklist's filename
 	 */
 	public static final String DEFAULT_LOCATION_BLOCK_FILE	= "custom_location.xml";
-	
-	
+
+
 	/**
 	 * SWID string for XML files
 	 */
 	public static final String SWID = "Radiobeacon";
-	
+
 	/**
 	 * SW Version string for XML files and credit screens
 	 * Caution:
@@ -165,15 +165,15 @@ public final class Radiobeacon {
      * 			- Also consider updating android:versionCode="x+1" android:versionName="XYZ" in AndroidManifest.xml (e.g. for automatic F-Droid updates)
 	 */
 	public static final String SW_VERSION = "0.8.16";
-	
+
 	/**
 	 * ServerValidation compares server version against VERSION_COMPATIBILITY to check whether client is outdated.
 	 * If server's current_version.xml version differs from VERSION_COMPATIBILITY upload is denied.
 	 * VERSION_COMPATIBILITY is typically set to the last major release.
-	 * 
+	 *
 	 * If you just have minor improvements on the client side, increase SW_VERSION, e.g. 00.6.01 and leave VERSION_COMPATIBILITY
 	 * at the server's current_version.xml version, e.g. 00.6.00. Thus the ServerValidation will still allow uploads.
-	 * 
+	 *
 	 * On major changes adjust server's current_version.xml version, SW_VERSION and VERSION_COMPATIBILITY
 	 */
 	public static final String VERSION_COMPATIBILITY = "00.8.00";
@@ -191,7 +191,7 @@ public final class Radiobeacon {
 	/**
 	 * Private dummy constructor
 	 */
-	private Radiobeacon() {
-		
+	private RadioBeacon() {
+
 	}
 }
