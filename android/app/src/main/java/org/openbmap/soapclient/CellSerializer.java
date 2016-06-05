@@ -40,7 +40,6 @@ import java.util.ArrayList;
  * Exports cells to xml format for later upload.
  */
 public class CellSerializer {
-
 	private static final String TAG = CellSerializer.class.getSimpleName();
 
 	/**
@@ -59,7 +58,7 @@ public class CellSerializer {
 	private static final String XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>";
 
 	private static final String LOG_XML = "\n<logfile manufacturer=\"%s\" model=\"%s\" revision=\"%s\" swid=\"%s\" swver=\"%s\" exportver=\"%s\">";
-	
+
 	private static final String SCAN_XML = "\n<scan time=\"%s\">";
 
 	private static final String POSITION_XML = "\n\t<gps time=\"%s\" lng=\"%s\" lat=\"%s\" alt=\"%s\" hdg=\"%s\" spe=\"%s\" accuracy=\"%s\" type=\"%s\" />";
@@ -210,7 +209,7 @@ public class CellSerializer {
 			+ " \"last\".\"timestamp\" AS \"last_timestamp\","
 			+ " \"last\".\"bearing\" AS \"last_bearing\","
 			+ " \"last\".\"speed\" AS \"last_speed\""
-			+ " FROM " + Schema.TBL_CELLS 
+			+ " FROM " + Schema.TBL_CELLS
 			+ " JOIN \"" + Schema.TBL_POSITIONS + "\" AS \"req\" ON (" + Schema.COL_BEGIN_POSITION_ID + " = \"req\".\"_id\")"
 			+ " JOIN \"" + Schema.TBL_POSITIONS + "\" AS \"last\" ON (" + Schema.COL_END_POSITION_ID + " = \"last\".\"_id\")"
 			+ " WHERE " + Schema.TBL_CELLS + "." + Schema.COL_SESSION_ID + " = ?"
@@ -223,7 +222,7 @@ public class CellSerializer {
 	 * @param context	Activities' context
 	 * @param session Session id to export
 	 * @param tempPath (full) path where temp files are saved. Will be created, if not existing.
-	 * @param exportVersion current Radiobeacon version (can differ from Radiobeacon version used for tracking) 
+	 * @param exportVersion current Radiobeacon version (can differ from Radiobeacon version used for tracking)
 
 	 */
 	public CellSerializer(final Context context, final int session, String tempPath, final String exportVersion) {
@@ -320,7 +319,7 @@ public class CellSerializer {
 		// serialize
 		while (!cursorCells.isAfterLast()) {
 			long i = 0;
-			while (!cursorCells.isAfterLast()) { 
+			while (!cursorCells.isAfterLast()) {
 				// creates files of 100 wifis each
 				Log.i(TAG, "Cycle " + i);
 
@@ -409,7 +408,7 @@ public class CellSerializer {
 			String previousEnd = "";
 
 			int i = 0;
-			// Iterate cells cursor until last row reached or CELLS_PER_FILE is reached 			
+			// Iterate cells cursor until last row reached or CELLS_PER_FILE is reached
 			while (i < CELLS_PER_FILE && cursor.moveToNext()) {
 
 				final long beginId = Long.valueOf(cursor.getString(mColBeginPosId));
@@ -446,7 +445,7 @@ public class CellSerializer {
 						bw.write(previousEnd);
 						bw.write(CLOSE_SCAN_TAG);
 
-						// Write new scan and gps tag 
+						// Write new scan and gps tag
 						// TODO distance calculation, seems optional
 						bw.write(scanToXml(cursor.getLong(mColTimestamp)));
 						bw.write(currentBegin);
@@ -464,7 +463,7 @@ public class CellSerializer {
 						cursor.getInt(mColIsServing),
 						cursor.getInt(mColIsNeigbor),
 						cursor.getString(mColMcc),
-						cursor.getString(mColMnc), 
+						cursor.getString(mColMnc),
 						cursor.getString(mColLac),
 						cursor.getString(mColLogicalCellId),
 						cursor.getString(mColActualCellId),
@@ -485,14 +484,14 @@ public class CellSerializer {
 			bw.write(CLOSE_SCAN_TAG);
 
 			bw.write(CLOSE_LOGFILE);
-			// ensure that everything is really written out and close 
+			// ensure that everything is really written out and close
 			bw.close();
 			file = null;
 			bw = null;
 
 		} catch (final IOException ioe) {
 			cursor.close();
-			ioe.printStackTrace();
+			Log.e(TAG, ioe.toString(), ioe);
 		}
 	}
 
@@ -614,7 +613,7 @@ public class CellSerializer {
 	 * @param head
 	 * @param speed
 	 * @param acc
-	 * @param type 
+	 * @param type
 	 * @return position tag
 	 */
 	private static String positionToXml(final long reqTime, final double lng, final double lat,
@@ -631,14 +630,14 @@ public class CellSerializer {
 	 * naming pattern, otherwise files are ignored.
 	 * @return filename
 	 */
-	private String generateFilename(final String mcc, final long timestamp) {	
+	private String generateFilename(final String mcc, final long timestamp) {
 		/**
 		 * Option 1: generate filename by export time
 		 */
 		/*
 		// Caution filename collisions possible, if called in less than a second
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
-		formatter.setCalendar(mTimestamp);			       	 
+		formatter.setCalendar(mTimestamp);
 		mTimestamp.add(Calendar.SECOND, 1);
 		return "V2_" + mcc + "_log" + formatter.format(mTimestamp.getTime()) + "-cellular.xml";
 		 */
@@ -646,7 +645,7 @@ public class CellSerializer {
 		/**
 		 * Option 2: generate by first timestamp in file
 		 */
-		return "V2_" + mcc + "_log" + String.valueOf(timestamp) + "-cellular.xml";	
+		return "V2_" + mcc + "_log" + String.valueOf(timestamp) + "-cellular.xml";
 	}
 
 

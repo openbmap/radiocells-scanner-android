@@ -18,6 +18,8 @@
 
 package org.openbmap.db.models;
 
+import android.util.Log;
+
 import org.openbmap.Radiobeacon;
 
 import java.security.MessageDigest;
@@ -29,7 +31,7 @@ import java.security.NoSuchAlgorithmException;
 public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 
 	private static final String TAG = WifiRecord.class.getSimpleName();
-	
+
 	public enum CatalogStatus {NEW, OPENBMAP, LOCAL}
 
 	private String mBSsid;
@@ -37,7 +39,7 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 	private String mCapabilities;
 	private int mFrequency;
 	private int mLevel;
-	
+
 	/**
 	 * Timestamp in openbmap format: YYYYMMDDHHMMSS
 	 */
@@ -64,15 +66,6 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 
 	/**
 	 * Initialises Wifi Record without setting session id
-	 * 
-	 * @param bssid
-	 * @param ssid
-	 * @param capabilities
-	 * @param frequency
-	 * @param level
-	 * @param timestamp
-	 * @param request
-	 * @param last
 	 */
 	public WifiRecord(String bssid, String ssid, String capabilities, int frequency, int level, long timestamp, PositionRecord request, PositionRecord last, CatalogStatus catalogStatus)
 	{
@@ -162,7 +155,7 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 	public final boolean isFree() {
 		return mCapabilities.equals("[ESS]");
 	}
-	
+
 	public final int getFrequency() {
 		return mFrequency;
 	}
@@ -210,35 +203,35 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 	public void setCatalogStatus(CatalogStatus catalogStatus) {
 		mCatalogStatus = catalogStatus;
 	}
-	
+
 	public CatalogStatus getCatalogStatus() {
 		return mCatalogStatus;
 	}
-	
+
 	public int getCatalogStatusInt() {
 		return mCatalogStatus.ordinal();
 	}
 
-	public static String md5(final String source) {  
-		try {  
-			// Create MD5 Hash  
-			MessageDigest digest = java.security.MessageDigest.getInstance("MD5");  
-			digest.update(source.getBytes());  
-			byte[] messageDigest = digest.digest();  
+	public static String md5(final String source) {
+		try {
+			// Create MD5 Hash
+			MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
+			digest.update(source.getBytes());
+			byte[] messageDigest = digest.digest();
 
-			// Create Hex String  
-			StringBuffer hexString = new StringBuffer();  
+			// Create Hex String
+			StringBuffer hexString = new StringBuffer();
 			for (int i = 0; i < messageDigest.length; i++) {
 				hexString.append(Integer.toHexString(0xFF & messageDigest[i]));
-			}  
-			return hexString.toString();  
+			}
+			return hexString.toString();
 
-		} catch (NoSuchAlgorithmException e) {  
-			e.printStackTrace();  
-		}  
-		return "";  
-	}  
+		} catch (NoSuchAlgorithmException e) {
+			Log.e(TAG, e.toString(), e);
+		}
+		return "";
+	}
 
-	
+
 }
 

@@ -281,8 +281,7 @@ public class MasterBrainService extends Service {
             mWakeLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK_NAME);
             mWakeLock.setReferenceCounted(true);
         } catch (final Exception e) {
-            Log.e(TAG, "Error acquiring wakelock " + WAKELOCK_NAME);
-            e.printStackTrace();
+            Log.e(TAG, "Error acquiring wakelock " + WAKELOCK_NAME + e.toString(), e);
         }
     }
 

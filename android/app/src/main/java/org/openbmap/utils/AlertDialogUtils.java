@@ -76,7 +76,7 @@ public class AlertDialogUtils extends DialogFragment {
 			dialog.setNeutralButton(android.R.string.ok, new OnClickListener() {
 				@Override
 				public void onClick(final DialogInterface alert, final int which) {
-					((OnAlertClickInterface)getActivity()).onAlertNeutralClick(dialogId, args);					
+					((OnAlertClickInterface)getActivity()).onAlertNeutralClick(dialogId, args);
 				}});
 		} else {
 			dialog.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
@@ -92,5 +92,5 @@ public class AlertDialogUtils extends DialogFragment {
 		}
 		return dialog.create();
 	}
-	
+
 }

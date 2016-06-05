@@ -75,7 +75,7 @@ public class GpxSerializer {
 			+ " AND source != '" + Radiobeacon.PROVIDER_USER_DEFINED + "' "
 			+ " ORDER BY " + Schema.COL_TIMESTAMP + " LIMIT " + CURSOR_SIZE
 			+ " OFFSET ?";
-	
+
 	private static final String WAYPOINT_SQL_QUERY = "SELECT " + Schema.COL_LATITUDE + ", " + Schema.COL_LONGITUDE + ", "
 			+ " " + Schema.COL_ALTITUDE + ", " + Schema.COL_ACCURACY + ", " + Schema.COL_TIMESTAMP + ", " + Schema.COL_BEARING
 			+ ", " + Schema.COL_SPEED + ", " + Schema.COL_SESSION_ID + ", " + Schema.COL_SOURCE + " "
@@ -83,17 +83,17 @@ public class GpxSerializer {
 			+ " AND source = '" + Radiobeacon.PROVIDER_USER_DEFINED + "' "
 			+ " ORDER BY " + Schema.COL_TIMESTAMP + " LIMIT " + CURSOR_SIZE
 			+ " OFFSET ?";
-	
-	private static final String WIFI_POINTS_SQL_QUERY = "SELECT w.rowid as " + Schema.COL_ID + ", w." + Schema.COL_BSSID + ", w." + Schema.COL_SSID + ", " 
+
+	private static final String WIFI_POINTS_SQL_QUERY = "SELECT w.rowid as " + Schema.COL_ID + ", w." + Schema.COL_BSSID + ", w." + Schema.COL_SSID + ", "
 			+ " MAX(" + Schema.COL_LEVEL + "), w." + Schema.COL_TIMESTAMP + ", "
-			+ " b." + Schema.COL_LATITUDE + ", b." + Schema.COL_LONGITUDE + ", b." + Schema.COL_ALTITUDE + ", b." + Schema.COL_ACCURACY 
+			+ " b." + Schema.COL_LATITUDE + ", b." + Schema.COL_LONGITUDE + ", b." + Schema.COL_ALTITUDE + ", b." + Schema.COL_ACCURACY
 			+ " FROM " + Schema.TBL_WIFIS + " as w JOIN positions as b ON request_pos_id = b._id "
 			+ " WHERE w." + Schema.COL_SESSION_ID + " = ? GROUP BY w." + Schema.COL_BSSID
 			+ " LIMIT " + CURSOR_SIZE + " OFFSET ?";
 
 	private static final String CELL_POINTS_SQL_QUERY = "SELECT " + Schema.COL_LATITUDE + ", " + Schema.COL_LONGITUDE + ", "
 			+ Schema.COL_ALTITUDE + ", " + Schema.COL_ACCURACY + ", " + Schema.COL_TIMESTAMP + ", \"CELL \" ||" + Schema.COL_OPERATORNAME + " ||" + Schema.COL_LOGICAL_CELLID + " AS name"
-			+ " FROM " + Schema.TBL_POSITIONS + " AS p LEFT JOIN " 
+			+ " FROM " + Schema.TBL_POSITIONS + " AS p LEFT JOIN "
 			+ " (SELECT " + Schema.COL_ID + ", " + Schema.COL_OPERATORNAME + ", " + Schema.COL_LOGICAL_CELLID + ", " + Schema.COL_BEGIN_POSITION_ID + " FROM " + Schema.TBL_CELLS + ") "
 			+ " AS c ON c." + Schema.COL_BEGIN_POSITION_ID + " = p._id WHERE c._id IS NOT NULL AND p." + Schema.COL_SESSION_ID + " = ?"
 			+ " ORDER BY " + Schema.COL_TIMESTAMP + " LIMIT " + CURSOR_SIZE
@@ -215,7 +215,7 @@ public class GpxSerializer {
 		c.close();
 		System.gc();
 	}
-	
+
 	/**
 	 * Iterates on track points and write them.
 	 * @param trackName Name of the track (metadata).

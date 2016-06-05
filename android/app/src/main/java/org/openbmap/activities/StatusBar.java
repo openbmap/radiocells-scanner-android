@@ -98,7 +98,7 @@ public class StatusBar extends LinearLayout {
 		tvNewWifiCount = (TextView) findViewById(R.id.gpsstatus_new_wifi_count);
 		tvAccuracy = (TextView) findViewById(R.id.gpsstatus_accuracy);
 		tvAccuracy.setText(getResources().getString(R.string.empty));
-		
+
 		imgSatIndicator = (ImageView) findViewById(R.id.gpsstatus_sat_indicator);
 		imgSatIndicator.setImageResource(R.drawable.sat_indicator_unknown);
 
@@ -179,7 +179,7 @@ public class StatusBar extends LinearLayout {
 		}
 	}
 
-	@Override 
+	@Override
 	protected void onAttachedToWindow() {
 		super.onAttachedToWindow();
 		mDataHelper = new DataHelper(mContext);

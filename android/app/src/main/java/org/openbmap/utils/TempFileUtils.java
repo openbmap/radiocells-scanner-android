@@ -30,12 +30,12 @@ import java.io.FilenameFilter;
  * Deletes all (temp) log files in data dir
  */
 public final class TempFileUtils {
-	
+
 	private static final String TAG = TempFileUtils.class.getSimpleName();
 
 	/**
 	 * Deletes all temp files (i.e. xml files) in applications root dir.
-	 * @param mContext
+	 * @param context
 	 */
 	public static void cleanTempFiles(final Context context) {
 		// List each map file

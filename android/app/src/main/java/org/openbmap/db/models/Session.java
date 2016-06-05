@@ -77,7 +77,7 @@ public class Session {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	public Session() {
 		this(Radiobeacon.SESSION_NOT_TRACKING);
@@ -188,7 +188,7 @@ public class Session {
 
 	@Override
 	public final String toString() {
-		return getId() + " / " + getDescription() + " / Created at " + getCreatedAt() + " / Updated at " + getLastUpdated() + " / Exported? " + hasBeenExported() + " / Active? " + isActive(); 
+		return getId() + " / " + getDescription() + " / Created at " + getCreatedAt() + " / Updated at " + getLastUpdated() + " / Exported? " + hasBeenExported() + " / Active? " + isActive();
 	}
 
 

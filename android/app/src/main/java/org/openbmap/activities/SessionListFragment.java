@@ -62,7 +62,7 @@ import java.util.Locale;
  */
 public class SessionListFragment extends ListFragment implements
 LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
-	
+
 	private static final String	TAG	= SessionListFragment.class.getSimpleName();
 
 	/**
@@ -80,7 +80,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	 * List action bar commands
 	 */
 	public interface SessionFragementListener {
-		
+
 		void deleteCommand(int id);
 		/**
 		 * Creates a new session.
@@ -100,7 +100,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		 * Deletes all sessions.
 		 */
 		void deleteAllCommand();
-		
+
 		/**
 		 * Uploads selected session.
 		 * @param id
@@ -117,7 +117,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		 * @param id
 		 */
 		void saveGpxCommand(int id);
-		
+
 		void reloadListFragment();
 	}
 
@@ -240,8 +240,8 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		final String[] projection = {
 				Schema.COL_ID,
 				Schema.COL_CREATED_AT,
-				Schema.COL_IS_ACTIVE, 
-				Schema.COL_HAS_BEEN_EXPORTED, 
+				Schema.COL_IS_ACTIVE,
+				Schema.COL_HAS_BEEN_EXPORTED,
 				Schema.COL_NUMBER_OF_CELLS,
 				Schema.COL_NUMBER_OF_WIFIS,
                 Schema.COL_NUMBER_OF_WAYPOINTS
@@ -292,7 +292,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 					imgStatus.setImageResource(android.R.drawable.presence_away);
 					imgStatus.setVisibility(View.VISIBLE);
 				} else {
-					imgStatus.setVisibility(View.INVISIBLE);				
+					imgStatus.setVisibility(View.INVISIBLE);
 				}
 				return true;
 			} else if (columnIndex == cursor.getColumnIndex(Schema.COL_HAS_BEEN_EXPORTED)) {
@@ -303,7 +303,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 					imgUpload.setImageResource(android.R.drawable.ic_lock_lock);
 					imgUpload.setVisibility(View.VISIBLE);
 				} else {
-					imgUpload.setVisibility(View.INVISIBLE);				
+					imgUpload.setVisibility(View.INVISIBLE);
 				}
 				return true;
 			} else if (columnIndex == cursor.getColumnIndex(Schema.COL_CREATED_AT)) {
@@ -363,7 +363,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		}
 		return true;
 	}
-	
+
 	public static class AlertDialogHelper extends DialogFragment {
 
 		/**
@@ -409,7 +409,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 				dialog.setNeutralButton(android.R.string.ok, new OnClickListener() {
 					@Override
 					public void onClick(final DialogInterface alert, final int which) {
-						((OnAlertClickInterface)getTargetFragment()).onAlertNeutralClick(dialogId, args);					
+						((OnAlertClickInterface)getTargetFragment()).onAlertNeutralClick(dialogId, args);
 					}});
 			} else {
 				dialog.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
@@ -451,7 +451,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 			stop(id);
 			((SessionFragementListener) getActivity()).uploadCommand(id);
 		}
-		
+
 	}
 
 	/* (non-Javadoc)
@@ -460,6 +460,6 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	@Override
 	public void onAlertNeutralClick(final int alertId, final String args) {
 		// TODO Auto-generated method stub
-		
+
 	}
 }

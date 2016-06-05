@@ -1,9 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-<string name="prefs">Paramètres</string>
 	<string name="prefs_wifi_catalog">Catalogue de WiFi</string>
 	<string name="prefs_maps">Cartes</string>
-	<string name="prefs_check_gps_startup">Vérifier le GPS au démarrage</string>
 	<string name="prefs_gps_logging_interval_seconds">secondes</string>
 	<string name="prefs_save_gpx">Créer un fichier GPX</string>
 	<string name="activity_credits_activity">Crédits</string>

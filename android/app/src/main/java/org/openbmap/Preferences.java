@@ -33,9 +33,6 @@ public final class Preferences {
 
 	public static final String KEY_GPS_LOGGING_INTERVAL = "gps.interval";
 
-	// TODO add support for external (e.g. bluetooth gps provider)
-	public static final String KEY_GPS_PROVIDER = "gps.provider";
-	
 	public static final String KEY_MAP_FOLDER = "data.folder_map";
 
 	public static final String KEY_WIFI_CATALOG_FOLDER = "data.folder_catalog";

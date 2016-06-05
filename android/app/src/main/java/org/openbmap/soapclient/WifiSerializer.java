@@ -55,7 +55,7 @@ public class WifiSerializer {
 	private static final String XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>";
 
 	private static final String LOG_XML = "\n<logfile manufacturer=\"%s\" model=\"%s\" revision=\"%s\" swid=\"%s\" swver=\"%s\" exportver=\"%s\">";
-	
+
 	private static final String SCAN_XML = "\n<scan time=\"%s\">";
 
 	private static final String POSITION_XML = "\n\t<gps time=\"%s\" lng=\"%s\" lat=\"%s\" alt=\"%s\" hdg=\"%s\" spe=\"%s\" accuracy=\"%s\" type=\"%s\" />";
@@ -192,7 +192,7 @@ public class WifiSerializer {
 			+ " \"last\".\"timestamp\" AS \"last_timestamp\","
 			+ " \"last\".\"bearing\" AS \"last_bearing\","
 			+ " \"last\".\"speed\" AS \"last_speed\""
-			+ " FROM " + Schema.TBL_WIFIS 
+			+ " FROM " + Schema.TBL_WIFIS
 			+ " JOIN \"" + Schema.TBL_POSITIONS + "\" AS \"req\" ON (\"request_pos_id\" = \"req\".\"_id\")"
 			+ " JOIN \"" + Schema.TBL_POSITIONS + "\" AS \"last\" ON (\"last_pos_id\" = \"last\".\"_id\")"
 			+ " WHERE " + Schema.TBL_WIFIS + "." + Schema.COL_SESSION_ID + " = ?"
@@ -205,7 +205,7 @@ public class WifiSerializer {
 	 * @param context	Activities' context
 	 * @param session Session id to export
 	 * @param tempPath (full) path where temp files are saved. Will be created, if not existing.
-	 * @param exportVersion current Radiobeacon version (can differ from Radiobeacon version used for tracking) 
+	 * @param exportVersion current Radiobeacon version (can differ from Radiobeacon version used for tracking)
 	 */
 	public WifiSerializer(final Context context, final int session, String tempPath, final String exportVersion, final boolean anonymise) {
 		this.mContext = context;
@@ -289,7 +289,7 @@ public class WifiSerializer {
 		long outer = 0;
 		while (!cursorWifis.isAfterLast()) {
 			long i = 0;
-			while (!cursorWifis.isAfterLast()) { 
+			while (!cursorWifis.isAfterLast()) {
 				// creates files of 100 wifis each
 				Log.i(TAG, "Cycle " + i);
 
@@ -362,7 +362,7 @@ public class WifiSerializer {
 			String previousEnd = "";
 
 			int i = 0;
-			// Iterate wifis cursor until last row reached or WIFIS_PER_FILE is reached 			
+			// Iterate wifis cursor until last row reached or WIFIS_PER_FILE is reached
 			while (i < WIFIS_PER_FILE && cursor.moveToNext()) {
 
 				final long beginId = Long.valueOf(cursor.getString(colBeginPosId));
@@ -399,7 +399,7 @@ public class WifiSerializer {
 						bw.write(previousEnd);
 						bw.write(CLOSE_SCAN_TAG);
 
-						// Write new scan and gps tag 
+						// Write new scan and gps tag
 						// TODO distance calculation, seems optional
 						bw.write(scanToXml(cursor.getLong(colTimestamp)));
 						bw.write(currentBegin);
@@ -410,13 +410,13 @@ public class WifiSerializer {
 				 *  At this point, we will always have an open scan and gps tag,
 				 *  so write wifi xml now
 				 *  Note that for performance reasons all columns are casted to strings
-				 *  
+				 *
 				 *  BSSID: in xml files mac is printed without ":" (as opposed to database) for backwards compatibility
 				 *  SSID: ssid can contain invalid characters, so sanitize..
 				 */
 				bw.write(wifiToXml(
 						cursor.getString(colBssid).replace(":", ""),
-						cursor.getString(colMd5Essid), 
+						cursor.getString(colMd5Essid),
 						// sanitizing moved to wifiToXml function
 						/*XmlSanitizer.sanitize(cursor.getString(colSsid)),*/
 						cursor.getString(colSsid),
@@ -436,22 +436,20 @@ public class WifiSerializer {
 			bw.write(CLOSE_SCAN_TAG);
 
 			bw.write(CLOSE_LOGFILE);
-			// ensure that everything is really written out and close 
+			// ensure that everything is really written out and close
 			bw.close();
 			file = null;
 			bw = null;
 			return fileName;
 		} catch (final IOException ioe) {
 			cursor.close();
-			ioe.printStackTrace();
+			Log.e(TAG, ioe.toString(), ioe);
 			return null;
 		}
 	}
 
 	/**
 	 * Generates scan tag
-	 * @param timestamp
-	 * @return
 	 */
 	private static String scanToXml(final long timestamp) {
 		return String.format(SCAN_XML, timestamp);
@@ -459,12 +457,6 @@ public class WifiSerializer {
 
 	/**
 	 * Generates log file header
-	 * @param manufacturer
-	 * @param model
-	 * @param revision
-	 * @param swid
-	 * @param swVersion
-	 * @return log tag
 	 */
 	private static String logToXml(final String manufacturer, final String model, final String revision, final String swid, final String swVersion, final String exportVersion) {
 		return String.format(LOG_XML, manufacturer, model, revision, swid, swVersion, exportVersion);
@@ -472,15 +464,6 @@ public class WifiSerializer {
 
 	/**
 	 * Generates position tag
-	 * @param reqTime
-	 * @param lng
-	 * @param lat
-	 * @param alt
-	 * @param head
-	 * @param speed
-	 * @param acc
-	 * @param type 
-	 * @return position tag
 	 */
 	private static String positionToXml(final long reqTime, final double lng, final double lat,
 			final double alt, final double head, final double speed, final double acc, final String type) {
@@ -489,13 +472,6 @@ public class WifiSerializer {
 
 	/**
 	 * Generates wifi tag
-	 * @param bssid
-	 * @param md5essid
-	 * @param ssid
-	 * @param capa
-	 * @param level
-	 * @param freq
-	 * @return
 	 */
 	private static String wifiToXml(final String bssid, final String md5essid, final String ssid, final String capa, final String level, final String freq, final boolean anonymise) {
 
@@ -514,7 +490,7 @@ public class WifiSerializer {
 	public static String stripHtml(final String html) {
 	    return Html.fromHtml(html).toString();
 	}
-	
+
 	/**
 	 * Generates filename
 	 * Template for wifi logs:
@@ -525,7 +501,7 @@ public class WifiSerializer {
 	 * @param timestamp timestamp of first wifi entry
 	 * @return filename
 	 */
-	private String generateFilename(final long timestamp) {	
+	private String generateFilename(final long timestamp) {
 		/**
 		 * Option 1: generate filename by export time
 		 */

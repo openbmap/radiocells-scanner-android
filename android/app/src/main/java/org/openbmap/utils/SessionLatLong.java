@@ -46,5 +46,5 @@ public class SessionLatLong extends LatLong {
 		public final void setSession(final int session) {
 			this.mSession = session;
 		}
-		
+
 	}

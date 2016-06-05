@@ -110,7 +110,7 @@ public class CurrentLocationHelper {
 
 			//if there are both values use the latest one
 			if (gps_loc != null && net_loc != null){
-				if (gps_loc.getTime()>net_loc.getTime())
+				if (gps_loc.getTime() > net_loc.getTime())
 					mLocationResult.gotLocation(gps_loc);
 				else
 					mLocationResult.gotLocation(net_loc);
@@ -121,7 +121,7 @@ public class CurrentLocationHelper {
 				mLocationResult.gotLocation(gps_loc);
 				return;
 			}
-			
+
 			if (net_loc != null) {
 				mLocationResult.gotLocation(net_loc);
 				return;

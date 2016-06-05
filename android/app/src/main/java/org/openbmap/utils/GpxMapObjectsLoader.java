@@ -77,9 +77,9 @@ public class GpxMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatLo
 	 *			args[4]: max longitude as double
 	 */
 	@Override
-	protected final ArrayList<LatLong> doInBackground(final Object... args) {         
+	protected final ArrayList<LatLong> doInBackground(final Object... args) {
 		//Log.d(TAG, "Loading gpx points");
-		ArrayList<LatLong> points = new ArrayList<LatLong>();
+		ArrayList<LatLong> points = new ArrayList<>();
 
 		DataHelper dbHelper = new DataHelper(mContext);
 
@@ -87,7 +87,7 @@ public class GpxMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatLo
 				(Double) args[MIN_LAT_COL], (Double) args[MAX_LAT_COL], (Double) args[MIN_LON_COL], (Double) args[MAX_LON_COL]);
 
 		for (PositionRecord position : positions) {
-			points.add(new LatLong(position.getLatitude(), position.getLongitude()));	
+			points.add(new LatLong(position.getLatitude(), position.getLongitude()));
 		}
 
 		return points;

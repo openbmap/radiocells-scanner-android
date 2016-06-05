@@ -37,7 +37,7 @@ import java.io.IOException;
 
 /**
  * Takes care of database creation
- * 
+ *
  * Reminder:
  * In an earlier version, database has been provisioned via sdcard
  * @link http://www.reigndesign.com/blog/using-your-own-sqlite-database-in-android-applications/
@@ -56,9 +56,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+ "CREATE TABLE " + Schema.TBL_CELLS + " ("
 			+ Schema.COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
 			+ Schema.COL_NETWORKTYPE + " INTEGER DEFAULT 0, "
-			+ Schema.COL_IS_CDMA + " INTEGER DEFAULT 0," 
-			+ Schema.COL_IS_SERVING + " INTEGER DEFAULT 0," 
-			+ Schema.COL_IS_NEIGHBOR + " INTEGER DEFAULT 0," 
+			+ Schema.COL_IS_CDMA + " INTEGER DEFAULT 0,"
+			+ Schema.COL_IS_SERVING + " INTEGER DEFAULT 0,"
+			+ Schema.COL_IS_NEIGHBOR + " INTEGER DEFAULT 0,"
 			+ Schema.COL_LOGICAL_CELLID + " INTEGER DEFAULT -1, "
 			+ Schema.COL_ACTUAL_CELLID + " INTEGER DEFAULT -1,"
 			+ Schema.COL_UTRAN_RNC + " INTEGER DEFAULT -1,"
@@ -88,7 +88,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final String SQL_CREATE_TABLE_WIFIS = ""
 			+  "CREATE TABLE " + Schema.TBL_WIFIS + " ("
 			+  Schema.COL_ID	 +  " INTEGER PRIMARY KEY AUTOINCREMENT,"
-			+  Schema.COL_BSSID + " TEXT,"		
+			+  Schema.COL_BSSID + " TEXT,"
 			+  Schema.COL_SSID + " TEXT,"
 			+  Schema.COL_MD5_SSID + " TEXT,"
 			+  Schema.COL_CAPABILITIES  + " TEXT,"
@@ -102,12 +102,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+  Schema.COL_KNOWN_WIFI + " INTEGER, "
 			+  " FOREIGN KEY (" + Schema.COL_SESSION_ID + ") REFERENCES " + Schema.TBL_SESSIONS + "( " + Schema.COL_ID + ") ON DELETE CASCADE, "
 			+  " FOREIGN KEY (" + Schema.COL_BEGIN_POSITION_ID + ") REFERENCES " + Schema.TBL_POSITIONS + "( " + Schema.COL_ID + "), "
-			+  " FOREIGN KEY (" + Schema.COL_END_POSITION_ID + ") REFERENCES " + Schema.TBL_POSITIONS + "( " + Schema.COL_ID + ")" 
+			+  " FOREIGN KEY (" + Schema.COL_END_POSITION_ID + ") REFERENCES " + Schema.TBL_POSITIONS + "( " + Schema.COL_ID + ")"
 			+  ")";
 
 	// Caution, stupid sqlite restriction! Have to provide name for each field, otherwise query fails
 	// see http://stackoverflow.com/questions/3269199/sqlite-for-android-custom-table-view-sql-view-not-android-view-discrepancy
-	private static final String SQL_CREATE_VIEW_WIFI_POSITIONS = "CREATE VIEW IF NOT EXISTS " + Schema.VIEW_WIFIS_EXTENDED + " AS " 
+	private static final String SQL_CREATE_VIEW_WIFI_POSITIONS = "CREATE VIEW IF NOT EXISTS " + Schema.VIEW_WIFIS_EXTENDED + " AS "
 			+ " SELECT w." + Schema.COL_ID + ","
 			+ " w." + Schema.COL_BSSID + " AS " + Schema.COL_BSSID + ","
 			+ " w." + Schema.COL_SSID +  " AS " + Schema.COL_SSID + ","
@@ -129,11 +129,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+ " b." + Schema.COL_BEARING + " as begin_bearing,"
 			+ " b." + Schema.COL_SPEED + " as begin_speed,"
 			+ " b." + Schema.COL_SOURCE + " as begin_source,"
-			+ " e." + Schema.COL_LATITUDE + " as end_latitude," 
+			+ " e." + Schema.COL_LATITUDE + " as end_latitude,"
 			+ " e." + Schema.COL_LONGITUDE + " as end_longitude,"
 			+ " e." + Schema.COL_ALTITUDE + " as end_altitude,"
 			+ " e." + Schema.COL_ACCURACY + " as end_accuracy,"
-			+ " e." + Schema.COL_TIMESTAMP + " as end_timestamp," 
+			+ " e." + Schema.COL_TIMESTAMP + " as end_timestamp,"
 			+ " e." + Schema.COL_BEARING + " as end_bearing,"
 			+ " e." + Schema.COL_SPEED + " as end_speed,"
 			+ " e." + Schema.COL_SOURCE + " as end_source"
@@ -141,7 +141,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+ " LEFT JOIN " + Schema.TBL_POSITIONS + " AS b ON (w." + Schema.COL_BEGIN_POSITION_ID + " = b." + Schema.COL_ID + ")"
 			+ " LEFT JOIN " + Schema.TBL_POSITIONS + " AS e ON (w." + Schema.COL_END_POSITION_ID + " = e." + Schema.COL_ID + ")";
 
-	private static final String SQL_CREATE_VIEW_CELL_POSITIONS = "CREATE VIEW IF NOT EXISTS " + Schema.VIEW_CELLS_EXTENDED + " AS " 
+	private static final String SQL_CREATE_VIEW_CELL_POSITIONS = "CREATE VIEW IF NOT EXISTS " + Schema.VIEW_CELLS_EXTENDED + " AS "
 			+ " SELECT w."  + Schema.COL_ID + " AS " + Schema.COL_ID + ","
 			+ " w." +  Schema.COL_NETWORKTYPE + " AS " + Schema.COL_NETWORKTYPE + ","
 			+ " w." +  Schema.COL_IS_CDMA  + " AS " + Schema.COL_IS_CDMA + ","
@@ -173,11 +173,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+ " b." + Schema.COL_BEARING + " as begin_bearing,"
 			+ " b." + Schema.COL_SPEED + " as begin_speed,"
 			+ " b." + Schema.COL_SOURCE + " as begin_source,"
-			+ " e." + Schema.COL_LATITUDE + " as end_latitude," 
+			+ " e." + Schema.COL_LATITUDE + " as end_latitude,"
 			+ " e." + Schema.COL_LONGITUDE + " as end_longitude,"
 			+ " e." + Schema.COL_ALTITUDE + " as end_altitude,"
 			+ " e." + Schema.COL_ACCURACY + " as end_accuracy,"
-			+ " e." + Schema.COL_TIMESTAMP + " as end_timestamp," 
+			+ " e." + Schema.COL_TIMESTAMP + " as end_timestamp,"
 			+ " e." + Schema.COL_BEARING + " as end_bearing,"
 			+ " e." + Schema.COL_SPEED + " as end_speed,"
 			+ " e." + Schema.COL_SOURCE + " as end_source"
@@ -200,7 +200,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+  Schema.COL_BEARING + " DOUBLE,"
 			+  Schema.COL_SPEED + " DOUBLE,"
 			+  Schema.COL_SESSION_ID + " INTEGER, "
-			+  Schema.COL_SOURCE + " TEXT, "	
+			+  Schema.COL_SOURCE + " TEXT, "
 			+  " FOREIGN KEY (" + Schema.COL_SESSION_ID + ") REFERENCES " + Schema.TBL_SESSIONS + "( " + Schema.COL_ID + ") ON DELETE CASCADE "
 			+  ")";
 
@@ -240,7 +240,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final String SQL_CREATE_IDX_WIFIS = ""
 			+  "CREATE INDEX idx_wifis ON "
 			+  Schema.TBL_WIFIS + "("
-			+  Schema.COL_BSSID + ", "		
+			+  Schema.COL_BSSID + ", "
 			+  Schema.COL_LEVEL + ""
 			+  ")";
 
@@ -255,13 +255,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+  "CREATE INDEX idx_wifis_begin_position_id ON "
 			+  Schema.TBL_WIFIS + "("
 			+  Schema.COL_BEGIN_POSITION_ID
-			+  ")";		
+			+  ")";
 
 	private static final String SQL_CREATE_IDX_WIFIS_END_POSITION_ID = ""
 			+  "CREATE INDEX idx_wifis_end_position_id ON "
 			+  Schema.TBL_WIFIS + "("
 			+  Schema.COL_END_POSITION_ID
-			+  ")";		
+			+  ")";
 
 	private static final String SQL_CREATE_IDX_CELLS_SESSION_ID = ""
 			+  "CREATE INDEX idx_cells_sessions_id ON "
@@ -273,13 +273,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+  "CREATE INDEX idx_cells_begin_position_id ON "
 			+  Schema.TBL_CELLS + "("
 			+  Schema.COL_BEGIN_POSITION_ID
-			+  ")";	
+			+  ")";
 
 	private static final String SQL_CREATE_IDX_CELLS_END_POSITION_ID = ""
 			+  "CREATE INDEX idx_cells_end_position_id ON "
 			+  Schema.TBL_CELLS + "("
 			+  Schema.COL_END_POSITION_ID
-			+  ")";	
+			+  ")";
 
 	/**
 	 * SQL for creating index on CELLS
@@ -287,7 +287,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final String SQL_CREATE_IDX_CELLS = ""
 			+  "CREATE INDEX idx_cells ON "
 			+  Schema.TBL_CELLS + "("
-			+  Schema.COL_LOGICAL_CELLID + ", "		
+			+  Schema.COL_LOGICAL_CELLID + ", "
 			+  Schema.COL_STRENGTHDBM + ""
 			+  ")";
 
@@ -297,7 +297,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final String	SQL_CREATE_IDX_POSITIONS	= ""
 			+  "CREATE INDEX idx_positions ON "
 			+  Schema.TBL_POSITIONS + "("
-			+  Schema.COL_LATITUDE + ", "		
+			+  Schema.COL_LATITUDE + ", "
 			+  Schema.COL_LONGITUDE + ""
 			+  ")";
 
@@ -369,28 +369,28 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		Log.i(TAG, "Updating database scheme from " + oldVersion + " to " + newVersion);
 
 		if (oldVersion <= 1) {
-			// add wifi position view 
+			// add wifi position view
 			Log.i(TAG, "Migrate to db version 2");
 			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_WIFIS_EXTENDED);
 			db.execSQL(SQL_CREATE_VIEW_WIFI_POSITIONS);
-		} 
+		}
 
 		if (oldVersion <= 2) {
 			// add asu fields
-			Log.i(TAG, "Migrate to db version 3");	
+			Log.i(TAG, "Migrate to db version 3");
 			db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_STRENGTHASU + " INTEGER DEFAULT 0");
 		}
 
 		if (oldVersion <= 3) {
 			// add cell position view
-			Log.i(TAG, "Migrate to db version 4");	
+			Log.i(TAG, "Migrate to db version 4");
 			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_CELLS_EXTENDED);
 			db.execSQL(SQL_CREATE_VIEW_CELL_POSITIONS);
 		}
 
 		if (oldVersion <= 4) {
 			// add known wifi column (replacement for is_new_wifi)
-			Log.i(TAG, "Migrate to db version 5");	
+			Log.i(TAG, "Migrate to db version 5");
 			try {
 				db.execSQL("ALTER TABLE " + Schema.TBL_WIFIS + " ADD COLUMN " + Schema.COL_KNOWN_WIFI + " INTEGER DEFAULT 0");
 			}
@@ -410,7 +410,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		if (oldVersion <= 5) {
 			// F-Droid 0.7.7 second release
 			// on some clients column from version 2 wasn't added
-			Log.i(TAG, "Migrate to db version 6");	
+			Log.i(TAG, "Migrate to db version 6");
 			try {
 				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_STRENGTHASU + " INTEGER DEFAULT 0");
 			} catch (final SQLException e) {
@@ -427,7 +427,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 		if (oldVersion <= 6) {
 			// add UTRAN radio network controller and UTRAN cid
-			Log.i(TAG, "Migrate to db version 7");	
+			Log.i(TAG, "Migrate to db version 7");
 			try {
 				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_UTRAN_RNC + " INTEGER DEFAULT -1");
 				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_ACTUAL_CELLID + " INTEGER DEFAULT -1");
@@ -446,8 +446,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		if (oldVersion <= 7) {
 			// fix broken migrations, see http://code.google.com/p/openbmap/issues/detail?id=55
 			// basically all migration since 4 are repeated, error ignored
-			
-			Log.i(TAG, "Migrate to db version 8");	
+
+			Log.i(TAG, "Migrate to db version 8");
 			// repeat migration 4
 			try {
 				db.execSQL("ALTER TABLE " + Schema.TBL_WIFIS + " ADD COLUMN " + Schema.COL_KNOWN_WIFI + " INTEGER DEFAULT 0");
@@ -455,20 +455,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			catch (final SQLException e) {
 				Log.i(TAG, "Nothing to do: is_known column already exists");
 			}
-	
+
 			try {
 				db.execSQL("UPDATE " + Schema.TBL_WIFIS + " SET " + Schema.COL_KNOWN_WIFI + " = 1 WHERE is_new_wifi = 0");
 			} catch (final SQLException e) {
 				Log.w(TAG, "Can't find is_new_wifi column. Skipping update");
 			}
-			
+
 			// repeat migration 5
 			try {
 				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_STRENGTHASU + " INTEGER DEFAULT 0");
 			} catch (final SQLException e) {
 				Log.i(TAG, "Nothing to do: asu column already exists");
 			}
-			
+
 			// repeat migration 6
 			try {
 				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_UTRAN_RNC + " INTEGER DEFAULT -1");
@@ -476,15 +476,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			} catch (final SQLException e) {
 				Log.i(TAG, "Nothing to do: utran columns already exist");
 			}
-			
+
 			// recreate views
 			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_WIFIS_EXTENDED);
 			db.execSQL(SQL_CREATE_VIEW_WIFI_POSITIONS);
-			
+
 			db.execSQL("DROP VIEW IF EXISTS " + Schema.VIEW_CELLS_EXTENDED);
 			db.execSQL(SQL_CREATE_VIEW_CELL_POSITIONS);
 		}
-		
+
 		if (oldVersion <= 9) {
 			cleanupFolders();
 		}
@@ -533,7 +533,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 		super.close();
 	}
-	
+
 	/**
 	 * Moves maps, gpx tracks and wifi database catalogs from Preferences.KEY_DATA_FOLDER to /sdcard/Android/data/org.openbmap
 	 * Thus, when uninstalling Radiobeacon they get automatically cleaned up
@@ -542,7 +542,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		Log.d(TAG, "Resetting Radiobeacon folders to Android standard");
 		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
 		final String currentFolder = prefs.getString("data.dir", "/org.openbmap");
-		
+
 		final File from = new File(Environment.getExternalStorageDirectory() + File.separator + currentFolder + File.separator);
 		final File to = new File(mContext.getExternalFilesDir(null).getAbsolutePath());
 		try {
@@ -557,7 +557,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		prefEditor.putString(Preferences.KEY_MAP_FOLDER, mContext.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.MAPS_SUBDIR); //**syntax error on tokens**
 		prefEditor.putString(Preferences.KEY_WIFI_CATALOG_FOLDER, mContext.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.CATALOG_SUBDIR);
 		prefEditor.commit();
-			    
+
 	}
 
 

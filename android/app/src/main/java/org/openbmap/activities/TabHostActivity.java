@@ -250,7 +250,7 @@ public class TabHostActivity extends AppCompatActivity {
                 stopTracking();
 				break;
 			default:
-				break; 
+				break;
 		}
 		return super.onOptionsItemSelected(item);
 	}

@@ -107,7 +107,7 @@ public class GpxLoggerService extends AbstractService {
 
 		final PositionRecord pos = new PositionRecord(gpsLocation, mSessionId, source);
 
-		// so far we set end position = begin position 
+		// so far we set end position = begin position
 		mDataHelper.storePosition(pos);
 	}
 
@@ -124,7 +124,7 @@ public class GpxLoggerService extends AbstractService {
 
     /**
 	 * Starts gps logging .
-	 * @param sessionId 
+	 * @param sessionId
 	 */
 	private void startTracking(final int sessionId) {
 		Log.d(TAG, "Start tracking on session " + sessionId);

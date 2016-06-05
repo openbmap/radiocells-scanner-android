@@ -178,7 +178,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 
 	//http://stackoverflow.com/questions/9573855/second-instance-of-activity-after-orientation-change
 	/**
-	 * 
+	 *
 	 * @param context
 	 * @param listener
 	 * @param session
@@ -429,7 +429,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	 * @param exportCells
 	 */
 	public final void setExportCells(final boolean exportCells) {
-		mExportCells = exportCells;		
+		mExportCells = exportCells;
 	}
 
 	/**

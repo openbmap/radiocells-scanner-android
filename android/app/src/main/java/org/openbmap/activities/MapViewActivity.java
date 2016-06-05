@@ -907,7 +907,7 @@ public class MapViewActivity extends Fragment implements
         }
 
 		/*
-		 * 
+		 *
 		// if we have just loaded on point, set map center
 		if (points.size() == 1) {
 			mapView.getModel().mapViewPosition.setCenter((LatLong) points.get(0));

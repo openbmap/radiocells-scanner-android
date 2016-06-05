@@ -6,17 +6,12 @@
     <string name="prefs_wifi_catalog">Baza danych wifi</string>
     <!-- I translated wifi catalog as wifi database. In polish it sound more profesional and human friendly -->
     <string name="prefs_maps">Mapy</string>
-    <string name="prefs_gps_os_settings">Ustawienia GPS telefonu</string>
-    <string name="prefs_gps_os_settings_summary">Kliknij tutaj, żeby zobaczyć ustawienia GPS telefonu</string>
     <!-- You used word phones GPS settings. I would recommend using word devices better -->
     <!-- I translated as phones for now -->
-    <string name="prefs_check_gps_startup">Sprawdź status GPS na starcie</string>
-	<string name="prefs_check_gps_startup_summary">Ostrzeż jeżeli GPS jest wyłączony na starcie</string>
     <string name="prefs_gps_logging_interval">Interwał logowania GPS</string>
 	<string name="prefs_gps_logging_interval_summary">Użyj 0 dla najmniejszego możliwego (wpływa na zużycie baterii)</string>
     <string name="prefs_gps_logging_interval_seconds">sekund</string>
     <string name="prefs_save_gpx">Zapisz szlak GPX</string>
-	<string name="prefs_ui">Interfejs użytkownika</string>
     <string name="prefs_map_none">Brak</string>
     <string name="prefs_ui_keep_screen_on">Trzymaj ekran włączony</string>
 	<string name="prefs_ui_keep_screen_on_summary">Zapobiegaj blokowaniu ekranu po czasie bezczynnośći</string>
@@ -42,15 +37,7 @@
 	<string name="prefs_min_wifi_distance_hint">Minimalny dystans między dwoma skanami dla sieci wifi (w metrach)</string>
 	    <string name="prefs_req_gps_accuracy">Próg dokładności GPS</string>
 	<string name="prefs_req_gps_accuracy_hint">Jeżeli dokładność pozycji GPS jest gorsza niż podany próg, wyniki skanowania zostaną pominięte (w metrach)</string>
-    <string name="prefs_display_always_on">Ekran zawsze włączony</string>
-    <string name="prefs_display_always_on_summary">Ekran będzie włączony podczas śledzenia. Wyłącz, aby oszczędzić baterię</string>
-    <string-array name="prefs_gps_provider_keys">
-        <item>Internal</item>
-    </string-array>
-    <string-array name="prefs_gps_provider_values">
-        <item>GPS_PROVIDER</item>
-    </string-array>
-	<!-- I guess I can skip this -->
+    <!-- I guess I can skip this -->
     <string name="prefs_debug">Ustawienia Debugowania</string>
     <string name="prefs_simulate_upload_summary">Tylko eksportuj dane, nie wysyłaj do serwera</string>
     <string name="prefs_simulate_upload">Pomija wysyłanie do openbmap.org</string>
@@ -96,7 +83,6 @@
     <string name="n_a">N/D</string>
     <string name="capabilities">Możliwości</string>
     <string name="frequency">Częstotliwość</string>
-    <string name="channel">Kanał</string>
     <string name="date">Data</string>
     <string name="please_select_map">Proszę najpierw wybierz plik mapy!!</string>
 	<string name="error_dowload_error">"Błąd: Pobieranie przerwane. Może połączenie zostało zerwane? "</string>
@@ -113,16 +99,10 @@
     <string name="deleted">Usunięto!</string>
 	<string name="warning_sd_not_writable">Nie można zapisać na karcie SD. Możliwe, że jest w użyciu przez PC?</string>
 	<string name="error_save_file_failed">Pobieranie przerwane! Sprawdz kartę SD / uprawnienia!</string>
-    <string name="error_create_directory_failed">Nie można było utworzyć folderu danych</string>
     <string name="tap_hotspot_to_see_details">Dotknij sieć wifi, aby zobaczyć szczegóły</string>
-    <string name="start_tracking">Rozpocznij śledzenie</string>
     <string name="stop_tracking">Zatrzymaj śledzenie</string>
     <string name="battery_warning">Bateria na wyczerpaniu: Zatrzymywanie śledzenia</string>
-    <string name="version">Wersja:</string>
 
-    <string name="warning">Ostrzeżenie!</string>
-    <string name="hint_notification">Dotknij tutaj, aby pokazać ekran główny</string>
-    <string name="notification">RadioBeacon śledzi (#{0})</string>
     <string name="notification_caption">Radiobeacon w trakcie skanowania</string>
     <string name="exporting_wifis">Eksportowanie sieci wifi</string>
     <string name="uploading_wifis">Wysyłanie sieci wifi</string>
@@ -138,25 +118,17 @@
 	<string name="upload_skipped">Wysyłanie pominięte (Sprawdź ustawienia debugowania, jeżeli stało się to przypadkowo)</string>
     <string name="preparing_export">Przygotowywanie eksportu..</string>
     <string name="app_description">Openbmap.org wifi and cell logger</string>
-    <string name="error">Błąd</string>
-    <string name="no_data_connection">Brak połączenia danych!</string>
     <string name="radiobeacon_licence_caption">Licencja klienta</string>
-    <string name="session_uploaded">Sesja wysłana</string>
     <string name="do_you_want_to_delete_this_session">Czy chcesz usunąć wybraną sesję?</string>
     <string name="do_you_want_to_delete_processed_sessions">Czy chcesz usunąć wysłane sesje?</string>
-    <string name="encryption">Szyfrowanie</string>
     <string name="unknown">nieznane</string>
-    <string name="error_version_check_title">Błąd przy sprawdzaniu wersji</string>
-	<string name="error_version_check_body">Sprawdź swoje połączenie!\n(np. w przeglądarce).\nCzy chcesz teraz spróbować naprawić automatycznie?\n(Przełącza stan wifi i łączy ponownie)</string>
-	<!-- I guess a suppose to be and here. -->
-    <string name="accuracy">Dokładność</string>
+    <!-- I guess a suppose to be and here. -->
     <string name="no_sat_signal">Brak sygnału SAT</string>
     <string name="no_measurements"># Pomiarów</string>
     <string name="blacklisted_bssid">jest pomijana (BSSID)</string>
     <string name="blacklisted_ssid">jest pomijana (SSID)</string>
     <string name="is_new">Nowa?</string>
     <string name="blacklisted_area">Ignorowana: w obrębie lokalizacji pomijania</string>
-    <string name="download_failed">Pobieranie zakończone niepowodzeniem</string>
     <string name="cleaning_database">Reorganizowanie..</string>
     <string name="database_lock_error">Nie można zablokować bazy danych. Spróbuj ponownie później.</string>
     <string name="please_stay_patient">Proszę czekać..</string>
@@ -164,12 +136,9 @@
 	<string name="export_error">"Spróbuj ponownie. Jeżeli problem dalej występuje proszę zgłoś problem na\nhttps://github.com/wish7code/openbmap/issues "</string>
     <string name="location_blacklist_saved">Zapisano lokację do pomijania!</string>
     <string name="error_writing_location_blacklist">Błąd, przy zapisywaniu lokacji do pomijania</string>
-    <string name="stats_new_wifis">Nowe sieci wifi</string>
     <string name="prefs_update_catalog_summary">Dodaj znalezione sieci wifi do lokalnej bazy danych</string>
     <string name="prefs_update_catalog">Synchronizuj z lokalną bazą danych wifi</string>
     <string name="synchronizing">Synchronizowanie..</string>
-    <string name="time_since_last_cell_update">Ostatnia aktualizacja sieci komórkowych %s temu</string>
-    <string name="time_since_last_wifi_update">Ostatnia aktualizacja sieci wifi %s temu</string>
     <string name="seconds"> sekund</string>
     <string name="minutes"> minut</string>
     <string name="stopped_tracking">Zatrzymano śledzenie</string>
@@ -188,7 +157,6 @@
     <string name="dialog_delete_all_sessions_title">Czy usunąć WSZYSTKIE sesje?</string>
     <string name="dialog_delete_all_sessions_message">Czy na pewno chcesz usunąć wszystkie sesje?</string>
     <string name="chart_library">Biblioteka dla wykresu: GraphView</string>
-    <string name="no_map_file_selected">Nie wybrano pliku mapy!</string>
     <string name="saved_waypoint">Zapisano waypoint</string>
     <string name="yes">Tak</string>
     <string name="no">Nie</string>
@@ -220,7 +188,6 @@
     <string name="invalid_download">Niepoprawnie pobrane</string>
     <string name="prefs_gpx_verbosity_title">Szczegółowość GPX</string>
     <string name="prefs_gpx_verbosity_summary">Wybierz jakie szczegóły są eksportowane do pliku GPX</string>
-    <string name="wifi_catalog_up_to_date">Aktualna wersja jest zainstalowana (%s)!</string>
     <string name="waypoint">WP</string>
     <!-- out of context so I leave for now? -->
     <string name="activity_stats_activity">Podsumowanie</string>

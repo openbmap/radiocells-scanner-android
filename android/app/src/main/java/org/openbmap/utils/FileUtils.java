@@ -96,7 +96,7 @@ public final class FileUtils {
 		final FileChannel outChannel = new FileOutputStream(dst).getChannel();
 		try {
 			inChannel.transferTo(0, inChannel.size(), outChannel);
-		} 
+		}
 		finally {
 			if (inChannel != null) {
 				inChannel.close();
@@ -107,7 +107,7 @@ public final class FileUtils {
 			}
 		}
 	}
-	
+
 	public static void copyFdToFile(FileDescriptor src, File dst) throws IOException {
 	    FileChannel inChannel = new FileInputStream(src).getChannel();
 	    FileChannel outChannel = new FileOutputStream(dst).getChannel();
@@ -164,7 +164,7 @@ public final class FileUtils {
 			 */
 		}
 	}
-	
+
 	/**
 	 * Private dummy constructor
 	 */
@@ -183,7 +183,7 @@ public final class FileUtils {
 		    afd = am.openFd(from);
 		    copyFdToFile(afd.getFileDescriptor(), to);
 		} catch (IOException e) {
-		    e.printStackTrace();
+			Log.e(TAG, e.toString(), e);
 		}
 
 	}

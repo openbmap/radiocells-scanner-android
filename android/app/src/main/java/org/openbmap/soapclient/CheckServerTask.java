@@ -68,7 +68,7 @@ public final class CheckServerTask extends AsyncTask<String, Object, Object[]> {
     }
 
 	/**
-	 * 
+	 *
 	 */
 	private static final int CONNECTION_TIMEOUT	= 10000;
 
@@ -88,7 +88,7 @@ public final class CheckServerTask extends AsyncTask<String, Object, Object[]> {
 	private String serverVersion = "";
 
 	private final Context mContext;
-	
+
 	private final ServerCheckerListener mListener;
 
 	public CheckServerTask(final Context context, final ServerCheckerListener listener) {
@@ -124,7 +124,7 @@ public final class CheckServerTask extends AsyncTask<String, Object, Object[]> {
 
 				private boolean versionElement = false;
 
-				public void startElement(final String uri, final String localName, final String qName, 
+				public void startElement(final String uri, final String localName, final String qName,
 						final Attributes attributes) throws SAXException {
 
 					if (qName.equalsIgnoreCase("ALLOWED")) {
@@ -175,13 +175,10 @@ public final class CheckServerTask extends AsyncTask<String, Object, Object[]> {
 			}
 		} catch (final IOException e) {
 			Log.e(TAG, "Error while checking version. Are you online?");
-			final Object[] noreply = new Object[]{ ServerAnswer.NO_REPLY, "Couldn't contact server"};
-			return noreply;
+			return new Object[]{ ServerAnswer.NO_REPLY, "Couldn't contact server"};
 		} catch (final Exception e) {
-			Log.e(TAG, "Error while checking version: " + e.getMessage());
-			e.printStackTrace();
-			final Object[] generic = new Object[]{ ServerAnswer.UNKNOWN_ERROR, "Error: " + e.getMessage()};
-			return generic;
+			Log.e(TAG, "Error while checking version: " + e.toString(), e);
+			return new Object[]{ ServerAnswer.UNKNOWN_ERROR, "Error: " + e.toString()};
 		}
 	}
 
@@ -218,9 +215,9 @@ public final class CheckServerTask extends AsyncTask<String, Object, Object[]> {
             // TODO: redirects (301, 302) are NOT handled here
             // thus if something changes on the server side we're dead here
         } catch (final ClientProtocolException e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, e.getMessage(), e);
         } catch (final IOException e) {
-            Log.e(TAG, "I/O exception while checking credentials");
+            Log.e(TAG, "I/O exception while checking credentials " + e.getMessage(), e);
         }
         return false;
     }
@@ -276,7 +273,7 @@ public final class CheckServerTask extends AsyncTask<String, Object, Object[]> {
 		if (networkInfo != null) {
 			Log.i(TAG, "Current " + networkInfo.toString());
 		}
-		
+
 		// once we're in CONNECTING state, wait another couple of seconds
 		if (networkInfo != null && networkInfo.getState().equals(State.CONNECTING)) {
 			// if in connecting state, wait 1 second for connection
@@ -288,13 +285,13 @@ public final class CheckServerTask extends AsyncTask<String, Object, Object[]> {
 				}
 				Log.i(TAG, "Connection not yet ready. Waiting 1 sec..");
 				try {
-					Thread.sleep(1000);         
+					Thread.sleep(1000);
 				} catch (final InterruptedException e) {
 					// ignore
 				}
 			}
 		}
-		
+
 		networkInfo = cm.getActiveNetworkInfo();
 		if (networkInfo != null) {
 			Log.i(TAG, "Waited enough: now " + networkInfo.toString());

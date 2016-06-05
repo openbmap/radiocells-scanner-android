@@ -187,7 +187,7 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
             final String user = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_USER, null);
             final String password = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
 
-            final String[] params = {Radiobeacon.VERSION_COMPATIBILITY, user, password};
+            final String[] params = { Radiobeacon.VERSION_COMPATIBILITY, user, password};
             new CheckServerTask(getActivity(), this).execute(params);
         } else if (serverReply == CheckResult.PASSED) {
             stageLocalChecks();

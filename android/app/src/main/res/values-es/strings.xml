@@ -1,15 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-<string name="prefs">Ajustes</string>
 	<string name="prefs_wifi_catalog">Catálogo WiFi</string>
 	<string name="prefs_maps">Mapas</string>
-	<string name="prefs_gps_os_settings">Ajustes del GPS del teléfono</string>
-	<string name="prefs_gps_os_settings_summary">Pulse para ver los ajustes de su teléfono</string>
-	<string name="prefs_check_gps_startup">Comprobar GPS al iniciar</string>
 	<string name="prefs_gps_logging_interval">Intervalo de registro del GPS</string>
 	<string name="prefs_gps_logging_interval_seconds">segundos</string>
 	<string name="prefs_save_gpx">Guardar traza GPX</string>
-	<string name="prefs_ui">Interfaz de usuario</string>
 	<string name="prefs_map_none">Ninguno</string>
 	<string name="prefs_ui_keep_screen_on">Mantener la pantalla encendida</string>
 	<string name="prefs_credentials">Credenciales</string>
@@ -27,8 +22,6 @@
 	<string name="prefs_min_wifi_distance">Intervalo de registro de WiFi</string>
 	<string name="prefs_min_wifi_distance_hint">"Distancia mínima entre dos análisis de WiFi (en metros) "</string>
 	<string name="prefs_req_gps_accuracy">Umbral del GPS</string>
-	<string name="prefs_display_always_on">Pantalla siempre encendida</string>
-	<string name="prefs_display_always_on_summary">La pantalla permanecerá encendida mientras registra. Desactivar para ahorrar batería</string>
 
 	<string name="prefs_debug">Ajustes de depuración</string>
 	<string name="prefs_simulate_upload_summary">Exportar sólo datos, no subir al servidor</string>
@@ -60,14 +53,10 @@
 	<string name="sessions">Sesiones</string>
 	<string name="n_a">S/D</string>
 	<string name="frequency">Frecuencia</string>
-	<string name="channel">Canal</string>
 	<string name="capabilities">Capacidades</string>
 	<string name="date">Fecha</string>
-	<string name="please_select_map">¡Seleccione un archivo de mapa primero!</string>
-	<string name="error_dowload_error">"Error: Descarga fallida. ¿Quizás se interrumpió la conexión? "</string>
 	<string name="warning_outdated_client">Su versión de cliente es muy vieja.\n¡Por favor, actualice!</string>
 	<string name="prefs_logging">Registro</string>
-	<string name="prefs_check_gps_startup_summary">Advertir si el GPS está desactivado</string>
 	<string name="prefs_gps_logging_interval_summary">"Utilizar 0 para el más corto posible (afecta la vida de la batería) "</string>
 	<string name="prefs_credentials_user_summary">Si no tienes una cuenta todavía, créala en https://radiocells.org (Requerido sólo para subidas)</string>
 	<string name="prefs_save_cells">Guardar redes móviles</string>
@@ -89,25 +78,13 @@
 	<string name="is_serving_cell_caption">¿La red móvil está funcionando?</string>
 	<string name="other_credits">"Algunas grandes ideas se tomaron de OSMTracker, stack overflow discussions and any many, many others "</string>
 	<string name="bug_report">"Siempre encontrar la última versión (y el seguimiento de errores) en "</string>
-	<string name="warning_no_server_connection">No se pudo contactar con el servidor. ¿Estás conectado?</string>
-	<string name="session_already_uploaded">La sesión ya está cargada</string>
-	<string name="question_delete_session">¿Quieres borrar la sesión?</string>
-	<string name="confirmation">Confirmación</string>
-	<string name="user_or_password_missing">¡Falta nombre de usuario o contraseña!</string>
 	<string name="deleted">¡Borrado!</string>
-	<string name="question_enter_user">¿Ingresar ahora nombre de usuario o contraseña?</string>
 	<string name="warning_sd_not_writable">"No se pudo escribir en la tarjeta SD. ¿Quizás se montó en la PC de escritorio? "</string>
 	<string name="error_save_file_failed">"¡Falló la descarga! Compruebe los permisos / tarjeta SD "</string>
-	<string name="error_create_directory_failed">No se pudo crear el directorio de datos</string>
 	<string name="tap_hotspot_to_see_details">Pulse en WiFi para ver los detalles</string>
-	<string name="start_tracking">Iniciar registro</string>
 	<string name="stop_tracking">Parar registro</string>
 	<string name="battery_warning">Batería baja: Parando traza</string>
-	<string name="version">Versión:</string>
 
-	<string name="warning">¡Advertencia!</string>
-	<string name="hint_notification">Pulse aquí para mostrar la pantalla principal</string>
-	<string name="notification">RadioBeacon está registrando (#{0})</string>
 	<string name="notification_caption">Radiobeacon está analizando</string>
 	<string name="exporting_wifis">Exportando WiFis</string>
 	<string name="uploading_wifis">Subiendo WiFis</string>
@@ -121,30 +98,21 @@
 	<string name="delete_all">BORRAR TODO</string>
 	<string name="upload_skipped">"Subida omitida (Si esto ocurre accidentalmente, compruebe sus ajustes de depuración) "</string>
 	<string name="preparing_export">Preparando exportación..</string>
-	<string name="error">Error</string>
-	<string name="no_data_connection">¡Sin conexión de datos!</string>
 	<string name="radiobeacon_licence_caption">Licencia de cliente</string>
-	<string name="session_uploaded">Sesión cargada</string>
 	<string name="do_you_want_to_delete_this_session">¿Quieres borrar esta sesión?</string>
-	<string name="encryption">Cifrado</string>
 	<string name="unknown">desconocido</string>
-	<string name="error_version_check_title">Error en comprobar versión</string>
-	<string name="error_version_check_body">"¡Comprueba tu conexión a Internet!\n(p.e. en un navegador).\n¿Le gustaría conectarse automáticamente ahora?\n(Alterna el estado del WiFi para desencadenar una reconexión ) "</string>
-	<string name="accuracy">Precisión</string>
 	<string name="no_sat_signal">Sin señal satelital</string>
 	<string name="no_measurements"># Mediciones</string>
 	<string name="blacklisted_bssid">está en la lista negra (BSSID)</string>
 	<string name="blacklisted_ssid">está en la lista negra (SSID)</string>
 	<string name="is_new">¿Nuevo?</string>
 	<string name="blacklisted_area">Ignorado: en el área de la lista negra</string>
-	<string name="download_failed">Falló la descarga</string>
 	<string name="cleaning_database">Reorganizando..</string>
 	<string name="please_stay_patient">Por favor, sea paciente..</string>
 	<string name="export_error_title">Exportar error</string>
 	<string name="location_blacklist_saved">¡Ubicación de lista negra guardada!</string>
 	<string name="error_writing_location_blacklist">Error escribiendo ubicación de lista negra</string>
 
-	<string name="stats_new_wifis">Nuevas WiFis</string>
 	<string name="synchronizing">Sincronizando..</string>
 	<string name="seconds">" segundos"</string>
 	<string name="minutes">" minutos"</string>
@@ -185,19 +153,15 @@
 	<string name="activity_wifi_details_activity">Detalles de WiFi</string>
 	<string name="activity_wifi_list_container">WiFis</string>
 	<string name="activity_stats_activity">Resumen</string>
-	<string name="wifi_catalog_up_to_date">¡Ya tienes instalada la última versión (%s)!</string>
 	<string name="prefs_folder_various">Varios</string>
 	<string name="graph_title">Potencia de red móvil</string>
 	<string name="warning_bad_password">¡Nombre de usuario o contraseña erróneas!</string>
 	<string name="other_download_active">¡Espere que la descarga actual de complete!</string>
 	<string name="saved_waypoint">Punto de ruta guardado</string>
-	<string name="no_map_file_selected">¡Sin archivo de mapa seleccionado!</string>
 	<string name="dialog_delete_all_sessions_title">¿Borrar TODAS las sesiones?</string>
 	<string name="dialog_delete_all_sessions_message">¿Realmente quiere borrar todas las sesiones?</string>
 	<string name="overview">Resumen</string>
 	<string name="stopped_tracking">Registro detenido</string>
-	<string name="time_since_last_wifi_update">Última actualización de WiFi: %s</string>
-	<string name="time_since_last_cell_update">Última actualización de red móvil: %s</string>
 	<string name="prefs_update_catalog">Sincronizar localmente el catalogo de WiFi</string>
 	<string name="export_error">"Pruebe de nuevo. Si el problema persiste, envíe el archivo de error a\nhttps://github.com/wish7code/openbmap/issues "</string>
 	<string name="resume">Reanudar</string>
