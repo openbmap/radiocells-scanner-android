@@ -1,1 +1,0 @@
-Backup folder: a backup of unchanged defect files is stored here

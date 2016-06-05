@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <resources>
 	<!-- Preferences -->
 	<string name="prefs">Settings</string>
@@ -26,7 +26,7 @@
 	<string name="prefs_credentials_user">Login</string>
 	<string name="prefs_credentials_user_summary">If you don\'t have an account yet, create on at http://radiocells.org (Required for upload only)</string>
 	<string name="prefs_credentials_password">Password</string>
-	<string name="prefs_credentials_password_summary"/>
+	<string name="prefs_credentials_password_summary">Passwords:</string>
 	<string name="prefs_credentials_anonymous_upload">Anonymous upload</string>
     <string name="prefs_credentials_anonymous_upload_summary">Activate for anonymous upload</string>
 	<string name="prefs_save_cells">Save Cells</string>
