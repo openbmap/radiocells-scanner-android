@@ -1,255 +1,217 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-	<!-- Preferences -->
-	<string name="prefs_logging">Logging</string>
-	<string name="prefs_wifi_catalog">Wifi Catalog</string>
-	<string name="prefs_maps">Maps</string>
-	<string name="prefs_gps_logging_interval">GPS logging interval</string>
-	<string name="prefs_gps_logging_interval_summary">Use 0 for the shortest possible (affects battery
-		life)
-	</string>
-	<string name="prefs_gps_logging_interval_seconds">seconds</string>
-	<string name="prefs_save_gpx">Save GPX track</string>
-	<string name="prefs_save_gpx_summary">On export, create a GPX file locally on your device</string>
-	<string name="prefs_map_none">None</string>
-	<string name="prefs_ui_keep_screen_on">Keep screen on</string>
-	<string name="prefs_ui_keep_screen_on_summary">Prevent screen locking after idle time
-	</string>
-	<string name="prefs_credentials">Credentials</string>
-	<string name="prefs_credentials_user">Login</string>
-	<string name="prefs_credentials_user_summary">If you don\'t have an account yet, create on at http://radiocells.org (Required for upload only)</string>
-	<string name="prefs_credentials_password">Password</string>
-	<string name="prefs_credentials_password_summary">Passwords:</string>
-	<string name="prefs_credentials_anonymous_upload">Anonymous upload</string>
+    <!-- Preferences -->
+    <string name="prefs_logging">Logging</string>
+    <string name="prefs_wifi_catalog">WiFi Catalog</string>
+    <string name="prefs_maps">Maps</string>
+    <string name="prefs_gps_logging_interval">GPS logging interval</string>
+    <string name="prefs_gps_logging_interval_summary">Use 0 for the shortest possible (affects battery life)</string>
+    <string name="prefs_gps_logging_interval_seconds">seconds</string>
+    <string name="prefs_save_gpx">Save GPX track</string>
+    <string name="prefs_save_gpx_summary">On export, create a GPX file locally on your device</string>
+    <string name="prefs_map_none">None</string>
+    <string name="prefs_ui_keep_screen_on">Keep screen on</string>
+    <string name="prefs_ui_keep_screen_on_summary">Prevent screen locking after idle time</string>
+    <string name="prefs_credentials">Credentials</string>
+    <string name="prefs_credentials_user">Login</string>
+    <string name="prefs_credentials_user_summary">If you don\'t have an account yet, create on at https://RadioCells.org (required for upload only)</string>
+    <string name="prefs_credentials_password">Password</string>
+    <string name="prefs_credentials_password_summary">Passwords:</string>
+    <string name="prefs_credentials_anonymous_upload">Anonymous upload</string>
     <string name="prefs_credentials_anonymous_upload_summary">Activate for anonymous upload</string>
-	<string name="prefs_save_cells">Save Cells</string>
-	<string name="prefs_save_cells_summary">Activate to scan for cells
-	</string>
-	<string name="prefs_save_wifis_summary">Activate to scan for wifis</string>
-	<string name="prefs_save_wifis">Save Wifis</string>
-	<string name="prefs_data_map">Offline map</string>
-	<string name="prefs_data_map_summary">Browse your offline map repository
-	</string>
-	<string name="prefs_data_ref_database">Select Wifi Catalog</string>
-	<string name="prefs_data_ref_database_summary">Install a wifi catalog to see all known openbmap
-		wifis on the map. This helps you, when you\'re looking for new wifis
-	</string>
-	<string name="prefs_download_wifi_catalog">Download Wifi Catalog</string>
-	<string name="prefs_download_wifi_catalog_summary">Current size (10-400MB depending on country)</string>
-	<string name="prefs_min_cell_distance">Cell log interval</string>
-	<string name="prefs_min_cell_distance_hint">Minimum distance between two cell scans (in meter)</string>
-	<string name="prefs_min_wifi_distance">Wifi log interval</string>
-	<string name="prefs_min_wifi_distance_hint">Minimum distance between two wifi scans (in
-		meters)
-	</string>
-	<string name="prefs_req_gps_accuracy">GPS threshold</string>
-	<string name="prefs_req_gps_accuracy_hint">If GPS accuracy is worse than
-		threshold, scan results are discarded (in meters)
-	</string>
+    <string name="prefs_save_cells">Save Cells</string>
+    <string name="prefs_save_cells_summary">Activate to scan for cells</string>
+    <string name="prefs_save_wifis_summary">Activate to scan for WiFis</string>
+    <string name="prefs_save_wifis">Save WiFis</string>
+    <string name="prefs_data_map">Offline map</string>
+    <string name="prefs_data_map_summary">Browse your offline map repository</string>
+    <string name="prefs_data_ref_database">Select Wifi Catalog</string>
+    <string name="prefs_data_ref_database_summary">Install a WiFi catalog to see all known RadioCells WiFis on the map. This helps you, when you\'re looking for new WiFis</string>
+    <string name="prefs_download_wifi_catalog">Download WiFi Catalog</string>
+    <string name="prefs_download_wifi_catalog_summary">Current size (10–400MB depending on country)</string>
+    <string name="prefs_min_cell_distance">Cell log interval</string>
+    <string name="prefs_min_cell_distance_hint">Minimum distance between two cell scans (in meter)</string>
+    <string name="prefs_min_wifi_distance">WiFi log interval</string>
+    <string name="prefs_min_wifi_distance_hint">Minimum distance between two WiFi scans (in meters)</string>
+    <string name="prefs_req_gps_accuracy">GPS threshold</string>
+    <string name="prefs_req_gps_accuracy_hint">If GPS accuracy is worse than threshold, scan results are discarded (in meters)</string>
 
-	<string name="prefs_debug">Debug settings</string>
-	<string name="prefs_simulate_upload_summary">Export data only, don\'t upload to server</string>
-	<string name="prefs_simulate_upload">Skip upload to openbmap.org</string>
-	<string name="prefs_keep_export_files_summary">Keep a local copy of uploaded files.\nFind files in
-		data directory.\n(Helpful for debugging)
-	</string>
-	<string name="prefs_keep_export_files">Keep uploaded files</string>
-	<string name="prefs_clean_database_summary">Database grows over time. Click to free unused
-		space by reorganising database
-	</string>
-	<string name="prefs_clean_database_title">Reorganise database</string>
-	<string name="prefs_privacy">Privacy</string>
-	<string name="prefs_block_homezone_summary">Blocks logging in 500m around current position. You
-		can also directly edit custom_location.xml on your SD-card
-	</string>
-	<string name="prefs_block_homezone_title">Don\'t scan my back-yard</string>
-	<string name="prefs_anonymise_ssid_summary">Replaces SSIDs in uploads with a MD5 hash to
-		mitigate privacy issues (SSID \'John Does Wifi\' would become something like
-		\'FD33531\')
-	</string>
-	<string name="prefs_anonymise_ssid">Anonymise SSID in upload files</string>
+    <string name="prefs_debug">Debug settings</string>
+    <string name="prefs_simulate_upload_summary">Export data only, don\'t upload to server</string>
+    <string name="prefs_simulate_upload">Skip upload to RadioCells.org</string>
+    <string name="prefs_keep_export_files_summary">Keep a local copy of uploaded files.\nFind files in data directory.\n(Helpful for debugging)</string>
+    <string name="prefs_keep_export_files">Keep uploaded files</string>
+    <string name="prefs_clean_database_summary">Database grows over time. Click to free unused space by reorganising database</string>
+    <string name="prefs_clean_database_title">Reorganise database</string>
+    <string name="prefs_privacy">Privacy</string>
+    <string name="prefs_block_homezone_summary">Blocks logging in 500m around current position. You can also directly edit custom_location.xml on your SD-card</string>
+    <string name="prefs_block_homezone_title">Don\'t scan my back-yard</string>
+    <string name="prefs_anonymise_ssid_summary">Replaces SSIDs in uploads with a MD5 hash to mitigate privacy issues (SSID \'John Does Wifi\' would become something like \'FD33531\')</string>
+    <string name="prefs_anonymise_ssid">Anonymise SSID in upload files</string>
 
-	<string name="prefs_folder_settings">Folder settings</string>
+    <string name="prefs_folder_settings">Folder settings</string>
 
-	<string name="prefs_map_folder">Map folder</string>
-	<string name="prefs_data_map_folder_summary">Select map folder</string>
+    <string name="prefs_map_folder">Map folder</string>
+    <string name="prefs_data_map_folder_summary">Select map folder</string>
 
-	<string name="prefs_wifi_catalog_folder">Wifi catalog folder</string>
-	<string name="prefs_wifi_catalog_folder_summary">Select wifi catalog folder
-	</string>
-	<!-- End of Preferences -->
+    <string name="prefs_wifi_catalog_folder">WiFi catalog folder</string>
+    <string name="prefs_wifi_catalog_folder_summary">Select WiFi catalog folder</string>
+    <!-- End of Preferences -->
 
-	<string name="app_name" translatable="false">Radiobeacon</string>
-	<string name="cell">Cell</string>
-	<string name="operator">Operator</string>
-	<string name="type">Type</string>
-	<string name="dbm" translatable="false">dBm</string>
-	<string name="ssid" translatable="false">SSID</string>
-	<string name="level">Level</string>
-	<string name="turn_on_gps_question">GPS is switched off! Would you like to activate GPS
-		now?</string>
+    <string name="app_name" translatable="false">RadioBeacon</string>
+    <string name="cell">Cell</string>
+    <string name="operator">Operator</string>
+    <string name="type">Type</string>
+    <string name="dbm" translatable="false">dBm</string>
+    <string name="ssid" translatable="false">SSID</string>
+    <string name="level">Level</string>
+    <string name="turn_on_gps_question">GPS is switched off! Would you like to activate GPS now?</string>
 
-	<string name="networkTypeCaption">Technology</string>
-	<string name="cellIdCaption">Cell ID</string>
-	<string name="baseIdCaption" translatable="false">Base ID</string>
-	<string name="operatorCaption">Operator</string>
-	<string name="mccCaption" translatable="false">MCC</string>
-	<string name="mncCaption" translatable="false">MNC</string>
-	<string name="strenghtDbmCaption">Strength (dbm)</string>
-	<string name="is_serving_cell_caption">Is serving cell?</string>
-	<string name="radiobeacon_licence">Licensed under AGPL v3</string>
-	<string name="openbmap_licence_caption">Data: OpenBmap</string>
-	<string name="openbmap_license">CC-by-SA 3.0 / Odbl Licence</string>
-	<string name="mapsforge_source">Maps library: Mapsforge Library</string>
-	<string name="mapsforge_license">GNU LGPL3 licence</string>
-	<string name="credits">Credits</string>
-	<string name="map_data_source">Map data: Openstreetmap</string>
-	<string name="map_data_license">Odbl Licence</string>
-	<string name="other_credits">Many thanks to all the contributors and translators!\nSpecial thanks to the mapsforge people and the OSMTracker developers.
-	</string>
-	<string name="bug_report">Always find the latest version (and the issue
-		tracker) at
-	</string>
-	<string name="subtitle">OpenBmap Wifi &amp; Cell Logger</string>
-	<string name="sessions">Sessions</string>
-	<string name="id" translatable="false">#</string>
-	<string name="n_a">N/A</string>
-	<string name="capabilities">Capabilities</string>
-	<string name="frequency">Frequency</string>
-	<string name="date">Date</string>
-	<string name="warning_outdated_client">Your client version is too old.\nPlease update!</string>
-	<string name="warning_client_version_not_checked">Couldn\'t contact server. Either you\'re offline or
-		the server is down!</string>
-	<string name="warning_session_closed">Can\'t resume! Session has already been uploaded.
-	</string>
-	<string name="deleted">Deleted!</string>
-	<string name="warning_sd_not_writable">Can\'t write to SD card. Perhaps mounted on desktop
-		pc?
-	</string>
-	<string name="error_save_file_failed">Download failed! Check SD card /
-		permissions!
-	</string>
-	<string name="tap_hotspot_to_see_details">Tap wifi to see details</string>
-	<string name="stop_tracking">Stop tracking</string>
-	<string name="battery_warning">Battery low: Stopping track</string>
+    <string name="networkTypeCaption">Technology</string>
+    <string name="cellIdCaption">Cell ID</string>
+    <string name="baseIdCaption">Base ID</string>
+    <string name="operatorCaption">Operator</string>
+    <string name="mccCaption" translatable="false">MCC</string>
+    <string name="mncCaption" translatable="false">MNC</string>
+    <string name="strenghtDbmCaption">Strength (dbm)</string>
+    <string name="is_serving_cell_caption">Is serving cell?</string>
+    <string name="radiobeacon_licence">Licensed under AGPL v3</string>
+    <string name="openbmap_licence_caption">Data: RadioCells</string>
+    <string name="openbmap_license">CC-by-SA 3.0 / Odbl Licence</string>
+    <string name="mapsforge_source">Maps library: MapsForge Library</string>
+    <string name="mapsforge_license">GNU LGPL v3 licence</string>
+    <string name="credits">Credits</string>
+    <string name="map_data_source">Map data: OpenStreetMap</string>
+    <string name="map_data_license">Odbl Licence</string>
+    <string name="other_credits">Many thanks to all the contributors and translators!\nSpecial thanks to the MapsForge people and the OSMTracker developers.</string>
+    <string name="bug_report">Always find the latest version (and the issue tracker) at </string>
+    <string name="subtitle">RadioCells WiFi &amp; Cell Logger</string>
+    <string name="sessions">Sessions</string>
+    <string name="id" translatable="false">#</string>
+    <string name="n_a">N/A</string>
+    <string name="capabilities">Capabilities</string>
+    <string name="frequency">Frequency</string>
+    <string name="date">Date</string>
+    <string name="warning_outdated_client">Your client version is too old.\nPlease update!</string>
+    <string name="warning_client_version_not_checked">Couldn\'t contact server. Either you\'re offline or the server is down!</string>
+    <string name="warning_session_closed">Can\'t resume! Session has already been uploaded.</string>
+    <string name="deleted">Deleted!</string>
+    <string name="warning_sd_not_writable">Can\'t write to SD card. Perhaps mounted on desktop pc?</string>
+    <string name="error_save_file_failed">Download failed! Check SD card / permissions!</string>
+    <string name="tap_hotspot_to_see_details">Tap WiFi to see details</string>
+    <string name="stop_tracking">Stop tracking</string>
+    <string name="battery_warning">Battery low: Stopping track</string>
 
-	<string name="notification_caption">Radiobeacon is scanning</string>
-	<string name="exporting_wifis">Exporting wifis</string>
-	<string name="uploading_wifis">Uploading wifis</string>
-	<string name="exporting_cells">Exporting cells</string>
-	<string name="uploading_cells">Uploading cells</string>
-	<string name="exporting_gpx">Writing GPX to SD card</string>
-	<string name="resume">Resume</string>
-	<string name="stop">Stop</string>
-	<string name="delete">Delete</string>
-	<string name="upload">Upload</string>
-	<string name="export_gpx">Export GPX track</string>
-	<string name="delete_all">DELETE ALL</string>
-	<string name="upload_skipped">Upload skipped (If this happened accidentally,
-		check
-		your debug settings)
-	</string>
-	<string name="preparing_export">Preparing export..</string>
-	<string name="app_description">Openbmap.org wifi and cell logger</string>
-	<string name="link_repository" translatable="false">https://github.com/wish7code/openbmap/</string>
-	<string name="licences">Licences</string>
-	<string name="radiobeacon_licence_caption">Client</string>
-	<string name="do_you_want_to_delete_this_session">Do you want to delete this session?</string>
-	<string name="do_you_want_to_delete_processed_sessions">Do you want to delete uploaded sessions?</string>
-	<string name="unknown">unknown</string>
-	<string name="no_sat_signal">No sat signal</string>
-	<string name="no_measurements"># Measurements</string>
-	<string name="psc" translatable="false">PSC</string>
-	<string name="blacklisted_bssid">is blacklisted (BSSID)</string>
-	<string name="blacklisted_ssid">is blacklisted (SSID)</string>
-	<string name="is_new">New?</string>
-	<string name="blacklisted_area">Ignored: in blacklisted area</string>
-	<string name="cleaning_database">Reorganising..</string>
-	<string name="database_lock_error">Couldn\'t lock database. Try again later..</string>
-	<string name="please_stay_patient">Please stay patient..</string>
-	<string name="export_error_title">Export error</string>
-	<string name="export_error">Try again later. If problem persists, please file a
-		bug at\nhttps://github.com/wish7code/openbmap/issues
-	</string>
-	<string name="location_blacklist_saved">Location blacklist saved!</string>
-	<string name="error_writing_location_blacklist">Error writing location blacklist</string>
+    <string name="notification_caption">RadioBeacon is scanning</string>
+    <string name="exporting_wifis">Exporting WiFis</string>
+    <string name="uploading_wifis">Uploading WiFis</string>
+    <string name="exporting_cells">Exporting cells</string>
+    <string name="uploading_cells">Uploading cells</string>
+    <string name="exporting_gpx">Writing GPX to SD card</string>
+    <string name="resume">Resume</string>
+    <string name="stop">Stop</string>
+    <string name="delete">Delete</string>
+    <string name="upload">Upload</string>
+    <string name="export_gpx">Export GPX track</string>
+    <string name="delete_all">DELETE ALL</string>
+    <string name="upload_skipped">Upload skipped (If this happened accidentally, check your debug settings)</string>
+    <string name="preparing_export">Preparing export...</string>
+    <string name="app_description">RadioCells.org WiFi and cell logger</string>
+    <string name="link_repository" translatable="false">https://github.com/openbmap/android</string>
+    <string name="licences">Licences</string>
+    <string name="radiobeacon_licence_caption">Client</string>
+    <string name="do_you_want_to_delete_this_session">Do you want to delete this session?</string>
+    <string name="do_you_want_to_delete_processed_sessions">Do you want to delete uploaded sessions?</string>
+    <string name="unknown">unknown</string>
+    <string name="no_sat_signal">No sat signal</string>
+    <string name="no_measurements"># Measurements</string>
+    <string name="psc" translatable="false">PSC</string>
+    <string name="blacklisted_bssid">is blacklisted (BSSID)</string>
+    <string name="blacklisted_ssid">is blacklisted (SSID)</string>
+    <string name="is_new">New?</string>
+    <string name="blacklisted_area">Ignored: in blacklisted area</string>
+    <string name="cleaning_database">Reorganising...</string>
+    <string name="database_lock_error">Couldn\'t lock database. Try again later...</string>
+    <string name="please_stay_patient">Please stay patient...</string>
+    <string name="export_error_title">Export error</string>
+    <string name="export_error">Try again later. If problem persists, please file a bug at\nhttps://github.com/openbmap/android/issues</string>
+    <string name="location_blacklist_saved">Location blacklist saved!</string>
+    <string name="error_writing_location_blacklist">Error writing location blacklist</string>
 
-	<string name="prefs_update_catalog_summary">Adds scanned wifis to local wifi catalog</string>
-	<string name="prefs_update_catalog">Sync wifi catalog locally</string>
-	<string name="synchronizing">Synchronizing..</string>
-	<string name="seconds"> seconds</string>
-	<string name="minutes"> minutes</string>
-	<string name="stopped_tracking">Stopped tracking</string>
-	<string name="upload_all">Upload all</string>
-	<string name="new_session">New session</string>
-	<string name="settings">Settings</string>
-	<string name="overview">Overview</string>
-	<string name="wifis">Wifis</string>
-	<string name="cells">Cells</string>
-	<string name="map">Map</string>
-	<string name="no_gps">GPS switched off!</string>
-	<string name="waiting_for_gps_fix">Waiting for GPS fix</string>
-	<string name="lac" translatable="false">LAC</string>
-	<string name="free_wifi">Free wifi found:</string>
-	<string name="network_id" translatable="false">Network Id</string>
-	<string name="system_id" translatable="false">System Id</string>
-	<string name="lcid" translatable="false">LCID</string>
-	<string name="rnc" translatable="false">RNC</string>
+    <string name="prefs_update_catalog_summary">Adds scanned WiFis to local WiFi catalog</string>
+    <string name="prefs_update_catalog">Sync WiFi catalog locally</string>
+    <string name="synchronizing">Synchronizing...</string>
+    <string name="seconds"> seconds</string>
+    <string name="minutes"> minutes</string>
+    <string name="stopped_tracking">Stopped tracking</string>
+    <string name="upload_all">Upload all</string>
+    <string name="new_session">New session</string>
+    <string name="settings">Settings</string>
+    <string name="overview">Overview</string>
+    <string name="wifis">WiFis</string>
+    <string name="cells">Cells</string>
+    <string name="map">Map</string>
+    <string name="no_gps">GPS switched off!</string>
+    <string name="waiting_for_gps_fix">Waiting for GPS fix</string>
+    <string name="lac" translatable="false">LAC</string>
+    <string name="free_wifi">Free WiFi found:</string>
+    <string name="network_id" translatable="false">Network ID</string>
+    <string name="system_id" translatable="false">System ID</string>
+    <string name="lcid" translatable="false">LCID</string>
+    <string name="rnc" translatable="false">RNC</string>
 
-	<string name="dialog_found_pending_uploads_title">Found several sessions, which haven\'t been
-		uploaded yet</string>
-	<string name="dialog_found_pending_uploads_message">Would you like to upload all pending sessions now?
-	</string>
-	<string name="dialog_delete_all_sessions_title">Delete ALL sessions?</string>
-	<string name="dialog_delete_all_sessions_message">Do you really want to delete all sessions?</string>
-	<string name="chart_library">Chart library: GraphView</string>
-	<string name="chart_library_license" translatable="false">GNU Lesser General Public License (LGPL)</string>
-	<string name="saved_waypoint">Saved waypoint</string>
-	<string name="yes">Yes</string>
-	<string name="no">No</string>
-	<string name="gpx_export_failed">GPX export failed</string>
-	<string name="info_using_online_map">No offline map available. Using online map</string>
-	<string name="select_folder">Select folder</string>
-	<string name="activity_advanced_settings_activity">Advanced settings</string>
-	<string name="vacuuming">Vacuuming</string>
-	<string name="prefs_ignore_battery_summary">Continue scanning even with low battery (only recommended if you have external battery supply)</string>
-	<string name="prefs_ignore_battery_title">Ignore low battery</string>
-	<string name="other_download_active">Please wait for current download to complete!</string>
-	<string name="meter" translatable="false">m</string>
-	<string name="sort_by_timestamp">Sort by timestamp</string>
-	<string name="sort_by_ssid">Sort A-Z</string>
-	<string name="show_only_new">Show only new</string>
-	<string name="show_only_free">Show only free</string>
-	<string name="show_all">Show all</string>
-	<string name="empty" translatable="false">--</string>
-	<string name="files">Files</string>
-	<string name="warning_bad_password">Wrong username or password!</string>
-	<string name="graph_title">Cell strength</string>
-	<string name="prefs_folder_various">Various</string>
-	<string name="prefs_auto_delete_sessions_title">Cleanup old sessions</string>
-	<string name="prefs_auto_delete_tracks_summary">Delete sessions after successful upload automatically</string>
-	<string name="prefs_get_maps_title">Get offline map</string>
-	<string name="prefs_get_maps_summary">Download offline map</string>
-	<string name="prefs_check_server">Contacting server...</string>
-	<string name="downloading">Downloading</string>
-	<string name="invalid_download">Invalid download</string>
-	<string name="prefs_gpx_verbosity_title">GPX verbosity</string>
-	<string name="prefs_gpx_verbosity_summary">Select which details are exported to GPX files</string>
-	<string name="waypoint">WP</string>
-	<string name="activity_stats_activity">Overview</string>
-	<string name="activity_wifi_list_container">Wifis</string>
-	<string name="activity_wifi_details_activity">Wifi Details</string>
-	<string name="activity_cells_list_container">Cells</string>
-	<string name="activity_cell_details">Cell Details</string>
-	<string name="activity_map_view_activity">Maps</string>
-	<string name="activity_settings_activity">Preferences</string>
-	<string name="activity_credits_activity">Credits</string>
-	<string name="error_opening_wifi_catalog">Error while opening wifi catalog</string>
-	<string name="error_accessing_wifi_catalog">Error accessing wifi catalog</string>
-	<string name="build_signature">Build signature: </string>
+    <string name="dialog_found_pending_uploads_title">Found several sessions, which haven\'t been uploaded yet</string>
+    <string name="dialog_found_pending_uploads_message">Would you like to upload all pending sessions now?</string>
+    <string name="dialog_delete_all_sessions_title">Delete ALL sessions?</string>
+    <string name="dialog_delete_all_sessions_message">Do you really want to delete all sessions?</string>
+    <string name="chart_library">Chart library: GraphView</string>
+    <string name="chart_library_license" translatable="false">GNU Lesser General Public License (LGPL)</string>
+    <string name="saved_waypoint">Saved way-point</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="gpx_export_failed">GPX export failed</string>
+    <string name="info_using_online_map">No offline map available. Using online map</string>
+    <string name="select_folder">Select folder</string>
+    <string name="activity_advanced_settings_activity">Advanced settings</string>
+    <string name="vacuuming">Vacuuming</string>
+    <string name="prefs_ignore_battery_summary">Continue scanning even with low battery (only recommended if you have external battery supply)</string>
+    <string name="prefs_ignore_battery_title">Ignore low battery</string>
+    <string name="other_download_active">Please wait for current download to complete!</string>
+    <string name="meter" translatable="false">m</string>
+    <string name="sort_by_timestamp">Sort by timestamp</string>
+    <string name="sort_by_ssid">Sort A-Z</string>
+    <string name="show_only_new">Show only new</string>
+    <string name="show_only_free">Show only free</string>
+    <string name="show_all">Show all</string>
+    <string name="empty" translatable="false">--</string>
+    <string name="files">Files</string>
+    <string name="warning_bad_password">Incorrect username or password!</string>
+    <string name="graph_title">Cell strength</string>
+    <string name="prefs_folder_various">Various</string>
+    <string name="prefs_auto_delete_sessions_title">Cleanup old sessions</string>
+    <string name="prefs_auto_delete_tracks_summary">Delete sessions after successful upload automatically</string>
+    <string name="prefs_get_maps_title">Get offline map</string>
+    <string name="prefs_get_maps_summary">Download offline map</string>
+    <string name="prefs_check_server">Contacting server...</string>
+    <string name="downloading">Downloading</string>
+    <string name="invalid_download">Invalid download</string>
+    <string name="prefs_gpx_verbosity_title">GPX verbosity</string>
+    <string name="prefs_gpx_verbosity_summary">Select which details are exported to GPX files</string>
+    <string name="waypoint">WP</string>
+    <string name="activity_stats_activity">Overview</string>
+    <string name="activity_wifi_list_container">WiFis</string>
+    <string name="activity_wifi_details_activity">WiFi Details</string>
+    <string name="activity_cells_list_container">Cells</string>
+    <string name="activity_cell_details">Cell Details</string>
+    <string name="activity_map_view_activity">Maps</string>
+    <string name="activity_settings_activity">Preferences</string>
+    <string name="activity_credits_activity">Credits</string>
+    <string name="error_opening_wifi_catalog">Error while opening WiFi catalog</string>
+    <string name="error_accessing_wifi_catalog">Error accessing WiFi catalog</string>
+    <string name="build_signature">Build signature: </string>
     <string name="prefs_scan_mode">Wireless scan mode</string>
     <string name="prefs_scan_mode_summary">Warning: Selecting high performance mode will massively drain battery!</string>
-	<string name="saved_at">"Saved at "</string>
-	<string name="prefs_map_online">Online (Mapquest)</string>
-	<string name="failed_to_load_map_file_can_be_damaged">Failed to load map. File can be damaged.</string>
+    <string name="saved_at">Saved at </string>
+    <string name="prefs_map_online">Online (MapQuest)</string>
+    <string name="failed_to_load_map_file_can_be_damaged">Failed to load map. File can be damaged.</string>
 </resources>
