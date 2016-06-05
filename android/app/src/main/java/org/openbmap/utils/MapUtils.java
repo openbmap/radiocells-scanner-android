@@ -25,6 +25,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.View.MeasureSpec;
+import android.widget.Toast;
 
 import org.mapsforge.core.graphics.Bitmap;
 import org.mapsforge.core.graphics.Paint;
@@ -43,6 +44,7 @@ import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.layer.renderer.TileRendererLayer;
 import org.mapsforge.map.model.MapViewPosition;
 import org.mapsforge.map.reader.MapFile;
+import org.mapsforge.map.reader.header.MapFileException;
 import org.mapsforge.map.rendertheme.InternalRenderTheme;
 import org.mapsforge.map.rendertheme.XmlRenderTheme;
 import org.openbmap.Preferences;
@@ -62,7 +64,7 @@ public final class MapUtils {
 
 	/**
 	 * Compatibility method
-	 * 
+	 *
 	 * @param a
 	 *            the current activity
 	 */
@@ -122,12 +124,12 @@ public final class MapUtils {
 	 */
 	public static Layer createTileRendererLayer(final TileCache tileCache, final MapViewPosition mapViewPosition,
 			final MapFile mapFile, final onLongPressHandler longPressHandler, final XmlRenderTheme renderTheme) {
-		
+
 		if (mapFile == null) {
 			return null;
 		}
-		
-		if (longPressHandler != null) {	
+
+		if (longPressHandler != null) {
 			// add support for onLongClick events
 			final TileRendererLayer tileRendererLayer = new TileRendererLayer (tileCache, (MapDataStore) mapFile,
 					mapViewPosition, false, true, AndroidGraphicFactory.INSTANCE) {
@@ -145,20 +147,20 @@ public final class MapUtils {
 			}
 
 			tileRendererLayer.setTextScale(1.5f);
-			return tileRendererLayer;	
+			return tileRendererLayer;
 		} else {
 			// just a plain vanilla layer
 			final TileRendererLayer tileRendererLayer = new TileRendererLayer (tileCache, mapFile,
 					mapViewPosition, false, true, AndroidGraphicFactory.INSTANCE);
 
 			//tileRendererLayer.setMapFile(mapFile);
-			
+
 			if (renderTheme == null) {
 				tileRendererLayer.setXmlRenderTheme(InternalRenderTheme.OSMARENDER);
 			} else {
 				tileRendererLayer.setXmlRenderTheme(renderTheme);
 			}
-			
+
 			tileRendererLayer.setTextScale(1.5f);
 			return tileRendererLayer;
 		}
@@ -220,7 +222,13 @@ public final class MapUtils {
 				prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE));
 
 		if (file.exists()) {
-			return new MapFile(file);
+			try {
+				return new MapFile(file);
+			} catch(MapFileException mfe) {
+				Toast.makeText(context, "Failed to load map. File can be damaged.", Toast.LENGTH_SHORT).show();
+				Log.e(TAG, "Failed to load map, file can be damaged " + mfe.getMessage(), mfe);
+				return null;
+			}
 		} else {
 			Log.e(TAG, "Map file doesn't exist");
 			return null;
