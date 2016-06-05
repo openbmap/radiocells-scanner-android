@@ -48,7 +48,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.openbmap.Preferences;
 import org.openbmap.R;
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 import org.openbmap.utils.FileUtils;
 import org.openbmap.utils.MapDownload;
 
@@ -64,7 +64,7 @@ import java.util.List;
 public class DialogPreferenceMaps extends DialogPreference implements IMapsListAdapterListener {
     private static String TAG = DialogPreferenceMaps.class.getSimpleName();
 
-    public static final String LIST_DOWNLOADS_URL = Radiobeacon.SERVER_BASE + "/downloads/map_downloads.json";
+    public static final String LIST_DOWNLOADS_URL = RadioBeacon.SERVER_BASE + "/downloads/map_downloads.json";
 
     private static SharedPreferences pref;
     private DialogPreferenceMapsListAdapter mAdapter;

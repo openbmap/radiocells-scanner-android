@@ -64,7 +64,7 @@ import org.mapsforge.map.model.common.Observer;
 import org.mapsforge.map.util.MapPositionUtil;
 import org.openbmap.Preferences;
 import org.openbmap.R;
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.PositionRecord;
 import org.openbmap.db.models.WifiRecord;
@@ -364,7 +364,7 @@ public class MapViewActivity extends Fragment implements
         final DataHelper dbHelper = new DataHelper(getActivity().getApplicationContext());
         mSessionId = dbHelper.getActiveSessionId();
 
-        if (mSessionId != Radiobeacon.SESSION_NOT_TRACKING) {
+        if (mSessionId != RadioBeacon.SESSION_NOT_TRACKING) {
             Log.i(TAG, "Displaying session " + mSessionId);
         } else {
             Log.w(TAG, "No active session?");
@@ -1121,7 +1121,7 @@ public class MapViewActivity extends Fragment implements
 
         final DataHelper dbHelper = new DataHelper(getActivity().getApplicationContext());
 
-        final PositionRecord pos = new PositionRecord(GeometryUtils.toLocation(tapLatLong), mSessionId, Radiobeacon.PROVIDER_USER_DEFINED, true);
+        final PositionRecord pos = new PositionRecord(GeometryUtils.toLocation(tapLatLong), mSessionId, RadioBeacon.PROVIDER_USER_DEFINED, true);
         dbHelper.storePosition(pos);
 
         // beep once point has been saved

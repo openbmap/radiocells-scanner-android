@@ -27,7 +27,7 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.util.Log;
 
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +43,7 @@ public class ContentProvider extends android.content.ContentProvider {
 	/**
 	 * Authority for Uris
 	 */
-	public static final String AUTHORITY = Radiobeacon.class.getPackage().getName() + ".provider";
+	public static final String AUTHORITY = RadioBeacon.class.getPackage().getName() + ".provider";
 
 	/**
 	 * Uri for wifi measurements
@@ -415,7 +415,7 @@ public class ContentProvider extends android.content.ContentProvider {
                 String column = addColumntoSelection(Schema.COL_SESSION_ID, selectionIn);
                 column = addColumntoSelection(Schema.COL_SOURCE, column);
                 String[] args = addtoSelectionArgs(uri.getLastPathSegment(), selectionArgsIn);
-                args = addtoSelectionArgs(Radiobeacon.PROVIDER_USER_DEFINED, args);
+                args = addtoSelectionArgs(RadioBeacon.PROVIDER_USER_DEFINED, args);
        		    return queryTable(ContentProvider.CONTENT_URI_POSITION, Schema.TBL_POSITIONS, projection, column, args, sortOrder, null, null);
             case Schema.URI_CODE_LOGS_BY_SESSION:
 				// Returns all log files for given session.

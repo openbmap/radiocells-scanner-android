@@ -25,7 +25,7 @@ import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 import org.openbmap.events.onLocationUpdate;
 import org.openbmap.events.onStartLocation;
 import org.openbmap.events.onStopTracking;
@@ -227,7 +227,7 @@ public class PositioningService extends AbstractService implements LocationChang
 			// Don't do anything for status AVAILABLE, as this event occurs frequently,
 			// changing the graphics cause flickering .
 			case android.location.LocationProvider.OUT_OF_SERVICE:
-				Intent i1 = new Intent(Radiobeacon.INTENT_POSITION_SAT_INFO);
+				Intent i1 = new Intent(RadioBeacon.INTENT_POSITION_SAT_INFO);
 				Bundle b1 = new Bundle();
 				b1.putString("STATUS", "OUT_OF_SERVICE");
 				b1.putInt("SAT_COUNT", -1);
@@ -236,7 +236,7 @@ public class PositioningService extends AbstractService implements LocationChang
 
 				break;
 			case android.location.LocationProvider.TEMPORARILY_UNAVAILABLE:
-				Intent i2 = new Intent(Radiobeacon.INTENT_POSITION_SAT_INFO);
+				Intent i2 = new Intent(RadioBeacon.INTENT_POSITION_SAT_INFO);
 				Bundle b2 = new Bundle();
 				b2.putString("STATUS", "TEMPORARILY_UNAVAILABLE");
 				b2.putInt("SAT_COUNT", -1);
@@ -255,7 +255,7 @@ public class PositioningService extends AbstractService implements LocationChang
 	 */
 	@Override
 	public void onSatInfo(int satCount) {
-		Intent i = new Intent(Radiobeacon.INTENT_POSITION_SAT_INFO);
+		Intent i = new Intent(RadioBeacon.INTENT_POSITION_SAT_INFO);
 		Bundle b = new Bundle();
 		b.putString("STATUS", "UPDATE");
 		b.putInt("SAT_COUNT", satCount);

@@ -18,7 +18,7 @@
 
 package org.openbmap.events;
 
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 
 public class onStartTracking {
     public final int session;
@@ -27,7 +27,7 @@ public class onStartTracking {
      * Default constructor: no session id provided, database will auto-assign session id
      */
      public onStartTracking() {
-        this.session = Radiobeacon.SESSION_NOT_TRACKING;
+        this.session = RadioBeacon.SESSION_NOT_TRACKING;
      }
 
     /**

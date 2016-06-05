@@ -27,7 +27,7 @@ import android.util.Log;
 
 import org.openbmap.Preferences;
 import org.openbmap.R;
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 import org.openbmap.soapclient.ExportSessionTask;
 import org.openbmap.soapclient.ExportSessionTask.UploadTaskListener;
 import org.openbmap.soapclient.CheckServerTask;
@@ -187,7 +187,7 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
             final String user = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_USER, null);
             final String password = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(Preferences.KEY_CREDENTIALS_PASSWORD, null);
 
-            final String[] params = { Radiobeacon.VERSION_COMPATIBILITY, user, password};
+            final String[] params = { RadioBeacon.VERSION_COMPATIBILITY, user, password};
             new CheckServerTask(getActivity(), this).execute(params);
         } else if (serverReply == CheckResult.PASSED) {
             stageLocalChecks();
@@ -214,21 +214,21 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
         } else if (serverReply == CheckResult.FAILED) {
             // version is outdated or wrong credentials
             if (mBadPasswordFlag) {
-                final int id = toExport.size() > 0 ? toExport.get(0) : Radiobeacon.SESSION_NOT_TRACKING;
+                final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
                 onUploadFailed(id, getResources().getString(R.string.warning_bad_password));
             } else {
-                final int id = toExport.size() > 0 ? toExport.get(0) : Radiobeacon.SESSION_NOT_TRACKING;
+                final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
                 onUploadFailed(id, getResources().getString(R.string.warning_outdated_client));
             }
         } else if (serverReply == CheckResult.UNKNOWN) {
             // couldn't verify online version
-            final int id = toExport.size() > 0 ? toExport.get(0) : Radiobeacon.SESSION_NOT_TRACKING;
+            final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
             onUploadFailed(id, getResources().getString(R.string.warning_client_version_not_checked));
         } else if (sdCardWritable == CheckResult.FAILED) {
-            final int id = toExport.size() > 0 ? toExport.get(0) : Radiobeacon.SESSION_NOT_TRACKING;
+            final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
             onUploadFailed(id, getResources().getString(R.string.warning_sd_not_writable));
         } else {
-            final int id = toExport.size() > 0 ? toExport.get(0) : Radiobeacon.SESSION_NOT_TRACKING;
+            final int id = toExport.size() > 0 ? toExport.get(0) : RadioBeacon.SESSION_NOT_TRACKING;
             onUploadFailed(id, "Unknown error");
         }
 

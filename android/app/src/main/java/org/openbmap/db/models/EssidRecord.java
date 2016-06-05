@@ -18,7 +18,7 @@
 
 package org.openbmap.db.models;
 
-import org.openbmap.Radiobeacon;
+import org.openbmap.RadioBeacon;
 
 /*
  * Model for ESSID (extended BSSID)
@@ -31,7 +31,7 @@ public class EssidRecord implements Comparable<EssidRecord> {
 	private int mSessionId;
 
 	public EssidRecord(final String bssid) {
-		this(bssid, Radiobeacon.SESSION_NOT_TRACKING);
+		this(bssid, RadioBeacon.SESSION_NOT_TRACKING);
 	}
 
 	public EssidRecord(final String bssid, final int session) {
