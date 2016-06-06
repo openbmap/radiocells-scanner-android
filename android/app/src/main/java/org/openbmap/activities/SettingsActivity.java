@@ -44,7 +44,9 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.GINGERBREAD;
@@ -133,7 +135,7 @@ public class SettingsActivity extends PreferenceActivity {
     protected final void onDestroy() {
         try {
             if (mReceiver != null) {
-                Log.i(TAG, "Unregistering broadcast receivers");
+                Log.i(TAG, "Deregister broadcast receivers");
                 unregisterReceiver(mReceiver);
             }
         } catch (final IllegalArgumentException e) {
@@ -185,15 +187,22 @@ public class SettingsActivity extends PreferenceActivity {
      * Populates the active map list preference by scanning available map files.
      */
     private void initActiveMapControl() {
-        String[] entries;
-        String[] values;
+        List<String> entries = new ArrayList<>();
+        List<String> values = new ArrayList<>();
+
+        // Create default / none entry
+        entries.add(getResources().getString(R.string.prefs_map_none));
+        values.add(Preferences.VAL_MAP_NONE);
+
+        entries.add(getResources().getString(R.string.prefs_map_online));
+        values.add(Preferences.VAL_MAP_ONLINE);
 
         // Check for presence of maps directory
         final File folder = FileUtils.getMapFolder(SettingsActivity.this);
         Log.d(TAG, "Listing maps in " + folder.getAbsolutePath());
 
         // List each map file
-        if (folder.exists() && folder.canRead()) {
+        if (folder.exists() && folder.canRead() && folder.listFiles().length > 0) {
             final String[] mapFiles = folder.list(new FilenameFilter() {
                 @Override
                 public boolean accept(final File dir, final String filename) {
@@ -201,38 +210,17 @@ public class SettingsActivity extends PreferenceActivity {
                 }
             });
 
-            // Create array of values for each map file + one for not selected
-            entries = new String[mapFiles.length + 1];
-            values = new String[mapFiles.length + 1];
-
-            // Create default / none entry
-            entries[0] = getResources().getString(R.string.prefs_map_none);
-            values[0] = Preferences.VAL_MAP_NONE;
-
-            entries[1] = getResources().getString(R.string.prefs_map_online);
-            values[1] = Preferences.VAL_MAP_ONLINE;
-
             for (int i = 0; i < mapFiles.length; i++) {
-                entries[i + 2] = mapFiles[i].substring(0, mapFiles[i].length() - Preferences.MAP_FILE_EXTENSION.length());
-                values[i + 2] = mapFiles[i];
+                entries.add(mapFiles[i].substring(0, mapFiles[i].length() - Preferences.MAP_FILE_EXTENSION.length()));
+                values.add(mapFiles[i]);
             }
-        } else {
-            // No map found, populate values with just the default entry.
-            entries = new String[2];
-            values = new String[2];
-
-            entries[0] = getResources().getString(R.string.prefs_map_none);
-            values[0] = Preferences.VAL_MAP_NONE;
-
-            entries[1] = getResources().getString(R.string.prefs_map_online);
-            values[1] = Preferences.VAL_MAP_ONLINE;
         }
 
-        Log.d(TAG, "Found " + entries.length + " files");
+        Log.d(TAG, "Found " + entries.size() + " files");
 
         final ListPreference lf = (ListPreference) findPreference(Preferences.KEY_MAP_FILE);
-        lf.setEntries(entries);
-        lf.setEntryValues(values);
+        lf.setEntries(entries.toArray(new String[entries.size()]));
+        lf.setEntryValues(values.toArray(new String[values.size()]));
     }
 
     /**
