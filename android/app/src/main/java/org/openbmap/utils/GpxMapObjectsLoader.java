@@ -26,11 +26,12 @@ import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.PositionRecord;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Loads session wifis asynchronously.
  */
-public class GpxMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatLong>> {
+public class GpxMapObjectsLoader extends AsyncTask<Object, Void, List<LatLong>> {
 
 	@SuppressWarnings("unused")
 	private static final String	TAG	= GpxMapObjectsLoader.class.getSimpleName();
@@ -50,7 +51,7 @@ public class GpxMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatLo
 	 * Interface for activity.
 	 */
 	public interface OnGpxLoadedListener {
-		void onGpxLoaded(ArrayList<LatLong> points);
+		void onGpxLoaded(List<LatLong> points);
 	}
 
 	private Context	mContext;
@@ -77,9 +78,9 @@ public class GpxMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatLo
 	 *			args[4]: max longitude as double
 	 */
 	@Override
-	protected final ArrayList<LatLong> doInBackground(final Object... args) {
+	protected final List<LatLong> doInBackground(final Object... args) {
 		//Log.d(TAG, "Loading gpx points");
-		ArrayList<LatLong> points = new ArrayList<>();
+		List<LatLong> points = new ArrayList<>();
 
 		DataHelper dbHelper = new DataHelper(mContext);
 
@@ -97,7 +98,7 @@ public class GpxMapObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatLo
 	 * Informs activity on available results by calling mListener.
 	 */
 	@Override
-	protected final void onPostExecute(final ArrayList<LatLong> points) {
+	protected final void onPostExecute(final List<LatLong> points) {
 		if (mListener != null) {
 			mListener.onGpxLoaded(points);
 		}

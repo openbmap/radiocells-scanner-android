@@ -82,6 +82,7 @@ import org.openbmap.utils.SessionObjectsLoader.OnSessionLoadedListener;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Fragment for displaying map with session's GPX track and wifis
@@ -206,9 +207,9 @@ public class MapViewActivity extends Fragment implements
      */
     private Paint paintOtherSessionFill;
 
-    private ArrayList<Layer> catalogObjects;
+    private List<Layer> catalogObjects;
 
-    private ArrayList<Layer> sessionObjects;
+    private List<Layer> sessionObjects;
 
     private Polyline gpxObjects;
     //[end]
@@ -294,8 +295,8 @@ public class MapViewActivity extends Fragment implements
         // get shared preferences
         prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
-        catalogObjects = new ArrayList<Layer>();
-        sessionObjects = new ArrayList<Layer>();
+        catalogObjects = new ArrayList<>();
+        sessionObjects = new ArrayList<>();
         gpxObjects = new Polyline(MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(Color.BLACK), STROKE_GPX_WIDTH,
                 Style.STROKE), AndroidGraphicFactory.INSTANCE);
     }
@@ -532,10 +533,10 @@ public class MapViewActivity extends Fragment implements
         // update layers
         if (GeometryUtils.isValidLocation(location)) {
                     /*
-					 * Update layers if necessary, but only if
-					 * 1.) current zoom level >= 12 (otherwise single points not visible, huge performance impact)
-					 * 2.) layer items haven't been refreshed for a while AND user has moved a bit
-					 */
+                     * Update layers if necessary, but only if
+                     * 1.) current zoom level >= 12 (otherwise single points not visible, huge performance impact)
+                     * 2.) layer items haven't been refreshed for a while AND user has moved a bit
+                     */
 
             if ((mMapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && (sessionLayerOutdated(location))) {
                 refreshSessionLayer(location);
@@ -710,7 +711,7 @@ public class MapViewActivity extends Fragment implements
      * @see org.openbmap.utils.WifiCatalogMapObjectsLoader.OnCatalogLoadedListener#onComplete(java.util.ArrayList)
      */
     @Override
-    public final void onCatalogLoaded(final ArrayList<LatLong> points) {
+    public final void onCatalogLoaded(final List<LatLong> points) {
         Log.d(TAG, "Loaded catalog objects");
         if (mMapView == null) {
             return;
@@ -783,10 +784,8 @@ public class MapViewActivity extends Fragment implements
             return true;
         }
 
-        return (
-                (sessionObjectsRefreshedAt.distanceTo(current) > SESSION_REFRESH_DISTANCE)
-                        && ((System.currentTimeMillis() - sessionObjectsRefreshTime) > SESSION_REFRESH_INTERVAL)
-        );
+        return ((sessionObjectsRefreshedAt.distanceTo(current) > SESSION_REFRESH_DISTANCE)
+                        && ((System.currentTimeMillis() - sessionObjectsRefreshTime) > SESSION_REFRESH_INTERVAL));
     }
 
     /**
@@ -806,11 +805,11 @@ public class MapViewActivity extends Fragment implements
 
         if (highlight == null) {
 
-            final ArrayList<Integer> sessions = new ArrayList<Integer>();
-			/*if (allLayerSelected()) {
-				// load all session wifis
-				sessions = new DataHelper(this).getSessionList();
-			} else {*/
+            final List<Integer> sessions = new ArrayList<>();
+            /*if (allLayerSelected()) {
+                // load all session wifis
+                sessions = new DataHelper(this).getSessionList();
+            } else {*/
             sessions.add(mSessionId);
             //}
 
@@ -833,7 +832,7 @@ public class MapViewActivity extends Fragment implements
             task.execute(minLatitude, maxLatitude, minLongitude, maxLongitude, null);
         } else {
             // draw specific wifi
-            final ArrayList<Integer> sessions = new ArrayList<Integer>();
+            final List<Integer> sessions = new ArrayList<>();
             sessions.add(mSessionId);
 
             final SessionObjectsLoader task = new SessionObjectsLoader(getActivity().getApplicationContext(), this, sessions);
@@ -845,15 +844,16 @@ public class MapViewActivity extends Fragment implements
      * @see org.openbmap.utils.SessionMapObjectsLoader.OnSessionLoadedListener#onSessionLoaded(java.util.ArrayList)
      */
     @Override
-    public final void onSessionLoaded(final ArrayList<SessionLatLong> points) {
+    public final void onSessionLoaded(final List<SessionLatLong> points) {
         Log.d(TAG, "Loaded session objects");
-        final Layers layers = this.mMapView.getLayerManager().getLayers();
-
-        clearSessionLayer();
 
         if (mMapView == null) {
             return;
         }
+
+        final Layers layers = this.mMapView.getLayerManager().getLayers();
+
+        clearSessionLayer();
 
         for (final SessionLatLong point : points) {
             if (point.getSession() == mSessionId) {
@@ -906,13 +906,13 @@ public class MapViewActivity extends Fragment implements
             }
         }
 
-		/*
-		 *
-		// if we have just loaded on point, set map center
-		if (points.size() == 1) {
-			mapView.getModel().mapViewPosition.setCenter((LatLong) points.get(0));
-		}
-		 */
+        /*
+         *
+        // if we have just loaded on point, set map center
+        if (points.size() == 1) {
+            mapView.getModel().mapViewPosition.setCenter((LatLong) points.get(0));
+        }
+         */
 
         // enable next refresh
         mRefreshSessionPending = false;
@@ -964,7 +964,7 @@ public class MapViewActivity extends Fragment implements
      * Callback function for loadGpxObjects()
      */
     @Override
-    public final void onGpxLoaded(final ArrayList<LatLong> points) {
+    public final void onGpxLoaded(final List<LatLong> points) {
         Log.d(TAG, "Loading " + points.size() + " gpx objects");
 
         clearGpxLayer();

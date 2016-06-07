@@ -30,137 +30,153 @@ import org.openbmap.db.models.PositionRecord;
 import org.openbmap.db.models.WifiRecord;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Loads session wifis asynchronously.
  */
-public class SessionObjectsLoader extends AsyncTask<Object, Void, ArrayList<SessionLatLong>> {
+public class SessionObjectsLoader extends AsyncTask<Object, Void, List<SessionLatLong>> {
 
-	private static final String	TAG	= SessionObjectsLoader.class.getSimpleName();
+    private static final String TAG = SessionObjectsLoader.class.getSimpleName();
 
-	/**
-	 * Indices for doInBackground arguments
-	 */
-	public enum Arguments { MIN_LAT_COL, MAX_LAT_COL, MIN_LON_COL, MIN_MAX_COL }
+    /**
+     * Indices for doInBackground arguments
+     */
+    public enum Arguments {
+        MIN_LAT_COL,
+        MAX_LAT_COL,
+        MIN_LON_COL,
+        MIN_MAX_COL
+    }
 
-	private static final int MIN_LAT_COL = 0;
-	private static final int MAX_LAT_COL = 1;
-	private static final int MIN_LON_COL = 2;
-	private static final int MAX_LON_COL = 3;
-	private static final int HIGHLIGHT_WIFI_COL	= 4;
+    private static final int MIN_LAT_COL = 0;
+    private static final int MAX_LAT_COL = 1;
+    private static final int MIN_LON_COL = 2;
+    private static final int MAX_LON_COL = 3;
+    private static final int HIGHLIGHT_WIFI_COL = 4;
 
-	/**
-	 * Interface for activity.
-	 */
-	public interface OnSessionLoadedListener {
-		void onSessionLoaded(ArrayList<SessionLatLong> points);
-	}
+    /**
+     * Interface for activity.
+     */
+    public interface OnSessionLoadedListener {
 
-	private final Context mContext;
+        void onSessionLoaded(List<SessionLatLong> points);
+    }
 
-	private OnSessionLoadedListener mListener;
+    private final Context mContext;
 
-	/**
-	 * Sessions to load, by default only active session
-	 */
-	private final ArrayList<Integer> mToLoad;
+    private OnSessionLoadedListener mListener;
 
-	public SessionObjectsLoader(final Context context, final OnSessionLoadedListener listener, final ArrayList<Integer> sessions) {
-		mContext = context;
-		mToLoad = sessions;
+    /**
+     * Sessions to load, by default only active session
+     */
+    private final List<Integer> mToLoad;
 
-		setOnSessionLoadedListener(listener);
-	}
+    public SessionObjectsLoader(final Context context, final OnSessionLoadedListener listener,
+                                final List<Integer> sessions) {
+        mContext = context;
+        mToLoad = sessions;
 
-	public final void setOnSessionLoadedListener(final OnSessionLoadedListener listener) {
-		this.mListener = listener;
-	}
+        setOnSessionLoadedListener(listener);
+    }
 
-	/**
-	 * Queries reference database for all wifis within specified range around map centre.
-	 * @param args
-	 * 			Args is an object array containing
-	 * 			MIN_LAT_COL, MAX_LAT_COL, MIN_LON_COL, MIN_MAX_COL
-	 */
-	@Override
-	protected final ArrayList<SessionLatLong> doInBackground(final Object... args) {
-		Log.d(TAG, "Loading session wifis");
-		final ArrayList<SessionLatLong> points = new ArrayList<SessionLatLong>();
+    public final void setOnSessionLoadedListener(final OnSessionLoadedListener listener) {
+        this.mListener = listener;
+    }
 
-		if (args[HIGHLIGHT_WIFI_COL] == null) {
-			// Draw either all session wifis ...
+    /**
+     * Queries reference database for all wifis within specified range around map centre.
+     *
+     * @param args
+     *         Args is an object array containing
+     *         MIN_LAT_COL, MAX_LAT_COL, MIN_LON_COL, MIN_MAX_COL
+     */
+    @Override
+    protected final List<SessionLatLong> doInBackground(final Object... args) {
+        Log.d(TAG, "Loading session wifis");
+        final List<SessionLatLong> points = new ArrayList<>();
 
-			//long start = System.currentTimeMillis();
-			final DatabaseHelper mDbHelper = new DatabaseHelper(mContext.getApplicationContext());
+        if(args[HIGHLIGHT_WIFI_COL] == null) {
+            // Draw either all session wifis ...
 
-			final StringBuilder selected = new StringBuilder();
-			for (int i = 0; i < mToLoad.size(); i++) {
-				selected.append(mToLoad.get(i));
+            //long start = System.currentTimeMillis();
+            final DatabaseHelper mDbHelper = new DatabaseHelper(mContext.getApplicationContext());
 
-				if (i < mToLoad.size() - 1) {
-					selected.append(", ");
-				}
-			}
+            final StringBuilder selected = new StringBuilder();
+            for(int i = 0; i < mToLoad.size(); i++) {
+                selected.append(mToLoad.get(i));
 
-			// use raw query for performance reasons
-			final String query = "SELECT w.rowid as " + Schema.COL_ID + ", MAX(" + Schema.COL_LEVEL + "), w." + Schema.COL_SESSION_ID + ", "
-					+ " b." + Schema.COL_LATITUDE + ", b." + Schema.COL_LONGITUDE
-					+ " FROM " + Schema.TBL_WIFIS + " as w "
-					+ " JOIN " + Schema.TBL_POSITIONS + " as b ON " + Schema.COL_BEGIN_POSITION_ID + " = b." + Schema.COL_ID
-					+ " WHERE w." + Schema.COL_SESSION_ID + " IN (" + selected + ") AND "
-					+ " b.longitude >= " + args[MIN_LON_COL] + " AND "
-					+ " b.longitude <= " + args[MAX_LON_COL] + " AND "
-					+ " b.latitude >= " + args[MIN_LAT_COL] + " AND "
-					+ " b.latitude <= " + args[MAX_LAT_COL] + " GROUP BY w." + Schema.COL_BSSID;
+                if(i < mToLoad.size() - 1) {
+                    selected.append(", ");
+                }
+            }
 
-			final Cursor cursor = mDbHelper.getReadableDatabase().rawQuery(query, null);
-			final int colLat = cursor.getColumnIndex(Schema.COL_LATITUDE);
-			final int colLon = cursor.getColumnIndex(Schema.COL_LONGITUDE);
-			final int colSession = cursor.getColumnIndex(Schema.COL_SESSION_ID);
+            // use raw query for performance reasons
+            final String query = "SELECT w.rowid as " + Schema.COL_ID + ", MAX(" + Schema.COL_LEVEL + "), w." + Schema.COL_SESSION_ID + ", "
+                                         + " b." + Schema.COL_LATITUDE + ", b." + Schema.COL_LONGITUDE
+                                         + " FROM " + Schema.TBL_WIFIS + " as w "
+                                         + " JOIN " + Schema.TBL_POSITIONS + " as b ON " + Schema.COL_BEGIN_POSITION_ID + " = b." + Schema.COL_ID
+                                         + " WHERE w." + Schema.COL_SESSION_ID + " IN (" + selected + ") AND "
+                                         + " b.longitude >= " + args[MIN_LON_COL] + " AND "
+                                         + " b.longitude <= " + args[MAX_LON_COL] + " AND "
+                                         + " b.latitude >= " + args[MIN_LAT_COL] + " AND "
+                                         + " b.latitude <= " + args[MAX_LAT_COL] + " GROUP BY w." + Schema.COL_BSSID;
 
-			while (cursor.moveToNext()) {
-				points.add(new SessionLatLong(cursor.getDouble(colLat), cursor.getDouble(colLon), cursor.getInt(colSession)));
-			}
-			Log.d(TAG, cursor.getCount() + " session points loaded");
-			cursor.close();
+            final Cursor cursor = mDbHelper.getReadableDatabase().rawQuery(query, null);
+            final int colLat = cursor.getColumnIndex(Schema.COL_LATITUDE);
+            final int colLon = cursor.getColumnIndex(Schema.COL_LONGITUDE);
+            final int colSession = cursor.getColumnIndex(Schema.COL_SESSION_ID);
 
-			//Log.d(TAG, "loaded wifi overlay in (" + (System.currentTimeMillis() - start) + " ms)");
-		} else {
-			// ... or only selected
+            while(cursor.moveToNext()) {
+                points.add(new SessionLatLong(cursor.getDouble(colLat), cursor.getDouble(colLon),
+                                              cursor.getInt(colSession)));
+            }
+            Log.d(TAG, cursor.getCount() + " session points loaded");
+            cursor.close();
+
+        } else {
+            // ... or only selected
             final DataHelper dbHelper = new DataHelper(mContext.getApplicationContext());
-			final ArrayList<WifiRecord> candidates = dbHelper.loadWifisByBssid((String) args[HIGHLIGHT_WIFI_COL], mToLoad.get(0));
-			if (!candidates.isEmpty()) {
-				points.add(new SessionLatLong(candidates.get(0).getBeginPosition().getLatitude(),
-						candidates.get(0).getBeginPosition().getLongitude(), candidates.get(0).getSessionId()));
-			}
-		}
+            final ArrayList<WifiRecord> candidates = dbHelper.loadWifisByBssid(
+                    (String) args[HIGHLIGHT_WIFI_COL], mToLoad.get(0));
+            if(!candidates.isEmpty()) {
+                points.add(new SessionLatLong(candidates.get(0).getBeginPosition().getLatitude(),
+                                              candidates.get(0).getBeginPosition().getLongitude(),
+                                              candidates.get(0).getSessionId()));
+            }
+        }
 
-		return points;
-	}
+        return points;
+    }
 
-	/**
-	 * Informs activity on available results by calling mListener.
-	 */
-	@Override
-	protected final void onPostExecute(final ArrayList<SessionLatLong> points) {
-		if (mListener != null) {
-			mListener.onSessionLoaded(points);
-		}
-	}
+    /**
+     * Informs activity on available results by calling mListener.
+     */
+    @Override
+    protected final void onPostExecute(final List<SessionLatLong> points) {
+        if(mListener != null) {
+            mListener.onSessionLoaded(points);
+        }
+    }
 
-	/**
-	 * Checks whether location is within (visible) bounding box.
-	 * The bounding box, whose dimension are determined in activity, is described by min & max parameters
-	 * @param mLocation Location to test
-	 * @param minLat minimum latitude
-	 * @param maxLat maximum latitude
-	 * @param minLon minimum longitude
-	 * @param maxLon maximum longitude
-	 * @return true if location is on screen
-	 */
-	private boolean isLocationVisible(final PositionRecord loc, final double minLat, final double maxLat, final double minLon, final double maxLon) {
-		return (loc.getLatitude() > minLat && loc.getLatitude() < maxLat
-				&& loc.getLongitude() > minLon && loc.getLongitude() < maxLon);
+    /**
+     * Checks whether location is within (visible) bounding box.
+     * The bounding box, whose dimension are determined in activity, is described by min & max parameters
+     *
+     * @param minLat
+     *         minimum latitude
+     * @param maxLat
+     *         maximum latitude
+     * @param minLon
+     *         minimum longitude
+     * @param maxLon
+     *         maximum longitude
+     *
+     * @return true if location is on screen
+     */
+    private boolean isLocationVisible(final PositionRecord loc, final double minLat, final double maxLat, final double minLon, final double maxLon) {
+        return (loc.getLatitude() > minLat && loc.getLatitude() < maxLat
+                        && loc.getLongitude() > minLon && loc.getLongitude() < maxLon);
 
-	}
+    }
 }
