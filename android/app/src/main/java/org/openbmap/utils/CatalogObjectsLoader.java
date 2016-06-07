@@ -27,14 +27,15 @@ import org.mapsforge.core.model.LatLong;
 import org.openbmap.db.CatalogDatabaseHelper;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Loads reference wifis asynchronously.
  * Upon completion callback mListener in activity is invoked.
  */
-public class CatalogObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatLong>> {
+public class CatalogObjectsLoader extends AsyncTask<Object, Void, List<LatLong>> {
 
-	private static final String	TAG	= CatalogObjectsLoader.class.getSimpleName();
+    private static final String TAG = CatalogObjectsLoader.class.getSimpleName();
 
     /**
      * Arguments (indices) for doInBackground arguments
@@ -44,77 +45,86 @@ public class CatalogObjectsLoader extends AsyncTask<Object, Void, ArrayList<LatL
     private static final int MIN_LON_COL = 2;
     private static final int MAX_LON_COL = 3;
 
-	/**
-	 * Interface for activity.
-	 */
-	public interface OnCatalogLoadedListener {
-		void onCatalogLoaded(ArrayList<LatLong> points);
-	}
+    /**
+     * Interface for activity.
+     */
+    public interface OnCatalogLoadedListener {
 
-	/**
-	 * Creating a overlay item for each wifi can cause performance issues
-	 * in densely mapped areas. If GROUP_WIFIS = true near wifis are merged
-	 * into a single overlay item
-	 */
-	private static final boolean GROUP_WIFIS = true;
+        void onCatalogLoaded(List<LatLong> points);
+    }
 
-	private OnCatalogLoadedListener mListener;
-	private final Context mAppContext;
+    /**
+     * Creating a overlay item for each wifi can cause performance issues
+     * in densely mapped areas. If GROUP_WIFIS = true near wifis are merged
+     * into a single overlay item
+     */
+    private static final boolean GROUP_WIFIS = true;
 
-	public CatalogObjectsLoader(final Context context, final OnCatalogLoadedListener listener) {
-		setOnCatalogLoadedListener(listener);
-		mAppContext = context.getApplicationContext();
-	}
+    private OnCatalogLoadedListener mListener;
+    private final Context mAppContext;
 
-	public final void setOnCatalogLoadedListener(final OnCatalogLoadedListener listener) {
-		this.mListener = listener;
-	}
+    public CatalogObjectsLoader(final Context context, final OnCatalogLoadedListener listener) {
+        setOnCatalogLoadedListener(listener);
+        mAppContext = context.getApplicationContext();
+    }
 
-	// TODO change signature to left, right, top, bottom
-	/**
-	 * Queries reference database for all wifis in specified range around map center.
-	 * @param args
-	 * 			Args is an object array containing
-	 * 			args[0]: min latitude as double
-	 * 			args[1]: max latitude as double
-	 * 			args[2]: min longitude as double
-	 *			args[3]: max longitude as double
-	 */
-	@Override
-	protected final ArrayList<LatLong> doInBackground(final Object... args) {
+    public final void setOnCatalogLoadedListener(final OnCatalogLoadedListener listener) {
+        this.mListener = listener;
+    }
 
-		ArrayList<LatLong> points = new ArrayList<LatLong>();
+    // TODO change signature to left, right, top, bottom
 
-		try {
+    /**
+     * Queries reference database for all wifis in specified range around map center.
+     *
+     * @param args
+     *         Args is an object array containing
+     *         args[0]: min latitude as double
+     *         args[1]: max latitude as double
+     *         args[2]: min longitude as double
+     *         args[3]: max longitude as double
+     */
+    @Override
+    protected final List<LatLong> doInBackground(final Object... args) {
+
+        List<LatLong> points = new ArrayList<>();
+
+        try {
             CatalogDatabaseHelper databaseHelper = CatalogDatabaseHelper.getInstance(mAppContext);
 
-			// return empty result list if reference database not available
-			if (databaseHelper.getFilename() == null) {
+            // return empty result list if reference database not available
+            if(databaseHelper.getFilename() == null) {
                 Log.v(TAG, "Wifi catalog database not set - skipping");
-				return points;
-			}
+                return points;
+            }
 
-			if (!GROUP_WIFIS) {
-                points = databaseHelper.getPoints((Double) args[MIN_LAT_COL], (Double) args[MAX_LAT_COL], (Double) args[MIN_LON_COL], (Double) args[MAX_LON_COL]);
-			} else {
-				// Option 2 (default): Group in 10m intervals for performance reasons
-                points = databaseHelper.getPointsLazy((Double) args[MIN_LAT_COL], (Double) args[MAX_LAT_COL], (Double) args[MIN_LON_COL], (Double) args[MAX_LON_COL]);
-			}
+            if(!GROUP_WIFIS) {
+                points = databaseHelper.getPoints((Double) args[MIN_LAT_COL],
+                                                  (Double) args[MAX_LAT_COL],
+                                                  (Double) args[MIN_LON_COL],
+                                                  (Double) args[MAX_LON_COL]);
+            } else {
+                // Option 2 (default): Group in 10m intervals for performance reasons
+                points = databaseHelper.getPointsLazy((Double) args[MIN_LAT_COL],
+                                                      (Double) args[MAX_LAT_COL],
+                                                      (Double) args[MIN_LON_COL],
+                                                      (Double) args[MAX_LON_COL]);
+            }
 
-		} catch (final SQLiteException e) {
-			Log.e(TAG, "Sql exception occured: " + e.toString(), e);
-		} catch (final Exception e) {
-			Log.e(TAG, e.toString(), e);
-		}
+        } catch(final SQLiteException e) {
+            Log.e(TAG, "Sql exception occured: " + e.toString(), e);
+        } catch(final Exception e) {
+            Log.e(TAG, e.toString(), e);
+        }
 
-		return points;
-	}
+        return points;
+    }
 
-	@Override
-	protected final void onPostExecute(final ArrayList<LatLong> points) {
+    @Override
+    protected final void onPostExecute(final List<LatLong> points) {
 
-		if (mListener != null) {
-			mListener.onCatalogLoaded(points);
-		}
-	}
+        if(mListener != null) {
+            mListener.onCatalogLoaded(points);
+        }
+    }
 }

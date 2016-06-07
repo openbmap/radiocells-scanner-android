@@ -360,7 +360,7 @@ public class SettingsActivity extends PreferenceActivity {
         try {
             FileUtils.moveFile(source, destination);
         } catch (final IOException e) {
-            Log.e(TAG, "I/O error while moving file");
+            Log.e(TAG, "I/O error while moving file " + e.getMessage(), e);
         }
         return destination.getAbsolutePath();
     }
