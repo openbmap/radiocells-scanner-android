@@ -285,7 +285,7 @@ public class MapViewActivity extends Fragment implements
     public void onDestroyView() {
         unregisterReceiver();
 
-        releaseMapsforge();
+        releaseMap();
         super.onDestroyView();
     }
 
@@ -334,21 +334,6 @@ public class MapViewActivity extends Fragment implements
         unregisterReceiver();
 
         super.onPause();
-    }
-
-    /**
-     * Clean up various mapsforge comppnents
-     */
-    private void releaseMapsforge() {
-        Log.i(TAG, "Cleaning mapsforge components");
-
-        if (mMapView != null) {
-            mMapView.destroyAll();
-        }
-        if (mTileCache != null) {
-            mTileCache.destroy();
-        }
-        AndroidGraphicFactory.clearResourceMemoryCache();
     }
 
     /**
@@ -1101,19 +1086,21 @@ public class MapViewActivity extends Fragment implements
     }
 
     /**
-     * Sets map-related object to null to enable garbage collection.
+     * Cleans up mapsforge events
+     * Calls mapsforge destroy events and sets map-related object to
+     * null to enable garbage collection.
      */
     private void releaseMap() {
         Log.i(TAG, "Releasing map components");
 
         AndroidResourceBitmap.clearResourceBitmaps();
+        AndroidGraphicFactory.clearResourceMemoryCache();
+
+        Log.i(TAG, "Cleaning mapsforge components");
 
         if (mTileCache != null) {
-            this.mTileCache.destroy();
+            mTileCache.destroy();
         }
-
-        // release zoom / move observer for gc
-        this.mMapObserver = null;
 
         if (mMapView != null) {
             // save map settings
@@ -1123,6 +1110,9 @@ public class MapViewActivity extends Fragment implements
             mMapView.destroyAll();
             mMapView = null;
         }
+
+        // release zoom / move observer for gc
+        this.mMapObserver = null;
     }
 
     /* (non-Javadoc)
