@@ -34,123 +34,123 @@ import java.io.IOException;
  */
 public class SaveGpxTask extends AsyncTask<Void, Object, Boolean> {
 
-    private static final String TAG = SaveGpxTask.class.getSimpleName();
+	private static final String TAG = SaveGpxTask.class.getSimpleName();
 
-    /**
-     * Session Id to export
-     */
-    private final int mSession;
+	/**
+	 * Session Id to export
+	 */
+	private final int mSession;
 
-    /**
-     * Message in case of an error
-     */
-    private final String errorMsg = null;
+	/**
+	 * Message in case of an error
+	 */
+	private final String errorMsg = null;
 
-    /**
-     * Used for callbacks.
-     */
-    private final SaveGpxTaskListener mListener;
+	/**
+	 * Used for callbacks.
+	 */
+	private final SaveGpxTaskListener mListener;
 
     private Context mAppContext;
 
-    /**
-     * Folder where GPX file is created
-     */
-    private final String mPath;
+	/**
+	 * Folder where GPX file is created
+	 */
+	private final String mPath;
 
-    /**
-     * GPX filename
-     */
-    private final String mFilename;
+	/**
+	 * GPX filename
+	 */
+	private final String mFilename;
 
     private final int mVerbosity;
+	
+	public interface SaveGpxTaskListener {
+		void onSaveGpxProgressUpdate(Object[] values);
+		void onSaveGpxCompleted(final String filename);
+		void onSaveGpxFailed(final int id, final String error);
+	}
 
-    public interface SaveGpxTaskListener {
+	//http://stackoverflow.com/questions/9573855/second-instance-of-activity-after-orientation-change
+	/**
+	 *  @param context
+	 * @param listener
+	 * @param session
+	 * @param path
+	 * @param filename
+	 * @param verbosity
+	 */
+	public SaveGpxTask(final Context context, final SaveGpxTaskListener listener, final int session,
+					   final String path, final String filename, int verbosity) {
+		mAppContext = context.getApplicationContext();
+		mSession = session;
+		mPath = path;
+		mFilename = filename;
+		mListener = listener;
+		mVerbosity = verbosity;
+	}
 
-        void onSaveGpxProgressUpdate(Object[] values);
+	/**
+	 * Builds GPX file (not uploaded in any case)
+	 */
+	@Override
+	protected final Boolean doInBackground(final Void... params) {
+		Boolean success = false;
+		
+		publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.exporting_gpx), 0);
+		final GpxSerializer gpx = new GpxSerializer(mAppContext, mSession);
+		final File target = new File(mPath, mFilename);
+		try {
+			gpx.doExport(mFilename, target, mVerbosity);
+			success = true;
+		} catch (final IOException e) {
+			Log.e(TAG, "Can't write gpx file " + mPath + File.separator + mFilename);
+		}
+		
+		return success;
+	}
 
-        void onSaveGpxCompleted(final String filename);
+	/**
+	 * Updates progress bar.
+	 * @param values[0] contains title (as string)
+	 * @param values[1] contains message (as string)
+	 * @param values[2] contains progress (as int)
+	 */
+	@Override
+	protected final void onProgressUpdate(final Object... values) {
+		if (mListener != null) {
+			mListener.onSaveGpxProgressUpdate(values);
+		}
+	}
 
-        void onSaveGpxFailed(final int id, final String error);
-    }
+	@SuppressLint("NewApi")
+	@Override
+	protected final void onPostExecute(final Boolean success) {
 
-    //http://stackoverflow.com/questions/9573855/second-instance-of-activity-after-orientation-change
+		// rescan SD card, otherwise files may not be visible when connected to desktop pc
+		// (MTP cache problem)
+		Log.i(TAG, "Re-indexing SD card folder " + mPath);
+		new MediaScanner(mAppContext, new File(mPath));
 
-    /**
-     *  @param context
-     * @param listener
-     * @param session
-     * @param path
-     * @param filename
-     * @param verbosity
-     */
-    public SaveGpxTask(final Context context, final SaveGpxTaskListener listener, final int session,
-                       final String path, final String filename, int verbosity) {
-        mAppContext = context.getApplicationContext();
-        mSession = session;
-        mPath = path;
-        mFilename = filename;
-        mListener = listener;
-        mVerbosity = verbosity;
-    }
 
-    /**
-     * Builds GPX file (not uploaded in any case)
-     */
-    @Override
-    protected final Boolean doInBackground(final Void... params) {
-        Boolean success = false;
+		if (success) {
+			if (mListener != null) {
+				mListener.onSaveGpxCompleted(mPath + "/" + mFilename);
+			}
+			return;
+		} else {
+			if (mListener != null) {
+				mListener.onSaveGpxFailed(mSession, errorMsg);
+			}
+			return;
+		}
+	}
 
-        publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient),
-                        mAppContext.getResources().getString(R.string.exporting_gpx), 0);
-        final GpxSerializer gpxSerializer = new GpxSerializer(mAppContext, mSession);
-        final File target = new File(mPath, mFilename);
-        try {
-            gpxSerializer.doExport(mFilename, target, mVerbosity);
-            success = true;
-        } catch(final IOException e) {
-            Log.e(TAG, "Can't write gpx file " + mPath + File.separator + mFilename);
-            publishProgress(100);
-        }
-
-        return success;
-    }
-
-    /**
-     * Updates progress bar.
-     *
-     * @param values[0]
-     *         contains title (as string)
-     * @param values[1]
-     *         contains message (as string)
-     * @param values[2]
-     *         contains progress (as int)
-     */
-    @Override
-    protected final void onProgressUpdate(final Object... values) {
-        if(mListener != null) {
-            mListener.onSaveGpxProgressUpdate(values);
-        }
-    }
-
-    @Override
-    protected final void onPostExecute(final Boolean success) {
-
-        // rescan SD card, otherwise files may not be visible when connected to desktop pc
-        // (MTP cache problem)
-        Log.i(TAG, "Re-indexing SD card folder " + mPath);
-        new MediaScanner(mAppContext, new File(mPath));
-
-        if(success && mListener != null) {
-            mListener.onSaveGpxCompleted(mPath + "/" + mFilename);
-        } else if(mListener != null) {
-            mListener.onSaveGpxFailed(mSession, errorMsg);
-        }
-        return;
-    }
-
-    public void setContext(final Context context) {
-        mAppContext = context;
-    }
+	/**
+	 * @param context
+	 */
+	public void setContext(final Context context) {
+		mAppContext = context;
+	}
 
 }
