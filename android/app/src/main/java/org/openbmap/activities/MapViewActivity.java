@@ -193,30 +193,30 @@ public class MapViewActivity extends Fragment implements
      */
     private static TileDownloadLayer mMapDownloadLayer = null;
 
-    private Paint paintCatalogFill;
+    private Paint mPaintCatalogFill;
 
-    private Paint paintCatalogStroke;
+    private Paint mPaintCatalogStroke;
 
     /**
      * Paint style for active sessions objects
      */
-    private Paint paintActiveSessionFill;
+    private Paint mPaintActiveSessionFill;
 
     /**
      * Paint style for objects from other sessions
      */
-    private Paint paintOtherSessionFill;
+    private Paint mPaintOtherSessionFill;
 
-    private List<Layer> catalogObjects;
+    private List<Layer> mCatalogObjects;
 
-    private List<Layer> sessionObjects;
+    private List<Layer> mSessionObjects;
 
-    private Polyline gpxObjects;
+    private Polyline mGpxObjects;
     //[end]
 
     // [start] Dynamic map variables
 
-    private boolean snapToLocation = true;
+    private boolean mSnapToLocation = true;
     /**
      * Used for persisting zoom and position settings onPause / onDestroy
      */
@@ -284,6 +284,8 @@ public class MapViewActivity extends Fragment implements
     @Override
     public void onDestroyView() {
         unregisterReceiver();
+
+        releaseMapsforge();
         super.onDestroyView();
     }
 
@@ -295,9 +297,9 @@ public class MapViewActivity extends Fragment implements
         // get shared preferences
         prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
-        catalogObjects = new ArrayList<>();
-        sessionObjects = new ArrayList<>();
-        gpxObjects = new Polyline(MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(Color.BLACK), STROKE_GPX_WIDTH,
+        mCatalogObjects = new ArrayList<>();
+        mSessionObjects = new ArrayList<>();
+        mGpxObjects = new Polyline(MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(Color.BLACK), STROKE_GPX_WIDTH,
                 Style.STROKE), AndroidGraphicFactory.INSTANCE);
     }
 
@@ -306,6 +308,10 @@ public class MapViewActivity extends Fragment implements
         super.onResume();
 
         getSession();
+
+        if (mMapView == null) {
+            initMap(getView());
+        }
 
         if (mMapDownloadLayer != null) {
             mMapDownloadLayer.onResume();
@@ -331,7 +337,23 @@ public class MapViewActivity extends Fragment implements
     }
 
     /**
-     * Clean up layers and disable GPX events before leaving
+     * Clean up various mapsforge comppnents
+     */
+    private void releaseMapsforge() {
+        Log.i(TAG, "Cleaning mapsforge components");
+
+        if (mMapView != null) {
+            mMapView.destroyAll();
+        }
+        if (mTileCache != null) {
+            mTileCache.destroy();
+        }
+        AndroidGraphicFactory.clearResourceMemoryCache();
+    }
+
+    /**
+     * Clean up layers and disable GPX events
+     * Should be callebefore leaving
      * @param isVisibleToUser
      */
     @Override
@@ -440,7 +462,7 @@ public class MapViewActivity extends Fragment implements
                     mLastZoom = zoom;
                 }
 
-                if (!snapToLocation) {
+                if (!mSnapToLocation) {
                     // Free-move mode
                     final LatLong tmp = mMapView.getModel().mapViewPosition.getCenter();
                     final Location position = new Location("DUMMY");
@@ -469,17 +491,17 @@ public class MapViewActivity extends Fragment implements
      * @param view
      */
     private void initUi(final View view) {
-        paintCatalogFill = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_WIFI_CATALOG_FILL, 120, 150, 120), 2, Style.FILL);
-        paintCatalogStroke = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_WIFI_CATALOG_STROKE, 120, 150, 120), 2, Style.STROKE);
-        paintActiveSessionFill = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_SESSION_FILL, 0, 0, 255), 2, Style.FILL);
-        paintOtherSessionFill = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_OTHER_SESSIONS_FILL, 255, 0, 255), 2, Style.FILL);
+        mPaintCatalogFill = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_WIFI_CATALOG_FILL, 120, 150, 120), 2, Style.FILL);
+        mPaintCatalogStroke = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_WIFI_CATALOG_STROKE, 120, 150, 120), 2, Style.STROKE);
+        mPaintActiveSessionFill = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_SESSION_FILL, 0, 0, 255), 2, Style.FILL);
+        mPaintOtherSessionFill = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_OTHER_SESSIONS_FILL, 255, 0, 255), 2, Style.FILL);
     }
 
     @Override
     public void onCreateOptionsMenu(final Menu menu, final MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.map_menu, menu);
-        menu.findItem(R.id.menu_snaptoLocation).setChecked(snapToLocation);
+        menu.findItem(R.id.menu_snaptoLocation).setChecked(mSnapToLocation);
     }
 
     @Override
@@ -488,7 +510,7 @@ public class MapViewActivity extends Fragment implements
         switch (item.getItemId()) {
             case R.id.menu_snaptoLocation:
                 item.setChecked(!item.isChecked());
-                snapToLocation = item.isChecked();
+                mSnapToLocation = item.isChecked();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -525,7 +547,7 @@ public class MapViewActivity extends Fragment implements
         }
 
         // if btnSnapToLocation is checked, move map
-        if (snapToLocation) {
+        if (mSnapToLocation) {
             final LatLong currentPos = new LatLong(location.getLatitude(), location.getLongitude());
             mMapView.getModel().mapViewPosition.setCenter(currentPos);
         }
@@ -605,41 +627,41 @@ public class MapViewActivity extends Fragment implements
      *
      */
     private void clearSessionLayer() {
-        if (sessionObjects == null) {
+        if (mSessionObjects == null) {
             return;
         }
 
         if (mMapView == null) {
-            sessionObjects = null;
+            mSessionObjects = null;
             return;
         }
 
-        for (final Iterator<Layer> iterator = sessionObjects.iterator(); iterator.hasNext(); ) {
+        for (final Iterator<Layer> iterator = mSessionObjects.iterator(); iterator.hasNext(); ) {
             final Layer layer = iterator.next();
             this.mMapView.getLayerManager().getLayers().remove(layer);
         }
-        sessionObjects.clear();
+        mSessionObjects.clear();
     }
 
     /**
      * Clears catalog layer objects
      */
     private void clearCatalogLayer() {
-        if (catalogObjects == null) {
+        if (mCatalogObjects == null) {
             return;
         }
 
         if (mMapView == null) {
-            catalogObjects = null;
+            mCatalogObjects = null;
             return;
         }
 
-        synchronized (catalogObjects) {
-            for (final Iterator<Layer> iterator = catalogObjects.iterator(); iterator.hasNext(); ) {
+        synchronized (mCatalogObjects) {
+            for (final Iterator<Layer> iterator = mCatalogObjects.iterator(); iterator.hasNext(); ) {
                 final Layer layer = iterator.next();
                 this.mMapView.getLayerManager().getLayers().remove(layer);
             }
-            catalogObjects.clear();
+            mCatalogObjects.clear();
         }
     }
 
@@ -647,13 +669,13 @@ public class MapViewActivity extends Fragment implements
      * Clears GPX layer objects
      */
     private void clearGpxLayer() {
-        if (gpxObjects != null && mMapView != null) {
+        if (mGpxObjects != null && mMapView != null) {
             synchronized (this) {
                 // clear layer
-                mMapView.getLayerManager().getLayers().remove(gpxObjects);
+                mMapView.getLayerManager().getLayers().remove(mGpxObjects);
             }
         } else {
-            gpxObjects = null;
+            mGpxObjects = null;
         }
     }
 
@@ -723,8 +745,8 @@ public class MapViewActivity extends Fragment implements
 
         // redraw
         for (final LatLong point : points) {
-            final Circle circle = new Circle(point, CIRCLE_WIFI_CATALOG_WIDTH, paintCatalogFill, paintCatalogStroke);
-            catalogObjects.add(circle);
+            final Circle circle = new Circle(point, CIRCLE_WIFI_CATALOG_WIDTH, mPaintCatalogFill, mPaintCatalogStroke);
+            mCatalogObjects.add(circle);
         }
 
         /**
@@ -734,7 +756,7 @@ public class MapViewActivity extends Fragment implements
          *   session objects
          */
         int insertAfter = -1;
-        synchronized (catalogObjects) {
+        synchronized (mCatalogObjects) {
             if (layers.size() > 0) {
                 // base map
                 insertAfter = 1;
@@ -743,8 +765,8 @@ public class MapViewActivity extends Fragment implements
                 insertAfter = 0;
             }
 
-            for (int i = 0; i < catalogObjects.size(); i++) {
-                layers.add(insertAfter + i, catalogObjects.get(i));
+            for (int i = 0; i < mCatalogObjects.size(); i++) {
+                layers.add(insertAfter + i, mCatalogObjects.get(i));
             }
         }
 
@@ -858,12 +880,12 @@ public class MapViewActivity extends Fragment implements
         for (final SessionLatLong point : points) {
             if (point.getSession() == mSessionId) {
                 // current session objects are larger
-                final Circle circle = new Circle(point, CIRCLE_SESSION_WIDTH, paintActiveSessionFill, null);
-                sessionObjects.add(circle);
+                final Circle circle = new Circle(point, CIRCLE_SESSION_WIDTH, mPaintActiveSessionFill, null);
+                mSessionObjects.add(circle);
             } else {
                 // other session objects are smaller and in other color
-                final Circle circle = new Circle(point, CIRCLE_OTHER_SESSION_WIDTH, paintOtherSessionFill, null);
-                sessionObjects.add(circle);
+                final Circle circle = new Circle(point, CIRCLE_OTHER_SESSION_WIDTH, mPaintOtherSessionFill, null);
+                mSessionObjects.add(circle);
             }
         }
 
@@ -876,14 +898,14 @@ public class MapViewActivity extends Fragment implements
          */
         int insertAfter = -1;
 
-        synchronized (catalogObjects) {
-            if (layers.size() > 0 && catalogObjects.size() > 0) {
+        synchronized (mCatalogObjects) {
+            if (layers.size() > 0 && mCatalogObjects.size() > 0) {
                 // base map + catalog objects
                 // this fails if we catalog objects which have not yet been drawn
                 // insertAfter = layers.indexOf((Layer) catalogObjects.get(catalogObjects.size() - 1));
                 // fail safe insert: at the end..
                 insertAfter = layers.size();
-            } else if (layers.size() > 0 && catalogObjects.size() == 0) {
+            } else if (layers.size() > 0 && mCatalogObjects.size() == 0) {
                 // base map + no catalog objects
                 insertAfter = 1;
             } else {
@@ -901,8 +923,8 @@ public class MapViewActivity extends Fragment implements
                 insertAfter = 0;
             }
 
-            for (int i = 0; i < sessionObjects.size(); i++) {
-                layers.add(insertAfter + i, sessionObjects.get(i));
+            for (int i = 0; i < mSessionObjects.size(); i++) {
+                layers.add(insertAfter + i, mSessionObjects.get(i));
             }
         }
 
@@ -973,15 +995,15 @@ public class MapViewActivity extends Fragment implements
             return;
         }
 
-        gpxObjects = new Polyline(MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(Color.GREEN), STROKE_GPX_WIDTH,
+        mGpxObjects = new Polyline(MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(Color.GREEN), STROKE_GPX_WIDTH,
                 Style.STROKE), AndroidGraphicFactory.INSTANCE);
 
         for (final LatLong point : points) {
-            gpxObjects.getLatLongs().add(point);
+            mGpxObjects.getLatLongs().add(point);
         }
 
         synchronized (this) {
-            mMapView.getLayerManager().getLayers().add(gpxObjects);
+            mMapView.getLayerManager().getLayers().add(mGpxObjects);
         }
 
         mRefreshGpxPending = false;
