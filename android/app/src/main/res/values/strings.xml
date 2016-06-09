@@ -14,9 +14,9 @@
     <string name="prefs_ui_keep_screen_on_summary">Prevent screen locking after idle time</string>
     <string name="prefs_credentials">Credentials</string>
     <string name="prefs_credentials_user">Login</string>
-    <string name="prefs_credentials_user_summary">If you don\'t have an account yet, create on at https://RadioCells.org (required for upload only)</string>
+    <string name="prefs_credentials_user_summary">If you don\'t have an account yet, create on at https://radiocells.org</string>
     <string name="prefs_credentials_password">Password</string>
-    <string name="prefs_credentials_password_summary">Passwords:</string>
+    <string name="prefs_credentials_password_summary"></string>
     <string name="prefs_credentials_anonymous_upload">Anonymous upload</string>
     <string name="prefs_credentials_anonymous_upload_summary">Activate for anonymous upload</string>
     <string name="prefs_save_cells">Save Cells</string>
@@ -38,7 +38,7 @@
 
     <string name="prefs_debug">Debug settings</string>
     <string name="prefs_simulate_upload_summary">Export data only, don\'t upload to server</string>
-    <string name="prefs_simulate_upload">Skip upload to RadioCells.org</string>
+    <string name="prefs_simulate_upload">Skip upload</string>
     <string name="prefs_keep_export_files_summary">Keep a local copy of uploaded files.\nFind files in data directory.\n(Helpful for debugging)</string>
     <string name="prefs_keep_export_files">Keep uploaded files</string>
     <string name="prefs_clean_database_summary">Database grows over time. Click to free unused space by reorganising database</string>

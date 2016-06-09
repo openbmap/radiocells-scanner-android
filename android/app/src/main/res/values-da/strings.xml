@@ -10,7 +10,7 @@
 	<string name="prefs_map_none">Ingen</string>
 	<string name="prefs_ui_keep_screen_on_summary">"Forhindre skærmlåsning efter ledig tid "</string>
 	<string name="prefs_credentials_user">Log på</string>
-	<string name="prefs_credentials_user_summary">Hvis du ikke har en konto endnu, opret en på på https://radiocells.org (kræves til kun til overførelser)</string>
+	<string name="prefs_credentials_user_summary">Hvis du ikke har en konto endnu, opret en på på https://radiocells.org</string>
 	<string name="prefs_credentials_password">Adgangskode</string>
 	<string name="prefs_save_cells">Gem celler</string>
 	<string name="prefs_save_cells_summary">"Aktiver for at scanne for celler "</string>

@@ -2,32 +2,16 @@
 <resources>
     <!-- Preferences -->
     <string name="prefs_logging">Logging</string>
-    <string name="prefs_wifi_catalog">Wifi Catalog</string>
     <string name="prefs_maps">Kaarten</string>
-    <string name="prefs_gps_logging_interval">GPS logging interval</string>
-	<string name="prefs_gps_logging_interval_summary">"Gebruik 0 voor de kortst mogelijke (invloed op de levensduur van de batterij) "</string>
+    <string name="prefs_gps_logging_interval_summary">"Gebruik 0 voor de kortst mogelijke (invloed op de levensduur van de batterij) "</string>
     <string name="prefs_gps_logging_interval_seconds">seconden</string>
     <string name="prefs_map_none">Geen</string>
-    <string name="prefs_ui_keep_screen_on">Keep screen on</string>
-	<string name="prefs_ui_keep_screen_on_summary">Prevent screen locking after idle time
-	</string>
-    <string name="prefs_credentials">Credentials</string>
     <string name="prefs_credentials_user">Login</string>
-    <string name="prefs_credentials_user_summary">If you don\'t have an account yet, create on at https://radiocells.org (Required for upload only)</string>
     <string name="prefs_credentials_password">Wachtwoord</string>
     <string name="prefs_credentials_password_summary"/>
     <string name="prefs_save_cells">Cellen opslaan</string>
-	<string name="prefs_save_cells_summary">Activate to scan for cells
-	</string>
-    <string name="prefs_save_wifis_summary">Activate to scan for wifis</string>
     <string name="prefs_save_wifis">Wifis opslaan</string>
     <string name="prefs_data_map">Offline kaart</string>
-	<string name="prefs_data_map_summary">Browse your offline map repository
-	</string>
-    <string name="prefs_data_ref_database">Select Wifi Catalog</string>
-	<string name="prefs_data_ref_database_summary">Install a wifi catalog to see all known openbmap
-		wifis on the map. This helps you, when you\'re looking for new wifis
-	</string>
     <string name="prefs_min_cell_distance">Interval voor het logboek van cel</string>
     <string name="prefs_min_cell_distance_hint">"Minimum distance between two cell scans (in meter) "</string>
     <string name="prefs_min_wifi_distance">Interval voor het logboek van WiFi</string>

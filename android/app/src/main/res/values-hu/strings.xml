@@ -15,7 +15,7 @@
 	<string name="prefs_ui_keep_screen_on_summary">"Megakadályozza a képernyő automatikus lezárását "</string>
 	<string name="prefs_credentials">Belépési adatok</string>
 	<string name="prefs_credentials_user">Felhasználónév</string>
-	<string name="prefs_credentials_user_summary">Ha még nincs fiókod, regisztrálj egyet a http://radiocells.org oldalon (csak a feltöltéshez szükséges)</string>
+	<string name="prefs_credentials_user_summary">Ha még nincs fiókod, regisztrálj egyet a http://radiocells.org oldalon</string>
 	<string name="prefs_credentials_password">Jelszó</string>
 	<string name="prefs_credentials_password_summary">Jelszavak:</string>
 	<string name="prefs_credentials_anonymous_upload">Névtelen feltöltés</string>

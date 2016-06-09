@@ -12,7 +12,7 @@
 	<string name="prefs_ui_keep_screen_on_summary">"アイドル時間後の画面ロックを防止します "</string>
 	<string name="prefs_credentials">資格情報</string>
 	<string name="prefs_credentials_user">ログイン</string>
-	<string name="prefs_credentials_user_summary">まだアカウントを持っていない場合、https://radiocells.org で作成します (アップロードでのみ必要)</string>
+	<string name="prefs_credentials_user_summary">まだアカウントを持っていない場合、https://radiocells.org で作成します</string>
 	<string name="prefs_credentials_password">パスワード</string>
 	<string name="prefs_save_cells">基地局を保存</string>
 	<string name="prefs_save_cells_summary">"基地局のスキャンをアクティブにします "</string>
