@@ -21,10 +21,15 @@ package org.openbmap.activities;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.WifiLock;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -76,8 +81,9 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	private static final int ID_DELETE_SESSION	= 5;
 	private static final int ID_DELETE_PROCESSED = 6;
 	private static final int ID_DELETE_ALL = 7;
+    private static final int ID_IGNORE_DOZE_MODE = 20;
 
-	/**
+    /**
 	 * Tab host control
 	 */
 	private TabHost mTabHost;
@@ -151,6 +157,27 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
         }
 
         initUi(savedInstanceState);
+
+
+         // Display special hints for new users / following upgrades
+        appFirstRunTasks();
+
+        /**
+         * On Android 6 Google introduced aggressive power optimization called DOZE mode (strange enough not for Google Play services)
+         * In doze mode network connections (except for the Google ones..) are restricted, so scanning would be impossible
+         * Nevertheless user may decide to whitelist an app, so that even in doze mode scans are possible
+         *
+         * User is asked whether he would like to whitelist Radiobeacon, if agreed DOZE mode is ignored)
+         */
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            String packageName = this.getPackageName();
+            PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
+            if (pm.isIgnoringBatteryOptimizations(packageName)) {
+                Log.i(TAG, "Good: Radiobeacon whitelisted from DOZE mode: ignoomg doze mode");
+            } else {
+                Log.w(TAG, "Warning: Radiobeacon may be negatively affected from Android DOZE mode - consider whitelisting Radiobeacon");
+            }
+        }
 	}
 
 	/**
@@ -524,7 +551,9 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 			}
 
 			deleteBatchCommand(list);
-		}
+		} else if (alertId == ID_IGNORE_DOZE_MODE) {
+
+        }
 	}
 
 	/* (non-Javadoc)
@@ -877,4 +906,58 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		mSaveGpxTaskFragment.retainProgress((String) values[0], (String) values[1], (Integer) values[2]);
 
 	}
+
+    /**
+     * Checks whether app is started for first time (or updated)
+     * KUDOS: https://stackoverflow.com/questions/7217578/check-if-application-is-on-its-first-run
+     */
+    private void appFirstRunTasks() {
+        final String PREFS_NAME = "MyPrefsFile";
+        final String PREF_VERSION_CODE_KEY = "version_code";
+        final int VERSION_NONE = -1;
+
+        // Get current version code
+        int currentVersionCode = 0;
+        try {
+            currentVersionCode = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+        } catch (android.content.pm.PackageManager.NameNotFoundException e) {
+            // handle exception
+            e.printStackTrace();
+            return;
+        }
+
+        // Get saved version code
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        int savedVersionCode = prefs.getInt(PREF_VERSION_CODE_KEY, VERSION_NONE);
+
+        // Check for first run or upgrade
+        if (currentVersionCode == savedVersionCode) {
+            // This is just a normal run
+            Log.i(TAG, "Welcome again! Radiobeacon wasn't started for the first time");
+            return;
+        } else if (savedVersionCode == VERSION_NONE) {
+            // This is a new install (or the user cleared the shared preferences)
+            Log.i(TAG, "Welcome new user! Radiobeacon was started for the first time");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                // request DOZE mode ignore
+                AlertDialogUtils.newInstance(ID_IGNORE_DOZE_MODE,
+                        getString(R.string.dialog_ignore_doze_title), getString(R.string.dialog_ignore_doze_message),
+                        null, false).show(getSupportFragmentManager(), "ignore_doze");
+            }
+        } else if (currentVersionCode > savedVersionCode) {
+            // This is an upgrade..
+            Log.i(TAG, String.format("Cool! You just upgraded from %s to %s", currentVersionCode, savedVersionCode));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                // request DOZE mode ignore
+                AlertDialogUtils.newInstance(ID_IGNORE_DOZE_MODE,
+                        getString(R.string.dialog_ignore_doze_title), getString(R.string.dialog_ignore_doze_message),
+                        null, false).show(getSupportFragmentManager(), "ignore_doze");
+            }
+        }
+
+        // Update the shared preferences with the current version code
+        Log.i(TAG,  String.format("Saving current version %s", currentVersionCode));
+        prefs.edit().putInt(PREF_VERSION_CODE_KEY, currentVersionCode).commit();
+
+    }
 }
