@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -73,10 +74,10 @@ public class CatalogDatabaseHelper extends SQLiteOpenHelper {
     }
 
     /**
-     * Returns a readable database with disabled journaling
+     * Returns a readable database with disabled journaling for better performance
      * @return SQLiteDatabase
      */
-    private SQLiteDatabase getDatabase() {
+    private SQLiteDatabase getOptimizedDatabase() {
         SQLiteDatabase db = getReadableDatabase();
 
         // disable journaling
@@ -98,12 +99,12 @@ public class CatalogDatabaseHelper extends SQLiteOpenHelper {
                         String.valueOf(min_lon),
                         String.valueOf(max_lon)};
 
-
-        // TODO: do we really need to open database on each query???
-        SQLiteDatabase db = getDatabase();
-
-        Cursor cursor = db.rawQuery(VERBOSE_QUERY, args);
         try {
+            // TODO: do we really need to open database on each query???
+            SQLiteDatabase db = getOptimizedDatabase();
+
+            Cursor cursor = db.rawQuery(VERBOSE_QUERY, args);
+
             int i = 0;
             final int latCol = cursor.getColumnIndex("grouped_lat");
             final int lonCol = cursor.getColumnIndex("grouped_lon");
@@ -114,14 +115,14 @@ public class CatalogDatabaseHelper extends SQLiteOpenHelper {
                     i++;
                 } while(cursor.moveToNext() && i < MAX_REFS);
             }
-        } catch (Exception e) {
-            Log.d(TAG, "Error while trying to get posts from database");
-        } finally {
             if (cursor != null && !cursor.isClosed()) {
                 cursor.close();
             }
+            db.close();
+        } catch (SQLiteException e) {
+            Log.e(TAG, "Error reading from catalog: " + e.toString());
         }
-        db.close();
+
         return points;
     }
 
@@ -135,10 +136,11 @@ public class CatalogDatabaseHelper extends SQLiteOpenHelper {
                 String.valueOf(max_lon)};
 
         // "getReadableDatabase()" and "getWriteableDatabase()" return the same object (except under low disk space scenarios)
-        SQLiteDatabase db = getDatabase();
 
-        Cursor cursor = db.rawQuery(HIGHSPEED_QUERY, args);
+
         try {
+            SQLiteDatabase db = getOptimizedDatabase();
+            Cursor cursor = db.rawQuery(HIGHSPEED_QUERY, args);
             int i = 0;
             final int latCol = cursor.getColumnIndex("grouped_lat");
             final int lonCol = cursor.getColumnIndex("grouped_lon");
@@ -149,12 +151,11 @@ public class CatalogDatabaseHelper extends SQLiteOpenHelper {
                     i++;
                 } while(cursor.moveToNext() && i < MAX_REFS);
             }
-        } catch (Exception e) {
-            Log.d(TAG, "Error while trying to get posts from database");
-        } finally {
             if (cursor != null && !cursor.isClosed()) {
                 cursor.close();
             }
+        } catch (SQLiteException e) {
+            Log.e(TAG, "Error reading from catalog: " + e.toString());
         }
         return points;
     }
