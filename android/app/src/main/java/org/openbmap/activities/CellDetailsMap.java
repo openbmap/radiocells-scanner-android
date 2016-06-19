@@ -42,8 +42,6 @@ import android.widget.Toast;
 import org.mapsforge.core.model.BoundingBox;
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
-import org.mapsforge.map.android.graphics.AndroidResourceBitmap;
-import org.mapsforge.map.android.util.AndroidUtil;
 import org.mapsforge.map.android.view.MapView;
 import org.mapsforge.map.layer.Layer;
 import org.mapsforge.map.layer.cache.TileCache;
@@ -169,10 +167,9 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	@Override
 	public void onDestroy() {
 	    super.onDestroy();
-	    this.mTileCache.destroy();
-	    this.mMapView.getModel().mapViewPosition.destroy();
-	    this.mMapView.destroy();
-	    AndroidResourceBitmap.clearResourceBitmaps();
+
+        this.mMapView.destroyAll();
+        MapUtils.clearRessources();
 	}
 
 	@Override
@@ -329,7 +326,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	 */
 	@SuppressLint("NewApi")
 	private void initMap() {
-		this.mTileCache = createTileCache();
+		this.mTileCache = MapUtils.createTileCache(this.getActivity().getApplicationContext(), mMapView.getModel().displayModel.getTileSize(), this.mMapView.getModel().frameBufferModel.getOverdrawFactor());
 
 		if (MapUtils.hasOfflineMap(this.getActivity())) {
             addOfflineLayer();
@@ -410,7 +407,6 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
                 this.mTileCache,
                 this.mMapView.getModel().mapViewPosition,
                 MapUtils.getMapFile(this.getActivity()),
-                null,
                 MapUtils.getRenderTheme(this.getActivity()));
 
         if (offlineLayer != null) this.mMapView.getLayerManager().getLayers().add(offlineLayer);
@@ -435,13 +431,5 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
         mMapView.getLayerManager().getLayers().add(mapDownloadLayer);
         mapDownloadLayer.onResume();
     }
-
-    /**
-	 * Creates a separate map tile cache
-	 * @return
-	 */
-	protected final TileCache createTileCache() {
-		return AndroidUtil.createTileCache(this.getActivity(), "mapcache", mMapView.getModel().displayModel.getTileSize(), 1f, this.mMapView.getModel().frameBufferModel.getOverdrawFactor());
-	}
 
 }

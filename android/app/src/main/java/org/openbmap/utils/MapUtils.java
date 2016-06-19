@@ -33,8 +33,9 @@ import org.mapsforge.core.graphics.Style;
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.core.model.Point;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
+import org.mapsforge.map.android.graphics.AndroidResourceBitmap;
 import org.mapsforge.map.android.rendertheme.AssetsRenderTheme;
-import org.mapsforge.map.datastore.MapDataStore;
+import org.mapsforge.map.android.util.AndroidUtil;
 import org.mapsforge.map.layer.Layer;
 import org.mapsforge.map.layer.cache.FileSystemTileCache;
 import org.mapsforge.map.layer.cache.InMemoryTileCache;
@@ -77,7 +78,12 @@ public final class MapUtils {
 		}
 	}
 
-	public interface onLongPressHandler{
+    public static void clearRessources() {
+        AndroidResourceBitmap.clearResourceBitmaps();
+        AndroidGraphicFactory.clearResourceMemoryCache();
+    }
+
+    public interface onLongPressHandler{
 		void onLongPress(LatLong tapLatLong, Point thisXY, Point tapXY);
 	}
 
@@ -119,60 +125,41 @@ public final class MapUtils {
 	 * @param tileCache
 	 * @param mapViewPosition
 	 * @param mapFile
-	 * @param longPressHandler
 	 * @param renderTheme
 	 * @return
 	 */
 	public static Layer createTileRendererLayer(final TileCache tileCache, final MapViewPosition mapViewPosition,
-			final MapFile mapFile, final onLongPressHandler longPressHandler, final XmlRenderTheme renderTheme) {
+			final MapFile mapFile, final XmlRenderTheme renderTheme) {
 
 		if (mapFile == null) {
 			return null;
 		}
 
-		if (longPressHandler != null) {
-			// add support for onLongClick events
-			final TileRendererLayer tileRendererLayer = new TileRendererLayer (tileCache, (MapDataStore) mapFile,
-					mapViewPosition, false, true, AndroidGraphicFactory.INSTANCE) {
-				@Override
-				public boolean onLongPress(final LatLong tapLatLong, final Point thisXY, final Point tapXY) {
-					longPressHandler.onLongPress(tapLatLong, thisXY, tapXY);
-					return true;
-				}
-			};
+		final TileRendererLayer tileRendererLayer = new TileRendererLayer(tileCache, mapFile, mapViewPosition, AndroidGraphicFactory.INSTANCE);
+        if (renderTheme == null) {
+            tileRendererLayer.setXmlRenderTheme(InternalRenderTheme.OSMARENDER);
+        } else {
+            tileRendererLayer.setXmlRenderTheme(renderTheme);
+        }
 
-			if (renderTheme == null) {
-				tileRendererLayer.setXmlRenderTheme(InternalRenderTheme.OSMARENDER);
-			} else {
-				tileRendererLayer.setXmlRenderTheme(renderTheme);
-			}
-
-			tileRendererLayer.setTextScale(1.5f);
-			return tileRendererLayer;
-		} else {
-			// just a plain vanilla layer
-			final TileRendererLayer tileRendererLayer = new TileRendererLayer (tileCache, mapFile,
-					mapViewPosition, false, true, AndroidGraphicFactory.INSTANCE);
-
-			//tileRendererLayer.setMapFile(mapFile);
-
-			if (renderTheme == null) {
-				tileRendererLayer.setXmlRenderTheme(InternalRenderTheme.OSMARENDER);
-			} else {
-				tileRendererLayer.setXmlRenderTheme(renderTheme);
-			}
-
-			tileRendererLayer.setTextScale(1.5f);
-			return tileRendererLayer;
-		}
+        tileRendererLayer.setTextScale(1.5f);
+        return tileRendererLayer;
 	}
+
+    /**
+     * Creates a separate map tile cache
+     * @return
+     */
+    public static final TileCache createTileCache(final Context ctx, int tileSize, double overdrawFactor) {
+        return AndroidUtil.createTileCache(ctx.getApplicationContext(), "mapcache", tileSize, 1f, overdrawFactor);
+    }
 
 	/**
 	 * Reads custom render theme from assets
 	 *
 	 * @return render theme
 	 */
-	public static XmlRenderTheme getRenderTheme(Context ctx) {
+	public static XmlRenderTheme getRenderTheme(final Context ctx) {
 		try {
 			return new AssetsRenderTheme(ctx, "", Preferences.RENDER_THEME);
 		} catch (final IOException e) {

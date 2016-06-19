@@ -49,7 +49,6 @@ import org.mapsforge.core.model.BoundingBox;
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.core.model.Point;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
-import org.mapsforge.map.android.graphics.AndroidResourceBitmap;
 import org.mapsforge.map.android.util.AndroidPreferences;
 import org.mapsforge.map.android.util.AndroidUtil;
 import org.mapsforge.map.android.view.MapView;
@@ -1091,11 +1090,6 @@ public class MapViewActivity extends Fragment implements
      * null to enable garbage collection.
      */
     private void releaseMap() {
-        Log.i(TAG, "Releasing map components");
-
-        AndroidResourceBitmap.clearResourceBitmaps();
-        AndroidGraphicFactory.clearResourceMemoryCache();
-
         Log.i(TAG, "Cleaning mapsforge components");
 
         if (mTileCache != null) {
@@ -1106,13 +1100,14 @@ public class MapViewActivity extends Fragment implements
             // save map settings
             mMapView.getModel().save(mPreferencesFacade);
             mPreferencesFacade.save();
-            //mMapView.getModel().mapViewPosition.destroy();
             mMapView.destroyAll();
             mMapView = null;
         }
 
         // release zoom / move observer for gc
         this.mMapObserver = null;
+
+        MapUtils.clearRessources();
     }
 
     /* (non-Javadoc)
@@ -1146,7 +1141,6 @@ public class MapViewActivity extends Fragment implements
                 this.mTileCache,
                 this.mMapView.getModel().mapViewPosition,
                 MapUtils.getMapFile(this.getActivity()),
-                null,
                 MapUtils.getRenderTheme(this.getActivity()));
 
         if (offlineLayer != null) this.mMapView.getLayerManager().getLayers().add(offlineLayer);

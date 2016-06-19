@@ -43,7 +43,6 @@ import android.widget.Toast;
 import org.mapsforge.core.model.BoundingBox;
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
-import org.mapsforge.map.android.graphics.AndroidResourceBitmap;
 import org.mapsforge.map.android.util.AndroidUtil;
 import org.mapsforge.map.android.view.MapView;
 import org.mapsforge.map.layer.Layer;
@@ -195,10 +194,9 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		this.mTileCache.destroy();
-		this.mMapView.getModel().mapViewPosition.destroy();
-		this.mMapView.destroy();
-		AndroidResourceBitmap.clearResourceBitmaps();
+
+		this.mMapView.destroyAll();
+        MapUtils.clearRessources();
 	}
 
 	@Override
@@ -434,7 +432,6 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 				this.mTileCache,
 				this.mMapView.getModel().mapViewPosition,
 				MapUtils.getMapFile(this.getActivity()),
-				null,
 				MapUtils.getRenderTheme(this.getActivity()));
 
 		if (offlineLayer != null) this.mMapView.getLayerManager().getLayers().add(offlineLayer);
