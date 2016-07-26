@@ -457,7 +457,7 @@ public class ContentProvider extends android.content.ContentProvider {
 	 */
 	private String[] addtoSelectionArgs(final String argValue, final String[] selectionArgsIn) {
 		String[] selectionArgs = selectionArgsIn;
-		List<String> selectionArgsList = new ArrayList<String>();
+		List<String> selectionArgsList = new ArrayList<>();
 
 		// add id as first element
 		selectionArgsList.add(argValue);

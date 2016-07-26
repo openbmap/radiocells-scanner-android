@@ -136,7 +136,6 @@ public class AdvancedSettingsActivity extends PreferenceActivity {
 
 	/**
 	 * Initializes data directory preference.
-	 * @return EditTextPreference with data directory.
 	 */
 	private void initMapFolderControl() {
 		final Preference button = findPreference(Preferences.KEY_MAP_FOLDER);
@@ -184,7 +183,6 @@ public class AdvancedSettingsActivity extends PreferenceActivity {
 
 	/**
 	 * Initializes wifi catalog folder preference.
-	 * @return EditTextPreference with data directory.
 	 */
 	private void initWifiCatalogFolderControl() {
 		final Preference button = findPreference(Preferences.KEY_WIFI_CATALOG_FOLDER);

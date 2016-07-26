@@ -703,7 +703,7 @@ public class WirelessLoggerService extends AbstractService {
             return false;
         }
 
-        final ArrayList<CellRecord> cells = new ArrayList<CellRecord>();
+        final ArrayList<CellRecord> cells = new ArrayList<>();
         // Common data across all cells from scan:
         // 		All cells share same position
         // 		Neighbor cells share mnc, mcc and operator with serving cell
@@ -794,8 +794,7 @@ public class WirelessLoggerService extends AbstractService {
 				 * Assume CDMA network, if cdma location and basestation, network and system id are available
 				 */
                 Log.i(TAG, "Assuming cdma for cell " + cdmaLocation.getBaseStationId());
-                final CellRecord serving = processCdma(position, cdmaLocation);
-                return serving;
+                return processCdma(position, cdmaLocation);
             }
         }
         return null;
@@ -1149,7 +1148,7 @@ public class WirelessLoggerService extends AbstractService {
      * @return list of neigboring cell records
      */
     private ArrayList<CellRecord> processNeighbors(final CellRecord serving, final PositionRecord cellPos) {
-        final ArrayList<CellRecord> neighbors = new ArrayList<CellRecord>();
+        final ArrayList<CellRecord> neighbors = new ArrayList<>();
 
         final ArrayList<NeighboringCellInfo> neighboringCellInfos = (ArrayList<NeighboringCellInfo>) mTelephonyManager.getNeighboringCellInfo();
 

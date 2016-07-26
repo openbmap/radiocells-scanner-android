@@ -246,9 +246,8 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 				Schema.COL_NUMBER_OF_WIFIS,
                 Schema.COL_NUMBER_OF_WAYPOINTS
 		};
-		final CursorLoader cursorLoader = new CursorLoader(getActivity().getBaseContext(),
+		return new CursorLoader(getActivity().getBaseContext(),
 				ContentProvider.CONTENT_URI_SESSION, projection, null, null, Schema.COL_CREATED_AT + " DESC");
-		return cursorLoader;
 	}
 
 	@Override

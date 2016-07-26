@@ -75,7 +75,7 @@ public class MasterBrainService extends Service {
     /** For showing and hiding our notification. */
     NotificationManager mNotificationManager;
     /** Keeps track of all current registered clients. */
-    ArrayList<Messenger> mClients = new ArrayList<Messenger>();
+    ArrayList<Messenger> mClients = new ArrayList<>();
 
     /**
      * System notification id.
@@ -312,7 +312,7 @@ public class MasterBrainService extends Service {
                   Log.i(TAG, "Battery low but ignoring due to settings");
                 }
             } else {
-                Log.d(TAG, "Received intent " + intent.getAction().toString() + " but ignored");
+                Log.d(TAG, "Received intent " + intent.getAction() + " but ignored");
             }
         }
     };

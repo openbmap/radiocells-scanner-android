@@ -58,7 +58,7 @@ public class DataHelper {
 			Log.d(TAG, "Inserting " + wifis.size() + " wifis with " + begin + end + " positions");
 		}
 
-		final ArrayList<ContentProviderOperation> operations = new ArrayList<ContentProviderOperation>();
+		final ArrayList<ContentProviderOperation> operations = new ArrayList<>();
 
 		// saving begin position
 		operations.add(ContentProviderOperation.newInsert(ContentProvider.CONTENT_URI_POSITION)
@@ -120,7 +120,7 @@ public class DataHelper {
 	 * @return ArrayList<WifiRecord> with all wifis for given session
 	 */
 	public final ArrayList<WifiRecord> loadWifisBySession(final int session, final String sort) {
-		final ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>();
+		final ArrayList<WifiRecord> wifis = new ArrayList<>();
 
 		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
 				ContentProvider.CONTENT_URI_WIFI, ContentProvider.CONTENT_URI_SESSION_SUFFIX), session),
@@ -223,7 +223,7 @@ public class DataHelper {
 	 */
 	public final ArrayList<WifiRecord> loadWifisByBssid(final String bssid, final Integer session) {
         //Log.d(TAG, "loadWifisByBssid called");
-		final ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>();
+		final ArrayList<WifiRecord> wifis = new ArrayList<>();
 
 		String selectSql;
 		if (session != null) {
@@ -282,7 +282,7 @@ public class DataHelper {
 	public final ArrayList<WifiRecord> loadWifisOverviewWithin(final int session, final Double minLon, final Double maxLon, final Double minLat, final Double maxLat) {
         // Log.d(TAG, "loadWifisOverviewWithin called");
 		//long start = System.currentTimeMillis();
-		final ArrayList<WifiRecord> wifis = new ArrayList<WifiRecord>();
+		final ArrayList<WifiRecord> wifis = new ArrayList<>();
 
 		String selection = null;
 		String[] selectionArgs = null;
@@ -473,7 +473,7 @@ public class DataHelper {
 	 */
 	public final ArrayList<Integer> getSessionList() {
         // Log.d(TAG, "getSessionList called");
-		final ArrayList<Integer> sessions = new ArrayList<Integer>();
+		final ArrayList<Integer> sessions = new ArrayList<>();
 		final Cursor cursor = contentResolver.query(ContentProvider.CONTENT_URI_SESSION, new String[]{Schema.COL_ID}, null, null, null);
 		while (cursor.moveToNext()) {
 			sessions.add(cursor.getInt(cursor.getColumnIndex(Schema.COL_ID)));
@@ -522,7 +522,7 @@ public class DataHelper {
 		}
 
 		// add a new ContentProviderOperation
-		final ArrayList<ContentProviderOperation> operations = new ArrayList<ContentProviderOperation>();
+		final ArrayList<ContentProviderOperation> operations = new ArrayList<>();
 
 		//saving begin position
 		operations.add(ContentProviderOperation.newInsert(ContentProvider.CONTENT_URI_POSITION)
@@ -644,7 +644,7 @@ public class DataHelper {
 	 * @return ArrayList<CellRecord> with all cells for given session
 	 */
 	public final ArrayList<CellRecord> loadCellsBySession(final long session, final String sort) {
-		final ArrayList<CellRecord> cells = new ArrayList<CellRecord>();
+		final ArrayList<CellRecord> cells = new ArrayList<>();
 
 		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
 				ContentProvider.CONTENT_URI_CELL, ContentProvider.CONTENT_URI_SESSION_SUFFIX), session),
@@ -787,14 +787,14 @@ public class DataHelper {
 	 */
 	public final ArrayList<PositionRecord> loadPositions(final int session, final Double minLat, final Double maxLat, final Double minLon, final Double maxLon) {
         // Log.d(TAG, "loadPositions called");
-		final ArrayList<PositionRecord> positions = new ArrayList<PositionRecord>();
+		final ArrayList<PositionRecord> positions = new ArrayList<>();
 		String selection = Schema.COL_SESSION_ID + " = ?";
 
 		Cursor cursor = null;
 		List<String> selectionArgs = null;
 		if (minLat != null & maxLat != null && minLon != null && maxLon != null) {
 			// if boundaries provided..
-			selectionArgs = new ArrayList<String>();
+			selectionArgs = new ArrayList<>();
 			selectionArgs.add(String.valueOf(session));
 
 			selectionArgs.add(String.valueOf(minLat));

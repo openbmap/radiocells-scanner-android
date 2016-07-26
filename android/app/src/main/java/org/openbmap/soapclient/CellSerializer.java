@@ -269,7 +269,7 @@ public class CellSerializer {
 
 		final DatabaseHelper mDbHelper = new DatabaseHelper(mContext.getApplicationContext());
 
-		final ArrayList<String> generatedFiles = new ArrayList<String>();
+		final ArrayList<String> generatedFiles = new ArrayList<>();
 
 		// get first CHUNK_SIZE records
 		Cursor cursorCells = mDbHelper.getReadableDatabase().rawQuery(CELL_SQL_QUERY,

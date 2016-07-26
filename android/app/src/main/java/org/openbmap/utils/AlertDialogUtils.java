@@ -41,7 +41,6 @@ public class AlertDialogUtils extends DialogFragment {
 	 * @param message Alert message resource
 	 * @param args opional argument (e.g. session id)
 	 * @param neutralOnly show only neutral button
-	 * @return
 	 */
 	public static AlertDialogUtils newInstance(final int id, final String title, final String message, final String args, final boolean neutralOnly) {
 		final AlertDialogUtils frag = new AlertDialogUtils();

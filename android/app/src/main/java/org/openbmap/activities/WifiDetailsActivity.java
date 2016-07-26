@@ -139,6 +139,7 @@ public class WifiDetailsActivity extends FragmentActivity {
                     final String manufactor = cur.getString(cur.getColumnIndex("manufactor"));
                     tvManufactor.setText(manufactor);
                 }
+                cur.close();
             } catch (SQLiteCantOpenDatabaseException e1) {
                 Log.e(TAG, e1.getMessage());
                 Toast.makeText(this, getString(R.string.error_opening_wifi_catalog), Toast.LENGTH_LONG).show();
@@ -165,25 +166,15 @@ public class WifiDetailsActivity extends FragmentActivity {
         if (freq != null)
 
         {
-            tvFrequency.setText(
-                    ((WifiChannel.getChannel(freq) == null) ? getResources().getString(R.string.unknown) : WifiChannel.getChannel(freq))
+            tvFrequency.setText(((WifiChannel.getChannel(freq) == null) ? getResources().getString(R.string.unknown) : WifiChannel.getChannel(freq))
                             + "  (" + freq + " MHz)");
         }
 
-        if (wifi.getCatalogStatus().
-
-                equals(CatalogStatus.NEW)
-
-                )
-
-        {
+        if (wifi.getCatalogStatus().equals(CatalogStatus.NEW)) {
             ivIsNew.setImageResource(android.R.drawable.checkbox_on_background);
-        } else
-
-        {
+        } else {
             ivIsNew.setImageResource(android.R.drawable.checkbox_off_background);
         }
-
     }
 
     public final WifiRecord getWifi() {

@@ -28,11 +28,11 @@ import android.util.Log;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
-import org.openbmap.soapclient.ExportSessionTask;
-import org.openbmap.soapclient.ExportSessionTask.UploadTaskListener;
 import org.openbmap.soapclient.CheckServerTask;
 import org.openbmap.soapclient.CheckServerTask.ServerAnswer;
 import org.openbmap.soapclient.CheckServerTask.ServerCheckerListener;
+import org.openbmap.soapclient.ExportSessionTask;
+import org.openbmap.soapclient.ExportSessionTask.UploadTaskListener;
 import org.openbmap.utils.FileUtils;
 
 import java.io.File;
@@ -51,7 +51,7 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
     private CheckResult sdCardWritable = CheckResult.UNKNOWN;
     private CheckResult serverReply = CheckResult.UNKNOWN;
 
-    private final Vector<Integer> toExport = new Vector<Integer>();
+    private final Vector<Integer> toExport = new Vector<>();
     private ExportSessionTask mExportDataTask;
 
     private String mTitle;

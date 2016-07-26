@@ -33,7 +33,7 @@ public class WifiChannel {
 	private static final Map<Integer, String> frequencyMap;
 	
 	static {
-		Map<Integer, String> aMap = new HashMap<Integer, String>();
+		Map<Integer, String> aMap = new HashMap<>();
 		aMap.put(2412,"1");
 		aMap.put(2417,"2");
 		aMap.put(2422,"3");

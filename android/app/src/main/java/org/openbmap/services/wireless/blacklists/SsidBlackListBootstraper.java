@@ -231,11 +231,11 @@ public final class SsidBlackListBootstraper {
 			final StringBuilder sb = new StringBuilder();
 			sb.append(START_TAG);
 			for (final String[] prefix : PREFIXES) {
-				sb.append(PREFIX_OPEN + prefix[0] + PREFIX_MIDDLE + prefix[1] + PREFIX_CLOSE);
+				sb.append(PREFIX_OPEN).append(prefix[0]).append(PREFIX_MIDDLE).append(prefix[1]).append(PREFIX_CLOSE);
 			}
 
 			for (final String[] suffix : SUFFIXES) {
-				sb.append(SUFFIX_OPEN + suffix[0] + SUFFIX_MIDDLE + suffix[1] + SUFFIX_CLOSE);
+				sb.append(SUFFIX_OPEN).append(suffix[0]).append(SUFFIX_MIDDLE).append(suffix[1]).append(SUFFIX_CLOSE);
 			}
 			sb.append(END_TAG);
 

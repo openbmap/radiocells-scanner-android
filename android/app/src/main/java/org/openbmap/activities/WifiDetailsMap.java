@@ -103,7 +103,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 	// [start] Dynamic map variables
 
-	private final ArrayList<HeatLatLong> points = new ArrayList<HeatLatLong>();
+	private final ArrayList<HeatLatLong> points = new ArrayList<>();
 
 	private boolean	pointsLoaded  = false;
 
@@ -219,10 +219,8 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 		args[1] = String.valueOf(dbHelper.getActiveSessionId());
 
 		final String[] projection = { Schema.COL_ID, Schema.COL_SSID, Schema.COL_LEVEL,  "begin_" + Schema.COL_LATITUDE, "begin_" + Schema.COL_LONGITUDE};
-		final CursorLoader cursorLoader =
-				new CursorLoader(getActivity().getBaseContext(),  ContentProvider.CONTENT_URI_WIFI_EXTENDED,
+		return new CursorLoader(getActivity().getBaseContext(),  ContentProvider.CONTENT_URI_WIFI_EXTENDED,
 						projection, Schema.COL_BSSID + " = ? AND " + Schema.COL_SESSION_ID + " = ?", args, Schema.COL_LEVEL + " ASC");
-		return cursorLoader;
 	}
 
 	@Override

@@ -167,9 +167,9 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
         return (getMcc().equals(arg.getMcc()))
                 && (getMnc().equals(arg.getMnc()))
                 && (getArea() == arg.getArea())
-                && (getSystemId() == arg.getSystemId())
-                && (getNetworkId() == arg.getNetworkId())
-                && (getBaseId() == arg.getBaseId())
+                && (getSystemId().equals(arg.getSystemId()))
+                && (getNetworkId().equals(arg.getNetworkId()))
+                && (getBaseId().equals(arg.getBaseId()))
                 && (getLogicalCellId() == arg.getLogicalCellId());
     }
 
@@ -434,7 +434,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
      */
     @SuppressLint("InlinedApi")
 	public static Map<Integer, String> TECHNOLOGY_MAP() {
-		Map<Integer, String> result = new HashMap<Integer, String>();
+		Map<Integer, String> result = new HashMap<>();
 		result.put(TelephonyManager.NETWORK_TYPE_UNKNOWN, "NA");
 		// GPRS shall be mapped to "GSM"
 		result.put(TelephonyManager.NETWORK_TYPE_GPRS, "GSM");

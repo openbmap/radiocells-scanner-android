@@ -100,7 +100,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 	// [start] Dynamic map variables
 
-	private final ArrayList<HeatLatLong> points = new ArrayList<HeatLatLong>();
+	private final ArrayList<HeatLatLong> points = new ArrayList<>();
 
 	private boolean	mPointsLoaded  = false;
 
@@ -175,7 +175,7 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	@Override
 	public final Loader<Cursor> onCreateLoader(final int arg0, final Bundle arg1) {
 		// set query params: id and session id
-		final ArrayList<String> args = new ArrayList<String>();
+		final ArrayList<String> args = new ArrayList<>();
 		String selectSql = "";
 
 		if (mCell != null && mCell.getLogicalCellId() != -1  && !mCell.isCdma()) {
@@ -207,10 +207,8 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 
 		final String[] projection = {Schema.COL_ID, Schema.COL_STRENGTHDBM, Schema.COL_TIMESTAMP,  "begin_" + Schema.COL_LATITUDE, "begin_" + Schema.COL_LONGITUDE};
 		// query data from content provider
-		final CursorLoader cursorLoader =
-				new CursorLoader(getActivity().getBaseContext(),
-						ContentProvider.CONTENT_URI_CELL_EXTENDED, projection, selectSql, args.toArray(new String[args.size()]), Schema.COL_STRENGTHDBM + " DESC");
-		return cursorLoader;
+		return new CursorLoader(getActivity().getBaseContext(),
+				ContentProvider.CONTENT_URI_CELL_EXTENDED, projection, selectSql, args.toArray(new String[args.size()]), Schema.COL_STRENGTHDBM + " DESC");
 	}
 
 	@Override

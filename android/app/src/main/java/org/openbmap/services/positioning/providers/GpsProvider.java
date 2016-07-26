@@ -37,16 +37,16 @@ import org.openbmap.services.positioning.PositioningService;
 public class GpsProvider extends LocationProviderImpl implements Listener, LocationListener {
 
 	@SuppressWarnings("unused")
-	private static final String	TAG	= GpsProvider.class.getSimpleName();
+	private static final String TAG = GpsProvider.class.getSimpleName();
 
-	private final Context	mContext;
+	private final Context mContext;
 
 	/**
 	 * LocationManager
 	 */
 	private LocationManager lmgr;
 
-	private boolean	isGpsEnabled;
+	private boolean isGpsEnabled;
 
 	private long gpsLoggingInterval;
 
@@ -84,8 +84,12 @@ public class GpsProvider extends LocationProviderImpl implements Listener, Locat
 	 */
 	private void enableUpdates() {
 		if (lmgr != null) {
-			lmgr.addGpsStatusListener(this);
-			lmgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, gpsLoggingInterval, 0, this);
+			try {
+				lmgr.addGpsStatusListener(this);
+				lmgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, gpsLoggingInterval, 0, this);
+			} catch (SecurityException e) {
+				Log.e(TAG, "You denied GPS permission, so this app won't work");
+			}
 		}
 	}
 
@@ -94,8 +98,13 @@ public class GpsProvider extends LocationProviderImpl implements Listener, Locat
 	 */
 	private void disableUpdates() {
 		if (lmgr != null) {
-			lmgr.removeGpsStatusListener(this);
-			lmgr.removeUpdates(this);
+            try {
+                lmgr.removeGpsStatusListener(this);
+                lmgr.removeUpdates(this);
+            } catch (SecurityException e) {
+                Log.i(TAG, "You denied GPS permission, so we don't need a perform a proper cleanup here");
+            }
+
 		}
 	}
 

@@ -556,7 +556,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		final SharedPreferences.Editor prefEditor = prefs.edit();
 		prefEditor.putString(Preferences.KEY_MAP_FOLDER, mContext.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.MAPS_SUBDIR); //**syntax error on tokens**
 		prefEditor.putString(Preferences.KEY_WIFI_CATALOG_FOLDER, mContext.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.CATALOG_SUBDIR);
-		prefEditor.commit();
+		prefEditor.apply();
 
 	}
 

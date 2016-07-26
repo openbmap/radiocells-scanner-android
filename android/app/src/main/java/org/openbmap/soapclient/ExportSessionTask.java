@@ -196,7 +196,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 		mListener = listener;
 
         mAnonymousUpload = anonymous_upload;
-		mUploadedFiles = new ArrayList<String>();
+		mUploadedFiles = new ArrayList<>();
 	}
 
 	/**
@@ -205,8 +205,8 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	@SuppressLint("NewApi")
 	@Override
 	protected final Boolean doInBackground(final Void... params) {
-		ArrayList<String> wifiFiles = new ArrayList<String>();
-		ArrayList<String> cellFiles = new ArrayList<String>();
+		ArrayList<String> wifiFiles = new ArrayList<>();
+		ArrayList<String> cellFiles = new ArrayList<>();
 		Boolean success = true;
 
         if (!mSkipUpload && mAnonymousUpload && (mExportCells || mExportWifis)) {

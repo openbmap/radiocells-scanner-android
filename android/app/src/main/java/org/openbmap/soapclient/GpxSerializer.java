@@ -264,9 +264,8 @@ public class GpxSerializer {
                                                          });
             //@formatter:on
         }
-        if(c.isClosed() == false) {
-            c.close();
-        }
+
+        c.close();
     }
 
     /**

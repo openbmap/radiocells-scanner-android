@@ -164,7 +164,7 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
 
         if (extension.equals(Preferences.CATALOG_FILE_EXTENSION)) {
             mCurrentCatalogDownloadId = -1;
-            if (file.indexOf(getContext().getExternalCacheDir().getPath()) > -1) {
+            if (file.contains(getContext().getExternalCacheDir().getPath())) {
                 // file has been downloaded to cache folder, so move..
                 file = moveToFolder(file, FileUtils.getCatalogFolder(getContext()).getAbsolutePath());
             }
@@ -258,7 +258,7 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
             folderAccessible = folder.mkdirs();
         }
         if (folderAccessible) {
-            final String filename = catalog.getUrl().substring(catalog.getUrl().toString().lastIndexOf('/') + 1);
+            final String filename = catalog.getUrl().substring(catalog.getUrl().lastIndexOf('/') + 1);
 
             final File target = new File(folder.getAbsolutePath() + File.separator + filename);
             if (target.exists()) {
@@ -269,7 +269,7 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
             try {
                 // try to download to target. If target isn't below Environment.getExternalStorageDirectory(),
                 // e.g. on second SD card a security exception is thrown
-                final DownloadManager.Request request = new DownloadManager.Request(Uri.parse(catalog.getUrl().toString()));
+                final DownloadManager.Request request = new DownloadManager.Request(Uri.parse(catalog.getUrl()));
                 request.setDestinationUri(Uri.fromFile(target));
                 mCurrentCatalogDownloadId = mDownloadManager.enqueue(request);
             } catch (final SecurityException sec) {
@@ -277,7 +277,7 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
                 Log.w(TAG, "Security exception, can't write to " + target + ", using " + getContext().getExternalCacheDir());
                 final File tempFile = new File(getContext().getExternalCacheDir() + File.separator + filename);
 
-                final DownloadManager.Request request = new DownloadManager.Request(Uri.parse(catalog.getUrl().toString()));
+                final DownloadManager.Request request = new DownloadManager.Request(Uri.parse(catalog.getUrl()));
                 request.setDestinationUri(Uri.fromFile(tempFile));
                 mCurrentCatalogDownloadId = mDownloadManager.enqueue(request);
                 getDialog().dismiss();
@@ -301,7 +301,7 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
 
         @Override
         protected List<CatalogDownload> doInBackground(String... params) {
-            List<CatalogDownload> result = new ArrayList<CatalogDownload>();
+            List<CatalogDownload> result = new ArrayList<>();
 
             DefaultHttpClient httpclient = new DefaultHttpClient(new BasicHttpParams());
             HttpGet httpGet = new HttpGet(LIST_DOWNLOADS_URL);
@@ -319,7 +319,7 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
 
                 String line = null;
                 while ((line = reader.readLine()) != null) {
-                    sb.append(line + "\n");
+                    sb.append(line).append("\n");
                 }
 
                 JSONObject jObject = new JSONObject(sb.toString());

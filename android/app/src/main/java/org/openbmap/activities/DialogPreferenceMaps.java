@@ -166,7 +166,7 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
 
         if (extension.equals(org.openbmap.Preferences.MAP_FILE_EXTENSION)) {
             mCurrentMapDownloadId = -1;
-            if (file.indexOf(getContext().getExternalCacheDir().getPath()) > -1) {
+            if (file.contains(getContext().getExternalCacheDir().getPath())) {
                 // file has been downloaded to cache folder, so move..
                 file = moveToFolder(file, FileUtils.getMapFolder(getContext()).getAbsolutePath());
             }
@@ -260,7 +260,7 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
             folderAccessible = folder.mkdirs();
         }
         if (folderAccessible) {
-            final String filename = map.getUrl().substring(map.getUrl().toString().lastIndexOf('/') + 1);
+            final String filename = map.getUrl().substring(map.getUrl().lastIndexOf('/') + 1);
 
             final File target = new File(folder.getAbsolutePath() + File.separator + filename);
             if (target.exists()) {
@@ -271,7 +271,7 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
             try {
                 // try to download to target. If target isn't below Environment.getExternalStorageDirectory(),
                 // e.g. on second SD card a security exception is thrown
-                final DownloadManager.Request request = new DownloadManager.Request(Uri.parse(map.getUrl().toString()));
+                final DownloadManager.Request request = new DownloadManager.Request(Uri.parse(map.getUrl()));
                 request.setDestinationUri(Uri.fromFile(target));
                 mCurrentMapDownloadId = mDownloadManager.enqueue(request);
             } catch (final SecurityException sec) {
@@ -279,7 +279,7 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
                 Log.w(TAG, "Security exception, can't write to " + target + ", using " + getContext().getExternalCacheDir());
                 final File tempFile = new File(getContext().getExternalCacheDir() + File.separator + filename);
 
-                final DownloadManager.Request request = new DownloadManager.Request(Uri.parse(map.getUrl().toString()));
+                final DownloadManager.Request request = new DownloadManager.Request(Uri.parse(map.getUrl()));
                 request.setDestinationUri(Uri.fromFile(tempFile));
                 mCurrentMapDownloadId = mDownloadManager.enqueue(request);
 
@@ -304,7 +304,7 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
 
         @Override
         protected List<MapDownload> doInBackground(String... params) {
-            List<MapDownload> result = new ArrayList<MapDownload>();
+            List<MapDownload> result = new ArrayList<>();
 
             DefaultHttpClient httpclient = new DefaultHttpClient(new BasicHttpParams());
             HttpGet httpGet = new HttpGet(LIST_DOWNLOADS_URL);
@@ -323,7 +323,7 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
                 String line = null;
                 while ((line = reader.readLine()) != null)
                 {
-                    sb.append(line + "\n");
+                    sb.append(line).append("\n");
                 }
 
                 JSONObject jObject = new JSONObject(sb.toString());

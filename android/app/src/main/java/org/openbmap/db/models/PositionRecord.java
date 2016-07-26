@@ -225,14 +225,13 @@ public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 	}
 
 	public final boolean equals(final PositionRecord aCell) {
-		PositionRecord oneCell = aCell;
 
-		return (getLatitude() == oneCell.getLatitude())
-				&& (getLongitude() == oneCell.getLongitude())
-				&& (getAltitude() == oneCell.getAltitude())
-				&& (getAccuracy() == oneCell.getAccuracy())
-				&& (getOpenBmapTimestamp() == oneCell.getOpenBmapTimestamp())
-				&& (getSession() == oneCell.getSession());
+		return (getLatitude() == aCell.getLatitude())
+				&& (getLongitude() == aCell.getLongitude())
+				&& (getAltitude() == aCell.getAltitude())
+				&& (getAccuracy() == aCell.getAccuracy())
+				&& (getOpenBmapTimestamp() == aCell.getOpenBmapTimestamp())
+				&& (getSession() == aCell.getSession());
 	}
 
 	/**

@@ -167,10 +167,9 @@ public class CellsListContainer extends ListFragment implements LoaderManager.Lo
 		final int session = dataHelper.getActiveSessionId();
 
 		// TODO: mSelection and mSelectionArgs are yet ignored
-		final CursorLoader cursorLoader = new CursorLoader(getActivity().getBaseContext(), ContentUris.withAppendedId(Uri.withAppendedPath(
-						ContentProvider.CONTENT_URI_CELL, ContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
-						projection, mSelection, mSelectionArgs, null);
-		return cursorLoader;
+		return new CursorLoader(getActivity().getBaseContext(), ContentUris.withAppendedId(Uri.withAppendedPath(
+				ContentProvider.CONTENT_URI_CELL, ContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
+				projection, mSelection, mSelectionArgs, null);
 	}
 
 	@Override

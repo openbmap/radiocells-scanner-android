@@ -331,7 +331,7 @@ public class SettingsActivity extends PreferenceActivity {
 
         if (extension.equals(org.openbmap.Preferences.CATALOG_FILE_EXTENSION)) {
             mCurrentCatalogDownloadId = -1;
-            if (file.indexOf(SettingsActivity.this.getExternalCacheDir().getPath()) > -1) {
+            if (file.contains(SettingsActivity.this.getExternalCacheDir().getPath())) {
                 Log.i(TAG, "Moving file to " + getCatalogFolder().getAbsolutePath());
                 file = moveToFolder(file, getCatalogFolder().getAbsolutePath());
             }

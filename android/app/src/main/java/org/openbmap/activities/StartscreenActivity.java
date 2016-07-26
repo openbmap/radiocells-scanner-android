@@ -126,7 +126,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	/**
 	 * List of all pending exports
 	 */
-	private final ArrayList<Integer> pendingExports = new ArrayList<Integer>();
+	private final ArrayList<Integer> pendingExports = new ArrayList<>();
 
 	/**
 	 * Counts successfully exported sessions
@@ -543,7 +543,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 		} else if (alertId == ID_DELETE_PROCESSED) {
 			final String candidates = (args != null ? String.valueOf(args) : "");
 
-			final ArrayList<Integer> list = new ArrayList<Integer>();
+			final ArrayList<Integer> list = new ArrayList<>();
 			for (final String s : candidates.split("\\s*;\\s*")) {
 				list.add(Integer.valueOf(s));
 			}

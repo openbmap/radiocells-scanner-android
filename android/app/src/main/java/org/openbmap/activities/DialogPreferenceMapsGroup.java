@@ -26,7 +26,7 @@ import java.util.List;
 public class DialogPreferenceMapsGroup {
 
     public String string;
-    public final List<MapDownload> children = new ArrayList<MapDownload>();
+    public final List<MapDownload> children = new ArrayList<>();
 
     public DialogPreferenceMapsGroup(String string) {
         this.string = string;

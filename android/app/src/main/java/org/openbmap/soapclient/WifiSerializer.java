@@ -250,7 +250,7 @@ public class WifiSerializer {
 
 		final DatabaseHelper mDbHelper = new DatabaseHelper(mContext.getApplicationContext());
 
-		final ArrayList<String> generatedFiles = new ArrayList<String>();
+		final ArrayList<String> generatedFiles = new ArrayList<>();
 
 		// get first CHUNK_SIZE records
 		Cursor cursorWifis = mDbHelper.getReadableDatabase().rawQuery(WIFI_SQL_QUERY,

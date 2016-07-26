@@ -164,12 +164,16 @@ public class StatsActivity extends Fragment {
                     bssid = "";
                 }
 
-                if (reason.equals(RadioBeacon.MSG_BSSID)) {
-                    tvIgnored.setText(ssid + " (" + bssid + ") " + getResources().getString(R.string.blacklisted_bssid));
-                } else if (reason.equals(RadioBeacon.MSG_SSID)) {
-                    tvIgnored.setText(ssid + " (" + bssid + ") " + getResources().getString(R.string.blacklisted_ssid));
-                } else if (reason.equals(RadioBeacon.MSG_LOCATION)) {
-                    tvIgnored.setText(R.string.blacklisted_area);
+                switch (reason) {
+                    case RadioBeacon.MSG_BSSID:
+                        tvIgnored.setText(ssid + " (" + bssid + ") " + getResources().getString(R.string.blacklisted_bssid));
+                        break;
+                    case RadioBeacon.MSG_SSID:
+                        tvIgnored.setText(ssid + " (" + bssid + ") " + getResources().getString(R.string.blacklisted_ssid));
+                        break;
+                    case RadioBeacon.MSG_LOCATION:
+                        tvIgnored.setText(R.string.blacklisted_area);
+                        break;
                 }
                 tvIgnored.setVisibility(View.VISIBLE);
                 ivAlert.setVisibility(View.VISIBLE);
@@ -215,11 +219,11 @@ public class StatsActivity extends Fragment {
         if (description.length() > 0) {
             description += "\n";
         }
-        if (event.mcc != CellRecord.MCC_UNKNOWN && event.mnc != CellRecord.MNC_UNKNOWN) {
+        if (!event.mcc.equals(CellRecord.MCC_UNKNOWN) && !event.mnc.equals(CellRecord.MNC_UNKNOWN)) {
             // typical available information for GSM/LTE cells: MCC, MNC and area
-            description += String.format("%s/%s/%s/%s", event.mcc, event.mnc, event.area);
+            description += String.format("%s/%s/%s", event.mcc, event.mnc, event.area);
         }
-        if (event.sid != CellRecord.SYSTEM_ID_UNKNOWN && event.nid != CellRecord.NETWORK_ID_UNKOWN && event.bid != CellRecord.BASE_ID_UNKNOWN) {
+        if (!event.sid.equals(CellRecord.SYSTEM_ID_UNKNOWN) && !event.nid.equals(CellRecord.NETWORK_ID_UNKOWN) && !event.bid.equals(CellRecord.BASE_ID_UNKNOWN)) {
             // typical available information for CDMA cells: system id, network id and base id
             description += String.format("%s/%s/%s", event.sid, event.nid, event.bid);
         }

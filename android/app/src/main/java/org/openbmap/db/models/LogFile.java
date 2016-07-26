@@ -51,8 +51,8 @@ public class LogFile implements Comparable<LogFile> {
 		setSwId(swId);
 		setSwVersion(swVer);
 		setSessionId(session);
-		wifis = new ArrayList<AbstractLogEntry<WifiRecord>>();
-		cells = new ArrayList<AbstractLogEntry<CellRecord>>();
+		wifis = new ArrayList<>();
+		cells = new ArrayList<>();
 	}
 
 	/**
@@ -63,9 +63,9 @@ public class LogFile implements Comparable<LogFile> {
 
 		return ((getManufacturer().equals(oneCell.getManufacturer()))
 				&& (getModel().equals(oneCell.getModel()))
-				&& (getRevision() == oneCell.getRevision())
-				&& (getSwid() == oneCell.getSwid())
-				&& (getSwVersion() == oneCell.getSwVersion()));
+				&& (getRevision().equals(oneCell.getRevision()))
+				&& (getSwid().equals(oneCell.getSwid()))
+				&& (getSwVersion().equals(oneCell.getSwVersion())));
 	}
 
 	/*

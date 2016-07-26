@@ -37,7 +37,7 @@ public class CustomViewPagerAdapter extends FragmentStatePagerAdapter
 private final Context mContext;
 private final ActionBar mActionBar;
 private final ViewPager mViewPager;
-private final ArrayList<TabInfo> mTabs = new ArrayList<TabInfo>();
+private final ArrayList<TabInfo> mTabs = new ArrayList<>();
 
     @Override
     public void onTabSelected(ActionBar.Tab tab, android.support.v4.app.FragmentTransaction ft) {
