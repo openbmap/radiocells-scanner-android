@@ -28,6 +28,10 @@ android {
         disable 'MissingTranslation'
     }
 
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+
     useLibrary 'org.apache.http.legacy'
 }
 

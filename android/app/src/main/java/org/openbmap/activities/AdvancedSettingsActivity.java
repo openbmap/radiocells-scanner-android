@@ -153,7 +153,7 @@ public class AdvancedSettingsActivity extends PreferenceActivity {
 							public void onChosenDir(final String chosenDir) {
 								mChosenDir = chosenDir;
 								final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(AdvancedSettingsActivity.this);
-								settings.edit().putString(Preferences.KEY_MAP_FOLDER, chosenDir).commit();
+								settings.edit().putString(Preferences.KEY_MAP_FOLDER, chosenDir).apply();
 								//Toast.makeText(SettingsActivity.this, chosenDir, Toast.LENGTH_LONG).show();
 							}
 						});
@@ -203,7 +203,7 @@ public class AdvancedSettingsActivity extends PreferenceActivity {
 							public void onChosenDir(final String chosenDir) {
 								mChosenDir = chosenDir;
 								final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(AdvancedSettingsActivity.this);
-								settings.edit().putString(Preferences.KEY_WIFI_CATALOG_FOLDER, chosenDir).commit();
+								settings.edit().putString(Preferences.KEY_WIFI_CATALOG_FOLDER, chosenDir).apply();
 								//Toast.makeText(SettingsActivity.this, chosenDir, Toast.LENGTH_LONG).show();
 							}
 						});

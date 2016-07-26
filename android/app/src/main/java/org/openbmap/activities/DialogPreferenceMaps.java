@@ -188,7 +188,7 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
         SharedPreferences sharedPref = getContext().getSharedPreferences(Preferences.KEY_MAP_FILE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(Preferences.KEY_MAP_FILE, new File(file).getName());
-        editor.commit();
+        editor.apply();
     }
 
     /**

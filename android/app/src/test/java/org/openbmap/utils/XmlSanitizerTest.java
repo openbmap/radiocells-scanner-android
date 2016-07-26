@@ -1,5 +1,6 @@
+package org.openbmap.utils;
+
 import org.junit.Test;
-import org.openbmap.utils.XmlSanitizer;
 
 import static org.junit.Assert.assertEquals;
 

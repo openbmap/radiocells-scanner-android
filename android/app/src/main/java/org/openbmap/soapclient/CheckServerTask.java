@@ -77,7 +77,7 @@ public final class CheckServerTask extends AsyncTask<String, Object, Object[]> {
 	 * device goes into connecting state
 	 * How many seconds should we wait for state connecting?
 	 */
-	private static final int WAIT_FOR_CONNECTING	= 10;
+	private static final int WAIT_FOR_CONNECTING = 10;
 
 	/**
 	 * After device is in connecting state, it takes a couple of seconds to final connect
@@ -109,7 +109,7 @@ public final class CheckServerTask extends AsyncTask<String, Object, Object[]> {
 			//check whether we have a connection to openbmap.org
 			if (!isOnline()) {
 				// if not, check whether connecting, if so wait
-				Log.i(TAG, "Offline! Device might just been switched on, so wait a bit");
+				Log.i(TAG, "No reply from server! Device might just been switched on, so wait a bit");
 				waitForConnect();
 				if (!isOnline()) {
 					Log.i(TAG, "Waiting didn't help. Still no connection");
@@ -263,7 +263,7 @@ public final class CheckServerTask extends AsyncTask<String, Object, Object[]> {
 				if ((networkInfo != null) && (networkInfo.getState() == State.CONNECTING || networkInfo.getState() == State.CONNECTED)) {
 					break;
 				}
-				Log.i(TAG, "Network neighter connected nor connecting. Wait 1 sec..");
+				Log.i(TAG, "Network neither connected nor connecting. Wait 1 sec..");
 				Thread.sleep(1000);
 			} catch (final InterruptedException e) {
 				// ignore
@@ -271,7 +271,7 @@ public final class CheckServerTask extends AsyncTask<String, Object, Object[]> {
 		}
 		networkInfo = cm.getActiveNetworkInfo();
 		if (networkInfo != null) {
-			Log.i(TAG, "Current " + networkInfo.toString());
+			Log.i(TAG, "Connection status" + networkInfo.toString());
 		}
 
 		// once we're in CONNECTING state, wait another couple of seconds
@@ -302,21 +302,22 @@ public final class CheckServerTask extends AsyncTask<String, Object, Object[]> {
 	 * Checks connection to openbmap.org
 	 * @return true on successful http connection
 	 */
-	private boolean isOnline() {
+	private static boolean isOnline() {
 		try {
+			Log.v(TAG, "Ping " + Preferences.VERSION_CHECK_URL);
 			final URL url = new URL(Preferences.VERSION_CHECK_URL);
 			final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 			connection.setRequestProperty("Connection", "close");
 			connection.setConnectTimeout(CONNECTION_TIMEOUT);
 			connection.connect();
 			if (connection.getResponseCode() == 200) {
-				Log.i(TAG, "Device is online");
+				Log.i(TAG, String.format("Good: Server reply %s - device & server online", connection.getResponseCode()));
 				return true;
 			} else {
-				Log.w(TAG, "Http ping failed (return code != 200). Trying to setup connection");
+				Log.w(TAG, String.format("Bad: Http ping failed (server reply %s).", connection.getResponseCode()));
 			}
 		} catch (final IOException e) {
-			Log.w(TAG, "Http ping failed (no response). Trying to setup connection ..");
+			Log.w(TAG, "Bad: Http ping failed (no response)..");
 		}
 		return false;
 	}

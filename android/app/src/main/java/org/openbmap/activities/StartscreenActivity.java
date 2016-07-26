@@ -22,14 +22,12 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.WifiLock;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
-import android.provider.Settings;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -957,7 +955,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
         // Update the shared preferences with the current version code
         Log.i(TAG,  String.format("Saving current version %s", currentVersionCode));
-        prefs.edit().putInt(PREF_VERSION_CODE_KEY, currentVersionCode).commit();
+        prefs.edit().putInt(PREF_VERSION_CODE_KEY, currentVersionCode).apply();
 
     }
 }

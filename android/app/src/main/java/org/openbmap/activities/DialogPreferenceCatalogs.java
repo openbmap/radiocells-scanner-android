@@ -186,7 +186,7 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
         SharedPreferences sharedPref = getContext().getSharedPreferences(Preferences.KEY_CATALOG_FILE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(Preferences.KEY_CATALOG_FILE, new File(file).getName());
-        editor.commit();
+        editor.apply();
     }
 
     /**
