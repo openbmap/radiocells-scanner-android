@@ -443,17 +443,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 	}
 
 	private void addOnlineLayer() {
-		final OnlineTileSource onlineTileSource = new OnlineTileSource(new String[]{
-				"otile1.mqcdn.com", "otile2.mqcdn.com", "otile3.mqcdn.com", "otile4.mqcdn.com"}, 80);
-		onlineTileSource.setName("MapQuest")
-				.setAlpha(false)
-				.setBaseUrl("/tiles/1.0.0/map/")
-				.setExtension("png")
-				.setParallelRequestsLimit(8)
-				.setProtocol("http")
-				.setTileSize(256)
-				.setZoomLevelMax((byte) 18)
-				.setZoomLevelMin((byte) 0);
+        final OnlineTileSource onlineTileSource = MapUtils.createOnlineLayer();
 
 		mapDownloadLayer = new TileDownloadLayer(mTileCache,
 				mMapView.getModel().mapViewPosition, onlineTileSource,

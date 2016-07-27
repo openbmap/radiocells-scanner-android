@@ -412,12 +412,15 @@ public class MapViewActivity extends Fragment implements
         }
 
         if (MapUtils.hasOfflineMap(this.getActivity())) {
+            Log.i(TAG, "Using offline map mode");
             mMapView.getLayerManager().getLayers().clear();
             addOfflineLayer();
         } else if (MapUtils.useOnlineMaps(this.getActivity())) {
+            Log.i(TAG, "Using online map mode");
             Toast.makeText(this.getActivity(), R.string.info_using_online_map, Toast.LENGTH_LONG).show();
             addOnlineLayer();
         } else {
+            Log.w(TAG, "Neither online mode activated, nor offline map avaibable");
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
@@ -1146,17 +1149,7 @@ public class MapViewActivity extends Fragment implements
     }
 
     private void addOnlineLayer() {
-        final OnlineTileSource onlineTileSource = new OnlineTileSource(new String[]{
-                "otile1.mqcdn.com", "otile2.mqcdn.com", "otile3.mqcdn.com", "otile4.mqcdn.com"}, 80);
-        onlineTileSource.setName("MapQuest")
-                .setAlpha(false)
-                .setBaseUrl("/tiles/1.0.0/map/")
-                .setExtension("png")
-                .setParallelRequestsLimit(8)
-                .setProtocol("http")
-                .setTileSize(256)
-                .setZoomLevelMax((byte) 18)
-                .setZoomLevelMin((byte) 0);
+        final OnlineTileSource onlineTileSource = MapUtils.createOnlineLayer();
 
         mMapDownloadLayer = new TileDownloadLayer(mTileCache,
                 mMapView.getModel().mapViewPosition, onlineTileSource,
