@@ -129,6 +129,11 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
 		final View view = inflater.inflate(R.layout.celldetailsmap, container, false);
 		this.mMapView = (MapView) view.findViewById(R.id.map);
 
+		// zoom to moderate zoom level on startup
+		if (mMapView.getModel().mapViewPosition.getZoomLevel() < (byte) 10 || mMapView.getModel().mapViewPosition.getZoomLevel() > (byte) 18) {
+			Log.i(TAG, "Reseting zoom level");
+			mMapView.getModel().mapViewPosition.setZoomLevel((byte) 16);
+		}
 		return view;
 	}
 

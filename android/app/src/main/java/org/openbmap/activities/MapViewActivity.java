@@ -405,12 +405,11 @@ public class MapViewActivity extends Fragment implements
 
         mTileCache = createTileCache();
 
-        // on first start zoom is set to very low value, so users won't see anything
-        // zoom to moderate zoomlevel..
-        if (mMapView.getModel().mapViewPosition.getZoomLevel() < (byte) 10) {
+       // zoom to moderate zoom level on startup
+        if (mMapView.getModel().mapViewPosition.getZoomLevel() < (byte) 10 || mMapView.getModel().mapViewPosition.getZoomLevel() > (byte) 18) {
+            Log.i(TAG, "Reseting zoom level");
             mMapView.getModel().mapViewPosition.setZoomLevel((byte) 15);
         }
-
 
         if (MapUtils.hasOfflineMap(this.getActivity())) {
             mMapView.getLayerManager().getLayers().clear();
