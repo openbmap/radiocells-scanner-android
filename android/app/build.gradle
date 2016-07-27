@@ -57,7 +57,7 @@ dependencies {
     apt 'org.greenrobot:eventbus-annotation-processor:3.0.1'
     compile 'com.caverock:androidsvg:1.2.1'
     compile 'org.apache.commons:commons-lang3:3.4'
-    compile 'com.jjoe64:graphview:4.0.1'
+    compile 'com.jjoe64:graphview:4.1.0'
     compile 'org.apache.httpcomponents:httpmime:4.2.3'
     compile 'org.mapsforge:mapsforge:0.6.1'
     compile 'org.mapsforge:mapsforge-core:0.6.1'

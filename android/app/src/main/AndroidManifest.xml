@@ -21,7 +21,7 @@
         android:icon="@drawable/icon"
         android:label="@string/app_name"
         android:theme="@style/Theme.AppCompat"
-        android:hardwareAccelerated="false"
+        android:hardwareAccelerated="true"
         >
         <activity
             android:name=".activities.TabHostActivity"
@@ -42,7 +42,7 @@
         </activity>
         <activity
             android:name=".activities.StatsActivity"
-            android:label="@string/activity_stats_activity" >
+            android:label="@string/activity_stats_activity">
         </activity>
         <activity
             android:name=".activities.WifiListContainer"
