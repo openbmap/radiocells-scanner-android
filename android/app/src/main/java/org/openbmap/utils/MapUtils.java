@@ -15,19 +15,12 @@ package org.openbmap.utils;
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.View;
-import android.view.View.MeasureSpec;
 import android.widget.Toast;
 
-import org.mapsforge.core.graphics.Bitmap;
 import org.mapsforge.core.graphics.Paint;
 import org.mapsforge.core.graphics.Style;
 import org.mapsforge.core.model.LatLong;
@@ -37,11 +30,7 @@ import org.mapsforge.map.android.graphics.AndroidResourceBitmap;
 import org.mapsforge.map.android.rendertheme.AssetsRenderTheme;
 import org.mapsforge.map.android.util.AndroidUtil;
 import org.mapsforge.map.layer.Layer;
-import org.mapsforge.map.layer.cache.FileSystemTileCache;
-import org.mapsforge.map.layer.cache.InMemoryTileCache;
 import org.mapsforge.map.layer.cache.TileCache;
-import org.mapsforge.map.layer.cache.TwoLevelTileCache;
-import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.layer.renderer.TileRendererLayer;
 import org.mapsforge.map.model.MapViewPosition;
 import org.mapsforge.map.reader.MapFile;
@@ -54,9 +43,6 @@ import org.openbmap.R;
 import java.io.File;
 import java.io.IOException;
 
-import static android.os.Build.VERSION.SDK_INT;
-import static android.os.Build.VERSION_CODES.HONEYCOMB;
-
 /**
  * Utility functions that can be used across different mapsforge based activities
  */
@@ -64,19 +50,6 @@ import static android.os.Build.VERSION_CODES.HONEYCOMB;
 public final class MapUtils {
 	private static final String TAG = MapUtils.class.getSimpleName();
 
-	/**
-	 * Compatibility method
-	 *
-	 * @param a
-	 *            the current activity
-	 */
-	@TargetApi(HONEYCOMB)
-	public static void enableHome(final Activity a) {
-		if (SDK_INT >= HONEYCOMB) {
-			// Show the Up button in the action bar.
-			a.getActionBar().setDisplayHomeAsUpEnabled(true);
-		}
-	}
 
     public static void clearRessources() {
         AndroidResourceBitmap.clearResourceBitmaps();
@@ -85,31 +58,6 @@ public final class MapUtils {
 
     public interface onLongPressHandler{
 		void onLongPress(LatLong tapLatLong, Point thisXY, Point tapXY);
-	}
-
-	/**
-	 * @param c
-	 *            the Android context
-	 * @param id
-	 *            name for the directory
-	 * @return a new cache created on the external storage
-	 */
-	@Deprecated
-	public static TileCache createExternalStorageTileCache(final Context c, final String id) {
-		final TileCache firstLevelTileCache = new InMemoryTileCache(32);
-		final String cacheDirectoryName = c.getExternalCacheDir().getAbsolutePath() + File.separator + id;
-		final File cacheDirectory = new File(cacheDirectoryName);
-		if (!cacheDirectory.exists()) {
-			cacheDirectory.mkdir();
-		}
-		final TileCache secondLevelTileCache = new FileSystemTileCache(1024, cacheDirectory, AndroidGraphicFactory.INSTANCE);
-		return new TwoLevelTileCache(firstLevelTileCache, secondLevelTileCache);
-	}
-
-	static Marker createMarker(final Context c, final int resourceIdentifier, final LatLong latLong) {
-		final Drawable drawable = c.getResources().getDrawable(resourceIdentifier);
-		final Bitmap bitmap = AndroidGraphicFactory.convertToBitmap(drawable);
-		return new Marker(latLong, bitmap, 0, -bitmap.getHeight() / 2);
 	}
 
 	public static Paint createPaint(final int color, final int strokeWidth, final Style style) {
@@ -167,24 +115,17 @@ public final class MapUtils {
 		}
 		return null;
 	}
-	static Bitmap viewToBitmap(final Context c, final View view) {
-		view.measure(MeasureSpec.getSize(view.getMeasuredWidth()), MeasureSpec.getSize(view.getMeasuredHeight()));
-		view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
-		view.setDrawingCacheEnabled(true);
-		final Drawable drawable = new BitmapDrawable(c.getResources(), android.graphics.Bitmap.createBitmap(view
-				.getDrawingCache()));
-		view.setDrawingCacheEnabled(false);
-		return AndroidGraphicFactory.convertToBitmap(drawable);
-	}
 
 	/**
 	 * Checks whether a valid map file has been selected
 	 * @param context
-	 * @return true, if map file is not none
+	 * @return true, if map file chosen and not in online mode
 	 */
 	public static Boolean hasOfflineMap(final Context context) {
 		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		return (!prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE).equals(Preferences.VAL_MAP_NONE));
+        final String map = prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE);
+        Log.i(TAG, "Selected map: " + map);
+		return (!map.equals(Preferences.VAL_MAP_NONE) && !map.equals(Preferences.VAL_MAP_ONLINE));
 	}
 
     /**
