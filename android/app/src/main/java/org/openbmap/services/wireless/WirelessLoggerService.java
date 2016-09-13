@@ -717,7 +717,7 @@ public class WirelessLoggerService extends AbstractService {
                 final CellRecord cell = processCellInfo(info, pos);
                 if (cell != null) {
                     cells.add(cell);
-                    broadcastCellInfos(cell);
+                    broadcastCellInfo(cell);
                 }
             }
         } else {
@@ -736,7 +736,7 @@ public class WirelessLoggerService extends AbstractService {
                 final ArrayList<CellRecord> neigbors = processNeighbors(serving, pos);
                 cells.addAll(neigbors);
 
-                broadcastCellInfos(serving);
+                broadcastCellInfo(serving);
             }
         }
 
@@ -1328,45 +1328,51 @@ public class WirelessLoggerService extends AbstractService {
     }
 
     /**
-     * @param ci
-     * @return
+     * Tests whether a given neighboring cell is valid
+     * Check is required as some modems only return dummy values for neighboring cells
+     *
+     * Note: PSC is not checked, as PSC may be -1 on GSM networks
+     * see https://developer.android.com/reference/android/telephony/gsm/GsmCellLocation.html#getPsc()
+     *
+     * @param c cell
+     * @return true if cell has a valid cell id and lac
      */
-    private boolean isValidNeigbor(final NeighboringCellInfo ci) {
-        if (ci == null) {
+    private boolean isValidNeigbor(final NeighboringCellInfo c) {
+        if (c == null) {
             return false;
         }
-        return (ci.getCid() != NeighboringCellInfo.UNKNOWN_CID || ci.getLac() != NeighboringCellInfo.UNKNOWN_CID || ci.getPsc() != NeighboringCellInfo.UNKNOWN_CID);
+        return (
+                (c.getCid() != NeighboringCellInfo.UNKNOWN_CID && c.getCid() < 0xffff) &&
+                (c.getLac() != NeighboringCellInfo.UNKNOWN_CID && c.getLac() < 0xffff));
     }
-
 
     /**
      * Broadcasts human-readable description of last cell.
-     *
-     * @param recent
+     * @param c
      */
-    private void broadcastCellInfos(final CellRecord recent) {
-        if (recent == null) {
+    private void broadcastCellInfo(final CellRecord c) {
+        if (c == null) {
             Log.e(TAG, "Broadcasting error: cell record was null");
             return;
         }
 
-        Log.v(TAG, "Broadcasting cell " + recent.toString());
+        Log.v(TAG, "Broadcasting cell " + c.toString());
 
-        String cellId = String.valueOf(recent.getLogicalCellId());
-        if (recent.isCdma()) {
-            cellId = String.format("%s-%s%s", recent.getSystemId(), recent.getNetworkId(), recent.getBaseId());
+        String cellId = String.valueOf(c.getLogicalCellId());
+        if (c.isCdma()) {
+            cellId = String.format("%s-%s%s", c.getSystemId(), c.getNetworkId(), c.getBaseId());
         }
 
-        EventBus.getDefault().post(new onCellUpdated(recent.getOperatorName(),
-                recent.getMcc(),
-                recent.getMnc(),
-                recent.getSystemId(),
-                recent.getNetworkId(),
-                recent.getBaseId(),
-                recent.getArea(),
+        EventBus.getDefault().post(new onCellUpdated(c.getOperatorName(),
+                c.getMcc(),
+                c.getMnc(),
+                c.getSystemId(),
+                c.getNetworkId(),
+                c.getBaseId(),
+                c.getArea(),
                 cellId,
-                CellRecord.TECHNOLOGY_MAP().get(recent.getNetworkType()),
-                recent.getStrengthdBm()));
+                CellRecord.TECHNOLOGY_MAP().get(c.getNetworkType()),
+                c.getStrengthdBm()));
     }
 
     @Override
