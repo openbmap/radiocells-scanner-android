@@ -31,6 +31,7 @@ import org.mapsforge.map.android.rendertheme.AssetsRenderTheme;
 import org.mapsforge.map.android.util.AndroidUtil;
 import org.mapsforge.map.layer.Layer;
 import org.mapsforge.map.layer.cache.TileCache;
+import org.mapsforge.map.layer.download.tilesource.OnlineTileSource;
 import org.mapsforge.map.layer.renderer.TileRendererLayer;
 import org.mapsforge.map.model.MapViewPosition;
 import org.mapsforge.map.reader.MapFile;
@@ -165,7 +166,27 @@ public final class MapUtils {
 		}
 	}
 
+    /**
+     * Creates a online layer
+     * @return online layer
+     */
+    public static OnlineTileSource createOnlineLayer() {
+        final OnlineTileSource layer = new OnlineTileSource(new String[]{
+                "a.tile.openstreetmap.org", "b.tile.openstreetmap.org", "c.tile.openstreetmap.org"}, 80);
+        layer.setName("osm")
+        .setAlpha(false)
+        .setBaseUrl("")
+        .setExtension("png")
+        .setParallelRequestsLimit(8)
+        .setProtocol("http")
+        .setTileSize(256)
+        .setZoomLevelMax((byte) 18)
+        .setZoomLevelMin((byte) 0);
+        return layer;
+    }
+
 	private MapUtils() {
 		throw new IllegalStateException();
 	}
+
 }
