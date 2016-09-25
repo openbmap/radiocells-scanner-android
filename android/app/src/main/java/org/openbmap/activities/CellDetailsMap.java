@@ -410,13 +410,13 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
                 this.mTileCache,
                 this.mMapView.getModel().mapViewPosition,
                 MapUtils.getMapFile(this.getActivity()),
-                MapUtils.getRenderTheme(this.getActivity()));
+                MapUtils.getRenderTheme(this.getActivity()),null);
 
         if (offlineLayer != null) this.mMapView.getLayerManager().getLayers().add(offlineLayer);
     }
 
     private void addOnlineLayer() {
-        final OnlineTileSource onlineTileSource = MapUtils.createOnlineLayer();
+        final OnlineTileSource onlineTileSource = MapUtils.createOnlineTileSource();
 
         mapDownloadLayer = new TileDownloadLayer(mTileCache,
                 mMapView.getModel().mapViewPosition, onlineTileSource,

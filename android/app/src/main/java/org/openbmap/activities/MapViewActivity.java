@@ -1138,22 +1138,36 @@ public class MapViewActivity extends Fragment implements
         toneG.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 200);
     }
 
+    /**
+     * Creates a long-press enabled offline map layer
+     */
     private void addOfflineLayer() {
         final Layer offlineLayer = MapUtils.createTileRendererLayer(
                 this.mTileCache,
                 this.mMapView.getModel().mapViewPosition,
                 MapUtils.getMapFile(this.getActivity()),
-                MapUtils.getRenderTheme(this.getActivity()));
+                MapUtils.getRenderTheme(this.getActivity()),
+                this
+        );
 
         if (offlineLayer != null) this.mMapView.getLayerManager().getLayers().add(offlineLayer);
     }
 
+    /**
+     * Creates a long-press enabled offline map layer
+     */
     private void addOnlineLayer() {
-        final OnlineTileSource onlineTileSource = MapUtils.createOnlineLayer();
+        final OnlineTileSource onlineTileSource = MapUtils.createOnlineTileSource();
 
         mMapDownloadLayer = new TileDownloadLayer(mTileCache,
                 mMapView.getModel().mapViewPosition, onlineTileSource,
-                AndroidGraphicFactory.INSTANCE);
+                AndroidGraphicFactory.INSTANCE) {
+            @Override
+            public boolean onLongPress(LatLong tapLatLong, Point thisXY, Point tapXY) {
+                    onLongPress(tapLatLong, thisXY, tapXY);
+                    return true;
+            }
+        };
         mMapView.getLayerManager().getLayers().add(mMapDownloadLayer);
         mMapDownloadLayer.onResume();
     }

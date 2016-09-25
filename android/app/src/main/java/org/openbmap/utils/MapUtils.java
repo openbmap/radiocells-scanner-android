@@ -78,16 +78,29 @@ public final class MapUtils {
 	 * @return
 	 */
 	public static Layer createTileRendererLayer(final TileCache tileCache, final MapViewPosition mapViewPosition,
-			final MapFile mapFile, final XmlRenderTheme renderTheme) {
+			final MapFile mapFile, final XmlRenderTheme renderTheme, final onLongPressHandler handler) {
 
 		if (mapFile == null) {
 			return null;
 		}
 
-		final TileRendererLayer tileRendererLayer = new TileRendererLayer(tileCache, mapFile, mapViewPosition, AndroidGraphicFactory.INSTANCE);
+		final TileRendererLayer tileRendererLayer = new TileRendererLayer(tileCache, mapFile, mapViewPosition, AndroidGraphicFactory.INSTANCE) {
+			@Override
+			public boolean onLongPress(LatLong tapLatLong, Point thisXY, Point tapXY) {
+                if (handler != null) {
+                    ((onLongPressHandler)handler).onLongPress(tapLatLong, thisXY, tapXY);
+                    return true;
+                } else {
+                    return false;
+                }
+			}
+		};
+
         if (renderTheme == null) {
+            Log.i(TAG, "Using default render theme");
             tileRendererLayer.setXmlRenderTheme(InternalRenderTheme.OSMARENDER);
         } else {
+            Log.i(TAG, "Using custom theme");
             tileRendererLayer.setXmlRenderTheme(renderTheme);
         }
 
@@ -170,7 +183,7 @@ public final class MapUtils {
      * Creates a online layer
      * @return online layer
      */
-    public static OnlineTileSource createOnlineLayer() {
+    public static OnlineTileSource createOnlineTileSource() {
         final OnlineTileSource layer = new OnlineTileSource(new String[]{
                 "a.tile.openstreetmap.org", "b.tile.openstreetmap.org", "c.tile.openstreetmap.org"}, 80);
         layer.setName("osm")
