@@ -124,22 +124,22 @@ public class WirelessLoggerService extends AbstractService {
      */
     private TelephonyManager mTelephonyManager;
 
-    private PhoneStateListener mPhoneListener;
+    private PhoneStateListener mPhoneStateListener;
 
     /*
      * 	Cells Strength information
      */
-    private int gsmStrengthDbm = 0;
+    private int mGsmStrengthDbm = 0;
     // TODO NeighboringCellInfo.UNKNOWN_RSSI is not adequate
-    private int gsmStrengthAsu = NeighboringCellInfo.UNKNOWN_RSSI;
-    private int cdmaStrengthDbm = 0;
-    private int cdmaEcIo = 0;
-    private int signalStrengthEvdodBm = 0;
-    private int signalStrengthEvdoEcio = 0;
-    private int signalStrengthSnr = 0;
-    private int gsmBitErrorRate = 0;
-    private final int signalStrengthGsm = 0;
-    private final boolean signalStrengthIsGsm = false;
+    private int mGsmStrengthAsu = NeighboringCellInfo.UNKNOWN_RSSI;
+    private int mCdmaStrengthDbm = 0;
+    private int mCdmaEcIo = 0;
+    private int mSignalStrengthEvdodBm = 0;
+    private int mSignalStrengthEvdoEcio = 0;
+    private int mSignalStrengthSnr = 0;
+    private int mGsmBitErrorRate = 0;
+    private final int mSignalStrengthGsm = 0;
+    private final boolean mSignalStrengthIsGsm = false;
 
     /*
      * last known location
@@ -336,7 +336,7 @@ public class WirelessLoggerService extends AbstractService {
         if (SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             final PackageManager pm = getApplicationContext().getPackageManager();
             //Log.i(TAG, mTelephonyManager.getPhoneCount() == 1 ? "Single SIM mode" : "Dual SIM mode");
-            Log.wtf(TAG, "------------ YOU MAY WANT TO REDACT INFO BELOW BEFORE POSTING THIS TO THE INTERNET \"------------ ");
+            Log.wtf(TAG, "------------ YOU MAY WANT TO REDACT INFO BELOW BEFORE POSTING THIS TO THE INTERNET ------------ ");
             Log.i(TAG, "GPS support: " + pm.hasSystemFeature("android.hardware.location.gps"));
             Log.i(TAG, "GSM support: " + pm.hasSystemFeature("android.hardware.telephony.gsm"));
             Log.i(TAG, "Wifi support: " + pm.hasSystemFeature("android.hardware.wifi"));
@@ -346,31 +346,31 @@ public class WirelessLoggerService extends AbstractService {
             Log.i(TAG, "Network operator: " + mTelephonyManager.getNetworkOperator());
             Log.i(TAG, mTelephonyManager.getNetworkOperatorName());
             Log.i(TAG, "Roaming: " + mTelephonyManager.isNetworkRoaming());
-            Log.wtf(TAG, "------------ YOU MAY WANT TO REDACT INFO BELOW ABOVE POSTING THIS TO THE INTERNET \"------------ ");
+            Log.wtf(TAG, "------------ YOU MAY WANT TO REDACT INFO BELOW ABOVE POSTING THIS TO THE INTERNET ------------ ");
         }
 
-        mPhoneListener = new PhoneStateListener() {
+        mPhoneStateListener = new PhoneStateListener() {
             @Override
             public void onSignalStrengthsChanged(final SignalStrength signalStrength) {
                 // TODO we need a timestamp for signal strength
                 try {
-                    cdmaStrengthDbm = signalStrength.getCdmaDbm();
-                    cdmaEcIo = signalStrength.getCdmaEcio();
+                    mCdmaStrengthDbm = signalStrength.getCdmaDbm();
+                    mCdmaEcIo = signalStrength.getmCdmaEcIo();
                 } catch (final Exception e) {
                     Log.e(TAG, e.toString(), e);
                 }
                 try {
-                    signalStrengthEvdodBm = signalStrength.getEvdoDbm();
-                    signalStrengthEvdoEcio = signalStrength.getEvdoEcio();
-                    signalStrengthSnr = signalStrength.getEvdoSnr();
+                    mSignalStrengthEvdodBm = signalStrength.getEvdoDbm();
+                    mSignalStrengthEvdoEcio = signalStrength.getEvdoEcio();
+                    mSignalStrengthSnr = signalStrength.getEvdoSnr();
                 } catch (final Exception e) {
                     Log.e(TAG, e.toString(), e);
                 }
 
                 try {
-                    gsmBitErrorRate = signalStrength.getGsmBitErrorRate();
-                    gsmStrengthAsu = signalStrength.getGsmSignalStrength();
-                    gsmStrengthDbm = -113 + 2 * gsmStrengthAsu; // conversion ASU in dBm
+                    mGsmBitErrorRate = signalStrength.getmGsmBitErrorRate();
+                    mGsmStrengthAsu = signalStrength.getGsmSignalStrength();
+                    mGsmStrengthDbm = -113 + 2 * mGsmStrengthAsu; // conversion ASU in dBm
                 } catch (final Exception e) {
                     Log.e(TAG, e.toString(), e);
                 }
@@ -413,7 +413,7 @@ public class WirelessLoggerService extends AbstractService {
         /**
          *	Register TelephonyManager updates
          */
-        mTelephonyManager.listen(mPhoneListener,
+        mTelephonyManager.listen(mPhoneStateListener,
                 PhoneStateListener.LISTEN_SERVICE_STATE
                         | PhoneStateListener.LISTEN_SIGNAL_STRENGTHS
                         | PhoneStateListener.LISTEN_CELL_LOCATION);
@@ -423,7 +423,7 @@ public class WirelessLoggerService extends AbstractService {
      * Unregisters PhoneStateListener
      */
     private void unregisterPhoneStateManager() {
-        mTelephonyManager.listen(mPhoneListener, PhoneStateListener.LISTEN_NONE);
+        mTelephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_NONE);
     }
 
     /**
@@ -841,7 +841,7 @@ public class WirelessLoggerService extends AbstractService {
         serving.setNetworkId(String.valueOf(cdmaLocation.getNetworkId()));
         serving.setSystemId(String.valueOf(cdmaLocation.getSystemId()));
 
-        serving.setStrengthdBm(cdmaStrengthDbm);
+        serving.setStrengthdBm(mCdmaStrengthDbm);
         return serving;
     }
 
@@ -896,8 +896,8 @@ public class WirelessLoggerService extends AbstractService {
         }
 
         serving.setArea(gsmLocation.getLac());
-        serving.setStrengthdBm(gsmStrengthDbm);
-        serving.setStrengthAsu(gsmStrengthAsu);
+        serving.setStrengthdBm(mGsmStrengthDbm);
+        serving.setStrengthAsu(mGsmStrengthAsu);
         return serving;
     }
 
