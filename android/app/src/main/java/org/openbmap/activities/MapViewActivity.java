@@ -68,8 +68,6 @@ import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.PositionRecord;
 import org.openbmap.db.models.WifiRecord;
 import org.openbmap.events.onLocationUpdate;
-import org.openbmap.utils.CatalogObjectsLoader;
-import org.openbmap.utils.CatalogObjectsLoader.OnCatalogLoadedListener;
 import org.openbmap.utils.GeometryUtils;
 import org.openbmap.utils.GpxMapObjectsLoader;
 import org.openbmap.utils.GpxMapObjectsLoader.OnGpxLoadedListener;
@@ -90,7 +88,6 @@ import java.util.List;
  * visible
  */
 public class MapViewActivity extends Fragment implements
-        OnCatalogLoadedListener,
         OnSessionLoadedListener,
         OnGpxLoadedListener,
         ActionBar.OnNavigationListener, onLongPressHandler {
@@ -193,6 +190,8 @@ public class MapViewActivity extends Fragment implements
      */
     private static TileDownloadLayer mMapDownloadLayer = null;
 
+    private Layer mCatalogLayer;
+
     private Paint mPaintCatalogFill;
 
     private Paint mPaintCatalogStroke;
@@ -206,8 +205,6 @@ public class MapViewActivity extends Fragment implements
      * Paint style for objects from other sessions
      */
     private Paint mPaintOtherSessionFill;
-
-    public List<Layer> mCatalogObjects;
 
     private List<Layer> mSessionObjects;
 
@@ -297,7 +294,6 @@ public class MapViewActivity extends Fragment implements
         // get shared preferences
         prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
-        mCatalogObjects = new ArrayList<>();
         mSessionObjects = new ArrayList<>();
         mGpxObjects = new Polyline(MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(Color.BLACK), STROKE_GPX_WIDTH,
                 Style.STROKE), AndroidGraphicFactory.INSTANCE);
@@ -327,7 +323,6 @@ public class MapViewActivity extends Fragment implements
             mMapDownloadLayer.onPause();
         }
 
-        clearCatalogLayer();
         clearSessionLayer();
         clearGpxLayer();
 
@@ -351,7 +346,6 @@ public class MapViewActivity extends Fragment implements
             //initMap();
         } else {
             Log.d(TAG, "Map not visible, releasing");
-            clearCatalogLayer();
             clearSessionLayer();
             clearGpxLayer();
             // TODO: currently no possible due to https://github.com/mapsforge/mapsforge/issues/659
@@ -462,8 +456,6 @@ public class MapViewActivity extends Fragment implements
 
                     if (catalogLayerSelected() && catalogLayerOutdated(position)) {
                         refreshCatalogLayer(position);
-                    } else {
-                        clearCatalogLayer();
                     }
                 }
             }
@@ -586,8 +578,6 @@ public class MapViewActivity extends Fragment implements
 
         if (catalogLayerSelected()) {
             refreshCatalogLayer(mapCenter);
-        } else {
-            clearCatalogLayer();
         }
     }
 
@@ -603,7 +593,6 @@ public class MapViewActivity extends Fragment implements
             Log.d(TAG, "Updating wifi catalog layer");
             mRefreshCatalogPending = true;
             new PoiSearchTask(this, POI_CATEGORY).execute(this.mMapView.getBoundingBox());
-            //triggerCatalogObjectsUpdate();
             catalogObjectsRefreshedAt = location;
             catalogObjectsRefreshTime = System.currentTimeMillis();
         } else if (!isVisible()){
@@ -611,6 +600,30 @@ public class MapViewActivity extends Fragment implements
         } else {
             Log.v(TAG, "Wifi catalog layer is refreshing. Skipping refresh..");
         }
+    }
+
+    public void redrawLayers(Layer sessionLayer, Layer catalogLayer, Layer gpxLayer) {
+        Log.d(TAG, "Redraw layers");
+        if (sessionLayer != null){
+            Log.d(TAG , "NOT IMPLETEMENTED YET");
+        }
+        if (catalogLayer != null){
+            Log.d(TAG , "Updating catalog layer");
+            mRefreshCatalogPending = false;
+            if (mCatalogLayer != null) {
+                Log.d(TAG , "Removing outdated catalog layer");
+                synchronized (this) {
+                    this.mMapView.getLayerManager().getLayers().remove(mCatalogLayer);
+                    mCatalogLayer = null;
+                }
+            }
+            mCatalogLayer = catalogLayer;
+        }
+        if (gpxLayer != null){
+            Log.d(TAG , "NOT IMPLETEMENTED YET");
+        }
+        mMapView.getLayerManager().redrawLayers();
+
     }
 
     /**
@@ -631,28 +644,6 @@ public class MapViewActivity extends Fragment implements
             this.mMapView.getLayerManager().getLayers().remove(layer);
         }
         mSessionObjects.clear();
-    }
-
-    /**
-     * Clears catalog layer objects
-     */
-    private void clearCatalogLayer() {
-        if (mCatalogObjects == null) {
-            return;
-        }
-
-        if (mMapView == null) {
-            mCatalogObjects = null;
-            return;
-        }
-
-        synchronized (mCatalogObjects) {
-            for (final Iterator<Layer> iterator = mCatalogObjects.iterator(); iterator.hasNext(); ) {
-                final Layer layer = iterator.next();
-                this.mMapView.getLayerManager().getLayers().remove(layer);
-            }
-            mCatalogObjects.clear();
-        }
     }
 
     /**
@@ -684,87 +675,6 @@ public class MapViewActivity extends Fragment implements
                 (catalogObjectsRefreshedAt.distanceTo(current) > CATALOG_REFRESH_DISTANCE)
                         && ((System.currentTimeMillis() - catalogObjectsRefreshTime) > CATALOG_REFRESH_INTERVAL)
         );
-    }
-
-    /**
-     * Loads reference wifis around location from openbmap wifi catalog.
-     * Callback function, upon completion onCatalogLoaded is called for drawing
-     */
-    @Deprecated
-    private void triggerCatalogObjectsUpdate() {
-
-        if (mMapView == null) {
-            return;
-        }
-
-        final BoundingBox bbox = MapPositionUtil.getBoundingBox(
-                mMapView.getModel().mapViewPosition.getMapPosition(),
-                mMapView.getDimension(), mMapView.getModel().displayModel.getTileSize());
-
-        double minLatitude = bbox.minLatitude;
-        double maxLatitude = bbox.maxLatitude;
-        double minLongitude = bbox.minLongitude;
-        double maxLongitude = bbox.maxLongitude;
-
-        // query more than visible objects for smoother data scrolling / less database queries?
-        if (PREFETCH_MAP_OBJECTS) {
-            final double latSpan = maxLatitude - minLatitude;
-            final double lonSpan = maxLongitude - minLongitude;
-            minLatitude -= latSpan * 0.5;
-            maxLatitude += latSpan * 0.5;
-            minLongitude -= lonSpan * 0.5;
-            maxLongitude += lonSpan * 0.5;
-        }
-        final CatalogObjectsLoader task = new CatalogObjectsLoader(getActivity(), this);
-        task.execute(minLatitude, maxLatitude, minLongitude, maxLongitude);
-
-    }
-
-    /* (non-Javadoc)
-     * @see org.openbmap.utils.WifiCatalogMapObjectsLoader.OnCatalogLoadedListener#onComplete(java.util.ArrayList)
-     */
-    @Override
-    @Deprecated
-    public final void onCatalogLoaded(final List<LatLong> points) {
-        Log.d(TAG, "Loaded catalog objects");
-        if (mMapView == null) {
-            return;
-        }
-
-        final Layers layers = mMapView.getLayerManager().getLayers();
-
-        clearCatalogLayer();
-
-        // redraw
-        for (final LatLong point : points) {
-            final Circle circle = new Circle(point, CIRCLE_WIFI_CATALOG_WIDTH, mPaintCatalogFill, mPaintCatalogStroke);
-            mCatalogObjects.add(circle);
-        }
-
-        /**
-         * Draw stack (z-order):
-         *   base map
-         *   catalog objects
-         *   session objects
-         */
-        int insertAfter = -1;
-        synchronized (mCatalogObjects) {
-            if (layers.size() > 0) {
-                // base map
-                insertAfter = 1;
-            } else {
-                // no map
-                insertAfter = 0;
-            }
-
-            for (int i = 0; i < mCatalogObjects.size(); i++) {
-                layers.add(insertAfter + i, mCatalogObjects.get(i));
-            }
-        }
-
-        // enable next refresh
-        mRefreshCatalogPending = false;
-        Log.d(TAG, "Drawed catalog objects");
     }
 
     /**
@@ -878,45 +788,6 @@ public class MapViewActivity extends Fragment implements
                 // other session objects are smaller and in other color
                 final Circle circle = new Circle(point, CIRCLE_OTHER_SESSION_WIDTH, mPaintOtherSessionFill, null);
                 mSessionObjects.add(circle);
-            }
-        }
-
-        /**
-         * Draw stack (z-order):
-         *   base map
-         *   catalog
-         *   objects
-         *   session objects
-         */
-        int insertAfter = -1;
-
-        synchronized (mCatalogObjects) {
-            if (layers.size() > 0 && mCatalogObjects.size() > 0) {
-                // base map + catalog objects
-                // this fails if we catalog objects which have not yet been drawn
-                // insertAfter = layers.indexOf((Layer) catalogObjects.get(catalogObjects.size() - 1));
-                // fail safe insert: at the end..
-                insertAfter = layers.size();
-            } else if (layers.size() > 0 && mCatalogObjects.size() == 0) {
-                // base map + no catalog objects
-                insertAfter = 1;
-            } else {
-                // no map + no catalog objects
-                insertAfter = 0;
-            }
-
-            if (insertAfter > layers.size() + 1) {
-                Log.w(TAG, "Index out of bounds, resetting to list end");
-                insertAfter = layers.size();
-            }
-
-            if (insertAfter == -1) {
-                Log.w(TAG, "Index out of bounds, resetting to 0");
-                insertAfter = 0;
-            }
-
-            for (int i = 0; i < mSessionObjects.size(); i++) {
-                layers.add(insertAfter + i, mSessionObjects.get(i));
             }
         }
 
@@ -1115,7 +986,7 @@ public class MapViewActivity extends Fragment implements
         // release zoom / move observer for gc
         this.mMapObserver = null;
 
-        MapUtils.clearRessources();
+        MapUtils.clearAndroidRessources();
     }
 
     /* (non-Javadoc)

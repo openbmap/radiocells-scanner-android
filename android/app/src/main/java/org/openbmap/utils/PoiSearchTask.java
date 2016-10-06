@@ -32,21 +32,18 @@ public class PoiSearchTask extends AsyncTask<BoundingBox, Void, Collection<Point
     private final String category;
 
     public PoiSearchTask(MapViewActivity activity, String category) {
-        Log.d(TAG, "Add category" + category);
+        //Log.d(TAG, "Add category" + category);
         this.weakActivity = new WeakReference<>(activity);
         this.category = category;
     }
 
     @Override
     protected Collection<PointOfInterest> doInBackground(BoundingBox... params) {
-        Log.d(TAG, "Add stuff from germany.poi in " + ((BoundingBox)params[0]).minLatitude + "/" + ((BoundingBox)params[0]).maxLatitude);
-        Log.d(TAG, "Add lon" + ((BoundingBox)params[0]).minLongitude + "/" + ((BoundingBox)params[0]).maxLongitude);
         PoiPersistenceManager persistenceManager = null;
         try {
             String POI_FILE = Environment.getExternalStorageDirectory() + "/germany.poi";
             persistenceManager = AndroidPoiPersistenceManagerFactory.getPoiPersistenceManager(POI_FILE);
             PoiCategoryManager categoryManager = persistenceManager.getCategoryManager();
-            Log.d(TAG, "Category mgr " + categoryManager.toString());
             PoiCategoryFilter categoryFilter = new ExactMatchPoiCategoryFilter();
             categoryFilter.addCategory(categoryManager.getPoiCategoryByTitle(this.category));
             return persistenceManager.findInRect(params[0], categoryFilter, null, Integer.MAX_VALUE);
@@ -62,19 +59,18 @@ public class PoiSearchTask extends AsyncTask<BoundingBox, Void, Collection<Point
 
     @Override
     protected void onPostExecute(Collection<PointOfInterest> pointOfInterests) {
-        Log.d(TAG, "Add complete");
         final MapViewActivity activity = weakActivity.get();
         if (activity == null) {
             return;
         }
 
         if (pointOfInterests == null) {
-            Log.d(TAG, "Add - no results");
+            Log.d(TAG, "No POI founds");
             return;
         }
-        Log.d(TAG, "Add more than null");
+        Log.d(TAG, pointOfInterests.size() + " POI found");
+        LegacyGroupLayer groupLayer = new LegacyGroupLayer();
         for (final PointOfInterest pointOfInterest : pointOfInterests) {
-            Log.d(TAG, "Add " + pointOfInterest.getData());
             final Circle circle = new FixedPixelCircle(pointOfInterest.getLatLong(), 16, MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_WIFI_CATALOG_FILL, 120, 150, 120), 2, Style.FILL), null) {
                 @Override
                 public boolean onTap(LatLong tapLatLong, Point layerXY, Point tapXY) {
@@ -87,9 +83,9 @@ public class PoiSearchTask extends AsyncTask<BoundingBox, Void, Collection<Point
                     return false;
                 }
             };
-            activity.mMapView.getLayerManager().getLayers().add(circle);
+            groupLayer.layers.add(circle);
         }
-
-        //activity.redrawLayers();
+        activity.mMapView.getLayerManager().getLayers().add(groupLayer);
+        activity.redrawLayers(null, groupLayer, null);
     }
 }

@@ -52,7 +52,10 @@ public final class MapUtils {
 	private static final String TAG = MapUtils.class.getSimpleName();
 
 
-    public static void clearRessources() {
+    /**
+     * Clears Android ressources
+     */
+    public static void clearAndroidRessources() {
         AndroidResourceBitmap.clearResourceBitmaps();
         AndroidGraphicFactory.clearResourceMemoryCache();
     }

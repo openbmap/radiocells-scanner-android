@@ -203,7 +203,7 @@ public class WifiDetailsMap extends Fragment implements HeatmapBuilderListener, 
 		super.onDestroy();
 
 		this.mMapView.destroyAll();
-        MapUtils.clearRessources();
+        MapUtils.clearAndroidRessources();
 	}
 
 	@Override
