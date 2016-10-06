@@ -7,12 +7,26 @@ android {
         exclude 'META-INF/NOTICE.txt'
     }
     compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    buildToolsVersion '24.0.2'
+
     defaultConfig {
         applicationId "org.openbmap"
-        minSdkVersion 13
+        minSdkVersion 22
         targetSdkVersion 23
     }
+
+
+    sourceSets {
+        main {
+            file("${rootDir}/spatialite-android/natives").eachDir() { dir ->
+                jniLibs.srcDirs += "${dir.path}/lib"
+            }
+        }
+        androidTest {
+            java.srcDirs = ['src/androidTest']
+        }
+    }
+
     buildTypes {
         debug {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
@@ -49,10 +63,11 @@ buildscript {
 
 dependencies {
     testCompile 'junit:junit:4.12'
-    compile group: 'cz.msebera.android', name: 'httpclient', version: '4.4.1.1'
-    compile 'com.android.support:support-v4:23.2.1'
-    compile 'com.android.support:appcompat-v7:23.2.1'
-    compile 'com.android.support:support-v13:23.2.1'
+    compile 'org.mapsforge:spatialite-android'
+    compile 'cz.msebera.android:httpclient:4.4.1.1'
+    compile 'com.android.support:support-v4:23.+'
+    compile 'com.android.support:appcompat-v7:23.+'
+    compile 'com.android.support:support-v13:23.+'
     compile 'org.greenrobot:eventbus:3.0.0'
     apt 'org.greenrobot:eventbus-annotation-processor:3.0.1'
     compile 'com.caverock:androidsvg:1.2.1'
@@ -62,6 +77,7 @@ dependencies {
     compile 'org.mapsforge:mapsforge:0.6.1'
     compile 'org.mapsforge:mapsforge-core:0.6.1'
     compile 'org.mapsforge:mapsforge-map:0.6.1'
+    compile 'org.mapsforge:mapsforge-poi-android:0.6.1'
     compile 'org.mapsforge:mapsforge-map-android:0.6.1'
     compile 'org.mapsforge:mapsforge-map-reader:0.6.1'
 }

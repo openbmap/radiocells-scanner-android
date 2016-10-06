@@ -75,6 +75,7 @@ import org.openbmap.utils.GpxMapObjectsLoader;
 import org.openbmap.utils.GpxMapObjectsLoader.OnGpxLoadedListener;
 import org.openbmap.utils.MapUtils;
 import org.openbmap.utils.MapUtils.onLongPressHandler;
+import org.openbmap.utils.PoiSearchTask;
 import org.openbmap.utils.SessionLatLong;
 import org.openbmap.utils.SessionObjectsLoader;
 import org.openbmap.utils.SessionObjectsLoader.OnSessionLoadedListener;
@@ -177,7 +178,7 @@ public class MapViewActivity extends Fragment implements
     /**
      * MapView
      */
-    private MapView mMapView;
+    public MapView mMapView;
 
     //[end]
 
@@ -206,7 +207,7 @@ public class MapViewActivity extends Fragment implements
      */
     private Paint mPaintOtherSessionFill;
 
-    private List<Layer> mCatalogObjects;
+    public List<Layer> mCatalogObjects;
 
     private List<Layer> mSessionObjects;
 
@@ -596,10 +597,13 @@ public class MapViewActivity extends Fragment implements
      * @param location
      */
     protected final void refreshCatalogLayer(final Location location) {
+        String POI_CATEGORY = "Cell-Wifi Data";
+
         if (!mRefreshCatalogPending && isVisible()) {
             Log.d(TAG, "Updating wifi catalog layer");
             mRefreshCatalogPending = true;
-            triggerCatalogObjectsUpdate();
+            new PoiSearchTask(this, POI_CATEGORY).execute(this.mMapView.getBoundingBox());
+            //triggerCatalogObjectsUpdate();
             catalogObjectsRefreshedAt = location;
             catalogObjectsRefreshTime = System.currentTimeMillis();
         } else if (!isVisible()){
@@ -686,6 +690,7 @@ public class MapViewActivity extends Fragment implements
      * Loads reference wifis around location from openbmap wifi catalog.
      * Callback function, upon completion onCatalogLoaded is called for drawing
      */
+    @Deprecated
     private void triggerCatalogObjectsUpdate() {
 
         if (mMapView == null) {
@@ -719,6 +724,7 @@ public class MapViewActivity extends Fragment implements
      * @see org.openbmap.utils.WifiCatalogMapObjectsLoader.OnCatalogLoadedListener#onComplete(java.util.ArrayList)
      */
     @Override
+    @Deprecated
     public final void onCatalogLoaded(final List<LatLong> points) {
         Log.d(TAG, "Loaded catalog objects");
         if (mMapView == null) {
