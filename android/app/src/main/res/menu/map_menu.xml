@@ -9,12 +9,12 @@
         <item
             android:id="@+id/menu_enableTowers"
             android:checkable="true"
-            android:title="@string/show_osm_towers">
+            android:title="@string/enable_osm_towers">
         </item>
         <item
             android:id="@+id/menu_enableWifis"
             android:checkable="true"
-            android:title="@string/show_known_wifis">
+            android:title="@string/enable_known_wifis">
         </item>
     </group>
 

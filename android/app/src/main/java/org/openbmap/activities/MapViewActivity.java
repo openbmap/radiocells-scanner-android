@@ -193,7 +193,7 @@ public class MapViewActivity extends Fragment implements
 
     private Layer knownWifisLayer;
 
-    private Layer towerLayer;
+    private Layer towersLayer;
     /**
      * Paint style for active sessions objects
      */
@@ -521,10 +521,14 @@ public class MapViewActivity extends Fragment implements
             case R.id.menu_enableTowers:
                 item.setChecked(!item.isChecked());
                 isTowersLayerEnabled = item.isChecked();
+                clearOverlays();
+                updateAllLayers();
                 return true;
             case R.id.menu_enableWifis:
                 item.setChecked(!item.isChecked());
                 isWifisLayerEnabled= item.isChecked();
+                clearOverlays();
+                updateAllLayers();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -666,30 +670,60 @@ public class MapViewActivity extends Fragment implements
         if (category == PoiType.CellTower){
             Log.d(TAG , "Updating cell tower layer");
             isUpdatingTowers = false;
-            if (towerLayer != null) {
-                Log.d(TAG , "Removing outdated tower layer");
-                synchronized (this) {
-                    this.mapView.getLayerManager().getLayers().remove(towerLayer);
-                    towerLayer = null;
-                    AndroidResourceBitmap.clearResourceBitmaps();
-                }
+            if (towersLayer != null) {
+                clearTowers();
             }
-            towerLayer = layer;
+            towersLayer = layer;
         } if (category == PoiType.Wifi){
             Log.d(TAG , "Updating catalog layer");
             isUpdatingWifis = false;
             if (knownWifisLayer != null) {
-                Log.d(TAG , "Removing outdated catalog layer");
-                synchronized (this) {
-                    this.mapView.getLayerManager().getLayers().remove(knownWifisLayer);
-                    knownWifisLayer = null;
-                }
+                clearWifis();
             }
             knownWifisLayer = layer;
         }
 
         mapView.getLayerManager().redrawLayers();
 
+    }
+
+    /**
+     * Clears database overlays
+     */
+    private void clearOverlays() {
+        clearTowers();
+        clearWifis();
+    }
+
+    /**
+     * Clears known wifis overlay
+     */
+    private void clearWifis() {
+        synchronized (this) {
+            isUpdatingWifis = false;
+
+            if (knownWifisLayer != null) {
+                this.mapView.getLayerManager().getLayers().remove(knownWifisLayer);
+            }
+
+            knownWifisLayer = null;
+        }
+    }
+
+    /**
+     * Clears towers overlay
+     */
+    private void clearTowers() {
+        synchronized (this) {
+            isUpdatingTowers = false;
+
+            if (towersLayer != null) {
+                this.mapView.getLayerManager().getLayers().remove(towersLayer);
+            }
+
+            towersLayer = null;
+            AndroidResourceBitmap.clearResourceBitmaps();
+        }
     }
 
     /**
