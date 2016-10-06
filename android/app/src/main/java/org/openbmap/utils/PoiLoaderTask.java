@@ -76,11 +76,26 @@ public class PoiLoaderTask extends AsyncTask<BoundingBox, Void, Collection<Point
             } else {
                 filter = null;
             }
+
+            // Set over-draw: query more than visible range for smoother data scrolling / less database queries
+            double minLatitude = params[0].minLatitude;
+            double maxLatitude = params[0].maxLatitude;
+            double minLongitude = params[0].minLongitude;
+            double maxLongitude = params[0].maxLongitude;
+
+            final double latSpan = maxLatitude - minLatitude;
+            final double lonSpan = maxLongitude - minLongitude;
+            minLatitude -= latSpan * 0.5;
+            maxLatitude += latSpan * 0.5;
+            minLongitude -= lonSpan * 0.5;
+            maxLongitude += lonSpan * 0.5;
+            final BoundingBox overdraw = new BoundingBox(minLatitude,minLongitude,maxLatitude,maxLongitude);
+
             persistenceManager = AndroidPoiPersistenceManagerFactory.getPoiPersistenceManager(POI_FILE);
             PoiCategoryManager categoryManager = persistenceManager.getCategoryManager();
             PoiCategoryFilter categoryFilter = new ExactMatchPoiCategoryFilter();
             categoryFilter.addCategory(categoryManager.getPoiCategoryByTitle(filter));
-            return persistenceManager.findInRect(params[0], categoryFilter, null, MAX_OBJECTS);
+            return persistenceManager.findInRect(overdraw, categoryFilter, null, MAX_OBJECTS);
         } catch (Throwable t) {
             Log.e(TAG, t.getMessage(), t);
         } finally {
