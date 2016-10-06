@@ -216,4 +216,7 @@
     <string name="failed_to_load_map_file_can_be_damaged">Failed to load map. File can be damaged.</string>
     <string name="dialog_ignore_doze_title">Ignore DOZE mode?</string>
     <string name="dialog_ignore_doze_message">Android 6 new DOZE mode may prevent Radiobeacon from working properly.\nWhitelist Radiobeacon from aggressive power-safe optimizations?</string>
+    <string name="follow_position">Follow position</string>
+    <string name="show_known_wifis">Show known wifis</string>
+    <string name="show_osm_towers">Show OSM towers</string>
 </resources>

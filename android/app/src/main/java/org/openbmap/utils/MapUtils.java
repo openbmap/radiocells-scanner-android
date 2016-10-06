@@ -17,10 +17,13 @@ package org.openbmap.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.mapsforge.core.graphics.Bitmap;
 import org.mapsforge.core.graphics.Paint;
 import org.mapsforge.core.graphics.Style;
 import org.mapsforge.core.model.LatLong;
@@ -32,6 +35,7 @@ import org.mapsforge.map.android.util.AndroidUtil;
 import org.mapsforge.map.layer.Layer;
 import org.mapsforge.map.layer.cache.TileCache;
 import org.mapsforge.map.layer.download.tilesource.OnlineTileSource;
+import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.layer.renderer.TileRendererLayer;
 import org.mapsforge.map.model.MapViewPosition;
 import org.mapsforge.map.reader.MapFile;
@@ -71,6 +75,26 @@ public final class MapUtils {
 		paint.setStyle(style);
 		return paint;
 	}
+
+    public static Marker createTappableMarker(final Context c, int resourceIdentifier,
+                                       LatLong latLong) {
+        Drawable drawable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ? c.getDrawable(resourceIdentifier) : c.getResources().getDrawable(resourceIdentifier);
+        Bitmap bitmap = AndroidGraphicFactory.convertToBitmap(drawable);
+        bitmap.incrementRefCount();
+        return new Marker(latLong, bitmap, 0, -bitmap.getHeight() / 2) {
+            @Override
+            public boolean onTap(LatLong geoPoint, Point viewPosition,
+                                 Point tapPoint) {
+                if (contains(viewPosition, tapPoint)) {
+                    Toast.makeText(c,
+                            "The Marker was tapped " + geoPoint.toString(),
+                            Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                return false;
+            }
+        };
+    }
 
 	/**
 	 * Creates a tile layer, which optionally supports long press actions and custom render themes
