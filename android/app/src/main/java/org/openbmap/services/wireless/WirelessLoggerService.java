@@ -129,23 +129,23 @@ public class WirelessLoggerService extends AbstractService {
     /*
      * 	Cells Strength information
      */
-    private int mGsmStrengthDbm = 0;
-    // TODO NeighboringCellInfo.UNKNOWN_RSSI is not adequate
-    private int mGsmStrengthAsu = NeighboringCellInfo.UNKNOWN_RSSI;
-    private int mCdmaStrengthDbm = 0;
-    private int mCdmaEcIo = 0;
-    private int mSignalStrengthEvdodBm = 0;
-    private int mSignalStrengthEvdoEcio = 0;
-    private int mSignalStrengthSnr = 0;
-    private int mGsmBitErrorRate = 0;
-    private final int mSignalStrengthGsm = 0;
-    private final boolean mSignalStrengthIsGsm = false;
+    private static int INVALID_STRENGTH = -1;
+    private int gsmStrengthDbm = INVALID_STRENGTH;
+    private int gsmStrengthAsu = INVALID_STRENGTH;
+    private int cdmaStrengthDbm = INVALID_STRENGTH;
+    private int cdmaEcIo = INVALID_STRENGTH;
+    private int signalStrengthEvdodBm = INVALID_STRENGTH;
+    private int signalStrengthEvdoEcio = INVALID_STRENGTH;
+    private int signalStrengthSnr = INVALID_STRENGTH;
+    private int gsmBitErrorRate = INVALID_STRENGTH;
+    private final int signalStrengthGsm = INVALID_STRENGTH;
+    private final boolean signalStrengthIsGsm = false;
 
     /*
      * last known location
      */
-    private Location mMostCurrentLocation = new Location("DUMMY");
-    private String mMostCurrentLocationProvider;
+    private Location lastLocation = new Location("DUMMY");
+    private String lastLocationProvider;
 
     /*
      * location of last saved cell
@@ -160,32 +160,32 @@ public class WirelessLoggerService extends AbstractService {
     /*
      * Position where wifi scan has been initiated.
      */
-    private Location mBeginLocation;
+    private Location startScanLocation;
 
     /**
      * Location provider's name (e.g. GPS)
      */
-    private String mBeginLocationProvider;
+    private String startScanLocationProvider;
 
     /*
      * Wifi Manager
      */
-    private WifiManager mWifiManager;
+    private WifiManager wifiManager;
 
     /**
      * Are we currently tracking ?
      */
-    private boolean mIsTracking = false;
+    private boolean isTracking = false;
 
     /**
      * Current session id
      */
-    private int mSessionId = RadioBeacon.SESSION_NOT_TRACKING;
+    private int sessionId = RadioBeacon.SESSION_NOT_TRACKING;
 
     /**
      * Is WifiRecord enabled ?
      */
-    private final boolean mIsWifiEnabled = false;
+    private final boolean isWifiEnabled = false;
 
     /*
      * Wifi scan is asynchronous. pendingWifiScanResults ensures that only one scan is mIsRunning
@@ -195,7 +195,7 @@ public class WirelessLoggerService extends AbstractService {
     /**
      * Wifi scan result callback
      */
-    private WifiScanCallback mWifiScanResults;
+    private WifiScanCallback wifiScanResults;
 
     /**
      * WifiLock to prevent wifi from going into sleep mode
@@ -207,30 +207,21 @@ public class WirelessLoggerService extends AbstractService {
      */
     private static final String WIFILOCK_NAME = "WakeLock.WIFI";
 
-    /**
-     * Database value for missing data
-     * Cave eat: Old api (CellLocation) reports missing data as -1, whereas new api (getAllCellInfo) reports missing data as Integer.MAX_VALUE
-     * Regardless which api is used invalid values are saved with INVALID_ID
-     */
-    private static final int INVALID_VALUE = -1;
-
     /*
      * DataHelper for persisting recorded information in database
      */
-    private DataHelper mDataHelper;
-
-    private LogFile mLogFile;
+    private DataHelper dataHelper;
 
     /**
      * List of blocked ssids, e.g. moving wlans
      * Supports wild card like operations: begins with and ends with
      */
-    private SsidBlackList mSsidBlackList;
+    private SsidBlackList ssidBlackList;
 
     /**
      * List of blocked areas, e.g. home zone
      */
-    private LocationBlackList mLocationBlacklist;
+    private LocationBlackList locationBlacklist;
 
     /**
      * Wifi catalog database (used for checking if new wifi)
@@ -244,14 +235,11 @@ public class WirelessLoggerService extends AbstractService {
 
         @Override
         public void onReceive(final Context context, final Intent intent) {
-            //Log.d(TAG, "Received intent " + intent.getAction());
-
-            // handling wifi scan results
             if (WifiManager.SCAN_RESULTS_AVAILABLE_ACTION.equals(intent.getAction())) {
                 Log.d(TAG, "Wifi manager signals wifi scan results.");
                 // scan callback can be null after service has been stopped or another app has requested an update
-                if (mWifiScanResults != null) {
-                    mWifiScanResults.onWifiResultsAvailable();
+                if (wifiScanResults != null) {
+                    wifiScanResults.onWifiResultsAvailable();
                 } else {
                     Log.i(TAG, "Scan Callback is null, skipping message");
                 }
@@ -290,7 +278,7 @@ public class WirelessLoggerService extends AbstractService {
 		/*
          * Setting up database connection
 		 */
-        mDataHelper = new DataHelper(this);
+        dataHelper = new DataHelper(this);
 
         registerWakeLocks();
 
@@ -309,11 +297,11 @@ public class WirelessLoggerService extends AbstractService {
         final String mBlacklistPath = getApplicationContext().getExternalFilesDir(null).getAbsolutePath() + File.separator
                 + Preferences.BLACKLIST_SUBDIR;
 
-        mLocationBlacklist = new LocationBlackList();
-        mLocationBlacklist.openFile(mBlacklistPath + File.separator + RadioBeacon.DEFAULT_LOCATION_BLOCK_FILE);
+        locationBlacklist = new LocationBlackList();
+        locationBlacklist.openFile(mBlacklistPath + File.separator + RadioBeacon.DEFAULT_LOCATION_BLOCK_FILE);
 
-        mSsidBlackList = new SsidBlackList();
-        mSsidBlackList.openFile(
+        ssidBlackList = new SsidBlackList();
+        ssidBlackList.openFile(
                 mBlacklistPath + File.separator + RadioBeacon.DEFAULT_SSID_BLOCK_FILE,
                 mBlacklistPath + File.separator + RadioBeacon.CUSTOM_SSID_BLOCK_FILE);
     }
@@ -322,13 +310,12 @@ public class WirelessLoggerService extends AbstractService {
      * Register Wifi Manager to permanently measuring wifi strength
      */
     private void registerWifiManager() {
-        mWifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+        wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
     }
 
     /**
      * Register PhoneStateListener to permanently measuring cell signal strength
      */
-    @SuppressLint("NewApi")
     private void registerPhoneStateManager() {
         Log.i(TAG, "Booting telephony manager");
         mTelephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
@@ -354,23 +341,23 @@ public class WirelessLoggerService extends AbstractService {
             public void onSignalStrengthsChanged(final SignalStrength signalStrength) {
                 // TODO we need a timestamp for signal strength
                 try {
-                    mCdmaStrengthDbm = signalStrength.getCdmaDbm();
-                    mCdmaEcIo = signalStrength.getCdmaEcio();
+                    cdmaStrengthDbm = signalStrength.getCdmaDbm();
+                    cdmaEcIo = signalStrength.getCdmaEcio();
                 } catch (final Exception e) {
                     Log.e(TAG, e.toString(), e);
                 }
                 try {
-                    mSignalStrengthEvdodBm = signalStrength.getEvdoDbm();
-                    mSignalStrengthEvdoEcio = signalStrength.getEvdoEcio();
-                    mSignalStrengthSnr = signalStrength.getEvdoSnr();
+                    signalStrengthEvdodBm = signalStrength.getEvdoDbm();
+                    signalStrengthEvdoEcio = signalStrength.getEvdoEcio();
+                    signalStrengthSnr = signalStrength.getEvdoSnr();
                 } catch (final Exception e) {
                     Log.e(TAG, e.toString(), e);
                 }
 
                 try {
-                    mGsmBitErrorRate = signalStrength.getGsmBitErrorRate();
-                    mGsmStrengthAsu = signalStrength.getGsmSignalStrength();
-                    mGsmStrengthDbm = -113 + 2 * mGsmStrengthAsu; // conversion ASU in dBm
+                    gsmBitErrorRate = signalStrength.getGsmBitErrorRate();
+                    gsmStrengthAsu = signalStrength.getGsmSignalStrength();
+                    gsmStrengthDbm = -113 + 2 * gsmStrengthAsu; // conversion ASU in dBm
                 } catch (final Exception e) {
                     Log.e(TAG, e.toString(), e);
                 }
@@ -378,29 +365,26 @@ public class WirelessLoggerService extends AbstractService {
 
             @Override
             public void onServiceStateChanged(final ServiceState serviceState) {
-
                 switch (serviceState.getState()) {
                     case ServiceState.STATE_POWER_OFF:
                         try {
+                            Log.i(TAG, "Service state: power off");
                             final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
                             final Date now = new Date();
                             final String date = formatter.format(now);
                         } catch (final Exception e) {
                             Log.e(TAG, e.toString(), e);
                         }
-
-                        //	powerOff = true;
                         break;
                     case ServiceState.STATE_OUT_OF_SERVICE:
                         try {
+                            Log.i(TAG, "Service state: out of service");
                             final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
                             final Date now = new Date();
                             final String date = formatter.format(now);
                         } catch (final Exception e) {
                             Log.e(TAG, e.toString(), e);
                         }
-
-                        //outOfService = true;
                         break;
                     default:
                         //alreadyWrittenNoCellular = false;
@@ -446,7 +430,7 @@ public class WirelessLoggerService extends AbstractService {
                 mode = WifiManager.WIFI_MODE_FULL_HIGH_PERF;
             }
 
-            mWifiLock = mWifiManager.createWifiLock(mode, WIFILOCK_NAME);
+            mWifiLock = wifiManager.createWifiLock(mode, WIFILOCK_NAME);
             mWifiLock.acquire();
         }
     }
@@ -454,7 +438,7 @@ public class WirelessLoggerService extends AbstractService {
     /**
      * Unregisters wifilock
      */
-    private void unregisterWakeLocks() {
+    private void releaseWakeLocks() {
         if (mWifiLock != null && mWifiLock.isHeld()) {
             mWifiLock.release();
         }
@@ -485,13 +469,13 @@ public class WirelessLoggerService extends AbstractService {
     @Override
     public final void onDestroy() {
         Log.d(TAG, "Destroying WirelessLoggerService");
-        if (mIsTracking) {
+        if (isTracking) {
             // If we're currently tracking, save user data.
             stopTracking();
             unregisterPhoneStateManager();
         }
 
-        unregisterWakeLocks();
+        releaseWakeLocks();
         unregisterReceivers();
 
         if (mRefDb != null && mRefDb.isOpen()) {
@@ -508,28 +492,22 @@ public class WirelessLoggerService extends AbstractService {
      */
     private void performWifiUpdate() {
 
-        if (SDK_INT >= JELLY_BEAN_MR2) {
+
             // cancel if wifi is disabled
-            if (!mWifiManager.isWifiEnabled() && !mWifiManager.isScanAlwaysAvailable()) {
+            if (!wifiManager.isWifiEnabled() && !wifiManager.isScanAlwaysAvailable()) {
                 Log.i(TAG, "Wifi disabled or is scan always available off, skipping wifi scan");
                 return;
             }
-        } else {
-            if (!mWifiManager.isWifiEnabled()) {
-                Log.i(TAG, "Wifi disabled, skipping wifi scan");
-                return;
-            }
-        }
 
         // only start new scan if previous scan results have already been processed
         if (!pendingWifiScanResults) {
             Log.d(TAG, "Initiated Wifi scan. Waiting for results..");
-            mWifiManager.startScan();
+            wifiManager.startScan();
             pendingWifiScanResults = true;
 
             // initialize wifi scan callback if needed
-            if (this.mWifiScanResults == null) {
-                this.mWifiScanResults = new WifiScanCallback() {
+            if (this.wifiScanResults == null) {
+                this.wifiScanResults = new WifiScanCallback() {
                     public void onWifiResultsAvailable() {
                         Log.d(TAG, "Wifi results are available now.");
 
@@ -541,31 +519,31 @@ public class WirelessLoggerService extends AbstractService {
 
                         if (pendingWifiScanResults) {
                             Log.d(TAG, "Wifi scan results arrived..");
-                            final List<ScanResult> scanlist = mWifiManager.getScanResults();
+                            final List<ScanResult> scanlist = wifiManager.getScanResults();
                             if (scanlist != null) {
 
                                 // Common position for all scan result wifis
-                                if (!GeometryUtils.isValidLocation(mBeginLocation) || !GeometryUtils.isValidLocation(mMostCurrentLocation)) {
+                                if (!GeometryUtils.isValidLocation(startScanLocation) || !GeometryUtils.isValidLocation(lastLocation)) {
                                     Log.e(TAG, "Couldn't save wifi result: invalid location");
                                     return;
                                 }
 
                                 // if we're in blocked area, skip everything
                                 // set mWifiSavedAt nevertheless, so next scan can be scheduled properly
-                                if (mLocationBlacklist.contains(mBeginLocation)) {
-                                    mWifiSavedAt = mBeginLocation;
+                                if (locationBlacklist.contains(startScanLocation)) {
+                                    mWifiSavedAt = startScanLocation;
                                     broadcastBlacklisted(null, null, BlacklistReasonType.LocationBad);
                                     return;
                                 }
 
                                 final ArrayList<WifiRecord> wifis = new ArrayList<>();
-                                final PositionRecord begin = new PositionRecord(mBeginLocation, mSessionId, mBeginLocationProvider);
-                                final PositionRecord end = new PositionRecord(mMostCurrentLocation, mSessionId, mMostCurrentLocationProvider);
+                                final PositionRecord begin = new PositionRecord(startScanLocation, sessionId, startScanLocationProvider);
+                                final PositionRecord end = new PositionRecord(lastLocation, sessionId, lastLocationProvider);
 
                                 // Generates a list of wifis from scan results
                                 for (final ScanResult r : scanlist) {
                                     boolean skipThis = false;
-                                    if (mSsidBlackList.contains(r.SSID)) {
+                                    if (ssidBlackList.contains(r.SSID)) {
                                         // skip invalid wifis
                                         Log.i(TAG, "Ignored " + r.SSID + " (on ssid blacklist)");
                                         broadcastBlacklisted(r.SSID, r.BSSID, BlacklistReasonType.SsidBlocked);
@@ -586,7 +564,7 @@ public class WirelessLoggerService extends AbstractService {
                                         wifi.setOpenBmapTimestamp(begin.getOpenBmapTimestamp());
                                         wifi.setBeginPosition(begin);
                                         wifi.setEndPosition(end);
-                                        wifi.setSessionId(mSessionId);
+                                        wifi.setSessionId(sessionId);
                                         //wifi.setNew(checkIsNew(r.BSSID));
                                         Log.i(TAG, "Checking catalog status");
                                         wifi.setCatalogStatus(checkCatalogStatus(r.BSSID));
@@ -599,14 +577,14 @@ public class WirelessLoggerService extends AbstractService {
                                     }
                                 }
                                 // Log.i(TAG, "Saving wifis");
-                                mDataHelper.storeWifiScanResults(begin, end, wifis);
+                                dataHelper.storeWifiScanResults(begin, end, wifis);
 
                                 // take last seen wifi and broadcast infos in ui
                                 if (wifis.size() > 0) {
                                     broadcastWifiInfos(wifis);
                                 }
 
-                                mWifiSavedAt = mBeginLocation;
+                                mWifiSavedAt = startScanLocation;
                             } else {
                                 // @see http://code.google.com/p/android/issues/detail?id=19078
                                 Log.e(TAG, "WifiManager.getScanResults returned null");
@@ -666,8 +644,7 @@ public class WirelessLoggerService extends AbstractService {
 
     /**
      * Broadcasts free wifi has been found
-     *
-     * @param ssid
+     * @param ssid SSID of free wifi
      */
     private void broadcastFree(final String ssid) {
         final Intent intent = new Intent(RadioBeacon.INTENT_WIFI_FREE);
@@ -698,7 +675,7 @@ public class WirelessLoggerService extends AbstractService {
 
         // if we're in blocked area, skip everything
         // set mCellSavedAt nevertheless, so next scan can be scheduled properly
-        if (mLocationBlacklist.contains(location)) {
+        if (locationBlacklist.contains(location)) {
             mCellSavedAt = location;
             return false;
         }
@@ -707,58 +684,24 @@ public class WirelessLoggerService extends AbstractService {
         // Common data across all cells from scan:
         // 		All cells share same position
         // 		Neighbor cells share mnc, mcc and operator with serving cell
-        final PositionRecord pos = new PositionRecord(location, mSessionId, providerName);
+        final PositionRecord pos = new PositionRecord(location, sessionId, providerName);
 
-        if (isNewApiSupported()) {
-            Log.v(TAG, "Collecting cell infos (New API > 18)");
-            final List<CellInfo> cellInfoList = mTelephonyManager.getAllCellInfo();
-            Log.v(TAG, "Found " + cellInfoList.size() + " cells");
-            for (final CellInfo info : cellInfoList) {
-                final CellRecord cell = processCellInfo(info, pos);
-                if (cell != null) {
-                    cells.add(cell);
-                    broadcastCellInfo(cell);
-                }
-            }
-        } else {
-            // in theory we could use getAllCellInfos even in 17
-            // but wcdma support is lacking on 17
-            Log.v(TAG, "Collecting cell infos (API <= 17)");
-            final CellLocation cellLocation = mTelephonyManager.getCellLocation();
-
-            if (cellLocation instanceof GsmCellLocation || cellLocation instanceof CdmaCellLocation) {
-
-                final CellRecord serving = processServingCellLocation(cellLocation, pos);
-                if (serving != null) {
-                    cells.add(serving);
-                }
-
-                final ArrayList<CellRecord> neigbors = processNeighbors(serving, pos);
-                cells.addAll(neigbors);
-
-                broadcastCellInfo(serving);
+        Log.v(TAG, "Collecting cell infos (New API > 18)");
+        final List<CellInfo> cellInfoList = mTelephonyManager.getAllCellInfo();
+        Log.v(TAG, "Found " + cellInfoList.size() + " cells");
+        for (final CellInfo info : cellInfoList) {
+            final CellRecord cell = processCellInfo(info, pos);
+            if (cell != null) {
+                cells.add(cell);
+                broadcastCellInfo(cell);
             }
         }
 
         // now persist list of cell records in database
         // Caution: So far we set end position = begin position
-        mDataHelper.storeCellsScanResults(cells, pos, pos);
+        dataHelper.storeCellsScanResults(cells, pos, pos);
 
         return (cells.size() > 0);
-    }
-
-    /**
-     * Checks if new cell info api is supported (i.e. TelephonyManager.getAllCellInfo() returning not null values)
-     *
-     * @return true if new api is supported by phone
-     */
-    @SuppressLint("NewApi")
-    private boolean isNewApiSupported() {
-        if (SDK_INT >= JELLY_BEAN_MR1) {
-            return mTelephonyManager.getAllCellInfo() != null;
-        } else {
-            return false;
-        }
     }
 
     /**
@@ -768,11 +711,10 @@ public class WirelessLoggerService extends AbstractService {
      * @param position {@link PositionRecord} Current position
      * @return Serialized cell record
      */
-    @SuppressLint("NewApi")
     private CellRecord processServingCellLocation(final CellLocation cell, final PositionRecord position) {
         if (cell instanceof GsmCellLocation) {
             /*
-			 * In case of GSM network set GSM specific values
+             * In case of GSM network set GSM specific values
 			 */
             final GsmCellLocation gsmLocation = (GsmCellLocation) cell;
 
@@ -802,7 +744,7 @@ public class WirelessLoggerService extends AbstractService {
 
     @NonNull
     private CellRecord processCdma(PositionRecord position, CdmaCellLocation cdmaLocation) {
-        final CellRecord serving = new CellRecord(mSessionId);
+        final CellRecord serving = new CellRecord(sessionId);
         serving.setIsCdma(true);
 
         // generic cell info
@@ -841,13 +783,13 @@ public class WirelessLoggerService extends AbstractService {
         serving.setNetworkId(String.valueOf(cdmaLocation.getNetworkId()));
         serving.setSystemId(String.valueOf(cdmaLocation.getSystemId()));
 
-        serving.setStrengthdBm(mCdmaStrengthDbm);
+        serving.setStrengthdBm(cdmaStrengthDbm);
         return serving;
     }
 
     @Nullable
     private CellRecord processGsm(PositionRecord position, GsmCellLocation gsmLocation) {
-        final CellRecord serving = new CellRecord(mSessionId);
+        final CellRecord serving = new CellRecord(sessionId);
         serving.setIsCdma(false);
 
         // generic cell info
@@ -896,8 +838,8 @@ public class WirelessLoggerService extends AbstractService {
         }
 
         serving.setArea(gsmLocation.getLac());
-        serving.setStrengthdBm(mGsmStrengthDbm);
-        serving.setStrengthAsu(mGsmStrengthAsu);
+        serving.setStrengthdBm(gsmStrengthDbm);
+        serving.setStrengthAsu(gsmStrengthAsu);
         return serving;
     }
 
@@ -918,7 +860,7 @@ public class WirelessLoggerService extends AbstractService {
 
             if (isValidGsmCell(gsmIdentity)) {
                 Log.i(TAG, "Processing gsm cell " + gsmIdentity.getCid());
-                final CellRecord result = new CellRecord(mSessionId);
+                final CellRecord result = new CellRecord(sessionId);
                 result.setIsCdma(false);
 
                 // generic cell info
@@ -943,10 +885,10 @@ public class WirelessLoggerService extends AbstractService {
                     result.setActualCid(gsmIdentity.getCid());
                 }
 
-                if (SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+
                     // at least for Nexus 4, even HSDPA networks broadcast psc
                     result.setPsc(gsmIdentity.getPsc());
-                }
+
 
                 final String operator = mTelephonyManager.getNetworkOperator();
                 // getNetworkOperator() may return empty string, probably due to dropped connection
@@ -977,7 +919,7 @@ public class WirelessLoggerService extends AbstractService {
             final CellIdentityWcdma wcdmaIdentity = ((CellInfoWcdma) cell).getCellIdentity();
             if (isValidWcdmaCell(wcdmaIdentity)) {
                 Log.i(TAG, "Processing wcdma cell " + wcdmaIdentity.getCid());
-                final CellRecord result = new CellRecord(mSessionId);
+                final CellRecord result = new CellRecord(sessionId);
                 result.setIsCdma(false);
 
                 // generic cell info
@@ -1039,7 +981,7 @@ public class WirelessLoggerService extends AbstractService {
 				 * Assume CDMA network, if cdma location and basestation, network and system id are available
 				 */
                 Log.i(TAG, "Processing cdma cell " + cdmaIdentity.getBasestationId());
-                final CellRecord result = new CellRecord(mSessionId);
+                final CellRecord result = new CellRecord(sessionId);
                 result.setIsCdma(true);
 
                 // generic cell info
@@ -1086,7 +1028,7 @@ public class WirelessLoggerService extends AbstractService {
             final CellIdentityLte lteIdentity = ((CellInfoLte) cell).getCellIdentity();
             if (isValidLteCell(lteIdentity)) {
                 Log.i(TAG, "Processing LTE cell " + lteIdentity.getCi());
-                final CellRecord result = new CellRecord(mSessionId);
+                final CellRecord result = new CellRecord(sessionId);
                 result.setIsCdma(false);
 
                 // generic cell info
@@ -1167,7 +1109,7 @@ public class WirelessLoggerService extends AbstractService {
             final boolean skip = !isValidNeigbor(ci);
             if (!skip) {
                 // add neigboring cells
-                final CellRecord neighbor = new CellRecord(mSessionId);
+                final CellRecord neighbor = new CellRecord(sessionId);
                 // TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
                 neighbor.setOpenBmapTimestamp(cellPos.getOpenBmapTimestamp());
                 neighbor.setBeginPosition(cellPos);
@@ -1330,7 +1272,7 @@ public class WirelessLoggerService extends AbstractService {
     /**
      * Tests whether a given neighboring cell is valid
      * Check is required as some modems only return dummy values for neighboring cells
-     *
+     * <p>
      * Note: PSC is not checked, as PSC may be -1 on GSM networks
      * see https://developer.android.com/reference/android/telephony/gsm/GsmCellLocation.html#getPsc()
      *
@@ -1343,36 +1285,36 @@ public class WirelessLoggerService extends AbstractService {
         }
         return (
                 (c.getCid() != NeighboringCellInfo.UNKNOWN_CID && c.getCid() < 0xffff) &&
-                (c.getLac() != NeighboringCellInfo.UNKNOWN_CID && c.getLac() < 0xffff));
+                        (c.getLac() != NeighboringCellInfo.UNKNOWN_CID && c.getLac() < 0xffff));
     }
 
     /**
      * Broadcasts human-readable description of last cell.
-     * @param c
+     * @param cell Cell info
      */
-    private void broadcastCellInfo(final CellRecord c) {
-        if (c == null) {
+    private void broadcastCellInfo(final CellRecord cell) {
+        if (cell == null) {
             Log.e(TAG, "Broadcasting error: cell record was null");
             return;
         }
 
-        Log.v(TAG, "Broadcasting cell " + c.toString());
+        Log.v(TAG, "Broadcasting cell " + cell.toString());
 
-        String cellId = String.valueOf(c.getLogicalCellId());
-        if (c.isCdma()) {
-            cellId = String.format("%s-%s%s", c.getSystemId(), c.getNetworkId(), c.getBaseId());
+        String cellId = String.valueOf(cell.getLogicalCellId());
+        if (cell.isCdma()) {
+            cellId = String.format("%s-%s%s", cell.getSystemId(), cell.getNetworkId(), cell.getBaseId());
         }
 
-        EventBus.getDefault().post(new onCellUpdated(c.getOperatorName(),
-                c.getMcc(),
-                c.getMnc(),
-                c.getSystemId(),
-                c.getNetworkId(),
-                c.getBaseId(),
-                c.getArea(),
+        EventBus.getDefault().post(new onCellUpdated(cell.getOperatorName(),
+                cell.getMcc(),
+                cell.getMnc(),
+                cell.getSystemId(),
+                cell.getNetworkId(),
+                cell.getBaseId(),
+                cell.getArea(),
                 cellId,
-                CellRecord.TECHNOLOGY_MAP().get(c.getNetworkType()),
-                c.getStrengthdBm()));
+                CellRecord.TECHNOLOGY_MAP().get(cell.getNetworkType()),
+                cell.getStrengthdBm()));
     }
 
     @Override
@@ -1406,55 +1348,36 @@ public class WirelessLoggerService extends AbstractService {
      */
     private void startTracking(final int sessionId) {
         Log.d(TAG, "Start tracking on session " + sessionId);
-        mIsTracking = true;
-        mSessionId = sessionId;
+        isTracking = true;
+        this.sessionId = sessionId;
         // invalidate current wifi scans
         pendingWifiScanResults = false;
 
-        mLogFile = new LogFile(
-                                      Build.MANUFACTURER,
-                                      Build.MODEL,
-                                      Build.VERSION.RELEASE,
-                                      RadioBeacon.SWID,
-                                      RadioBeacon.SW_VERSION, sessionId);
+        LogFile mLogFile = new LogFile(
+                Build.MANUFACTURER,
+                Build.MODEL,
+                Build.VERSION.RELEASE,
+                RadioBeacon.SWID,
+                RadioBeacon.SW_VERSION, sessionId);
 
-        mDataHelper.storeLogFile(mLogFile, sessionId);
+        dataHelper.storeLogFile(mLogFile, sessionId);
     }
 
     /**
      * Stops wireless Logging
      */
     private void stopTracking() {
-        Log.d(TAG, "Stop tracking on session " + mSessionId);
-        mIsTracking = false;
-        mSessionId = RadioBeacon.SESSION_NOT_TRACKING;
-        mWifiScanResults = null;
-        mLogFile = null;
-    }
-
-    /**
-     * Setter for mIsTracking
-     *
-     * @return true if we're currently tracking, otherwise false.
-     */
-    public final boolean isTracking() {
-        return mIsTracking;
-    }
-
-    /**
-     * Getter for wifiEnabled
-     *
-     * @return true if WifiRecord is enabled, otherwise false.
-     */
-    public final boolean isWifiEnabled() {
-        return mIsWifiEnabled;
+        Log.d(TAG, "Stop tracking on session " + sessionId);
+        isTracking = false;
+        sessionId = RadioBeacon.SESSION_NOT_TRACKING;
+        wifiScanResults = null;
     }
 
     @Subscribe
     public void onEvent(onStartWireless event) {
         Log.d(TAG, "ACK StartWirelessEvent event");
-        mSessionId = event.session;
-        startTracking(mSessionId);
+        sessionId = event.session;
+        startTracking(sessionId);
     }
 
     @Subscribe
@@ -1468,7 +1391,7 @@ public class WirelessLoggerService extends AbstractService {
     @Subscribe
     public void onEvent(onLocationUpdate event) {
         //Log.d(TAG, "ACK onLocationUpdate event");
-        if (!mIsTracking) {
+        if (!isTracking) {
             return;
         }
 
@@ -1505,20 +1428,19 @@ public class WirelessLoggerService extends AbstractService {
 				 */
         if (acceptableWifiDistance(location, mWifiSavedAt)) {
             Log.d(TAG, "Wifi update. Distance " + location.distanceTo(mWifiSavedAt));
-            mBeginLocation = location;
-            mBeginLocationProvider = source;
+            startScanLocation = location;
+            startScanLocationProvider = source;
             performWifiUpdate();
         } else {
             Log.i(TAG, "Wifi update skipped: either to close to last location or interval < " + MIN_CELL_TIME_INTERVAL / 2000 + " seconds");
         }
 
-        mMostCurrentLocation = location;
-        mMostCurrentLocationProvider = source;
+        lastLocation = location;
+        lastLocationProvider = source;
     }
 
     /**
      * Checks, whether bssid exists in wifi catalog.
-     *
      * @param bssid
      * @return Returns
      */
