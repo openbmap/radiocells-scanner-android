@@ -49,6 +49,7 @@ import org.openbmap.RadioBeacon;
 import org.openbmap.db.models.CellRecord;
 import org.openbmap.db.models.Session;
 import org.openbmap.events.onCellUpdated;
+import org.openbmap.events.onFreeWifi;
 import org.openbmap.events.onWifiAdded;
 
 /**
@@ -178,15 +179,6 @@ public class StatsActivity extends Fragment {
                 tvIgnored.setVisibility(View.VISIBLE);
                 ivAlert.setVisibility(View.VISIBLE);
                 mFadeIgnoreHandler.postDelayed(mFadeIgnoreTask, FADE_TIME);
-            } else if (RadioBeacon.INTENT_WIFI_FREE.equals(intent.getAction())) {
-                mFadeFreeHandler.removeCallbacks(mFadeFreeTask);
-                final String ssid = intent.getStringExtra(RadioBeacon.MSG_SSID);
-                if (ssid != null) {
-                    tvFree.setText(getResources().getString(R.string.free_wifi) + "\n" + ssid);
-                }
-                tvFree.setVisibility(View.VISIBLE);
-                ivFree.setVisibility(View.VISIBLE);
-                mFadeFreeHandler.postDelayed(mFadeFreeTask, FADE_TIME);
             }
         }
     };
@@ -204,6 +196,19 @@ public class StatsActivity extends Fragment {
         tvWifiStrength.setText(String.format("%d dBm", wifiStrength));
         mLastWifiUpdate = System.currentTimeMillis();
     }
+
+    @Subscribe
+    public void onEvent(onFreeWifi event) {
+        mFadeFreeHandler.removeCallbacks(mFadeFreeTask);
+        final String ssid = event.ssid;
+        if (ssid != null) {
+            tvFree.setText(getResources().getString(R.string.free_wifi) + "\n" + ssid);
+        }
+        tvFree.setVisibility(View.VISIBLE);
+        ivFree.setVisibility(View.VISIBLE);
+        mFadeFreeHandler.postDelayed(mFadeFreeTask, FADE_TIME);
+    }
+
 
     @Subscribe
     public void onEvent(final onCellUpdated event) {
@@ -364,7 +369,6 @@ public class StatsActivity extends Fragment {
         final IntentFilter filter = new IntentFilter();
         filter.addAction(RadioBeacon.INTENT_SESSION_UPDATE);
         filter.addAction(RadioBeacon.INTENT_WIFI_BLACKLISTED);
-        filter.addAction(RadioBeacon.INTENT_WIFI_FREE);
         getActivity().registerReceiver(mReceiver, filter);
 
         if (!EventBus.getDefault().isRegistered(this)) {
