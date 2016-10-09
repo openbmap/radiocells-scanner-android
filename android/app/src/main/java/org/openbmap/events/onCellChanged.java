@@ -15,13 +15,32 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.openbmap.services.wireless.blacklists;
 
+package org.openbmap.events;
 
-public enum BlacklistReasonType {
-	NotBlacklisted,
-	BadBSSID,
-	BadSSID,
-	BadLocation,
-	Unknown
+import android.telephony.CellInfo;
+import android.telephony.CellInfoCdma;
+import android.telephony.CellInfoGsm;
+import android.telephony.CellInfoLte;
+import android.telephony.CellInfoWcdma;
+import android.util.Log;
+
+public class onCellChanged {
+
+    public static final String TAG = onCellChanged.class.getSimpleName();
+
+    public onCellChanged(final CellInfo cell) {
+        if (cell instanceof CellInfoGsm) {
+
+        } else if (cell instanceof CellInfoWcdma) {
+
+        } else if (cell instanceof CellInfoLte) {
+
+        } else if (cell instanceof CellInfoCdma) {
+
+        } else {
+            Log.v(TAG, "Cell info null or unknown type");
+        }
+    }
+
 }

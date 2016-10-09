@@ -4,6 +4,7 @@
     android:layout_height="fill_parent" >
 
     <ImageView
+        android:id="@+id/cell_symbol"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:layout_gravity="center_vertical|center_horizontal"

@@ -20,7 +20,7 @@ package org.openbmap.events;
 
 import org.openbmap.db.models.CellRecord;
 
-public class onCellUpdated {
+public class onCellSaved {
 
     public String operator;
     public String mcc = CellRecord.MCC_UNKNOWN;
@@ -48,7 +48,7 @@ public class onCellUpdated {
      * @param technology cell technology
      * @param level level (in dbm)
      */
-    public onCellUpdated(final String operatorName, final String mcc, final String mnc, final String sid, final String nid, final String bid, final int area, final String cell_id, final String technology, final int level) {
+    public onCellSaved(final String operatorName, final String mcc, final String mnc, final String sid, final String nid, final String bid, final int area, final String cell_id, final String technology, final int level) {
         this.operator = operatorName;
         this.mcc = mcc;
         this.mnc = mnc;

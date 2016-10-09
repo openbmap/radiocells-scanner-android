@@ -75,7 +75,7 @@ public final class SsidBlackListBootstraper {
 
 	private static final String[][] PREFIXES = {
 		{"default", "ASUS"},
-		{"default", "Android Barnacle Wifi Tether"},
+		{"default", "Android Barnacle KnownWifis Tether"},
 		{"default", "AndroidAP"},
 		{"default", "AndroidTether"},
 		{"default", "blackberry mobile hotspot"},
@@ -123,9 +123,9 @@ public final class SsidBlackListBootstraper {
 		{"default", "VTA Free Wi-Fi"},
 		{"default", "webOS Network"},
 		{"GoPro cams", "goprohero3"},
-		{"Swiss Post Auto Wifi", "PostAuto"},
-		{"Swiss Post Auto Wifi French", "CarPostal"},
-		{"Swiss Post Auto Wifi Italian", "AutoPostale"},
+		{"Swiss Post Auto KnownWifis", "PostAuto"},
+		{"Swiss Post Auto KnownWifis French", "CarPostal"},
+		{"Swiss Post Auto KnownWifis Italian", "AutoPostale"},
 		{"Huawei Smartphones", "Huawei"},
 		{"Huawei Smartphones", "huawei"},
 		
@@ -144,8 +144,8 @@ public final class SsidBlackListBootstraper {
 		{"Oslo airport express train on-train WiFi (Norway)","AirportExpressZone"}, 
 		{"default", "AmtrakConnect"},
 		{"default", "amtrak_"},
-		{"Arriva Nederland on-train Wifi (Netherlands)", "arriva"}, 
-		{"Arcticbus on-bus WiFi (Sweden)","Arcticbus Wifi"},
+		{"Arriva Nederland on-train KnownWifis (Netherlands)", "arriva"},
+		{"Arcticbus on-bus WiFi (Sweden)","Arcticbus KnownWifis"},
 		{"Swiss municipial busses on-bus WiFi (Italian speaking part)","AutoPostale"},
 		{"Barcelona tourisitic buses http://barcelonabusturistic.cat","Barcelona Bus Turistic "},
 		{"Tromso on-boat (and probably bus) WiFi (Norway)"	,"Boreal_Kundenett"},

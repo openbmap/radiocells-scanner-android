@@ -24,6 +24,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -36,7 +38,8 @@ import org.greenrobot.eventbus.Subscribe;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
-import org.openbmap.events.onCellUpdated;
+import org.openbmap.events.onCellChanged;
+import org.openbmap.events.onCellSaved;
 import org.openbmap.events.onLocationUpdate;
 import org.openbmap.events.onWifiAdded;
 
@@ -50,11 +53,6 @@ public class StatusBar extends LinearLayout {
 	private static final String TAG = StatusBar.class.getSimpleName();
 
 	/**
-	 * Refresh interval for gps status (in millis)
-	 */
-	private static final int STATUS_REFRESH_INTERVAL = 2000;
-
-	/**
 	 * Formatter for accuracy display.
 	 */
 	private static final DecimalFormat ACCURACY_FORMAT = new DecimalFormat("0");
@@ -64,12 +62,22 @@ public class StatusBar extends LinearLayout {
 	 * of satellites for each bars;
 	 */
 	private static final int[] SAT_INDICATOR_TRESHOLD = {2, 3, 4, 6, 8};
-	public static final String LOCATION_PARCEL = "android.location.Location";
+
+    /**
+     * Fade message after which time (in millis)
+     */
+    private static final long FADE_TIME = 2 * 1000;
 
 	/**
 	 * Containing activity
 	 */
-	private Context mContext;
+	private Context context;
+
+    /**
+     * Fades ignore messages after certain time
+     */
+    private Runnable flashSymbolTask;
+    private final Handler flashHandler = new Handler();
 
 	/**
 	 * Is GPS active ?
@@ -85,9 +93,12 @@ public class StatusBar extends LinearLayout {
 	private final TextView tvCellCount;
 	private final TextView tvAccuracy;
 
+    private final ImageView ivCellSymbol;
+
+    private final ImageView ivSatIndicator;
+
     private Bitmap mIcon;
 
-	private final ImageView imgSatIndicator;
 
     public StatusBar(final Context context, final AttributeSet attrs) {
 		super(context, attrs);
@@ -99,11 +110,20 @@ public class StatusBar extends LinearLayout {
 		tvAccuracy = (TextView) findViewById(R.id.gpsstatus_accuracy);
 		tvAccuracy.setText(getResources().getString(R.string.empty));
 
-		imgSatIndicator = (ImageView) findViewById(R.id.gpsstatus_sat_indicator);
-		imgSatIndicator.setImageResource(R.drawable.sat_indicator_unknown);
+		ivSatIndicator = (ImageView) findViewById(R.id.gpsstatus_sat_indicator);
+		ivSatIndicator.setImageResource(R.drawable.sat_indicator_unknown);
 
+        ivCellSymbol = (ImageView) findViewById(R.id.cell_symbol);
+        ivCellSymbol.setImageTintList(null);
+
+        flashSymbolTask= new Runnable() {
+            @Override
+            public void run() {
+                ivCellSymbol.clearColorFilter();
+            }
+        };
 		if (context instanceof TabHostActivity) {
-			mContext = context;
+			this.context = context;
 			registerReceiver();
             EventBus.getDefault().register(this);
 		} else {
@@ -112,18 +132,17 @@ public class StatusBar extends LinearLayout {
 	}
 
 	/**
-	 * Receives GPS location updates.
+	 * Receives SAT info updates.
 	 */
 	private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(final Context context, final Intent intent) {
-			// handle everything except location broadcasts
-			 if (RadioBeacon.INTENT_POSITION_SAT_INFO.equals(intent.getAction())) {
+			if (RadioBeacon.INTENT_POSITION_SAT_INFO.equals(intent.getAction())) {
 
 				final String status = intent.getExtras().getString("STATUS");
 				final int satCount = intent.getExtras().getInt("SAT_COUNT");
 
-                imgSatIndicator.setImageBitmap(null);
+                ivSatIndicator.setImageBitmap(null);
                 if (mIcon != null && !mIcon.isRecycled()) {
                     mIcon.recycle();
                 }
@@ -145,7 +164,7 @@ public class StatusBar extends LinearLayout {
                     mIcon = BitmapFactory.decodeResource(getResources(), R.drawable.sat_indicator_off);
 					tvAccuracy.setText(getResources().getString(R.string.no_sat_signal));
 				}
-                imgSatIndicator.setImageBitmap(mIcon);
+                ivSatIndicator.setImageBitmap(mIcon);
 			}
 		}
 	};
@@ -165,14 +184,24 @@ public class StatusBar extends LinearLayout {
     }
 
     @Subscribe
-	public void onEvent(onCellUpdated event) {
+	public void onEvent(onCellSaved event) {
 		if (mDataHelper != null) {
 			tvCellCount.setText(String.valueOf(mDataHelper.countCells(mDataHelper.getActiveSessionId())));
 		}
 	}
 
+	@Subscribe
+    public void onEvent(onCellChanged event) {
+        Log.d(TAG, "Received onCellChanged event");
+        if (flashHandler != null) {
+            flashHandler.removeCallbacks(flashSymbolTask);
+            flashHandler.postDelayed(flashSymbolTask, FADE_TIME);
+            ivCellSymbol.setColorFilter(Color.argb(255, 255, 0, 0));
+        }
+    }
+
     @Subscribe
-	public void onEvent(onWifiAdded event) {
+	public void onEvent (onWifiAdded event) {
 		if (mDataHelper != null) {
 			tvWifiCount.setText(String.valueOf(mDataHelper.countWifis(mDataHelper.getActiveSessionId())));
 			tvNewWifiCount.setText(String.valueOf(mDataHelper.countNewWifis(mDataHelper.getActiveSessionId())));
@@ -182,7 +211,7 @@ public class StatusBar extends LinearLayout {
 	@Override
 	protected void onAttachedToWindow() {
 		super.onAttachedToWindow();
-		mDataHelper = new DataHelper(mContext);
+		mDataHelper = new DataHelper(context);
 
         tvWifiCount.setText(String.valueOf(mDataHelper.countWifis(mDataHelper.getActiveSessionId())));
         tvNewWifiCount.setText(String.valueOf(mDataHelper.countNewWifis(mDataHelper.getActiveSessionId())));
@@ -198,26 +227,26 @@ public class StatusBar extends LinearLayout {
 	}
 
 	private void registerReceiver() {
-		if (mContext == null) {
+		if (context == null) {
 			Log.e(TAG, "Can't register for gps status updates: context is null");
 			return;
 		}
 		final IntentFilter filter = new IntentFilter();
 		filter.addAction(RadioBeacon.INTENT_POSITION_SAT_INFO);
-		mContext.registerReceiver(mReceiver, filter);
+		context.registerReceiver(mReceiver, filter);
 	}
 
 	/**
 	 * Unregisters receivers for GPS and wifi updates
 	 */
 	private void unregisterReceiver() {
-		if (mContext == null) {
+		if (context == null) {
 			Log.e(TAG, "Can't unregister gps status updates: context is null");
 			return;
 		}
 
 		try {
-			mContext.unregisterReceiver(mReceiver);
+			context.unregisterReceiver(mReceiver);
 		} catch (final IllegalArgumentException e) {
 			// do nothing here {@see http://stackoverflow.com/questions/2682043/how-to-check-if-mReceiver-is-registered-in-android}
 		}

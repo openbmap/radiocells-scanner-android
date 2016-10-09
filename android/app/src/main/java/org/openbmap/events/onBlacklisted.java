@@ -15,13 +15,24 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.openbmap.services.wireless.blacklists;
 
+package org.openbmap.events;
 
-public enum BlacklistReasonType {
-	NotBlacklisted,
-	BadBSSID,
-	BadSSID,
-	BadLocation,
-	Unknown
+import org.openbmap.services.wireless.blacklists.BlacklistReasonType;
+
+public class onBlacklisted {
+
+    public BlacklistReasonType reason;
+    public String message;
+
+    /**
+     * Fired when free wifi found
+     * @param reason Reason for blacklisting
+     * @param message additional info
+     */
+    public onBlacklisted(final BlacklistReasonType reason, final String message) {
+        this.reason = reason;
+        this.message = message;
+    }
+
 }

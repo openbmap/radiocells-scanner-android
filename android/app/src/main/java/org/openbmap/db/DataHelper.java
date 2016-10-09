@@ -886,10 +886,9 @@ public class DataHelper {
 	/**
 	 * Persists LogFile in database.
 	 * @param logFile
-	 * @param sessionId
 	 * @return
 	 */
-	public final Uri storeLogFile(final LogFile logFile, final int sessionId) {
+	public final Uri storeLogFile(final LogFile logFile) {
 		final ContentValues values = new ContentValues();
 		values.put(Schema.COL_MANUFACTURER, logFile.getManufacturer());
 		values.put(Schema.COL_MODEL, logFile.getModel());
@@ -897,7 +896,7 @@ public class DataHelper {
 		values.put(Schema.COL_SWID, logFile.getSwid());
 		values.put(Schema.COL_SWVER, logFile.getSwVersion());
 		values.put(Schema.COL_TIMESTAMP, System.currentTimeMillis());
-		values.put(Schema.COL_SESSION_ID, sessionId);
+		values.put(Schema.COL_SESSION_ID, logFile.getSessionId());
 
 		return contentResolver.insert(ContentProvider.CONTENT_URI_LOGFILE, values);
 	}
@@ -916,7 +915,7 @@ public class DataHelper {
 
     /**
      * Stores position.
-     * This method is only used for separate positions. Wifi and cell positions are added in batch mode
+     * This method is only used for separate positions. KnownWifis and cell positions are added in batch mode
      * in storeCellsScanResults and storeWifiScanResults
      * @param pos
      * @return

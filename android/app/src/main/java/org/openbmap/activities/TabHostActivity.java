@@ -52,7 +52,7 @@ import org.openbmap.services.MasterBrainService;
 import org.openbmap.utils.ActivityUtils;
 
 /**
- * TabHostActivity for "tracking" mode. It hosts the tabs "Stats", "Wifi Overview", "Cell Overview" and "Map".
+ * TabHostActivity for "tracking" mode. It hosts the tabs "Stats", "KnownWifis Overview", "Cell Overview" and "Map".
  * TabHostActivity is also in charge of service communication.
  */
 public class TabHostActivity extends AppCompatActivity {
@@ -327,6 +327,7 @@ public class TabHostActivity extends AppCompatActivity {
         mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.overview)), StatsActivity.class, null);
         mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.wifis)), WifiListContainer.class, null);
         mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.cells)), CellsListContainer.class, null);
-        mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.map)), MapViewActivity.class, null);
+        //mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.map)), MapViewActivity.class, null);
+		mTabsAdapter.addTab(mActionBar.newTab().setIcon(android.R.drawable.ic_dialog_map), MapViewActivity.class, null);
 	}
 }

@@ -48,7 +48,8 @@ import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.db.models.CellRecord;
 import org.openbmap.db.models.Session;
-import org.openbmap.events.onCellUpdated;
+import org.openbmap.events.onBlacklisted;
+import org.openbmap.events.onCellSaved;
 import org.openbmap.events.onFreeWifi;
 import org.openbmap.events.onWifiAdded;
 
@@ -95,26 +96,26 @@ public class StatsActivity extends Fragment {
     /**
      * Time of last new cell in millis
      */
-    private long mLastCellUpdate;
+    private long mCellUpdateTime;
 
     /**
      * Fades ignore messages after certain time
      */
-    private Runnable mFadeIgnoreTask;
-    private final Handler mFadeIgnoreHandler = new Handler();
+    private Runnable fadeIgnoreTask;
+    private final Handler fadeIgnoreHandler = new Handler();
 
-    private Runnable mFadeFreeTask;
+    private Runnable fadeFreeTask;
     private final Handler mFadeFreeHandler = new Handler();
 
     /**
      * Update certain infos at periodic intervals
      */
-    private final Handler mRefreshHandler = new Handler();
-    private Runnable mPeriodicRefreshTask;
+    private final Handler refreshHandler = new Handler();
+    private Runnable periodicRefreshTask;
 
     private int mCurrentLevel;
 
-    private String mLastTechnology;
+    private String mCurrentTechnology;
 
     private double graph2LastXValue;
 
@@ -149,36 +150,6 @@ public class StatsActivity extends Fragment {
             if (RadioBeacon.INTENT_NEW_SESSION.equals(intent.getAction())) {
                 final String id = intent.getStringExtra(RadioBeacon.MSG_KEY);
                 // tbd
-            } else if (RadioBeacon.INTENT_WIFI_BLACKLISTED.equals(intent.getAction())) {
-                // let's display warning for 10 seconds
-                mFadeIgnoreHandler.removeCallbacks(mFadeIgnoreTask);
-
-                final String reason = intent.getStringExtra(RadioBeacon.MSG_KEY);
-                String ssid = intent.getStringExtra(RadioBeacon.MSG_SSID);
-                String bssid = intent.getStringExtra(RadioBeacon.MSG_BSSID);
-
-                // can be null, so set default values
-                if (ssid == null) {
-                    ssid = "";
-                }
-                if (bssid == null) {
-                    bssid = "";
-                }
-
-                switch (reason) {
-                    case RadioBeacon.MSG_BSSID:
-                        tvIgnored.setText(ssid + " (" + bssid + ") " + getResources().getString(R.string.blacklisted_bssid));
-                        break;
-                    case RadioBeacon.MSG_SSID:
-                        tvIgnored.setText(ssid + " (" + bssid + ") " + getResources().getString(R.string.blacklisted_ssid));
-                        break;
-                    case RadioBeacon.MSG_LOCATION:
-                        tvIgnored.setText(R.string.blacklisted_area);
-                        break;
-                }
-                tvIgnored.setVisibility(View.VISIBLE);
-                ivAlert.setVisibility(View.VISIBLE);
-                mFadeIgnoreHandler.postDelayed(mFadeIgnoreTask, FADE_TIME);
             }
         }
     };
@@ -199,25 +170,48 @@ public class StatsActivity extends Fragment {
 
     @Subscribe
     public void onEvent(onFreeWifi event) {
-        mFadeFreeHandler.removeCallbacks(mFadeFreeTask);
+        mFadeFreeHandler.removeCallbacks(fadeFreeTask);
         final String ssid = event.ssid;
         if (ssid != null) {
             tvFree.setText(getResources().getString(R.string.free_wifi) + "\n" + ssid);
         }
         tvFree.setVisibility(View.VISIBLE);
         ivFree.setVisibility(View.VISIBLE);
-        mFadeFreeHandler.postDelayed(mFadeFreeTask, FADE_TIME);
+        mFadeFreeHandler.postDelayed(fadeFreeTask, FADE_TIME);
     }
 
+    /**
+     * Displays explanation for blacklisting
+     * @param event
+     */
+    @Subscribe
+    public void onEvent(onBlacklisted event) {
+        fadeIgnoreHandler.removeCallbacks(fadeIgnoreTask);
+
+        switch (event.reason) {
+            case BadSSID:
+                tvIgnored.setText(event.message + " " + getResources().getString(R.string.blacklisted_bssid));
+                break;
+            case BadBSSID:
+                tvIgnored.setText(event.message + " " + getResources().getString(R.string.blacklisted_ssid));
+                break;
+            case BadLocation:
+                tvIgnored.setText(R.string.blacklisted_area);
+                break;
+        }
+        tvIgnored.setVisibility(View.VISIBLE);
+        ivAlert.setVisibility(View.VISIBLE);
+        fadeIgnoreHandler.postDelayed(fadeIgnoreTask, FADE_TIME);
+    }
 
     @Subscribe
-    public void onEvent(final onCellUpdated event) {
+    public void onEvent(final onCellSaved event) {
 
         Log.d(TAG, "Cell update received, level" + event.level);
 
-        mLastTechnology = event.technology;
+        mCurrentTechnology = event.technology;
         mCurrentLevel = event.level;
-        mLastCellUpdate = System.currentTimeMillis();
+        mCellUpdateTime = System.currentTimeMillis();
 
         String description = event.operator;
 
@@ -237,7 +231,7 @@ public class StatsActivity extends Fragment {
         tvCellDescription.setText(description);
         tvCellStrength.setText(String.format("%d dBm", mCurrentLevel));
 
-        if (!event.technology.equals(mLastTechnology)) {
+        if (!event.technology.equals(mCurrentTechnology)) {
             final Animation in = new AlphaAnimation(0.0f, 1.0f);
             in.setDuration(2000);
             final Animation out = new AlphaAnimation(1.0f, 0.0f);
@@ -265,7 +259,7 @@ public class StatsActivity extends Fragment {
     public final void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mFadeIgnoreTask = new Runnable() {
+        fadeIgnoreTask = new Runnable() {
             @Override
             public void run() {
                 tvIgnored.setVisibility(View.INVISIBLE);
@@ -273,7 +267,7 @@ public class StatsActivity extends Fragment {
             }
         };
 
-        mFadeFreeTask = new Runnable() {
+        fadeFreeTask = new Runnable() {
             @Override
             public void run() {
                 tvFree.setVisibility(View.INVISIBLE);
@@ -281,13 +275,13 @@ public class StatsActivity extends Fragment {
             }
         };
 
-        mPeriodicRefreshTask = new Runnable() {
+        periodicRefreshTask = new Runnable() {
             @SuppressLint("DefaultLocale")
             @Override
             public void run() {
                 updateTimeSinceUpdate();
                 updateGraph();
-                mRefreshHandler.postDelayed(mPeriodicRefreshTask, REFRESH_INTERVAL);
+                refreshHandler.postDelayed(periodicRefreshTask, REFRESH_INTERVAL);
             }
         };
 
@@ -305,11 +299,11 @@ public class StatsActivity extends Fragment {
     }
 
     void startRepeatingTask() {
-        mPeriodicRefreshTask.run();
+        periodicRefreshTask.run();
     }
 
     void stopRepeatingTask() {
-        mRefreshHandler.removeCallbacks(mPeriodicRefreshTask);
+        refreshHandler.removeCallbacks(periodicRefreshTask);
     }
 
     @Override
@@ -368,7 +362,6 @@ public class StatsActivity extends Fragment {
     private void registerReceiver() {
         final IntentFilter filter = new IntentFilter();
         filter.addAction(RadioBeacon.INTENT_SESSION_UPDATE);
-        filter.addAction(RadioBeacon.INTENT_WIFI_BLACKLISTED);
         getActivity().registerReceiver(mReceiver, filter);
 
         if (!EventBus.getDefault().isRegistered(this)) {
@@ -398,7 +391,7 @@ public class StatsActivity extends Fragment {
      * Displays time since last cell/wifi update
      */
     private void updateTimeSinceUpdate() {
-        final String deltaCellString = "Last cell update " + getTimeSinceLastUpdate(mLastCellUpdate) + " ago";
+        final String deltaCellString = "Last cell update " + getTimeSinceLastUpdate(mCellUpdateTime) + " ago";
         final String deltaWifiString = "Last cell update " + getTimeSinceLastUpdate(mLastWifiUpdate) + " ago";
 
         Log.d(TAG, deltaCellString);

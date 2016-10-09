@@ -75,7 +75,7 @@ import org.openbmap.utils.GpxMapObjectsLoader.OnGpxLoadedListener;
 import org.openbmap.utils.MapUtils;
 import org.openbmap.utils.MapUtils.onLongPressHandler;
 import org.openbmap.utils.PoiLoaderTask;
-import org.openbmap.utils.PoiType;
+import org.openbmap.utils.PoiFilter;
 import org.openbmap.utils.SessionLatLong;
 import org.openbmap.utils.SessionObjectsLoader;
 import org.openbmap.utils.SessionObjectsLoader.OnSessionLoadedListener;
@@ -232,12 +232,12 @@ public class MapViewActivity extends Fragment implements
     private Observer mapObserver;
 
     /**
-     * Wifi catalog layer is currently refreshing
+     * KnownWifis catalog layer is currently refreshing
      */
     private boolean isUpdatingWifis = false;
 
     /**
-     * Tower layer is currently refreshing
+     * Towers layer is currently refreshing
      */
     private boolean isUpdatingTowers = false;
 
@@ -636,13 +636,13 @@ public class MapViewActivity extends Fragment implements
         if (!isUpdatingWifis && isVisible()) {
             Log.d(TAG, "Updating wifi catalog layer");
             isUpdatingWifis = true;
-            new PoiLoaderTask(this, PoiType.Wifi).execute(this.mapView.getBoundingBox());
+            new PoiLoaderTask(this, PoiFilter.KnownWifis).execute(this.mapView.getBoundingBox());
             wifisLayerRefreshLocation = location;
             wifisLayerRefreshTime = System.currentTimeMillis();
         } else if (!isVisible()){
             Log.v(TAG, "Not visible, skipping refresh");
         } else {
-            Log.v(TAG, "Wifi catalog layer is refreshing. Skipping refresh..");
+            Log.v(TAG, "KnownWifis catalog layer is refreshing. Skipping refresh..");
         }
     }
 
@@ -655,26 +655,26 @@ public class MapViewActivity extends Fragment implements
         if (!isUpdatingTowers && isVisible()) {
             Log.d(TAG, "Updating wifi catalog layer");
             isUpdatingTowers = true;
-            new PoiLoaderTask(this, PoiType.CellTower).execute(this.mapView.getBoundingBox());
+            new PoiLoaderTask(this, PoiFilter.Towers).execute(this.mapView.getBoundingBox());
             towersLayerRefreshLocation = location;
             towersLayerRefreshTime = System.currentTimeMillis();
         } else if (!isVisible()){
             Log.v(TAG, "Not visible, skipping refresh");
         } else {
-            Log.v(TAG, "Wifi catalog layer is refreshing. Skipping refresh..");
+            Log.v(TAG, "KnownWifis catalog layer is refreshing. Skipping refresh..");
         }
     }
 
-    public void redrawLayers(Layer layer, PoiType category) {
+    public void redrawLayers(Layer layer, PoiFilter category) {
         Log.d(TAG, "Redraw layers");
-        if (category == PoiType.CellTower){
+        if (category == PoiFilter.Towers){
             Log.d(TAG , "Updating cell tower layer");
             isUpdatingTowers = false;
             if (towersLayer != null) {
                 clearTowers();
             }
             towersLayer = layer;
-        } if (category == PoiType.Wifi){
+        } if (category == PoiFilter.KnownWifis){
             Log.d(TAG , "Updating catalog layer");
             isUpdatingWifis = false;
             if (knownWifisLayer != null) {

@@ -1,5 +1,5 @@
 /*
-	Radiobeacon - Openbmap wifi and cell logger
+ Radiobeacon - Openbmap wifi and cell logger
     Copyright (C) 2013  wish7
 
     This program is free software: you can redistribute it and/or modify
@@ -15,13 +15,12 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.openbmap.services.wireless.blacklists;
 
+package org.openbmap.utils;
 
-public enum BlacklistReasonType {
-	NotBlacklisted,
-	BadBSSID,
-	BadSSID,
-	BadLocation,
-	Unknown
+public enum PoiFilter {
+    Towers,
+    AllWifis,
+    KnownWifis,
+    MyWifis
 }

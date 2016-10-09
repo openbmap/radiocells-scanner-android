@@ -43,16 +43,6 @@ public final class RadioBeacon {
 	public static final String INTENT_NEW_SESSION = RadioBeacon.PACKAGE_NAME + ".intent.SESSION_SAVED";
 
 	/**
-	 * Intent signalling wifi has been skipped due to blacklist
-	 */
-	public static final String INTENT_WIFI_BLACKLISTED = RadioBeacon.PACKAGE_NAME + ".intent.WIFI_BLACKLISTED";
-
-	/**
-	 * Intent signalling free wifi has been found
-	 */
-	public static final String INTENT_WIFI_FREE = RadioBeacon.PACKAGE_NAME + ".intent_WIFI_FREE";
-
-	/**
 	 * Intent signalling sessions have been changed (e.g. deletes)
 	 */
 	public static final String	INTENT_SESSION_UPDATE = RadioBeacon.PACKAGE_NAME + ".intent.SESSION_UPDATE";

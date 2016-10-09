@@ -1,5 +1,5 @@
 /*
- Radiobeacon - Openbmap wifi and cell logger
+	Radiobeacon - Openbmap wifi and cell logger
     Copyright (C) 2013  wish7
 
     This program is free software: you can redistribute it and/or modify
@@ -16,9 +16,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openbmap.utils;
+package org.openbmap.events;
 
-public enum PoiType {
-    CellTower,
-    Wifi
+public class onFreeWifi {
+
+    public String ssid;
+
+    /**
+     * Fired when free wifi found
+     * @param ssid
+     */
+    public onFreeWifi(final String ssid) {
+        this.ssid = ssid;
+    }
+
 }
