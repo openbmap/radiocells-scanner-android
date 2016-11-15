@@ -250,6 +250,9 @@ public class StatusBar extends LinearLayout {
 		} catch (final IllegalArgumentException e) {
 			// do nothing here {@see http://stackoverflow.com/questions/2682043/how-to-check-if-mReceiver-is-registered-in-android}
 		}
-        EventBus.getDefault().unregister(this);
+
+		if (EventBus.getDefault().isRegistered(this)) {
+			EventBus.getDefault().unregister(this);
+		}
 	}
 }
