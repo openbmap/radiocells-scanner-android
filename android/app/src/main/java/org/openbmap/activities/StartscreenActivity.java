@@ -97,7 +97,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	private DataHelper mDataHelper;
 
 	/**
-	 * KnownWifis lock, used while exporting
+	 * WifisCommunity lock, used while exporting
 	 */
 	private WifiLock mWifiLock;
 

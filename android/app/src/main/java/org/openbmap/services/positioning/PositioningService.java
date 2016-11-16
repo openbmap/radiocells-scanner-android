@@ -196,13 +196,19 @@ public class PositioningService extends AbstractService implements LocationChang
 	@Override
 	public void onStartService() {
         Log.d(TAG, "Starting PositioningService");
-        EventBus.getDefault().register(this);
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);}
+        else {
+            Log.w(TAG, "Event bus receiver already registered");
+        }
 	}
 
 	@Override
 	public void onStopService() {
         Log.d(TAG, "Stopping PositioningService");
-        EventBus.getDefault().unregister(this);
+		if (EventBus.getDefault().isRegistered(this)) {
+			EventBus.getDefault().unregister(this);
+		}
 	}
 
 	@Override

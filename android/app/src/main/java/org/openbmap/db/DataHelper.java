@@ -915,7 +915,7 @@ public class DataHelper {
 
     /**
      * Stores position.
-     * This method is only used for separate positions. KnownWifis and cell positions are added in batch mode
+     * This method is only used for separate positions. WifisCommunity and cell positions are added in batch mode
      * in storeCellsScanResults and storeWifiScanResults
      * @param pos
      * @return

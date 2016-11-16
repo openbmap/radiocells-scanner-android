@@ -28,6 +28,7 @@ import java.util.List;
  * A layer which is a group of other layers.
  * TODO: mapsforge 0.6.2 includes GroupLayers, so we can replace this later
  */
+@Deprecated
 public class LegacyGroupLayer extends Layer {
 
     /**

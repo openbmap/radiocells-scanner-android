@@ -5,7 +5,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-          classpath 'com.android.tools.build:gradle:2.2.0'
+          classpath 'com.android.tools.build:gradle:2.2.2'
           classpath 'com.github.ben-manes:gradle-versions-plugin:0.11.3'
           classpath 'com.github.dcendents:android-maven-gradle-plugin:1.4.1'
     }
@@ -50,7 +50,7 @@ configure(filterProjects(project.androidlibraryprojects)) {
 configure(filterProjects(project.androidprojects)) {
 
     android {
-        compileSdkVersion 23
+        compileSdkVersion 24
         buildToolsVersion '24.0.2'
         defaultConfig {
             minSdkVersion 22

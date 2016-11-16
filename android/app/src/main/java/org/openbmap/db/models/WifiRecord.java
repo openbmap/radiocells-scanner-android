@@ -65,7 +65,7 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 	}
 
 	/**
-	 * Initialises KnownWifis Record without setting session id
+	 * Initialises WifisCommunity Record without setting session id
 	 */
 	public WifiRecord(String bssid, String ssid, String capabilities, int frequency, int level, long timestamp, PositionRecord request, PositionRecord last, CatalogStatus catalogStatus)
 	{
@@ -198,7 +198,7 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 
 	/**
 	 * Is wifi new, in openbmap wifi catalog or in local wifi catalog
-	 * @param catalogStatus KnownWifis's status
+	 * @param catalogStatus WifisCommunity's status
 	 */
 	public void setCatalogStatus(CatalogStatus catalogStatus) {
 		mCatalogStatus = catalogStatus;

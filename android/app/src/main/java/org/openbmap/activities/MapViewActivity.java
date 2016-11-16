@@ -23,11 +23,13 @@ import android.app.Fragment;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Matrix;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -42,6 +44,7 @@ import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.mapsforge.core.graphics.Bitmap;
 import org.mapsforge.core.graphics.Color;
 import org.mapsforge.core.graphics.Paint;
 import org.mapsforge.core.graphics.Style;
@@ -59,9 +62,12 @@ import org.mapsforge.map.layer.cache.TileCache;
 import org.mapsforge.map.layer.download.TileDownloadLayer;
 import org.mapsforge.map.layer.download.tilesource.OnlineTileSource;
 import org.mapsforge.map.layer.overlay.Circle;
+import org.mapsforge.map.layer.overlay.FixedPixelCircle;
+import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.layer.overlay.Polyline;
 import org.mapsforge.map.model.common.Observer;
 import org.mapsforge.map.util.MapPositionUtil;
+import org.mapsforge.poi.storage.PointOfInterest;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
@@ -69,12 +75,14 @@ import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.PositionRecord;
 import org.openbmap.db.models.WifiRecord;
 import org.openbmap.events.onLocationUpdate;
+import org.openbmap.events.onPoiUpdateAvailable;
+import org.openbmap.events.onPoiUpdateRequested;
 import org.openbmap.utils.GeometryUtils;
 import org.openbmap.utils.GpxMapObjectsLoader;
 import org.openbmap.utils.GpxMapObjectsLoader.OnGpxLoadedListener;
+import org.openbmap.utils.LegacyGroupLayer;
 import org.openbmap.utils.MapUtils;
 import org.openbmap.utils.MapUtils.onLongPressHandler;
-import org.openbmap.utils.PoiLoaderTask;
 import org.openbmap.utils.PoiFilter;
 import org.openbmap.utils.SessionLatLong;
 import org.openbmap.utils.SessionObjectsLoader;
@@ -122,6 +130,11 @@ public class MapViewActivity extends Fragment implements
     private static final int CIRCLE_WIFI_CATALOG_WIDTH = 15;
 
     private static final int STROKE_GPX_WIDTH = 5;
+
+    private static final Paint PAINT = MapUtils.createPaint(
+            AndroidGraphicFactory.INSTANCE.createColor(ALPHA_WIFI_CATALOG_FILL, 120, 150, 120), 2, Style.FILL);
+    private static final Paint PAINT_RED = MapUtils.createPaint(
+            AndroidGraphicFactory.INSTANCE.createColor(ALPHA_WIFI_CATALOG_FILL, 255, 150, 120), 2, Style.FILL);
 
     /**
      * Keeps the SharedPreferences.
@@ -191,9 +204,21 @@ public class MapViewActivity extends Fragment implements
      */
     private static TileDownloadLayer mapDownloadLayer = null;
 
+    /**
+     * Layer with radiocells wifis
+     */
     private Layer knownWifisLayer;
 
+    /**
+     * Local wifis layer
+     */
+    private Layer myWifisLayer;
+
+    /**
+     * Openstreetmap towers layer
+     */
     private Layer towersLayer;
+
     /**
      * Paint style for active sessions objects
      */
@@ -232,7 +257,7 @@ public class MapViewActivity extends Fragment implements
     private Observer mapObserver;
 
     /**
-     * KnownWifis catalog layer is currently refreshing
+     * Wifis catalog layer is currently refreshing
      */
     private boolean isUpdatingWifis = false;
 
@@ -537,8 +562,9 @@ public class MapViewActivity extends Fragment implements
 
     private void registerReceiver() {
         if (!EventBus.getDefault().isRegistered(this)) {
-            EventBus.getDefault().register(this);} else {
-            Log.i(TAG, "Event bus receiver already registered");
+            EventBus.getDefault().register(this);}
+        else {
+            Log.w(TAG, "Event bus receiver already registered");
         }
     }
 
@@ -636,13 +662,13 @@ public class MapViewActivity extends Fragment implements
         if (!isUpdatingWifis && isVisible()) {
             Log.d(TAG, "Updating wifi catalog layer");
             isUpdatingWifis = true;
-            new PoiLoaderTask(this, PoiFilter.KnownWifis).execute(this.mapView.getBoundingBox());
+            EventBus.getDefault().post(new onPoiUpdateRequested(PoiFilter.WifisAll, this.mapView.getBoundingBox()));
             wifisLayerRefreshLocation = location;
             wifisLayerRefreshTime = System.currentTimeMillis();
         } else if (!isVisible()){
             Log.v(TAG, "Not visible, skipping refresh");
         } else {
-            Log.v(TAG, "KnownWifis catalog layer is refreshing. Skipping refresh..");
+            Log.v(TAG, "Wifis layer are refreshing. Skipping refresh..");
         }
     }
 
@@ -653,38 +679,39 @@ public class MapViewActivity extends Fragment implements
     protected final void drawTowers(final Location location) {
 
         if (!isUpdatingTowers && isVisible()) {
-            Log.d(TAG, "Updating wifi catalog layer");
+            //Log.d(TAG, "Updating towers layer");
             isUpdatingTowers = true;
-            new PoiLoaderTask(this, PoiFilter.Towers).execute(this.mapView.getBoundingBox());
+            EventBus.getDefault().post(new onPoiUpdateRequested(PoiFilter.Towers, this.mapView.getBoundingBox()));
             towersLayerRefreshLocation = location;
             towersLayerRefreshTime = System.currentTimeMillis();
         } else if (!isVisible()){
             Log.v(TAG, "Not visible, skipping refresh");
         } else {
-            Log.v(TAG, "KnownWifis catalog layer is refreshing. Skipping refresh..");
+            Log.v(TAG, "Towers layer is refreshing. Skipping refresh..");
         }
     }
 
     public void redrawLayers(Layer layer, PoiFilter category) {
-        Log.d(TAG, "Redraw layers");
         if (category == PoiFilter.Towers){
-            Log.d(TAG , "Updating cell tower layer");
+            //Log.d(TAG , "Updating cell tower layer");
             isUpdatingTowers = false;
             if (towersLayer != null) {
                 clearTowers();
             }
             towersLayer = layer;
-        } if (category == PoiFilter.KnownWifis){
-            Log.d(TAG , "Updating catalog layer");
+        } if (category == PoiFilter.WifisCommunity || category == PoiFilter.WifisOwn){
+            Log.d(TAG , "Updating wifis layer");
             isUpdatingWifis = false;
-            if (knownWifisLayer != null) {
-                clearWifis();
+
+            clearWifis();
+
+            if (category == PoiFilter.WifisCommunity) {
+                knownWifisLayer = layer;
+            } else if (category == PoiFilter.WifisOwn) {
+                myWifisLayer = layer;
             }
-            knownWifisLayer = layer;
         }
-
         mapView.getLayerManager().redrawLayers();
-
     }
 
     /**
@@ -706,7 +733,12 @@ public class MapViewActivity extends Fragment implements
                 this.mapView.getLayerManager().getLayers().remove(knownWifisLayer);
             }
 
+            if (myWifisLayer != null) {
+                this.mapView.getLayerManager().getLayers().remove(myWifisLayer);
+            }
+
             knownWifisLayer = null;
+            myWifisLayer = null;
         }
     }
 
@@ -878,6 +910,63 @@ public class MapViewActivity extends Fragment implements
             final SessionObjectsLoader task = new SessionObjectsLoader(getActivity().getApplicationContext(), this, sessions);
             task.execute(bbox.minLatitude, bbox.maxLatitude, bbox.minLongitude, bbox.maxLatitude, highlight.getBssid());
         }
+    }
+
+    @Subscribe
+    public void onEvent(onPoiUpdateAvailable event){
+        if (event.pois == null) {
+            Log.d(TAG, "No POI founds");
+            return;
+        }
+
+        //final Drawable drawable = ContextCompat.getDrawable(activity.getActivity(), R.drawable.icon);
+        final Drawable towerIcon = ResourcesCompat.getDrawable(getResources(), R.drawable.icon, null);
+        Bitmap bitmap = AndroidGraphicFactory.convertToBitmap(towerIcon);
+        bitmap.incrementRefCount();
+
+        Log.d(TAG, event.pois.size() + " POI found");
+
+        LegacyGroupLayer groupLayer = new LegacyGroupLayer();
+        for (final PointOfInterest poi : event.pois) {
+            if ((event.filter == PoiFilter.WifisCommunity) || (event.filter == PoiFilter.WifisOwn) || (event.filter == PoiFilter.WifisAll)) {
+                Log.d(TAG, "onEvent: " + poi.toString());
+                if (!poi.getCategory().getTitle().equals("Own")) {
+                    final Circle allSymbol = new FixedPixelCircle(poi.getLatLong(), 8, PAINT, null) {
+                        @Override
+                        public boolean onTap(LatLong tapLatLong, Point layerXY, Point tapXY) {
+                            // GroupLayer does not have a position, layerXY is null
+                            Point circleXY = mapView.getMapViewProjection().toPixels(getPosition());
+                            if (this.contains(circleXY, tapXY)) {
+                                //Toast.makeText(MapViewActivity.this, poi.getName(), Toast.LENGTH_SHORT).show();
+                                return true;
+                            }
+                            return false;
+                        }
+                    };
+                    groupLayer.layers.add(allSymbol);
+                } else {
+                    final Circle ownSymbol = new FixedPixelCircle(poi.getLatLong(), 8, PAINT_RED, null) {
+                        @Override
+                        public boolean onTap(LatLong tapLatLong, Point layerXY, Point tapXY) {
+                            // GroupLayer does not have a position, layerXY is null
+                            Point circleXY = mapView.getMapViewProjection().toPixels(getPosition());
+                            if (this.contains(circleXY, tapXY)) {
+                                Toast.makeText(getActivity(), poi.getName(), Toast.LENGTH_SHORT).show();
+                                return true;
+                            }
+                            return false;
+                        }
+                    };
+                    groupLayer.layers.add(ownSymbol);
+                }
+
+            } else if (event.filter == PoiFilter.Towers) {
+                final Marker marker = new Marker(poi.getLatLong(), bitmap, 0, -bitmap.getHeight() / 2);
+                groupLayer.layers.add(marker);
+            }
+        }
+        mapView.getLayerManager().getLayers().add(groupLayer);
+        redrawLayers(groupLayer, event.filter);
     }
 
     /* (non-Javadoc)

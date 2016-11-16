@@ -18,9 +18,7 @@
 
 package org.openbmap.services.positioning;
 
-import android.content.SharedPreferences;
 import android.location.Location;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
@@ -38,22 +36,17 @@ import org.openbmap.services.AbstractService;
  */
 public class GpxLoggerService extends AbstractService {
 
+	private static final String TAG = GpxLoggerService.class.getSimpleName();
+
 	/**
 	 * Minimum distance between two trackpoints in meters
 	 */
 	private static final int MIN_TRACKPOINT_DISTANCE = 3;
 
-	private static final String TAG = GpxLoggerService.class.getSimpleName();
-
-	/**
-	 * Keeps the SharedPreferences
-	 */
-	private SharedPreferences prefs = null;
-
 	/*
 	 * last known location
 	 */
-	private Location mMostCurrentLocation = new Location("DUMMY");
+	private Location lastLocation = new Location("DUMMY");
 	private String mMostCurrentLocationProvider;
 
 	/**
@@ -64,25 +57,22 @@ public class GpxLoggerService extends AbstractService {
 	/**
 	 * Current session id
 	 */
-	private int mSessionId = RadioBeacon.SESSION_NOT_TRACKING;
+	private int session = RadioBeacon.SESSION_NOT_TRACKING;
 
 	/*
 	 * DataHelper for persisting recorded information in database
 	 */
-	private DataHelper mDataHelper;
+	private DataHelper dataHelper;
 
 	@Override
 	public final void onCreate() {
 		super.onCreate();
         Log.d(TAG, "GpxLoggerService created");
 
-		// get shared preferences
-		prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
 		/*
 		 * Setting up database connection
 		 */
-		mDataHelper = new DataHelper(this);
+		dataHelper = new DataHelper(this);
 	}
 
 	@Override
@@ -97,29 +87,35 @@ public class GpxLoggerService extends AbstractService {
 
 	/**
 	 * Saves cell related information
-	 * @param gpsLocation
+	 * @param location
 	 */
-	private void performGpsUpdate(final Location gpsLocation, final String source) {
-		if (gpsLocation == null) {
+	private void performGpsUpdate(final Location location, final String source) {
+		if (location == null) {
 			Log.e(TAG, "No GPS position available");
 			return;
 		}
 
-		final PositionRecord pos = new PositionRecord(gpsLocation, mSessionId, source);
+		final PositionRecord pos = new PositionRecord(location, session, source);
 
 		// so far we set end position = begin position
-		mDataHelper.storePosition(pos);
+		dataHelper.storePosition(pos);
 	}
 
 	@Override
 	public final void onStartService() {
-		EventBus.getDefault().register(this);
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);}
+        else {
+            Log.w(TAG, "Event bus receiver already registered");
+        }
 	}
 
 	@Override
 	public final void onStopService() {
 		Log.d(TAG, "OnStopService called");
-        EventBus.getDefault().unregister(this);
+        if (EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this);
+        }
 	}
 
     /**
@@ -129,17 +125,17 @@ public class GpxLoggerService extends AbstractService {
 	private void startTracking(final int sessionId) {
 		Log.d(TAG, "Start tracking on session " + sessionId);
 		mIsTracking = true;
-		mSessionId = sessionId;
-		mMostCurrentLocation = new Location("dummy");
+		session = sessionId;
+		lastLocation = new Location("dummy");
 	}
 
 	/**
 	 * Stops gpx Logging
 	 */
 	private void stopTracking() {
-		Log.d(TAG, "Stop tracking on session " + mSessionId);
+		Log.d(TAG, "Stop tracking on session " + session);
 		mIsTracking = false;
-		mSessionId = RadioBeacon.SESSION_NOT_TRACKING;
+		session = RadioBeacon.SESSION_NOT_TRACKING;
 	}
 
 	/**
@@ -173,9 +169,9 @@ public class GpxLoggerService extends AbstractService {
         final Location location = event.location;
         final String source = event.source;
 
-        if (location.distanceTo(mMostCurrentLocation) > MIN_TRACKPOINT_DISTANCE) {
+        if (location.distanceTo(lastLocation) > MIN_TRACKPOINT_DISTANCE) {
             performGpsUpdate(location, source);
         }
-        mMostCurrentLocation = location;
+        lastLocation = location;
 	}
 }

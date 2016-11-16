@@ -365,8 +365,8 @@ public class StatsActivity extends Fragment {
         getActivity().registerReceiver(mReceiver, filter);
 
         if (!EventBus.getDefault().isRegistered(this)) {
-            EventBus.getDefault().register(this);
-        } else {
+            EventBus.getDefault().register(this);}
+        else {
             Log.i(TAG, "Event bus receiver already registered");
         }
     }

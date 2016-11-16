@@ -119,7 +119,7 @@ public class WifiDetailsActivity extends FragmentActivity {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         if (wifi == null) {
-            Log.e(TAG, "KnownWifis argument was null");
+            Log.e(TAG, "WifisCommunity argument was null");
             return;
         }
 

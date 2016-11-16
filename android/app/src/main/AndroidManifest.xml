@@ -96,7 +96,7 @@
 
         <!-- Master service controlling all other services -->
         <service
-            android:name=".services.MasterBrainService" >
+            android:name=".services.ManagerService" >
             <intent-filter>
                 <action android:name=".intent.START_TRACKING" />
                 <action android:name=".intent.STOP_TRACKING" />
@@ -112,9 +112,16 @@
             </intent-filter>
         </service>
 
+        <!-- POI manager service -->
+        <service
+            android:name=".services.PoiService"
+            android:exported="false" >
+        </service>
+
+
         <!-- Wireless (cell, wifi) logger service -->
         <service
-            android:name=".services.wireless.WirelessLoggerService" >
+            android:name=".services.wireless.ScannerService" >
         </service>
 
         <!-- GPX logger service -->

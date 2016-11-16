@@ -48,11 +48,11 @@ import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.events.onStopTracking;
-import org.openbmap.services.MasterBrainService;
+import org.openbmap.services.ManagerService;
 import org.openbmap.utils.ActivityUtils;
 
 /**
- * TabHostActivity for "tracking" mode. It hosts the tabs "Stats", "KnownWifis Overview", "Cell Overview" and "Map".
+ * TabHostActivity for "tracking" mode. It hosts the tabs "Stats", "WifisCommunity Overview", "Cell Overview" and "Map".
  * TabHostActivity is also in charge of service communication.
  */
 public class TabHostActivity extends AppCompatActivity {
@@ -126,7 +126,7 @@ public class TabHostActivity extends AppCompatActivity {
                 mService.send(msg);
 
                 // Give it some value as an example.
-                //msg = Message.obtain(null, MasterBrainService.MSG_SET_VALUE, this.hashCode(), 0);
+                //msg = Message.obtain(null, ManagerService.MSG_SET_VALUE, this.hashCode(), 0);
                 //mService.send(msg);
             } catch (RemoteException e) {
                 // In this case the service has crashed before we could even
@@ -156,7 +156,7 @@ public class TabHostActivity extends AppCompatActivity {
      * applications replace our component.
      */
     void doBindService() {
-        bindService(new Intent(TabHostActivity.this, MasterBrainService.class), mConnection, Context.BIND_AUTO_CREATE);
+        bindService(new Intent(TabHostActivity.this, ManagerService.class), mConnection, Context.BIND_AUTO_CREATE);
         mIsBound = true;
     }
 
