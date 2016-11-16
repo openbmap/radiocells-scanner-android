@@ -20,7 +20,7 @@ package org.openbmap.utils;
 
 public enum PoiFilter {
     Towers,
-    AllWifis,
-    KnownWifis,
-    MyWifis
+    WifisAll,
+    WifisCommunity,
+    WifisOwn
 }
