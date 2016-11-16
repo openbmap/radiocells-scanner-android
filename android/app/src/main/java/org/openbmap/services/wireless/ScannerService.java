@@ -49,6 +49,7 @@ import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
 import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
+import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
@@ -66,6 +67,7 @@ import org.openbmap.events.onCellChanged;
 import org.openbmap.events.onCellSaved;
 import org.openbmap.events.onFreeWifi;
 import org.openbmap.events.onLocationUpdate;
+import org.openbmap.events.onPoiAddOwnWifis;
 import org.openbmap.events.onStartWireless;
 import org.openbmap.events.onStopTracking;
 import org.openbmap.events.onWifiAdded;
@@ -85,14 +87,14 @@ import java.util.Locale;
 import static android.os.Build.VERSION.SDK_INT;
 
 /**
- * WirelessLoggerService takes care of wireless logging, i.e. cell & wifi logging
+ * ScannerService takes care of wireless logging, i.e. cell & wifi logging
  * There are two external triggers
  * 1) gps signal (@see BroadcastReceiver.onReceive)
  * 2) message bus (@see AbstractService.onReceiveMessage), which takes care of starting and stopping service
  */
-public class WirelessLoggerService extends AbstractService {
+public class ScannerService extends AbstractService {
 
-    public static final String TAG = WirelessLoggerService.class.getSimpleName();
+    public static final String TAG = ScannerService.class.getSimpleName();
 
     public static final String LOCATION_PARCEL = "android.location.Location";
 
@@ -116,7 +118,7 @@ public class WirelessLoggerService extends AbstractService {
     /**
      * Phone state listeners to receive cell updates
      */
-    private TelephonyManager mTelephonyManager;
+    private TelephonyManager telephonyManager;
 
     private PhoneStateListener phoneStateListener;
 
@@ -144,7 +146,7 @@ public class WirelessLoggerService extends AbstractService {
     /*
      * location of last saved cell
      */
-    private Location mCellSavedAt = new Location("DUMMY");
+    private Location cellsSavedAt = new Location("DUMMY");
 
     /*
      * Location of last saved wifi
@@ -162,7 +164,7 @@ public class WirelessLoggerService extends AbstractService {
     private String startScanLocationProvider;
 
     /*
-     * KnownWifis Manager
+     * WifisCommunity Manager
      */
     private WifiManager wifiManager;
 
@@ -182,7 +184,7 @@ public class WirelessLoggerService extends AbstractService {
     private final boolean isWifiEnabled = false;
 
     /**
-     * KnownWifis scan is asynchronous. pendingWifiScanResults ensures that only one scan is mIsRunning
+     * WifisCommunity scan is asynchronous. pendingWifiScanResults ensures that only one scan is mIsRunning
      **/
     private boolean pendingWifiScanResults = false;
 
@@ -192,7 +194,7 @@ public class WirelessLoggerService extends AbstractService {
     private CellInfo currentCell;
 
     /**
-     * KnownWifis scan result callback
+     * WifisCommunity scan result callback
      */
     private WifiScanCallback wifiScanResults;
 
@@ -223,7 +225,7 @@ public class WirelessLoggerService extends AbstractService {
     private LocationBlackList locationBlacklist;
 
     /**
-     * KnownWifis catalog database (used for checking if new wifi)
+     * WifisCommunity catalog database (used for checking if new wifi)
      */
     private SQLiteDatabase wifiCatalog;
 
@@ -247,7 +249,7 @@ public class WirelessLoggerService extends AbstractService {
 
     @Override
     public final void onCreate() {
-        Log.d(TAG, "WirelessLoggerService created");
+        Log.d(TAG, "ScannerService created");
         super.onCreate();
 
         // get shared preferences
@@ -312,7 +314,7 @@ public class WirelessLoggerService extends AbstractService {
      */
     private void registerPhoneStateManager() {
         Log.i(TAG, "Booting telephony manager");
-        mTelephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
+        telephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
 
         printDebugInfos();
 
@@ -385,19 +387,21 @@ public class WirelessLoggerService extends AbstractService {
                     }
                     currentCell = first;
                 }
+                super.onCellInfoChanged(cellInfo);
             }
 
             @Override
             public void onCellLocationChanged (CellLocation location) {
                 Log.d(TAG, "onCellLocationChanged fired");
                 EventBus.getDefault().post(new onCellChanged(null));
+                super.onCellLocationChanged(location);
             }
         };
 
         /**
          *	Register TelephonyManager updates
          */
-        mTelephonyManager.listen(phoneStateListener,
+        telephonyManager.listen(phoneStateListener,
                 PhoneStateListener.LISTEN_SERVICE_STATE
                         | PhoneStateListener.LISTEN_SIGNAL_STRENGTHS
                         | PhoneStateListener.LISTEN_CELL_LOCATION);
@@ -409,17 +413,17 @@ public class WirelessLoggerService extends AbstractService {
     private void printDebugInfos() {
         if (SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             final PackageManager pm = getApplicationContext().getPackageManager();
-            //Log.i(TAG, mTelephonyManager.getPhoneCount() == 1 ? "Single SIM mode" : "Dual SIM mode");
+            //Log.i(TAG, telephonyManager.getPhoneCount() == 1 ? "Single SIM mode" : "Dual SIM mode");
             Log.wtf(TAG, "------------ YOU MAY WANT TO REDACT INFO BELOW BEFORE POSTING THIS TO THE INTERNET ------------ ");
             Log.i(TAG, "GPS support: " + pm.hasSystemFeature("android.hardware.location.gps"));
             Log.i(TAG, "GSM support: " + pm.hasSystemFeature("android.hardware.telephony.gsm"));
-            Log.i(TAG, "KnownWifis support: " + pm.hasSystemFeature("android.hardware.wifi"));
+            Log.i(TAG, "Wifi support: " + pm.hasSystemFeature("android.hardware.wifi"));
 
-            Log.i(TAG, "SIM operator: " + mTelephonyManager.getSimOperator());
-            Log.i(TAG, mTelephonyManager.getSimOperatorName());
-            Log.i(TAG, "Network operator: " + mTelephonyManager.getNetworkOperator());
-            Log.i(TAG, mTelephonyManager.getNetworkOperatorName());
-            Log.i(TAG, "Roaming: " + mTelephonyManager.isNetworkRoaming());
+            Log.i(TAG, "SIM operator: " + telephonyManager.getSimOperator());
+            Log.i(TAG, telephonyManager.getSimOperatorName());
+            Log.i(TAG, "Network operator: " + telephonyManager.getNetworkOperator());
+            Log.i(TAG, telephonyManager.getNetworkOperatorName());
+            Log.i(TAG, "Roaming: " + telephonyManager.isNetworkRoaming());
             Log.wtf(TAG, "------------ YOU MAY WANT TO REDACT INFO BELOW ABOVE POSTING THIS TO THE INTERNET ------------ ");
         }
     }
@@ -428,7 +432,7 @@ public class WirelessLoggerService extends AbstractService {
      * Unregisters PhoneStateListener
      */
     private void unregisterPhoneStateManager() {
-        mTelephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
+        telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
     }
 
     /**
@@ -488,7 +492,7 @@ public class WirelessLoggerService extends AbstractService {
 
     @Override
     public final void onDestroy() {
-        Log.d(TAG, "Destroying WirelessLoggerService");
+        Log.d(TAG, "Destroying ScannerService");
         if (isTracking) {
             stopTracking();
             unregisterPhoneStateManager();
@@ -512,13 +516,13 @@ public class WirelessLoggerService extends AbstractService {
     private void updateWifis() {
             // cancel if wifi is disabled
             if (!wifiManager.isWifiEnabled() && !wifiManager.isScanAlwaysAvailable()) {
-                Log.i(TAG, "KnownWifis disabled or is scan always available off, skipping wifi scan");
+                Log.i(TAG, "Wifi disabled or is scan always available off, skipping wifi scan");
                 return;
             }
 
         // only start new scan if previous scan results have already been processed
         if (!pendingWifiScanResults) {
-            Log.d(TAG, "Initiated KnownWifis scan. Waiting for results..");
+            Log.d(TAG, "Initiated wifi scan. Waiting for results..");
             wifiManager.startScan();
             pendingWifiScanResults = true;
 
@@ -526,7 +530,7 @@ public class WirelessLoggerService extends AbstractService {
             if (this.wifiScanResults == null) {
                 this.wifiScanResults = new WifiScanCallback() {
                     public void onWifiResultsAvailable() {
-                        Log.d(TAG, "KnownWifis results are available now.");
+                        Log.d(TAG, "Wifi results are available now.");
 
                         // Is wifi tracking disabled?
                         if (!prefs.getBoolean(Preferences.KEY_LOG_WIFIS, Preferences.VAL_SAVE_WIFIS)) {
@@ -535,7 +539,6 @@ public class WirelessLoggerService extends AbstractService {
                         }
 
                         if (pendingWifiScanResults) {
-                            Log.d(TAG, "KnownWifis scan results arrived..");
                             final List<ScanResult> scanlist = wifiManager.getScanResults();
                             if (scanlist != null) {
 
@@ -592,6 +595,8 @@ public class WirelessLoggerService extends AbstractService {
                                 // Log.i(TAG, "Saving wifis");
                                 dataHelper.storeWifiScanResults(begin, end, wifis);
 
+
+
                                 // take last seen wifi and broadcast infos in ui
                                 if (wifis.size() > 0) {
                                     broadcastWifiDetails(wifis);
@@ -616,6 +621,7 @@ public class WirelessLoggerService extends AbstractService {
     private void broadcastWifiDetails(final ArrayList<WifiRecord> wifis) {
         final WifiRecord recent = wifis.get(wifis.size() - 1);
         EventBus.getDefault().post(new onWifiAdded(recent.getSsid(), recent.getLevel()));
+        EventBus.getDefault().post(new onPoiAddOwnWifis(wifis));
     }
 
     /**
@@ -656,9 +662,10 @@ public class WirelessLoggerService extends AbstractService {
         }
 
         // if we're in blocked area, skip everything
-        // set mCellSavedAt nevertheless, so next scan can be scheduled properly
+        // set cellsSavedAt nevertheless, so next scan can be scheduled properly
         if (locationBlacklist.contains(here)) {
-            mCellSavedAt = here;
+            Log.i(TAG, "Didn't save cells: location blacklisted");
+            cellsSavedAt = here;
             return false;
         }
 
@@ -667,29 +674,48 @@ public class WirelessLoggerService extends AbstractService {
         // 		All cells share same position
         // 		Neighbor cells share mnc, mcc and operator with serving cell
         final PositionRecord pos = new PositionRecord(here, sessionId, providerName);
+        final List<CellInfo> cellInfoList = telephonyManager.getAllCellInfo();
 
-        final List<CellInfo> cellInfoList = mTelephonyManager.getAllCellInfo();
         if (cellInfoList != null && cellInfoList.size() > 0) {
             Log.v(TAG, "Found " + cellInfoList.size() + " cells");
+            for (final CellInfo info : cellInfoList) {
+                final CellRecord cell = serializeCell(info, pos);
+                if (cell != null) {
+                    cells.add(cell);
+                }
+            }
+            // now persist list of cell records in database
+            // Caution: So far we set end position = begin position
+            dataHelper.storeCellsScanResults(cells, pos, pos);
             currentCell = cellInfoList.get(0);
+
+            if (cells.size() > 0) {
+                broadcastCellInfo(cells.get(0));
+            }
+
+            return (cells.size() > 0);
         } else {
-            Log.w(TAG, "Cell list null or empty, ignoring");
+            // crappy SAMSUNG devices don't implement getAllCellInfo(), so try alternative solution
+            Log.v(TAG, "Collecting cell infos (API <= 17)");
+            final CellLocation fallback = telephonyManager.getCellLocation();
+            if (fallback instanceof GsmCellLocation) {
+                final CellRecord serving = serializeCellLegacy(fallback, pos);
+                if (serving != null) {
+                    cells.add(serving);
+                }
+
+                final ArrayList<CellRecord> neigbors = processNeighbors(serving, pos);
+                cells.addAll(neigbors);
+                dataHelper.storeCellsScanResults(cells, pos, pos);
+
+                if (serving != null) {
+                    broadcastCellInfo(serving);
+                }
+                return true;
+            }
             return false;
         }
 
-        for (final CellInfo info : cellInfoList) {
-            final CellRecord cell = serializeCell(info, pos);
-            if (cell != null) {
-                cells.add(cell);
-                broadcastCellInfo(cell);
-            }
-        }
-
-        // now persist list of cell records in database
-        // Caution: So far we set end position = begin position
-        dataHelper.storeCellsScanResults(cells, pos, pos);
-
-        return (cells.size() > 0);
     }
 
     /**
@@ -711,7 +737,7 @@ public class WirelessLoggerService extends AbstractService {
                 result.setIsCdma(false);
 
                 // generic cell info
-                result.setNetworkType(mTelephonyManager.getNetworkType());
+                result.setNetworkType(telephonyManager.getNetworkType());
                 // TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
                 result.setOpenBmapTimestamp(position.getOpenBmapTimestamp());
                 result.setBeginPosition(position);
@@ -737,7 +763,7 @@ public class WirelessLoggerService extends AbstractService {
                     result.setPsc(gsmIdentity.getPsc());
 
 
-                final String operator = mTelephonyManager.getNetworkOperator();
+                final String operator = telephonyManager.getNetworkOperator();
                 // getNetworkOperator() may return empty string, probably due to dropped connection
                 if (operator.length() > 3) {
                     result.setOperator(operator);
@@ -748,9 +774,9 @@ public class WirelessLoggerService extends AbstractService {
                     return null;
                 }
 
-                final String networkOperatorName = mTelephonyManager.getNetworkOperatorName();
+                final String networkOperatorName = telephonyManager.getNetworkOperatorName();
                 if (networkOperatorName != null) {
-                    result.setOperatorName(mTelephonyManager.getNetworkOperatorName());
+                    result.setOperatorName(telephonyManager.getNetworkOperatorName());
                 } else {
                     Log.e(TAG, "Error retrieving network operator's name, skipping cell");
                     return null;
@@ -770,7 +796,7 @@ public class WirelessLoggerService extends AbstractService {
                 result.setIsCdma(false);
 
                 // generic cell info
-                result.setNetworkType(mTelephonyManager.getNetworkType());
+                result.setNetworkType(telephonyManager.getNetworkType());
                 // TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
                 result.setOpenBmapTimestamp(position.getOpenBmapTimestamp());
                 result.setBeginPosition(position);
@@ -795,7 +821,7 @@ public class WirelessLoggerService extends AbstractService {
                     result.setPsc(wcdmaIdentity.getPsc());
                 }
 
-                final String operator = mTelephonyManager.getNetworkOperator();
+                final String operator = telephonyManager.getNetworkOperator();
                 // getNetworkOperator() may return empty string, probably due to dropped connection
                 if (operator.length() > 3) {
                     result.setOperator(operator);
@@ -806,9 +832,9 @@ public class WirelessLoggerService extends AbstractService {
                     return null;
                 }
 
-                final String networkOperatorName = mTelephonyManager.getNetworkOperatorName();
+                final String networkOperatorName = telephonyManager.getNetworkOperatorName();
                 if (networkOperatorName != null) {
-                    result.setOperatorName(mTelephonyManager.getNetworkOperatorName());
+                    result.setOperatorName(telephonyManager.getNetworkOperatorName());
                 } else {
                     Log.e(TAG, "Error retrieving network operator's name, skipping cell");
                     return null;
@@ -832,7 +858,7 @@ public class WirelessLoggerService extends AbstractService {
                 result.setIsCdma(true);
 
                 // generic cell info
-                result.setNetworkType(mTelephonyManager.getNetworkType());
+                result.setNetworkType(telephonyManager.getNetworkType());
                 // TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
                 result.setOpenBmapTimestamp(position.getOpenBmapTimestamp());
                 result.setBeginPosition(position);
@@ -843,7 +869,7 @@ public class WirelessLoggerService extends AbstractService {
 
                 // getNetworkOperator can be unreliable in CDMA networks, thus be careful
                 // {@link http://developer.android.com/reference/android/telephony/TelephonyManager.html#getNetworkOperator()}
-                final String operator = mTelephonyManager.getNetworkOperator();
+                final String operator = telephonyManager.getNetworkOperator();
                 if (operator.length() > 3) {
                     result.setOperator(operator);
                     result.setMcc(operator.substring(0, 3));
@@ -854,9 +880,9 @@ public class WirelessLoggerService extends AbstractService {
                     result.setMnc("");
                 }
 
-                final String networkOperatorName = mTelephonyManager.getNetworkOperatorName();
+                final String networkOperatorName = telephonyManager.getNetworkOperatorName();
                 if (networkOperatorName != null) {
-                    result.setOperatorName(mTelephonyManager.getNetworkOperatorName());
+                    result.setOperatorName(telephonyManager.getNetworkOperatorName());
                 } else {
                     Log.i(TAG, "Error retrieving network operator's name, this might happen in CDMA network");
                     result.setOperatorName("");
@@ -879,7 +905,7 @@ public class WirelessLoggerService extends AbstractService {
                 result.setIsCdma(false);
 
                 // generic cell info
-                result.setNetworkType(mTelephonyManager.getNetworkType());
+                result.setNetworkType(telephonyManager.getNetworkType());
                 // TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
                 result.setOpenBmapTimestamp(position.getOpenBmapTimestamp());
                 result.setBeginPosition(position);
@@ -893,7 +919,7 @@ public class WirelessLoggerService extends AbstractService {
                 // set Actual Cid = Logical Cid (as we don't know better at the moment)
                 result.setActualCid(result.getLogicalCellId());
 
-                final String operator = mTelephonyManager.getNetworkOperator();
+                final String operator = telephonyManager.getNetworkOperator();
                 // getNetworkOperator() may return empty string, probably due to dropped connection
                 if (operator.length() > 3) {
                     result.setOperator(operator);
@@ -904,9 +930,9 @@ public class WirelessLoggerService extends AbstractService {
                     return null;
                 }
 
-                final String networkOperatorName = mTelephonyManager.getNetworkOperatorName();
+                final String networkOperatorName = telephonyManager.getNetworkOperatorName();
                 if (networkOperatorName != null) {
-                    result.setOperatorName(mTelephonyManager.getNetworkOperatorName());
+                    result.setOperatorName(telephonyManager.getNetworkOperatorName());
                 } else {
                     Log.e(TAG, "Error retrieving network operator's name, skipping cell");
                     return null;
@@ -925,6 +951,89 @@ public class WirelessLoggerService extends AbstractService {
     }
 
     /**
+     * Legacy mode: use only if you can't get cell infos via telephonyManager.getAllCellInfo()
+     * @param cell
+     * @param position
+     * @return
+     */
+    @Deprecated
+    private CellRecord serializeCellLegacy(final CellLocation cell, final PositionRecord position) {
+        if (cell instanceof GsmCellLocation) {
+            /*
+			 * In case of GSM network set GSM specific values
+			 */
+            final GsmCellLocation gsmLocation = (GsmCellLocation) cell;
+
+            if (isValidGsmCell(gsmLocation)) {
+                Log.i(TAG, "Assuming gsm (assumption based on cell-id" + gsmLocation.getCid() + ")");
+                final CellRecord serving = processGsm(position, gsmLocation);
+
+                if (serving == null) {
+                    return null;
+                }
+
+                return serving;
+            }
+        }
+        return null;
+    }
+
+    private CellRecord processGsm(PositionRecord position, GsmCellLocation gsmLocation) {
+        final CellRecord serving = new CellRecord(sessionId);
+        serving.setIsCdma(false);
+
+        // generic cell info
+        serving.setNetworkType(telephonyManager.getNetworkType());
+        // TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
+        serving.setOpenBmapTimestamp(position.getOpenBmapTimestamp());
+        serving.setBeginPosition(position);
+        // so far we set end position = begin position
+        serving.setEndPosition(position);
+        serving.setIsServing(true);
+        serving.setIsNeighbor(false);
+
+        // GSM specific
+        serving.setLogicalCellId(gsmLocation.getCid());
+
+        // add UTRAN ids, if needed
+        if (gsmLocation.getCid() > 0xFFFFFF) {
+            serving.setUtranRnc(gsmLocation.getCid() >> 16);
+            serving.setActualCid(gsmLocation.getCid() & 0xFFFF);
+        } else {
+            serving.setActualCid(gsmLocation.getCid());
+        }
+
+        if (SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+            // at least for Nexus 4, even HSDPA networks broadcast psc
+            serving.setPsc(gsmLocation.getPsc());
+        }
+
+        final String operator = telephonyManager.getNetworkOperator();
+        // getNetworkOperator() may return empty string, probably due to dropped connection
+        if (operator != null && operator.length() > 3) {
+            serving.setOperator(operator);
+            serving.setMcc(operator.substring(0, 3));
+            serving.setMnc(operator.substring(3));
+        } else {
+            Log.e(TAG, "Error retrieving network operator, skipping cell");
+            return null;
+        }
+
+        final String networkOperatorName = telephonyManager.getNetworkOperatorName();
+        if (networkOperatorName != null) {
+            serving.setOperatorName(networkOperatorName);
+        } else {
+            Log.e(TAG, "Error retrieving network operator's name, skipping cell");
+            return null;
+        }
+
+        serving.setArea(gsmLocation.getLac());
+        serving.setStrengthdBm(gsmStrengthDbm);
+        serving.setStrengthAsu(gsmStrengthAsu);
+        return serving;
+    }
+
+    /**
      * Returns an array list with neighboring cells
      * Please note:
      * 1) Not all cell phones deliver neighboring cells (e.g. Samsung Galaxy)
@@ -939,7 +1048,7 @@ public class WirelessLoggerService extends AbstractService {
     private ArrayList<CellRecord> processNeighbors(final CellRecord serving, final PositionRecord cellPos) {
         final ArrayList<CellRecord> neighbors = new ArrayList<>();
 
-        final ArrayList<NeighboringCellInfo> neighboringCellInfos = (ArrayList<NeighboringCellInfo>) mTelephonyManager.getNeighboringCellInfo();
+        final ArrayList<NeighboringCellInfo> neighboringCellInfos = (ArrayList<NeighboringCellInfo>) telephonyManager.getNeighboringCellInfo();
 
         if (serving == null) {
             Log.e(TAG, "Can't process neighbor cells: we need a serving cell first");
@@ -1028,8 +1137,7 @@ public class WirelessLoggerService extends AbstractService {
 
     /**
      * A valid gsm cell must have cell id != -1
-     * Note: cells with cid > max value 0xffff are accepted (typically UMTS cells. We handle them separately
-     *
+     * Note: cells with cid > max value 0xffff are accepted (typically UMTS cells. We handle them separately)
      * @param gsmIdentity {@link CellIdentityGsm}
      * @return true if valid gsm cell
      */
@@ -1039,6 +1147,22 @@ public class WirelessLoggerService extends AbstractService {
         }
 
         final Integer cid = gsmIdentity.getCid();
+        return (cid > 0 && cid != Integer.MAX_VALUE);
+    }
+
+    /**
+     * A valid gsm cell must have cell id != -1
+     * Use only in legacy mode, i.e. when telephonyManager.getAllCellInfos() isn't implemented on devices (some SAMSUNGS e.g.)
+     * Note: cells with cid > max value 0xffff are accepted (typically UMTS cells. We handle them separately
+     * @param gsmLocation {@link GsmCellLocation}
+     * @return true if valid gsm cell
+     */
+   @Deprecated
+    private boolean isValidGsmCell(final GsmCellLocation gsmLocation) {
+        if (gsmLocation == null) {
+                return false;
+            }
+        final Integer cid = gsmLocation.getCid();
         return (cid > 0 && cid != Integer.MAX_VALUE);
     }
 
@@ -1132,20 +1256,26 @@ public class WirelessLoggerService extends AbstractService {
 
     @Override
     public final void onStartService() {
-        Log.d(TAG, "Starting WirelessLoggerService");
-        EventBus.getDefault().register(this);
+        Log.d(TAG, "Starting ScannerService");
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);}
+        else {
+            Log.w(TAG, "Event bus receiver already registered");
+        }
         registerReceivers();
 
-        // Set mCellSavedAt and mWifiSavedAt to default values (Lat 0, Lon 0)
+        // Set cellsSavedAt and mWifiSavedAt to default values (Lat 0, Lon 0)
         // Thus MIN_CELL_DISTANCE and MIN_WIFI_DISTANCE filters are always fired on startup
-        mCellSavedAt = new Location("DUMMY");
+        cellsSavedAt = new Location("DUMMY");
         mWifiSavedAt = new Location("DUMMY");
     }
 
     @Override
     public final void onStopService() {
-        Log.d(TAG, "Stopping WirelessLoggerService");
-        EventBus.getDefault().unregister(this);
+        Log.d(TAG, "Stopping ScannerService");
+        if (EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this);
+        }
         unregisterReceivers();
         /**
          * TODO: is it really stopForeground only???????????????????????????????
@@ -1218,13 +1348,13 @@ public class WirelessLoggerService extends AbstractService {
          * 		distance > MIN_CELL_DISTANCE
          * 		elapsed time (in milli seconds) > MIN_CELL_TIME_INTERVAL
          */
-        if (acceptableCellDistance(location, mCellSavedAt)) {
-            Log.d(TAG, "Cell update. Distance " + location.distanceTo(mCellSavedAt));
+        if (acceptableCellDistance(location, cellsSavedAt)) {
+            Log.d(TAG, "Cell update. Distance " + location.distanceTo(cellsSavedAt));
             final boolean resultOk = updateCells(location, source);
 
             if (resultOk) {
                 //Log.i(TAG, "Successfully saved cell");
-                mCellSavedAt = location;
+                cellsSavedAt = location;
             }
         } else {
             Log.i(TAG, "Cell update skipped: either to close to last location or interval < " + MIN_CELL_TIME_INTERVAL / 2000 + " seconds");
@@ -1236,12 +1366,12 @@ public class WirelessLoggerService extends AbstractService {
          * when in demo mode wifi updates take place regardless of MIN_WIFI_DISTANCE
          */
         if (acceptableWifiDistance(location, mWifiSavedAt)) {
-            Log.d(TAG, "KnownWifis update. Distance " + location.distanceTo(mWifiSavedAt));
+            Log.d(TAG, "Wifis update. Distance " + location.distanceTo(mWifiSavedAt));
             startScanLocation = location;
             startScanLocationProvider = source;
             updateWifis();
         } else {
-            Log.i(TAG, "KnownWifis update skipped: either to close to last location or interval < " + MIN_CELL_TIME_INTERVAL / 2000 + " seconds");
+            Log.i(TAG, "Wifis update skipped: either to close to last location or interval < " + MIN_CELL_TIME_INTERVAL / 2000 + " seconds");
         }
 
         lastLocation = location;
