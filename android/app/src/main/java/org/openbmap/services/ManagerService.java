@@ -104,7 +104,7 @@ public class ManagerService extends Service {
     private PositioningService positioningService;
     private ScannerService wirelessService;
     private GpxLoggerService gpxTrackerService;
-    private PoiService poiService;
+    private CatalogService catalogService;
     private boolean positioningBound;
     private boolean wirelessBound;
     private boolean gpxBound;
@@ -189,7 +189,7 @@ public class ManagerService extends Service {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             AbstractService.LocalBinder binder = (AbstractService.LocalBinder) service;
-            poiService = (PoiService) binder.getService();
+            catalogService = (CatalogService) binder.getService();
             poiBound = true;
             Log.d(TAG, "REQ StartPoiEvent");
             //EventBus.getDefault().post(new onStartPoi(currentSession));
@@ -400,7 +400,7 @@ public class ManagerService extends Service {
         Intent i3 = new Intent(this, GpxLoggerService.class);
         bindService(i3, gpxConnection, Context.BIND_AUTO_CREATE);
 
-        Intent i4 = new Intent(this, PoiService.class);
+        Intent i4 = new Intent(this, CatalogService.class);
         bindService(i4, poiConnection, Context.BIND_AUTO_CREATE);
     }
 

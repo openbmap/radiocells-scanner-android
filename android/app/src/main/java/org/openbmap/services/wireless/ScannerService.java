@@ -67,7 +67,6 @@ import org.openbmap.events.onCellChanged;
 import org.openbmap.events.onCellSaved;
 import org.openbmap.events.onFreeWifi;
 import org.openbmap.events.onLocationUpdate;
-import org.openbmap.events.onPoiAddOwnWifis;
 import org.openbmap.events.onStartWireless;
 import org.openbmap.events.onStopTracking;
 import org.openbmap.events.onWifiAdded;
@@ -164,7 +163,7 @@ public class ScannerService extends AbstractService {
     private String startScanLocationProvider;
 
     /*
-     * WifisCommunity Manager
+     * WifisRadiocells Manager
      */
     private WifiManager wifiManager;
 
@@ -184,7 +183,7 @@ public class ScannerService extends AbstractService {
     private final boolean isWifiEnabled = false;
 
     /**
-     * WifisCommunity scan is asynchronous. pendingWifiScanResults ensures that only one scan is mIsRunning
+     * WifisRadiocells scan is asynchronous. pendingWifiScanResults ensures that only one scan is mIsRunning
      **/
     private boolean pendingWifiScanResults = false;
 
@@ -194,7 +193,7 @@ public class ScannerService extends AbstractService {
     private CellInfo currentCell;
 
     /**
-     * WifisCommunity scan result callback
+     * WifisRadiocells scan result callback
      */
     private WifiScanCallback wifiScanResults;
 
@@ -225,7 +224,7 @@ public class ScannerService extends AbstractService {
     private LocationBlackList locationBlacklist;
 
     /**
-     * WifisCommunity catalog database (used for checking if new wifi)
+     * WifisRadiocells catalog database (used for checking if new wifi)
      */
     private SQLiteDatabase wifiCatalog;
 
@@ -377,9 +376,9 @@ public class ScannerService extends AbstractService {
             }
 
             @Override
-            public void onCellInfoChanged (List<CellInfo> cellInfo) {
+            public void onCellInfoChanged(List<CellInfo> cellInfo) {
                 Log.d(TAG, "onCellInfoChanged fired");
-                if(cellInfo != null && cellInfo.size() > 0) {
+                if (cellInfo != null && cellInfo.size() > 0) {
                     CellInfo first = cellInfo.get(0);
                     if (!first.equals(currentCell)) {
                         Log.v(TAG, "Cell info changed: " + first.toString());
@@ -391,7 +390,7 @@ public class ScannerService extends AbstractService {
             }
 
             @Override
-            public void onCellLocationChanged (CellLocation location) {
+            public void onCellLocationChanged(CellLocation location) {
                 Log.d(TAG, "onCellLocationChanged fired");
                 EventBus.getDefault().post(new onCellChanged(null));
                 super.onCellLocationChanged(location);
@@ -514,11 +513,11 @@ public class ScannerService extends AbstractService {
      * then upon completion WifiScanCallback is called
      */
     private void updateWifis() {
-            // cancel if wifi is disabled
-            if (!wifiManager.isWifiEnabled() && !wifiManager.isScanAlwaysAvailable()) {
-                Log.i(TAG, "Wifi disabled or is scan always available off, skipping wifi scan");
-                return;
-            }
+        // cancel if wifi is disabled
+        if (!wifiManager.isWifiEnabled() && !wifiManager.isScanAlwaysAvailable()) {
+            Log.i(TAG, "Wifi disabled or is scan always available off, skipping wifi scan");
+            return;
+        }
 
         // only start new scan if previous scan results have already been processed
         if (!pendingWifiScanResults) {
@@ -596,7 +595,6 @@ public class ScannerService extends AbstractService {
                                 dataHelper.storeWifiScanResults(begin, end, wifis);
 
 
-
                                 // take last seen wifi and broadcast infos in ui
                                 if (wifis.size() > 0) {
                                     broadcastWifiDetails(wifis);
@@ -621,11 +619,11 @@ public class ScannerService extends AbstractService {
     private void broadcastWifiDetails(final ArrayList<WifiRecord> wifis) {
         final WifiRecord recent = wifis.get(wifis.size() - 1);
         EventBus.getDefault().post(new onWifiAdded(recent.getSsid(), recent.getLevel()));
-        EventBus.getDefault().post(new onPoiAddOwnWifis(wifis));
     }
 
     /**
      * Broadcasts ignore message
+     *
      * @param because reason (location / bssid / ssid
      * @param message additional info
      */
@@ -636,6 +634,7 @@ public class ScannerService extends AbstractService {
 
     /**
      * Broadcasts free wifi has been found
+     *
      * @param ssid SSID of free wifi
      */
     private void broadcastFree(final String ssid) {
@@ -644,7 +643,8 @@ public class ScannerService extends AbstractService {
 
     /**
      * Processes cell related information and saves them to database
-     * @param here current location
+     *
+     * @param here         current location
      * @param providerName Name of the position provider (e.g. gps)
      * @return true if at least one cell has been saved
      */
@@ -720,13 +720,14 @@ public class ScannerService extends AbstractService {
 
     /**
      * Create a {@link CellRecord} by parsing {@link CellInfo}
+     *
      * @param cell     {@linkplain CellInfo}
      * @param position {@linkplain PositionRecord Current position}
      * @return {@link CellRecord}
      */
     private CellRecord serializeCell(final CellInfo cell, final PositionRecord position) {
         if (cell instanceof CellInfoGsm) {
-			/*
+            /*
 			 * In case of GSM network set GSM specific values
 			 */
             final CellIdentityGsm gsmIdentity = ((CellInfoGsm) cell).getCellIdentity();
@@ -758,10 +759,8 @@ public class ScannerService extends AbstractService {
                     result.setActualCid(gsmIdentity.getCid());
                 }
 
-
-                    // at least for Nexus 4, even HSDPA networks broadcast psc
-                    result.setPsc(gsmIdentity.getPsc());
-
+                // at least for Nexus 4, even HSDPA networks broadcast psc
+                result.setPsc(gsmIdentity.getPsc());
 
                 final String operator = telephonyManager.getNetworkOperator();
                 // getNetworkOperator() may return empty string, probably due to dropped connection
@@ -952,6 +951,7 @@ public class ScannerService extends AbstractService {
 
     /**
      * Legacy mode: use only if you can't get cell infos via telephonyManager.getAllCellInfo()
+     *
      * @param cell
      * @param position
      * @return
@@ -1138,6 +1138,7 @@ public class ScannerService extends AbstractService {
     /**
      * A valid gsm cell must have cell id != -1
      * Note: cells with cid > max value 0xffff are accepted (typically UMTS cells. We handle them separately)
+     *
      * @param gsmIdentity {@link CellIdentityGsm}
      * @return true if valid gsm cell
      */
@@ -1154,20 +1155,22 @@ public class ScannerService extends AbstractService {
      * A valid gsm cell must have cell id != -1
      * Use only in legacy mode, i.e. when telephonyManager.getAllCellInfos() isn't implemented on devices (some SAMSUNGS e.g.)
      * Note: cells with cid > max value 0xffff are accepted (typically UMTS cells. We handle them separately
+     *
      * @param gsmLocation {@link GsmCellLocation}
      * @return true if valid gsm cell
      */
-   @Deprecated
+    @Deprecated
     private boolean isValidGsmCell(final GsmCellLocation gsmLocation) {
         if (gsmLocation == null) {
-                return false;
-            }
+            return false;
+        }
         final Integer cid = gsmLocation.getCid();
         return (cid > 0 && cid != Integer.MAX_VALUE);
     }
 
     /**
      * A valid wcdma cell must have cell id set
+     *
      * @param wcdmaInfo {@link CellIdentityWcdma}
      * @return true if valid cdma id
      */
@@ -1181,6 +1184,7 @@ public class ScannerService extends AbstractService {
 
     /**
      * A valid LTE cell must have cell id set
+     *
      * @param lteInfo {@link CellIdentityLte}
      * @return true if valid cdma id
      */
@@ -1226,6 +1230,7 @@ public class ScannerService extends AbstractService {
 
     /**
      * Broadcasts human-readable description of last cell.
+     *
      * @param cell Cell info
      */
     private void broadcastCellInfo(final CellRecord cell) {
@@ -1258,8 +1263,8 @@ public class ScannerService extends AbstractService {
     public final void onStartService() {
         Log.d(TAG, "Starting ScannerService");
         if (!EventBus.getDefault().isRegistered(this)) {
-            EventBus.getDefault().register(this);}
-        else {
+            EventBus.getDefault().register(this);
+        } else {
             Log.w(TAG, "Event bus receiver already registered");
         }
         registerReceivers();
@@ -1286,6 +1291,7 @@ public class ScannerService extends AbstractService {
 
     /**
      * Starts wireless tracking
+     *
      * @param sessionId
      */
     private void startTracking(final int sessionId) {
@@ -1380,6 +1386,7 @@ public class ScannerService extends AbstractService {
 
     /**
      * Checks, whether bssid exists in wifi catalog.
+     *
      * @param bssid
      * @return Returns
      */

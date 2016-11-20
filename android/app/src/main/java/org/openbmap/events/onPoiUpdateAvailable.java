@@ -36,16 +36,16 @@ package org.openbmap.events;
  */
 
 import org.mapsforge.poi.storage.PointOfInterest;
-import org.openbmap.utils.PoiFilter;
+import org.openbmap.utils.LayerHelpers.LayerFilter;
 
 import java.util.Collection;
 
 public class onPoiUpdateAvailable {
 
     public Collection<PointOfInterest> pois;
-    public PoiFilter filter;
+    public LayerFilter filter;
 
-    public onPoiUpdateAvailable(Collection<PointOfInterest> pois, PoiFilter filter) {
+    public onPoiUpdateAvailable(Collection<PointOfInterest> pois, LayerFilter filter) {
         this.pois =  pois;
         this.filter = filter;
     }

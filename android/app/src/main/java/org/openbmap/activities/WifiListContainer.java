@@ -55,7 +55,7 @@ public class WifiListContainer extends ListFragment implements LoaderManager.Loa
 	private static final String TAG = WifiListContainer.class.getSimpleName();
 
 	/**
-	 * WifisCommunity cursor loader id
+	 * WifisRadiocells cursor loader id
 	 * must be different from CELL_LOADER_ID !
 	 */
 	private static final int WIFI_LOADER_ID	= 1;

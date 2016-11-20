@@ -36,15 +36,12 @@ package org.openbmap.events;
  */
 
 import org.mapsforge.core.model.BoundingBox;
-import org.openbmap.utils.PoiFilter;
 
 public class onPoiUpdateRequested {
 
     public final BoundingBox bbox;
-    public final PoiFilter filter;
 
-    public onPoiUpdateRequested(PoiFilter filter, BoundingBox bbox) {
-        this.filter = filter;
+    public onPoiUpdateRequested(BoundingBox bbox) {
         this.bbox = bbox;
     }
 

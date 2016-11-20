@@ -157,6 +157,50 @@ public class DataHelper {
 	}
 
 	/**
+	 * Loads unknown wifis (all sessions)
+	 * @return ArrayList<WifiRecord> with all wifis for given session
+	 */
+	public final ArrayList<WifiRecord> loadUnknownWifis() {
+		final ArrayList<WifiRecord> wifis = new ArrayList<>();
+
+		final Cursor cursor = contentResolver.query(Uri.withAppendedPath(
+				ContentProvider.CONTENT_URI_WIFI, ContentProvider.CONTENT_URI_OVERVIEW_SUFFIX + "/" + ContentProvider.CONTENT_URI_UNKNOWN_SUFFIX),
+				null, null, null, null);
+
+		// Performance tweaking: don't call ca.getColumnIndex on each iteration
+		final int columnIndex = cursor.getColumnIndex(Schema.COL_BSSID);
+		final int columnIndex2 = cursor.getColumnIndex(Schema.COL_SSID);
+		final int columnIndex3 = cursor.getColumnIndex(Schema.COL_CAPABILITIES);
+		final int columnIndex4 = cursor.getColumnIndex(Schema.COL_FREQUENCY);
+		final int columnIndex5 = cursor.getColumnIndex(Schema.COL_MAX_LEVEL);
+		final int columnIndex6 = cursor.getColumnIndex(Schema.COL_TIMESTAMP);
+		final int columnIndex7 = cursor.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
+		final int columnIndex8 = cursor.getColumnIndex(Schema.COL_END_POSITION_ID);
+		final int columnIndex9 = cursor.getColumnIndex(Schema.COL_KNOWN_WIFI);
+
+        long i = 0;
+		while (cursor.moveToNext()) {
+			final WifiRecord wifi = new WifiRecord();
+			wifi.setBssid(cursor.getString(columnIndex));
+			wifi.setSsid(cursor.getString(columnIndex2));
+			wifi.setCapabilities(cursor.getString(columnIndex3));
+			wifi.setFrequency(cursor.getInt(columnIndex4));
+			wifi.setLevel(cursor.getInt(columnIndex5));
+			wifi.setOpenBmapTimestamp(cursor.getLong(columnIndex6));
+
+			wifi.setBeginPosition(loadPositionById(cursor.getString(columnIndex7)));
+			wifi.setEndPosition(loadPositionById(cursor.getString(columnIndex8)));
+			//wifi.setNew(ca.getInt(columnIndex9) == 1);
+			wifi.setCatalogStatus(CatalogStatus.values()[cursor.getInt(columnIndex9)]);
+			wifis.add(wifi);
+            i=i+1;
+            Log.d(TAG, "Iteration " + String.valueOf(i));
+        }
+		cursor.close();
+		return wifis;
+	}
+
+	/**
 	 * Counts number of wifis in session.
 	 * @param session
 	 * @return number of wifis
@@ -215,7 +259,6 @@ public class DataHelper {
 		return wifi;
 	}
 
-
 	/**
 	 * Gets wifis by BSSID
 	 * @param bssid
@@ -273,7 +316,6 @@ public class DataHelper {
 	public final ArrayList<WifiRecord> loadWifisOverview(final int session) {
 		return loadWifisOverviewWithin(session, null, null, null, null);
 	}
-
 
 	/**
 	 * Returns strongest measurement for each wifi within bounding box from TBL_WIFIS.
@@ -339,7 +381,6 @@ public class DataHelper {
 	 * @return On success session is returned, otherwise null.
 	 */
 	public final Session loadSession(final int id) {
-        // Log.d(TAG, "loadSession called");
 		Session session = null;
 		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(ContentProvider.CONTENT_URI_SESSION, id), null, null, null, null);
 		if (cursor.moveToNext()) {
@@ -915,7 +956,7 @@ public class DataHelper {
 
     /**
      * Stores position.
-     * This method is only used for separate positions. WifisCommunity and cell positions are added in batch mode
+     * This method is only used for separate positions. WifisRadiocells and cell positions are added in batch mode
      * in storeCellsScanResults and storeWifiScanResults
      * @param pos
      * @return

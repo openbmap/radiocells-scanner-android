@@ -36,7 +36,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Takes care of database creation
+ * SQL Database definition queries
  *
  * Reminder:
  * In an earlier version, database has been provisioned via sdcard

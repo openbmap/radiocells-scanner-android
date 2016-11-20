@@ -141,6 +141,11 @@ public final class Schema {
 	 * Gets all wifis with given BSSID
 	 */
 	public static final int	URI_CODE_WIFIS_BY_BSSID	= 24;
+
+	/**
+	 * Get new session wifis
+	 */
+	public static final int	URI_CODE_WIFIS_UNKNOWN = 25;
 	
 	/**
 	 * Get all wifis including position data

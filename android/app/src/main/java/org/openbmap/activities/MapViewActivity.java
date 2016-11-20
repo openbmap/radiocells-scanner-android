@@ -83,7 +83,6 @@ import org.openbmap.utils.GpxMapObjectsLoader.OnGpxLoadedListener;
 import org.openbmap.utils.LegacyGroupLayer;
 import org.openbmap.utils.MapUtils;
 import org.openbmap.utils.MapUtils.onLongPressHandler;
-import org.openbmap.utils.PoiFilter;
 import org.openbmap.utils.SessionLatLong;
 import org.openbmap.utils.SessionObjectsLoader;
 import org.openbmap.utils.SessionObjectsLoader.OnSessionLoadedListener;
@@ -207,17 +206,12 @@ public class MapViewActivity extends Fragment implements
     /**
      * Layer with radiocells wifis
      */
-    private Layer knownWifisLayer;
-
-    /**
-     * Local wifis layer
-     */
-    private Layer myWifisLayer;
+    private LegacyGroupLayer wifisLayer;
 
     /**
      * Openstreetmap towers layer
      */
-    private Layer towersLayer;
+    private LegacyGroupLayer towersLayer;
 
     /**
      * Paint style for active sessions objects
@@ -257,16 +251,6 @@ public class MapViewActivity extends Fragment implements
     private Observer mapObserver;
 
     /**
-     * Wifis catalog layer is currently refreshing
-     */
-    private boolean isUpdatingWifis = false;
-
-    /**
-     * Towers layer is currently refreshing
-     */
-    private boolean isUpdatingTowers = false;
-
-    /**
      * Session layer is currently refreshing
      */
     private boolean isUpdatingSession = false;
@@ -289,13 +273,7 @@ public class MapViewActivity extends Fragment implements
     /**
      * System time of last catalog layer refresh (in millis)
      */
-    private long wifisLayerRefreshTime;
-
-    /**
-     * System time of last tower layer refresh (in millis)
-     */
-    private long towersLayerRefreshTime;
-
+    private long poiLayerRefreshTime;
 
     /**
      * Location of last session layer refresh
@@ -305,12 +283,7 @@ public class MapViewActivity extends Fragment implements
     /**
      * Location of wifi layer refresh
      */
-    private Location wifisLayerRefreshLocation = new Location("DUMMY");
-
-    /**
-     * Location of tower layer refresh
-     */
-    private Location towersLayerRefreshLocation = new Location("DUMMY");
+    private Location poiLayerRefreshLocation = new Location("DUMMY");
 
 
     @Override
@@ -498,16 +471,12 @@ public class MapViewActivity extends Fragment implements
                     position.setLatitude(tmp.latitude);
                     position.setLongitude(tmp.longitude);
 
-                    if (sessionLayerOutdated(position)) {
-                        drawSessionLayer(position);
+                    if (sessionLayerNeedsUpdate(position)) {
+                        requestSessionUpdate(position);
                     }
 
-                    if (isWifisLayerEnabled && wifisLayerOutdated(position)) {
-                        drawWifis(position);
-                    }
-
-                    if (isTowersLayerEnabled && towersLayerOutdated(position)) {
-                        drawTowers(position);
+                    if (isPoiLayerNeedsUpdate(position)) {
+                        requestPoiUpdate();
                     }
                 }
             }
@@ -598,29 +567,25 @@ public class MapViewActivity extends Fragment implements
 
         // update layers
         if (GeometryUtils.isValidLocation(location)) {
-                    /*
-                     * Update layers if necessary, but only if
-                     * 1.) current zoom level >= 12 (otherwise single points not visible, huge performance impact)
-                     * 2.) layer items haven't been refreshed for a while AND user has moved a bit
-                     */
-
-            if ((mapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && (sessionLayerOutdated(location))) {
-                drawSessionLayer(location);
+            /*
+             * Update layers if necessary, but only if
+             * 1.) current zoom level >= 12 (otherwise single points not visible, huge performance impact)
+             * 2.) layer items haven't been refreshed for a while AND user has moved a bit
+             */
+            if ((mapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && sessionLayerNeedsUpdate(location)) {
+                requestSessionUpdate(location);
             }
 
-            if ((mapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) &&
-                    isWifisLayerEnabled &&
-                    wifisLayerOutdated(location)) {
-                drawWifis(location);
+            if ((mapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && isPoiLayerNeedsUpdate(location)) {
+                requestPoiUpdate();
             }
 
-            if (gpxLayerOutdated()) {
+            if (gpxNeedsUpdate()) {
                 refreshGpxTrace(location);
             }
 
             // indicate bearing
             refreshCompass(location);
-
         } else {
             Log.e(TAG, "Invalid positon! Cycle skipped");
         }
@@ -641,77 +606,14 @@ public class MapViewActivity extends Fragment implements
         mapCenter.setLatitude(mapView.getModel().mapViewPosition.getCenter().latitude);
         mapCenter.setLongitude(mapView.getModel().mapViewPosition.getCenter().longitude);
 
-        drawSessionLayer(mapCenter);
+        requestSessionUpdate(mapCenter);
 
-        if (isWifisLayerEnabled) {
-            drawWifis(mapCenter);
-        }
-
-        if (isTowersLayerEnabled) {
-            drawTowers(mapCenter);
-        }
+        requestPoiUpdate();
     }
 
-    /**
-     * Refreshes catalog layer, if not already refreshing
-     *
-     * @param location
-     */
-    protected final void drawWifis(final Location location) {
-
-        if (!isUpdatingWifis && isVisible()) {
-            Log.d(TAG, "Updating wifi catalog layer");
-            isUpdatingWifis = true;
-            EventBus.getDefault().post(new onPoiUpdateRequested(PoiFilter.WifisAll, this.mapView.getBoundingBox()));
-            wifisLayerRefreshLocation = location;
-            wifisLayerRefreshTime = System.currentTimeMillis();
-        } else if (!isVisible()){
-            Log.v(TAG, "Not visible, skipping refresh");
-        } else {
-            Log.v(TAG, "Wifis layer are refreshing. Skipping refresh..");
-        }
-    }
-
-    /**
-     * Refreshes catalog layer, if not already refreshing
-     * @param location
-     */
-    protected final void drawTowers(final Location location) {
-
-        if (!isUpdatingTowers && isVisible()) {
-            //Log.d(TAG, "Updating towers layer");
-            isUpdatingTowers = true;
-            EventBus.getDefault().post(new onPoiUpdateRequested(PoiFilter.Towers, this.mapView.getBoundingBox()));
-            towersLayerRefreshLocation = location;
-            towersLayerRefreshTime = System.currentTimeMillis();
-        } else if (!isVisible()){
-            Log.v(TAG, "Not visible, skipping refresh");
-        } else {
-            Log.v(TAG, "Towers layer is refreshing. Skipping refresh..");
-        }
-    }
-
-    public void redrawLayers(Layer layer, PoiFilter category) {
-        if (category == PoiFilter.Towers){
-            //Log.d(TAG , "Updating cell tower layer");
-            isUpdatingTowers = false;
-            if (towersLayer != null) {
-                clearTowers();
-            }
-            towersLayer = layer;
-        } if (category == PoiFilter.WifisCommunity || category == PoiFilter.WifisOwn){
-            Log.d(TAG , "Updating wifis layer");
-            isUpdatingWifis = false;
-
-            clearWifis();
-
-            if (category == PoiFilter.WifisCommunity) {
-                knownWifisLayer = layer;
-            } else if (category == PoiFilter.WifisOwn) {
-                myWifisLayer = layer;
-            }
-        }
-        mapView.getLayerManager().redrawLayers();
+    private void requestPoiUpdate() {
+        EventBus.getDefault().post(new onPoiUpdateRequested(this.mapView.getBoundingBox()));
+        poiLayerRefreshTime = System.currentTimeMillis();
     }
 
     /**
@@ -727,18 +629,11 @@ public class MapViewActivity extends Fragment implements
      */
     private void clearWifis() {
         synchronized (this) {
-            isUpdatingWifis = false;
 
-            if (knownWifisLayer != null) {
-                this.mapView.getLayerManager().getLayers().remove(knownWifisLayer);
+            if (wifisLayer != null) {
+                this.mapView.getLayerManager().getLayers().remove(wifisLayer);
             }
-
-            if (myWifisLayer != null) {
-                this.mapView.getLayerManager().getLayers().remove(myWifisLayer);
-            }
-
-            knownWifisLayer = null;
-            myWifisLayer = null;
+            wifisLayer = null;
         }
     }
 
@@ -747,12 +642,10 @@ public class MapViewActivity extends Fragment implements
      */
     private void clearTowers() {
         synchronized (this) {
-            isUpdatingTowers = false;
 
             if (towersLayer != null) {
                 this.mapView.getLayerManager().getLayers().remove(towersLayer);
             }
-
             towersLayer = null;
             AndroidResourceBitmap.clearResourceBitmaps();
         }
@@ -797,32 +690,15 @@ public class MapViewActivity extends Fragment implements
      * @param current new location
      * @return true if wifis layer needs a refresh
      */
-    private boolean wifisLayerOutdated(final Location current) {
+    private boolean isPoiLayerNeedsUpdate(final Location current) {
         if (current == null) {
             // fail safe: draw if something went wrong
             return true;
         }
 
         return (
-                (wifisLayerRefreshLocation.distanceTo(current) > CATALOG_REFRESH_DISTANCE)
-                        && ((System.currentTimeMillis() - wifisLayerRefreshTime) > CATALOG_REFRESH_INTERVAL)
-        );
-    }
-
-    /**
-     * Checks whether layer is too old or too far away from previous position
-     * @param current new location
-     * @return true if wifis layer needs a refresh
-     */
-    private boolean towersLayerOutdated(final Location current) {
-        if (current == null) {
-            // fail safe: draw if something went wrong
-            return true;
-        }
-
-        return (
-                (towersLayerRefreshLocation.distanceTo(current) > CATALOG_REFRESH_DISTANCE)
-                        && ((System.currentTimeMillis() - towersLayerRefreshTime) > CATALOG_REFRESH_INTERVAL)
+                (poiLayerRefreshLocation.distanceTo(current) > CATALOG_REFRESH_DISTANCE)
+                        && ((System.currentTimeMillis() - poiLayerRefreshTime) > CATALOG_REFRESH_INTERVAL)
         );
     }
 
@@ -832,11 +708,11 @@ public class MapViewActivity extends Fragment implements
      *
      * @param location
      */
-    protected final void drawSessionLayer(final Location location) {
+    protected final void requestSessionUpdate(final Location location) {
         if (!isUpdatingSession && isVisible()) {
             Log.d(TAG, "Updating session layer");
             isUpdatingSession = true;
-            triggerSessionObjectsUpdate(null);
+            startSessionDatabaseTask(null);
             sessionObjectsRefreshTime = System.currentTimeMillis();
             sessionObjectsRefreshLocation = location;
         } else if (!isVisible()) {
@@ -850,7 +726,7 @@ public class MapViewActivity extends Fragment implements
      * Is new location far enough from last refresh location and is last refresh to old?
      * @return true if session layer needs refresh
      */
-    private boolean sessionLayerOutdated(final Location current) {
+    private boolean sessionLayerNeedsUpdate(final Location current) {
         if (current == null) {
             // fail safe: draw if something went wrong
             return true;
@@ -866,7 +742,7 @@ public class MapViewActivity extends Fragment implements
      *
      * @param highlight If highlight is specified only this wifi is displayed
      */
-    private void triggerSessionObjectsUpdate(final WifiRecord highlight) {
+    private void startSessionDatabaseTask(final WifiRecord highlight) {
         if (mapView == null) {
             return;
         }
@@ -919,54 +795,41 @@ public class MapViewActivity extends Fragment implements
             return;
         }
 
-        //final Drawable drawable = ContextCompat.getDrawable(activity.getActivity(), R.drawable.icon);
-        final Drawable towerIcon = ResourcesCompat.getDrawable(getResources(), R.drawable.icon, null);
-        Bitmap bitmap = AndroidGraphicFactory.convertToBitmap(towerIcon);
-        bitmap.incrementRefCount();
-
         Log.d(TAG, event.pois.size() + " POI found");
 
-        LegacyGroupLayer groupLayer = new LegacyGroupLayer();
-        for (final PointOfInterest poi : event.pois) {
-            if ((event.filter == PoiFilter.WifisCommunity) || (event.filter == PoiFilter.WifisOwn) || (event.filter == PoiFilter.WifisAll)) {
-                Log.d(TAG, "onEvent: " + poi.toString());
-                if (!poi.getCategory().getTitle().equals("Own")) {
-                    final Circle allSymbol = new FixedPixelCircle(poi.getLatLong(), 8, PAINT, null) {
-                        @Override
-                        public boolean onTap(LatLong tapLatLong, Point layerXY, Point tapXY) {
-                            // GroupLayer does not have a position, layerXY is null
-                            Point circleXY = mapView.getMapViewProjection().toPixels(getPosition());
-                            if (this.contains(circleXY, tapXY)) {
-                                //Toast.makeText(MapViewActivity.this, poi.getName(), Toast.LENGTH_SHORT).show();
-                                return true;
-                            }
-                            return false;
-                        }
-                    };
-                    groupLayer.layers.add(allSymbol);
-                } else {
-                    final Circle ownSymbol = new FixedPixelCircle(poi.getLatLong(), 8, PAINT_RED, null) {
-                        @Override
-                        public boolean onTap(LatLong tapLatLong, Point layerXY, Point tapXY) {
-                            // GroupLayer does not have a position, layerXY is null
-                            Point circleXY = mapView.getMapViewProjection().toPixels(getPosition());
-                            if (this.contains(circleXY, tapXY)) {
-                                Toast.makeText(getActivity(), poi.getName(), Toast.LENGTH_SHORT).show();
-                                return true;
-                            }
-                            return false;
-                        }
-                    };
-                    groupLayer.layers.add(ownSymbol);
-                }
+        clearTowers();
+        clearWifis();
 
-            } else if (event.filter == PoiFilter.Towers) {
+        // sort results into their corresponding group layer
+        wifisLayer = new LegacyGroupLayer();
+        towersLayer = new LegacyGroupLayer();
+        for (final PointOfInterest poi : event.pois) {
+            if (poi.getCategory().getTitle().equals("Radiocells.org")) {
+                final Circle allSymbol = new FixedPixelCircle(poi.getLatLong(), 8, PAINT, null);
+                wifisLayer.layers.add(allSymbol);
+            } else if (poi.getCategory().getTitle().equals("Own")) {
+                final Circle ownSymbol = new FixedPixelCircle(poi.getLatLong(), 8, PAINT_RED, null);
+                wifisLayer.layers.add(ownSymbol);
+            } else if (poi.getCategory().getTitle().equals("Towers")) {
+                // Handling tower markers
+                //final Drawable drawable = ContextCompat.getDrawable(activity.getActivity(), R.drawable.icon);
+                final Drawable towerIcon = ResourcesCompat.getDrawable(getResources(), R.drawable.icon, null);
+                Bitmap bitmap = AndroidGraphicFactory.convertToBitmap(towerIcon);
+                bitmap.incrementRefCount();
                 final Marker marker = new Marker(poi.getLatLong(), bitmap, 0, -bitmap.getHeight() / 2);
-                groupLayer.layers.add(marker);
+                towersLayer.layers.add(marker);
+            } else {
+                Log.w(TAG, "Unknown marker category:" + poi.getCategory().getTitle());
             }
         }
-        mapView.getLayerManager().getLayers().add(groupLayer);
-        redrawLayers(groupLayer, event.filter);
+
+        if (wifisLayer != null) {
+            mapView.getLayerManager().getLayers().add(wifisLayer);
+        }
+        if (towersLayer != null) {
+            mapView.getLayerManager().getLayers().add(towersLayer);
+        }
+        mapView.getLayerManager().redrawLayers();
     }
 
     /* (non-Javadoc)
@@ -1016,7 +879,7 @@ public class MapViewActivity extends Fragment implements
         if (!isUpdatingGpx && isVisible()) {
             Log.d(TAG, "Updating gpx layer");
             isUpdatingGpx = true;
-            triggerGpxObjectsUpdate();
+            startGpxDatabaseTask();
             gpxRefreshedAt = System.currentTimeMillis();
         } else if (!isVisible()) {
             Log.v(TAG, "Not visible, skipping refresh");
@@ -1030,14 +893,14 @@ public class MapViewActivity extends Fragment implements
      *
      * @return true if layer needs refresh
      */
-    private boolean gpxLayerOutdated() {
+    private boolean gpxNeedsUpdate() {
         return ((System.currentTimeMillis() - gpxRefreshedAt) > GPX_REFRESH_INTERVAL);
     }
 
     /*
      * Loads gpx points in visible range.
      */
-    private void triggerGpxObjectsUpdate() {
+    private void startGpxDatabaseTask() {
         if (mapView == null) {
             return;
         }

@@ -137,7 +137,6 @@ public class CatalogDatabaseHelper extends SQLiteOpenHelper {
 
         // "getReadableDatabase()" and "getWriteableDatabase()" return the same object (except under low disk space scenarios)
 
-
         try {
             SQLiteDatabase db = getOptimizedDatabase();
             Cursor cursor = db.rawQuery(HIGHSPEED_QUERY, args);

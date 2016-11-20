@@ -18,9 +18,26 @@
 
 package org.openbmap.utils;
 
-public enum PoiFilter {
-    Towers,
-    WifisAll,
-    WifisCommunity,
-    WifisOwn
+public class LayerHelpers {
+    public enum LayerFilter {
+        Undefined,
+        Towers,
+        WifisAll,
+        WifisRadiocells,
+        WifisOwn
+    }
+
+    public static String filterToCriteria(LayerFilter filter) {
+            if (filter == LayerFilter.WifisRadiocells) {
+                return "Radiocells.org";
+            } else if (filter == LayerFilter.WifisOwn) {
+                return "Own";
+            } else if (filter == LayerFilter.WifisAll) {
+                return "Wifis";
+            } else if (filter == LayerFilter.Towers) {
+                return "Towers";
+            } else {
+                return null;
+            }
+    }
 }

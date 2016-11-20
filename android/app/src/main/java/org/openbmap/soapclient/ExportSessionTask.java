@@ -239,7 +239,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 				uploadAllWifis(wifiFiles);
 			}
 		} else {
-			Log.i(TAG, "WifisCommunity export skipped");
+			Log.i(TAG, "WifisRadiocells export skipped");
 		}
 
 		if (!mSkipUpload) {

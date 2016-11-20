@@ -52,7 +52,7 @@ import org.openbmap.services.ManagerService;
 import org.openbmap.utils.ActivityUtils;
 
 /**
- * TabHostActivity for "tracking" mode. It hosts the tabs "Stats", "WifisCommunity Overview", "Cell Overview" and "Map".
+ * TabHostActivity for "tracking" mode. It hosts the tabs "Stats", "WifisRadiocells Overview", "Cell Overview" and "Map".
  * TabHostActivity is also in charge of service communication.
  */
 public class TabHostActivity extends AppCompatActivity {

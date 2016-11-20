@@ -119,7 +119,7 @@ public class WifiDetailsActivity extends FragmentActivity {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         if (wifi == null) {
-            Log.e(TAG, "WifisCommunity argument was null");
+            Log.e(TAG, "WifisRadiocells argument was null");
             return;
         }
 
