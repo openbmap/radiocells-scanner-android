@@ -52,6 +52,7 @@ android {
 buildscript {
     repositories {
         mavenCentral()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
     }
     dependencies {
         // replace with the current version of the Android plugin
@@ -74,12 +75,22 @@ dependencies {
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'com.jjoe64:graphview:4.1.0'
     compile 'org.apache.httpcomponents:httpmime:4.2.3'
+
+    compile 'org.mapsforge:mapsforge:master-SNAPSHOT'
+    compile 'org.mapsforge:mapsforge-core:master-SNAPSHOT'
+    compile 'org.mapsforge:mapsforge-map:master-SNAPSHOT'
+    compile 'org.mapsforge:mapsforge-poi-android:master-SNAPSHOT'
+    compile 'org.mapsforge:mapsforge-map-android:master-SNAPSHOT'
+    compile 'org.mapsforge:mapsforge-map-reader:master-SNAPSHOT'
+
+    /*
     compile 'org.mapsforge:mapsforge:0.6.1'
     compile 'org.mapsforge:mapsforge-core:0.6.1'
     compile 'org.mapsforge:mapsforge-map:0.6.1'
     compile 'org.mapsforge:mapsforge-poi-android:0.6.1'
     compile 'org.mapsforge:mapsforge-map-android:0.6.1'
     compile 'org.mapsforge:mapsforge-map-reader:0.6.1'
+    */
 }
 
 apt {
