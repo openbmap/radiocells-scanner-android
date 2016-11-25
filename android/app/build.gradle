@@ -60,12 +60,14 @@ buildscript {
         classpath 'com.android.tools.build:gradle:2.2.2'
         // the latest version of the android-apt plugin
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+
     }
 }
 
 dependencies {
     testCompile 'junit:junit:4.12'
-
+    compile 'com.jakewharton:butterknife:8.4.0'
+    apt 'com.jakewharton:butterknife-compiler:8.4.0'
     compile 'cz.msebera.android:httpclient:4.4.1.1'
     compile 'com.android.support:support-v4:23.+'
     compile 'com.android.support:appcompat-v7:23.+'

@@ -67,7 +67,6 @@ import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.layer.overlay.Polyline;
 import org.mapsforge.map.model.common.Observer;
 import org.mapsforge.map.util.MapPositionUtil;
-import org.mapsforge.poi.storage.PointOfInterest;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
@@ -77,6 +76,7 @@ import org.openbmap.db.models.WifiRecord;
 import org.openbmap.events.onLocationUpdate;
 import org.openbmap.events.onPoiUpdateAvailable;
 import org.openbmap.events.onPoiUpdateRequested;
+import org.openbmap.utils.CatalogObject;
 import org.openbmap.utils.GeometryUtils;
 import org.openbmap.utils.GpxMapObjectsLoader;
 import org.openbmap.utils.GpxMapObjectsLoader.OnGpxLoadedListener;
@@ -91,6 +91,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
+
 /**
  * Fragment for displaying map with session's GPX track and wifis
  * Caution: due to ViewPager default implementation, this fragment is loaded even before it becomes
@@ -103,12 +107,11 @@ public class MapViewActivity extends Fragment implements
 
     private static final String TAG = MapViewActivity.class.getSimpleName();
 
-    /**
-     * Layers (Session layer + catalog layer, session layer only)
-     */
-    public enum LayersDisplayed {
-        ALL, SESSION_ONLY
-    }
+    private Unbinder unbinder;
+
+    @BindView(R.id.direction) ImageView directionSymbol;
+
+    private Marker positionMarker;
 
     /**
      * If zoom level < MIN_OBJECT_ZOOM session wifis and wifi catalog objects won't be displayed for performance reasons
@@ -134,11 +137,6 @@ public class MapViewActivity extends Fragment implements
             AndroidGraphicFactory.INSTANCE.createColor(ALPHA_WIFI_CATALOG_FILL, 120, 150, 120), 2, Style.FILL);
     private static final Paint PAINT_RED = MapUtils.createPaint(
             AndroidGraphicFactory.INSTANCE.createColor(ALPHA_WIFI_CATALOG_FILL, 255, 150, 120), 2, Style.FILL);
-
-    /**
-     * Keeps the SharedPreferences.
-     */
-    private SharedPreferences prefs = null;
 
     /**
      * Minimum time (in millis) between automatic layer refresh
@@ -188,6 +186,7 @@ public class MapViewActivity extends Fragment implements
     /**
      * MapView
      */
+    @BindView(R.id.map)
     public MapView mapView;
 
     //[end]
@@ -216,12 +215,12 @@ public class MapViewActivity extends Fragment implements
     /**
      * Paint style for active sessions objects
      */
-    private Paint activeSessionFill;
+    private Paint activeSessionFill = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_SESSION_FILL, 0, 0, 255), 2, Style.FILL);
 
     /**
      * Paint style for objects from other sessions
      */
-    private Paint otherSessionFill;
+    private Paint otherSessionFill = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_OTHER_SESSIONS_FILL, 255, 0, 255), 2, Style.FILL);
 
     private List<Layer> sessionObjects;
 
@@ -293,15 +292,16 @@ public class MapViewActivity extends Fragment implements
         // Register our gps broadcast mReceiver
         registerReceiver();
 
-        initUi(view);
-        initMap(view);
+        unbinder = ButterKnife.bind(this, view);
 
+        initMap();
         return view;
     }
 
     @Override
     public void onDestroyView() {
         unregisterReceiver();
+        unbinder.unbind();
 
         releaseMap();
         super.onDestroyView();
@@ -311,9 +311,6 @@ public class MapViewActivity extends Fragment implements
     public final void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-
-        // get shared preferences
-        prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         sessionObjects = new ArrayList<>();
         gpxObjects = new Polyline(MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(Color.BLACK), STROKE_GPX_WIDTH,
@@ -327,7 +324,7 @@ public class MapViewActivity extends Fragment implements
         getSession();
 
         if (mapView == null) {
-            initMap(getView());
+            initMap();
         }
 
         if (mapDownloadLayer != null) {
@@ -396,21 +393,18 @@ public class MapViewActivity extends Fragment implements
 
     /**
      * Initializes map components
-     * @param view
      */
-    private void initMap(View view) {
-
-        if (view == null) {
-            Log.w(TAG, "view is null, can't initialize map");
-            return;
-        } else {
-            mapView = (MapView) view.findViewById(R.id.map);
-        }
+    private void initMap() {
 
         if (mapView == null) {
             Log.e(TAG, "MapView is null");
             return;
         }
+
+        final Drawable icon = ResourcesCompat.getDrawable(getResources(), R.drawable.position, null);
+        Bitmap bitmap = AndroidGraphicFactory.convertToBitmap(icon);
+        positionMarker = new Marker(null, bitmap, 0, -bitmap.getHeight() / 2);
+        mapView.getLayerManager().getLayers().add(positionMarker);
 
         final SharedPreferences sharedPreferences = getActivity().getApplicationContext().getSharedPreferences(getPersistableId(), /*MODE_PRIVATE*/ 0);
         preferencesFacade = new AndroidPreferences(sharedPreferences);
@@ -464,8 +458,16 @@ public class MapViewActivity extends Fragment implements
                     lastZoom = zoom;
                 }
 
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        hideDirections(true);
+                    }
+                });
+
                 if (!followLocation) {
                     // Free-move mode
+
                     final LatLong tmp = mapView.getModel().mapViewPosition.getCenter();
                     final Location position = new Location("DUMMY");
                     position.setLatitude(tmp.latitude);
@@ -475,7 +477,7 @@ public class MapViewActivity extends Fragment implements
                         requestSessionUpdate(position);
                     }
 
-                    if (isPoiLayerNeedsUpdate(position)) {
+                    if (poiLayerNeedsUpdate(position)) {
                         requestPoiUpdate();
                     }
                 }
@@ -485,21 +487,20 @@ public class MapViewActivity extends Fragment implements
         mapView.getModel().mapViewPosition.addObserver(mapObserver);
     }
 
-    /**
-     * Initializes UI componensts
-     *
-     * @param view
-     */
-    private void initUi(final View view) {
-        activeSessionFill = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_SESSION_FILL, 0, 0, 255), 2, Style.FILL);
-        otherSessionFill = MapUtils.createPaint(AndroidGraphicFactory.INSTANCE.createColor(ALPHA_OTHER_SESSIONS_FILL, 255, 0, 255), 2, Style.FILL);
+    private void hideDirections(boolean hide) {
+        if (hide) {
+            directionSymbol.setVisibility(View.INVISIBLE);
+        } else {
+            directionSymbol.setVisibility(View.VISIBLE);
+        }
     }
+
 
     @Override
     public void onCreateOptionsMenu(final Menu menu, final MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.map_menu, menu);
-        menu.findItem(R.id.menu_snaptoLocation).setChecked(followLocation);
+        menu.findItem(R.id.menu_followLocation).setChecked(followLocation);
         menu.findItem(R.id.menu_enableTowers).setChecked(isTowersLayerEnabled);
         menu.findItem(R.id.menu_enableWifis).setChecked(isWifisLayerEnabled);
     }
@@ -508,9 +509,15 @@ public class MapViewActivity extends Fragment implements
     public boolean onOptionsItemSelected(final MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
-            case R.id.menu_snaptoLocation:
+            case R.id.menu_followLocation:
                 item.setChecked(!item.isChecked());
                 followLocation = item.isChecked();
+
+                if (followLocation) {
+                    hideDirections(true);
+                } else {
+                    hideDirections(false);
+                }
                 return true;
             case R.id.menu_enableTowers:
                 item.setChecked(!item.isChecked());
@@ -559,24 +566,31 @@ public class MapViewActivity extends Fragment implements
             return;
         }
 
-        // if btnSnapToLocation is checked, move map
-        if (followLocation) {
-            final LatLong currentPos = new LatLong(location.getLatitude(), location.getLongitude());
-            mapView.getModel().mapViewPosition.setCenter(currentPos);
-        }
-
         // update layers
         if (GeometryUtils.isValidLocation(location)) {
+            final LatLong currentPos = new LatLong(location.getLatitude(), location.getLongitude());
+
+            positionMarker.setLatLong(currentPos);
+
             /*
              * Update layers if necessary, but only if
              * 1.) current zoom level >= 12 (otherwise single points not visible, huge performance impact)
              * 2.) layer items haven't been refreshed for a while AND user has moved a bit
              */
+
+            // if follow location mode is checked, move map
+            if (followLocation) {
+                mapView.getModel().mapViewPosition.setCenter(currentPos);
+
+                // might have been disabled by user - reactivate automatically
+                hideDirections(false);
+            }
+
             if ((mapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && sessionLayerNeedsUpdate(location)) {
                 requestSessionUpdate(location);
             }
 
-            if ((mapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && isPoiLayerNeedsUpdate(location)) {
+            if ((mapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && poiLayerNeedsUpdate(location)) {
                 requestPoiUpdate();
             }
 
@@ -584,13 +598,11 @@ public class MapViewActivity extends Fragment implements
                 refreshGpxTrace(location);
             }
 
-            // indicate bearing
+            // indicate direction
             refreshCompass(location);
         } else {
             Log.e(TAG, "Invalid positon! Cycle skipped");
         }
-
-        location = null;
     }
 
     /**
@@ -690,7 +702,7 @@ public class MapViewActivity extends Fragment implements
      * @param current new location
      * @return true if wifis layer needs a refresh
      */
-    private boolean isPoiLayerNeedsUpdate(final Location current) {
+    private boolean poiLayerNeedsUpdate(final Location current) {
         if (current == null) {
             // fail safe: draw if something went wrong
             return true;
@@ -803,23 +815,23 @@ public class MapViewActivity extends Fragment implements
         // sort results into their corresponding group layer
         wifisLayer = new LegacyGroupLayer();
         towersLayer = new LegacyGroupLayer();
-        for (final PointOfInterest poi : event.pois) {
-            if (poi.getCategory().getTitle().equals("Radiocells.org")) {
-                final Circle allSymbol = new FixedPixelCircle(poi.getLatLong(), 8, PAINT, null);
+        for (final CatalogObject poi : event.pois) {
+            if ("Radiocells.org".equals(poi.category)) {
+                final Circle allSymbol = new FixedPixelCircle(poi.latLong, 8, PAINT, null);
                 wifisLayer.layers.add(allSymbol);
-            } else if (poi.getCategory().getTitle().equals("Own")) {
-                final Circle ownSymbol = new FixedPixelCircle(poi.getLatLong(), 8, PAINT_RED, null);
+            } else if ("Own".equals(poi.category)) {
+                final Circle ownSymbol = new FixedPixelCircle(poi.latLong, 8, PAINT_RED, null);
                 wifisLayer.layers.add(ownSymbol);
-            } else if (poi.getCategory().getTitle().equals("Towers")) {
+            } else if ("Towers".equals(poi.category)){
                 // Handling tower markers
                 //final Drawable drawable = ContextCompat.getDrawable(activity.getActivity(), R.drawable.icon);
                 final Drawable towerIcon = ResourcesCompat.getDrawable(getResources(), R.drawable.icon, null);
                 Bitmap bitmap = AndroidGraphicFactory.convertToBitmap(towerIcon);
                 bitmap.incrementRefCount();
-                final Marker marker = new Marker(poi.getLatLong(), bitmap, 0, -bitmap.getHeight() / 2);
+                final Marker marker = new Marker(poi.latLong, bitmap, 0, -bitmap.getHeight() / 2);
                 towersLayer.layers.add(marker);
             } else {
-                Log.w(TAG, "Unknown marker category:" + poi.getCategory().getTitle());
+                Log.w(TAG, "Unknown marker category:" + poi.category);
             }
         }
 
@@ -959,17 +971,15 @@ public class MapViewActivity extends Fragment implements
         }
         isUpdatingCompass = true;
 
-        // determine which drawable we currently
-        final ImageView iv = (ImageView) getView().findViewById(R.id.position_marker);
-        final Integer id = iv.getTag() == null ? 0 : (Integer) iv.getTag();
+        final Integer id = directionSymbol.getTag() == null ? 0 : (Integer) directionSymbol.getTag();
 
         if (location.hasBearing()) {
             // determine which drawable we currently use
-            drawCompass(iv, id, location.getBearing());
+            drawCompass(directionSymbol, id, location.getBearing());
         } else {
             // refresh only if needed
             if (id != R.drawable.cross) {
-                iv.setImageResource(R.drawable.cross);
+                directionSymbol.setImageResource(R.drawable.cross);
             }
 
             //Log.i(TAG, "Can't draw direction marker: no bearing provided");

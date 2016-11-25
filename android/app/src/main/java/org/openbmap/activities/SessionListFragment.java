@@ -68,7 +68,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	/**
 	 * Dialog id
 	 */
-	private static final int ID_MULTIPLE_UPLOADS	= 1;
+	private static final int ID_MULTIPLE_UPLOADS = 1;
 
 	private SimpleCursorAdapter	mAdapter;
 

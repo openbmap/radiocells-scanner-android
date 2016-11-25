@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
     <group android:checkableBehavior="all" >
         <item
-            android:id="@+id/menu_snaptoLocation"
+            android:id="@+id/menu_followLocation"
             android:checkable="true"
             android:title="@string/follow_position">
         </item>

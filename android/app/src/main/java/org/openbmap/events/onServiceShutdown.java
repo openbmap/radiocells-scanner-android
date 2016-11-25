@@ -35,16 +35,12 @@ package org.openbmap.events;
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import org.openbmap.utils.CatalogObject;
+public class onServiceShutdown {
 
-import java.util.Collection;
+    public final int reason;
 
-public class onPoiUpdateAvailable {
-
-    public Collection<CatalogObject> pois;
-
-    public onPoiUpdateAvailable(Collection<CatalogObject> pois) {
-        this.pois =  pois;
+    public onServiceShutdown(int reason) {
+        this.reason = reason;
     }
 
 }

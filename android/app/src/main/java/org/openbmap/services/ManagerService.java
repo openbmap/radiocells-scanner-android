@@ -34,10 +34,8 @@ import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.os.Messenger;
 import android.os.PowerManager;
-import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -51,6 +49,7 @@ import org.openbmap.RadioBeacon;
 import org.openbmap.activities.TabHostActivity;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.Session;
+import org.openbmap.events.onServiceShutdown;
 import org.openbmap.events.onStartGpx;
 import org.openbmap.events.onStartLocation;
 import org.openbmap.events.onStartTracking;
@@ -122,19 +121,6 @@ public class ManagerService extends Service {
      * Handler of incoming messages from clients.
      */
     class UpstreamHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case RadioBeacon.MSG_REGISTER_CLIENT:
-                    clients.add(msg.replyTo);
-                    break;
-                case RadioBeacon.MSG_UNREGISTER_CLIENT:
-                    clients.remove(msg.replyTo);
-                    break;
-                default:
-                    super.handleMessage(msg);
-            }
-        }
     }
 
     private ServiceConnection positioningConnection = new ServiceConnection() {
@@ -372,16 +358,7 @@ public class ManagerService extends Service {
 
         closeSession();
 
-        for (int i = clients.size() - 1; i >= 0; i--) {
-            try {
-                clients.get(i).send(Message.obtain(null, RadioBeacon.MSG_SERVICE_SHUTDOWN, reason, 0));
-            } catch (RemoteException e) {
-                // The client is dead.  Remove it from the list;
-                // we are going through the list from back to front
-                // so this is safe to do inside the loop.
-                clients.remove(i);
-            }
-        }
+        EventBus.getDefault().post(new onServiceShutdown(reason));
 
         hideNotification();
     }

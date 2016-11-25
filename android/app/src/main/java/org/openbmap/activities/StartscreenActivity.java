@@ -55,6 +55,8 @@ import org.openbmap.utils.TempFileUtils;
 
 import java.util.ArrayList;
 
+import butterknife.ButterKnife;
+
 /**
  * Parent screen for hosting main screen
  */
@@ -141,6 +143,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		ButterKnife.bind(this);
 
         initPersistantFragments();
 

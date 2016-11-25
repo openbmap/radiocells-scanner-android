@@ -59,29 +59,9 @@ public final class RadioBeacon {
 
 	// Messages
 
-    /**
-     * Command to the service to register a client, receiving callbacks
-     * from the service.  The Message's replyTo field must be a Messenger of
-     * the client where callbacks should be sent.
-     */
-    public static final int MSG_REGISTER_CLIENT = 1;
-
-	public static final int MSG_REQUEST_STATUS = 2;
-
-    /**
-     * Command to the service to unregister a client, ot stop receiving callbacks
-     * from the service.  The Message's replyTo field must be a Messenger of
-     * the client as previously given with MSG_REGISTER_CLIENT.
-     */
-    public static final int MSG_UNREGISTER_CLIENT = 3;
-
-	public static final int MSG_START_TRACKING = 4;
-
-	public static final int MSG_STOP_TRACKING = 5;
-
 	public static final int MSG_SERVICE_READY = 5;
 
-    public static final int MSG_SERVICE_SHUTDOWN = 999;
+    //public static final int MSG_SERVICE_SHUTDOWN = 999;
 
     public static final int SHUTDOWN_REASON_NORMAL = 1;
 

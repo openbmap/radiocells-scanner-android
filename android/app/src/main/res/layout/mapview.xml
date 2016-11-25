@@ -15,7 +15,7 @@
             android:layout_height="fill_parent" />
 
         <ImageView
-            android:id="@+id/position_marker"
+            android:id="@+id/direction"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"

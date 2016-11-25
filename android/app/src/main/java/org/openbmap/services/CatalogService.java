@@ -31,7 +31,6 @@ import org.greenrobot.eventbus.Subscribe;
 import org.mapsforge.core.model.BoundingBox;
 import org.mapsforge.poi.android.storage.AndroidPoiPersistenceManagerFactory;
 import org.mapsforge.poi.storage.PoiCategory;
-import org.mapsforge.poi.storage.PoiCategoryFilter;
 import org.mapsforge.poi.storage.PoiFileInfo;
 import org.mapsforge.poi.storage.PoiPersistenceManager;
 import org.mapsforge.poi.storage.PointOfInterest;
@@ -41,11 +40,16 @@ import org.openbmap.db.DatabaseHelper;
 import org.openbmap.db.Schema;
 import org.openbmap.events.onPoiUpdateAvailable;
 import org.openbmap.events.onPoiUpdateRequested;
+import org.openbmap.utils.CatalogObject;
 import org.openbmap.utils.LayerHelpers.LayerFilter;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Random;
+
+import jsqlite.Database;
+import jsqlite.Exception;
+import jsqlite.Stmt;
 
 import static org.openbmap.utils.LayerHelpers.filterToCriteria;
 
@@ -54,10 +58,34 @@ public class CatalogService extends AbstractService {
     private static final String TAG = CatalogService.class.getSimpleName();
     private static final int MAX_OBJECTS = 5000;
 
-    private String POI_FILE = Environment.getExternalStorageDirectory() + "/germany.poi";
-    private PoiPersistenceManager readableManager = null;
+    private String POI_FILE = Environment.getExternalStorageDirectory() + "/de_current.sqlite";
+
+    public static final String FIND_CELL_IN_BOX_STATEMENT =
+            "SELECT cell_poi_index.id, cell_poi_index.minLat, cell_poi_index.minLon "
+                    // + ", poi_data.data, poi_data.category "
+                    + "FROM cell_poi_index "
+                    //+ "JOIN poi_data ON poi_index.id = poi_data.id "
+                    + "WHERE "
+                    + "minLat <= ? AND "
+                    + "minLon <= ? AND "
+                    + "minLat >= ? AND "
+                    + "minLon >= ? "
+                    + "LIMIT ?";
+
+    public static final String FIND_WIFI_IN_BOX_STATEMENT =
+            "SELECT wifi_poi_index.id, wifi_poi_index.minLat, wifi_poi_index.minLon "
+                    // + ", poi_data.data, poi_data.category "
+                    + "FROM wifi_poi_index "
+                    //+ "JOIN poi_data ON poi_index.id = poi_data.id "
+                    + "WHERE "
+                    + "minLat <= ? AND "
+                    + "minLon <= ? AND "
+                    + "minLat >= ? AND "
+                    + "minLon >= ? "
+                    + "LIMIT ?";
 
     private boolean inSync = false;
+    private Database dbSpatialite;
 
     @Override
     public final void onCreate() {
@@ -213,13 +241,20 @@ public class CatalogService extends AbstractService {
 
     @Override
     public final void onStartService() {
+
+        openDatabase();
+
         if (!EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().register(this);
         }
 
+        /*
         SyncPOITask task = new SyncPOITask();
         task.execute();
+        */
+        inSync = true;
     }
+
 
     @Override
     public void onDestroy() {
@@ -227,11 +262,7 @@ public class CatalogService extends AbstractService {
             EventBus.getDefault().unregister(this);
         }
 
-        if (readableManager != null) {
-            Log.i(TAG, "Closing POI database " + POI_FILE);
-            readableManager.close();
-            readableManager = null;
-        }
+        closeDatabase();
 
         super.onDestroy();
     }
@@ -242,29 +273,111 @@ public class CatalogService extends AbstractService {
         if (EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().unregister(this);
         }
+
+        closeDatabase();
+    }
+
+    private void openDatabase() {
+        try {
+            if (dbSpatialite == null) {
+                dbSpatialite = new jsqlite.Database();
+            } else {
+                dbSpatialite.close();
+            }
+            dbSpatialite.open(POI_FILE, jsqlite.Constants.SQLITE_OPEN_READWRITE | jsqlite.Constants.SQLITE_OPEN_CREATE);
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        };
+    }
+
+    private Collection<CatalogObject> queryDatabase(BoundingBox bbox, int maxObjects) {
+        Log.i(TAG, "Searching within " + bbox.toString());
+        ArrayList<CatalogObject> pois = new ArrayList<>();
+
+        try {
+            Stmt stmt = dbSpatialite.prepare(FIND_WIFI_IN_BOX_STATEMENT);
+
+            stmt.reset();
+            stmt.clear_bindings();
+
+            stmt.bind(1, bbox.maxLatitude);
+            stmt.bind(2, bbox.maxLongitude);
+            stmt.bind(3, bbox.minLatitude);
+            stmt.bind(4, bbox.minLongitude);
+            stmt.bind(5, maxObjects);
+
+            while (stmt.step()) {
+                long id = stmt.column_long(0);
+                double lat = stmt.column_double(1);
+                double lon = stmt.column_double(2);
+                CatalogObject poi = new CatalogObject(id, lat, lon, null, "Radiocells.org");
+
+                pois.add(poi);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+
+        /*
+        try {
+            Stmt stmt = dbSpatialite.prepare(FIND_CELL_IN_BOX_STATEMENT);
+
+            stmt.reset();
+            stmt.clear_bindings();
+
+            stmt.bind(1, bbox.maxLatitude);
+            stmt.bind(2, bbox.maxLongitude);
+            stmt.bind(3, bbox.minLatitude);
+            stmt.bind(4, bbox.minLongitude);
+            stmt.bind(5, maxObjects);
+
+            while (stmt.step()) {
+                long id = stmt.column_long(0);
+                double lat = stmt.column_double(1);
+                double lon = stmt.column_double(2);
+                CatalogObject poi = new CatalogObject(id, lat, lon, null, "Towers");
+
+                pois.add(poi);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+        */
+        return pois;
+    }
+
+    private void closeDatabase() {
+        if (dbSpatialite != null) {
+            try {
+                dbSpatialite.close();
+                dbSpatialite = null;
+            } catch (Exception e) {
+                Log.e(TAG, "Error closing database: " + e.getMessage());
+            }
+        }
     }
 
     @Subscribe
     public void onEvent(onPoiUpdateRequested event) {
         if (inSync) {
             Log.i(TAG, "Loading POI data");
-            if (readableManager == null) {
-                readableManager = AndroidPoiPersistenceManagerFactory.getPoiPersistenceManager(POI_FILE);
+            if (dbSpatialite == null) {
+                openDatabase();
             }
             LoadPoiTask task = new LoadPoiTask();
             task.execute(event.bbox);
         } else {
-            Log.i(TAG, "POI database not yet ready");
+            Log.w(TAG, "POI database not yet ready");
         }
     }
 
-    private class LoadPoiTask extends AsyncTask<BoundingBox, Void, Collection<PointOfInterest>> {
+    private class LoadPoiTask extends AsyncTask<BoundingBox, Void, Collection<CatalogObject>> {
 
         public LoadPoiTask() {
         }
 
         @Override
-        protected Collection<PointOfInterest> doInBackground(BoundingBox... params) {
+        protected Collection<CatalogObject> doInBackground(BoundingBox... params) {
             try {
                 /*
                 Log.i(TAG, "Loading " + filter);
@@ -284,18 +397,7 @@ public class CatalogService extends AbstractService {
                 maxLongitude += lonSpan * 1.0;
                 final BoundingBox overdraw = new BoundingBox(minLatitude, minLongitude, maxLatitude, maxLongitude);
 
-                PoiCategoryFilter categoryFilter = null;
-                /*
-                if (filterString != null) {
-                    categoryFilter = new ExactMatchPoiCategoryFilter();
-                    try {
-                        categoryFilter.addCategory(readableManager.getCategoryManager().getPoiCategoryByTitle(filterString));
-                    } catch (UnknownPoiCategoryException e) {
-                        Log.e(TAG, "Invalid filter: " + filter);
-                    }
-                }
-*/
-                return readableManager.findInRect(overdraw, categoryFilter, null, MAX_OBJECTS);
+                return queryDatabase(overdraw, MAX_OBJECTS);
             } catch (Throwable t) {
                 Log.e(TAG, t.getMessage(), t);
             } finally {
@@ -305,8 +407,8 @@ public class CatalogService extends AbstractService {
         }
 
         @Override
-        protected void onPostExecute(Collection<PointOfInterest> pois) {
-            EventBus.getDefault().post(new onPoiUpdateAvailable(pois, null));
+        protected void onPostExecute(Collection<CatalogObject> pois) {
+            EventBus.getDefault().post(new onPoiUpdateAvailable(pois));
         }
 
     }
