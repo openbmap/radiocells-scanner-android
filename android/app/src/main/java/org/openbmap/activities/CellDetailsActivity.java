@@ -31,28 +31,30 @@ import org.openbmap.db.DataHelper;
 import org.openbmap.db.Schema;
 import org.openbmap.db.models.CellRecord;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * Parent activity for hosting cell detail fragement
  */
 public class CellDetailsActivity  extends FragmentActivity {
-
-	private TextView tvNetworkType;
-	private TextView tvCellId;
-
-	private TextView tvOperator;
-	private TextView tvMcc;
-	private TextView tvMnc;
-	private TextView tvLac;
-	private TextView tvStrength;
-	private TextView tvPsc;
-	private TextView  tvNoMeasurements;
-	private TableRow rowCdma;
-	private TextView tvBaseId;
-	private TextView tvSystemId;
-	private TextView tvNetworkId;
-	private TableRow rowUtran;
-	private TextView tvLcid;
-	private TextView tvRnc;
+    @BindView(R.id.celldetails_networktype)	TextView tvNetworkType;
+    @BindView(R.id.celldetails_cellid)	TextView tvCellId;
+    @BindView(R.id.celldetails_operator) TextView tvOperator;
+    @BindView(R.id.celldetails_mcc) TextView tvMcc;
+    @BindView(R.id.celldetails_mnc) TextView tvMnc;
+    @BindView(R.id.celldetails_lac) TextView tvLac;
+    @BindView(R.id.celldetails_strength) TextView tvStrength;
+    @BindView(R.id.celldetails_psc) TextView tvPsc;
+    @BindView(R.id.celldetails_no_measurements) TextView tvNoMeasurements;
+    @BindView(R.id.celldetails_cdma_row) TableRow rowCdma;
+    @BindView(R.id.celldetails_baseid) TextView tvBaseId;
+    @BindView(R.id.celldetails_system_id) TextView tvSystemId;
+    @BindView(R.id.celldetails_network_id) TextView tvNetworkId;
+    @BindView(R.id.celldetails_utran_row) TableRow rowUtran;
+    @BindView(R.id.celldetails_lcid) TextView tvLcid;
+    @BindView(R.id.celldetails_rnc) TextView tvRnc;
+    @BindView(R.id.celldetails_serving) ImageView ivIsIserving;
 
 	private DataHelper mDatahelper;
 
@@ -61,7 +63,6 @@ public class CellDetailsActivity  extends FragmentActivity {
 	 */
 	private int	mId;
 
-	private ImageView	ivIsIserving;
 	private CellRecord	mDisplayed;
 
 	/** Called when the activity is first created. */
@@ -70,29 +71,7 @@ public class CellDetailsActivity  extends FragmentActivity {
 		super.onCreate(savedInstanceState);	
 	
 		setContentView(R.layout.celldetails);
-
-		rowUtran = (TableRow) findViewById(R.id.celldetails_utran_row);
-		tvLcid = (TextView) findViewById(R.id.celldetails_lcid);
-		tvRnc = (TextView) findViewById(R.id.celldetails_rnc);
-		
-		// hide CDMA row by default
-		rowCdma = (TableRow) findViewById(R.id.celldetails_cdma_row);
-		rowCdma.setVisibility(View.GONE);
-		tvBaseId = (TextView) findViewById(R.id.celldetails_baseid);
-		tvSystemId = (TextView) findViewById(R.id.celldetails_system_id);
-		tvNetworkId = (TextView) findViewById(R.id.celldetails_network_id);
-		
-		tvNetworkType = (TextView) findViewById(R.id.celldetails_networktype);
-		tvCellId = (TextView) findViewById(R.id.celldetails_cellid);
-		
-		tvOperator = (TextView) findViewById(R.id.celldetails_operator);
-		tvMcc = (TextView) findViewById(R.id.celldetails_mcc);
-		tvMnc = (TextView) findViewById(R.id.celldetails_mnc);
-		tvLac = (TextView) findViewById(R.id.celldetails_lac);
-		tvStrength = (TextView) findViewById(R.id.celldetails_strength);
-		tvPsc = (TextView) findViewById(R.id.celldetails_psc);
-		tvNoMeasurements = (TextView) findViewById(R.id.celldetails_no_measurements);
-		ivIsIserving = (ImageView) findViewById(R.id.celldetails_serving);
+		ButterKnife.bind(this);
 
 		mDatahelper = new DataHelper(this);
 		// get the cell _id

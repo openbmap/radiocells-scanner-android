@@ -42,6 +42,9 @@ import org.openbmap.db.models.WifiRecord.CatalogStatus;
 import java.io.File;
 import java.util.ArrayList;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * Parent activity for hosting wifi detail fragment
  */
@@ -49,14 +52,14 @@ public class WifiDetailsActivity extends FragmentActivity {
 
     private static final String TAG = WifiDetailsActivity.class.getSimpleName();
 
-    private DataHelper mDatahelper;
+    @BindView(R.id.wifidetails_ssid) TextView tvSsid;
+    @BindView(R.id.wifidetails_capa) TextView tvCapabilities;
+    @BindView(R.id.wifidetails_freq) TextView tvFrequency;
+    @BindView(R.id.wifidetails_no_measurements) TextView tvNoMeasurements;
+    @BindView(R.id.wifidetails_manufactor) TextView tvManufactor;
+    @BindView(R.id.wifidetails_is_new) ImageView ivIsNew;
 
-    private TextView tvSsid;
-    private TextView tvCapabilities;
-    private TextView tvFrequency;
-    private TextView tvNoMeasurements;
-    private TextView tvManufactor;
-    private ImageView ivIsNew;
+    private DataHelper mDatahelper;
 
     private WifiRecord mWifi;
 
@@ -68,7 +71,7 @@ public class WifiDetailsActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.wifidetails);
 
-        initUi();
+        ButterKnife.bind(this);
 
         final Bundle extras = getIntent().getExtras();
         final String bssid = extras.getString(Schema.COL_BSSID);
@@ -84,18 +87,6 @@ public class WifiDetailsActivity extends FragmentActivity {
 
         mWifi = wifis.get(0);
         displayRecord(mWifi);
-    }
-
-    /**
-     *
-     */
-    private void initUi() {
-        tvSsid = (TextView) findViewById(R.id.wifidetails_ssid);
-        tvCapabilities = (TextView) findViewById(R.id.wifidetails_capa);
-        tvFrequency = (TextView) findViewById(R.id.wifidetails_freq);
-        tvNoMeasurements = (TextView) findViewById(R.id.wifidetails_no_measurements);
-        tvManufactor = (TextView) findViewById(R.id.wifidetails_manufactor);
-        ivIsNew = (ImageView) findViewById(R.id.wifidetails_is_new);
     }
 
     @Override
