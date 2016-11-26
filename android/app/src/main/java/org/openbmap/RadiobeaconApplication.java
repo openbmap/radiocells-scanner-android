@@ -22,6 +22,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import com.squareup.leakcanary.LeakCanary;
+
 import org.greenrobot.eventbus.EventBus;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
 import org.mapsforge.map.model.DisplayModel;
@@ -40,6 +42,13 @@ public class RadiobeaconApplication extends Application {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+
+		if (LeakCanary.isInAnalyzerProcess(this)) {
+			// This process is dedicated to LeakCanary for heap analysis.
+			// You should not init your app in this process.
+			return;
+		}
+		LeakCanary.install(this);
 
         EventBus.builder().addIndex(new MyEventBusIndex()).installDefaultEventBus();
 
