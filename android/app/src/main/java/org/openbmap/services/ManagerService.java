@@ -46,7 +46,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
-import org.openbmap.activities.TabHostActivity;
+import org.openbmap.activities.tabs.TabHostActivity;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.Session;
 import org.openbmap.events.onServiceShutdown;

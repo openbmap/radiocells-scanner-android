@@ -7,7 +7,7 @@
     android:orientation="vertical" >
 
     <ImageView
-        android:id="@+id/wifilistfragment_statusicon"
+        android:id="@+id/wifi_row_statusicon"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:scaleType="fitXY"

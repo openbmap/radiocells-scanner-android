@@ -1,4 +1,4 @@
-package org.openbmap.activities;
+package org.openbmap.activities.settings;
 
 import org.openbmap.utils.CatalogDownload;
 

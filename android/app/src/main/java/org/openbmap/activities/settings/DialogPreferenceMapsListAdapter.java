@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openbmap.activities;
+package org.openbmap.activities.settings;
 
 import android.content.Context;
 import android.util.SparseArray;

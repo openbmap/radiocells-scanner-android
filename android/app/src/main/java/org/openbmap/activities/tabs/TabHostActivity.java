@@ -16,9 +16,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openbmap.activities;
+package org.openbmap.activities.tabs;
 
-import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.content.DialogInterface;
@@ -29,6 +28,7 @@ import android.os.Bundle;
 import android.os.Messenger;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -41,6 +41,9 @@ import org.greenrobot.eventbus.Subscribe;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
+import org.openbmap.activities.CustomViewPagerAdapter;
+import org.openbmap.activities.SelectiveScrollViewPager;
+import org.openbmap.activities.StartscreenActivity;
 import org.openbmap.events.onServiceShutdown;
 import org.openbmap.events.onStopTracking;
 import org.openbmap.services.ManagerService;
@@ -59,14 +62,15 @@ public class TabHostActivity extends AppCompatActivity {
 	/**
 	 * Tab pager
 	 */
-    @BindView(R.id.pager) SelectiveScrollViewPager mPager;
+    @BindView(R.id.pager)
+    SelectiveScrollViewPager mPager;
 
 	/**
 	 * Keeps the SharedPreferences.
 	 */
 	private SharedPreferences mPrefs = null;
 
-	private android.support.v7.app.ActionBar mActionBar;
+	private ActionBar mActionBar;
 
     /** Messenger for communicating with service. */
     Messenger mService = null;
@@ -235,10 +239,10 @@ public class TabHostActivity extends AppCompatActivity {
         // add tabs to actionbar
         final CustomViewPagerAdapter mTabsAdapter = new CustomViewPagerAdapter(this, mPager);
 
-        mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.overview)), StatsActivity.class, null);
-        mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.wifis)), WifiListContainer.class, null);
-        mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.cells)), CellsListContainer.class, null);
-        //mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.map)), MapViewActivity.class, null);
-		mTabsAdapter.addTab(mActionBar.newTab().setIcon(android.R.drawable.ic_dialog_map), MapViewActivity.class, null);
+        mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.overview)), OverviewFragment.class, null);
+        mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.wifis)), WifisListFragment.class, null);
+        mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.cells)), CellListFragment.class, null);
+        //mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.map)), MapFragment.class, null);
+		mTabsAdapter.addTab(mActionBar.newTab().setIcon(android.R.drawable.ic_dialog_map), MapFragment.class, null);
 	}
 }

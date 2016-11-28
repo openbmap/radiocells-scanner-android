@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openbmap.activities;
+package org.openbmap.activities.tabs;
 
 import android.app.ActionBar;
 import android.app.Fragment;
@@ -100,12 +100,12 @@ import butterknife.Unbinder;
  * Caution: due to ViewPager default implementation, this fragment is loaded even before it becomes
  * visible
  */
-public class MapViewActivity extends Fragment implements
+public class MapFragment extends Fragment implements
         OnSessionLoadedListener,
         OnGpxLoadedListener,
         ActionBar.OnNavigationListener, onLongPressHandler {
 
-    private static final String TAG = MapViewActivity.class.getSimpleName();
+    private static final String TAG = MapFragment.class.getSimpleName();
 
     private Unbinder unbinder;
 

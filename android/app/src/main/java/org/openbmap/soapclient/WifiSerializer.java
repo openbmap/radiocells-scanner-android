@@ -169,7 +169,7 @@ public class WifiSerializer {
 			+ Schema.COL_BSSID + ", "
 			+ Schema.COL_SSID + ", "
 			+ Schema.COL_MD5_SSID + ", "
-			+ Schema.COL_CAPABILITIES + ", "
+			+ Schema.COL_ENCRYPTION + ", "
 			+ Schema.COL_FREQUENCY + ", "
 			+ Schema.COL_LEVEL + ", "
 			+ Schema.TBL_WIFIS + "." + Schema.COL_TIMESTAMP + ", "
@@ -260,7 +260,7 @@ public class WifiSerializer {
 		colBssid = cursorWifis.getColumnIndex(Schema.COL_BSSID);
 		colSsid = cursorWifis.getColumnIndex(Schema.COL_SSID);
 		colMd5Essid = cursorWifis.getColumnIndex(Schema.COL_MD5_SSID);
-		colCapa = cursorWifis.getColumnIndex(Schema.COL_CAPABILITIES);
+		colCapa = cursorWifis.getColumnIndex(Schema.COL_ENCRYPTION);
 		colFreq = cursorWifis.getColumnIndex(Schema.COL_FREQUENCY);
 		colLevel = cursorWifis.getColumnIndex(Schema.COL_LEVEL);
 		colTimestamp = cursorWifis.getColumnIndex(Schema.COL_TIMESTAMP);

@@ -113,7 +113,7 @@
     
     <fragment
         android:id="@+id/wifiDetailsMap"
-        android:name="org.openbmap.activities.WifiDetailsMap"
+        android:name="org.openbmap.activities.details.WifiDetailsMap"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         tools:layout="@layout/wifidetailsmap" >

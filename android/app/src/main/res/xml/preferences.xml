@@ -69,13 +69,13 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/prefs_maps">
-        <org.openbmap.activities.DialogPreferenceMaps
+        <org.openbmap.activities.settings.DialogPreferenceMaps
             android:selectable="true"
             android:enabled="true"
             android:title="@string/prefs_get_maps_title"
             android:summary="@string/prefs_get_maps_summary"
             android:key="maps_dialog">
-        </org.openbmap.activities.DialogPreferenceMaps>
+        </org.openbmap.activities.settings.DialogPreferenceMaps>
         <ListPreference
             android:defaultValue="none"
             android:key="data.map"
@@ -88,7 +88,7 @@
             android:title="@string/prefs_ui_keep_screen_on" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/prefs_wifi_catalog">
-        <org.openbmap.activities.DialogPreferenceCatalogs
+        <org.openbmap.activities.settings.DialogPreferenceCatalogs
             android:selectable="true"
             android:enabled="true"
             android:title="@string/prefs_download_wifi_catalog"

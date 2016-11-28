@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openbmap.activities;
+package org.openbmap.activities.details;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -27,6 +27,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import org.openbmap.R;
+import org.openbmap.activities.tabs.MapFragment;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.Schema;
 import org.openbmap.db.models.CellRecord;
@@ -155,7 +156,7 @@ public class CellDetailsActivity  extends FragmentActivity {
 	 * @param id
 	 */
 	public final void onCellSelected(final long id) {
-		final Intent intent = new Intent(this, MapViewActivity.class);
+		final Intent intent = new Intent(this, MapFragment.class);
 		intent.putExtra(Schema.COL_ID, (int) id);
 		startActivity(intent);
 	}

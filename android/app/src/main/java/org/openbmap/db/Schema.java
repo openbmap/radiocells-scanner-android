@@ -91,7 +91,7 @@ public final class Schema {
 	public static final String COL_BSSID = "bssid";
 	public static final String COL_SSID = "ssid";
 	public static final String COL_MD5_SSID = "md5ssid";
-	public static final String COL_CAPABILITIES = "capabilities";
+	public static final String COL_ENCRYPTION = "capabilities";
 	public static final String COL_FREQUENCY = "frequency";
 	public static final String COL_LEVEL = "level";
 	public static final String COL_MAX_LEVEL = "MAX(" + COL_LEVEL + ")";

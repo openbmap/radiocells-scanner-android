@@ -91,7 +91,7 @@ public class DataHelper {
 					.withValue(Schema.COL_BSSID, wifi.getBssid())
 					.withValue(Schema.COL_SSID, wifi.getSsid())
 					.withValue(Schema.COL_MD5_SSID, wifi.getMd5Ssid())
-					.withValue(Schema.COL_CAPABILITIES, wifi.getCapabilities())
+					.withValue(Schema.COL_ENCRYPTION, wifi.getCapabilities())
 					.withValue(Schema.COL_FREQUENCY, wifi.getFrequency())
 					.withValue(Schema.COL_LEVEL, wifi.getLevel())
 					.withValue(Schema.COL_TIMESTAMP, wifi.getOpenBmapTimestamp())
@@ -129,7 +129,7 @@ public class DataHelper {
 		// Performance tweaking: don't call ca.getColumnIndex on each iteration
 		final int columnIndex = cursor.getColumnIndex(Schema.COL_BSSID);
 		final int columnIndex2 = cursor.getColumnIndex(Schema.COL_SSID);
-		final int columnIndex3 = cursor.getColumnIndex(Schema.COL_CAPABILITIES);
+		final int columnIndex3 = cursor.getColumnIndex(Schema.COL_ENCRYPTION);
 		final int columnIndex4 = cursor.getColumnIndex(Schema.COL_FREQUENCY);
 		final int columnIndex5 = cursor.getColumnIndex(Schema.COL_LEVEL);
 		final int columnIndex6 = cursor.getColumnIndex(Schema.COL_TIMESTAMP);
@@ -170,7 +170,7 @@ public class DataHelper {
 		// Performance tweaking: don't call ca.getColumnIndex on each iteration
 		final int columnIndex = cursor.getColumnIndex(Schema.COL_BSSID);
 		final int columnIndex2 = cursor.getColumnIndex(Schema.COL_SSID);
-		final int columnIndex3 = cursor.getColumnIndex(Schema.COL_CAPABILITIES);
+		final int columnIndex3 = cursor.getColumnIndex(Schema.COL_ENCRYPTION);
 		final int columnIndex4 = cursor.getColumnIndex(Schema.COL_FREQUENCY);
 		final int columnIndex5 = cursor.getColumnIndex(Schema.COL_MAX_LEVEL);
 		final int columnIndex6 = cursor.getColumnIndex(Schema.COL_TIMESTAMP);
@@ -245,7 +245,7 @@ public class DataHelper {
 			wifi = new WifiRecord(
 					cursor.getString(cursor.getColumnIndex(Schema.COL_BSSID)),
 					cursor.getString(cursor.getColumnIndex(Schema.COL_SSID)),
-					cursor.getString(cursor.getColumnIndex(Schema.COL_CAPABILITIES)),
+					cursor.getString(cursor.getColumnIndex(Schema.COL_ENCRYPTION)),
 					cursor.getInt(cursor.getColumnIndex(Schema.COL_FREQUENCY)),
 					cursor.getInt(cursor.getColumnIndex(Schema.COL_LEVEL)),
 					cursor.getLong(cursor.getColumnIndex(Schema.COL_TIMESTAMP)),
@@ -280,7 +280,7 @@ public class DataHelper {
 		// Performance tweaking: don't call ca.getColumnIndex on each iteration
 		final int columnIndex = cursor.getColumnIndex(Schema.COL_BSSID);
 		final int columnIndex2 = cursor.getColumnIndex(Schema.COL_SSID);
-		final int columnIndex3 = cursor.getColumnIndex(Schema.COL_CAPABILITIES);
+		final int columnIndex3 = cursor.getColumnIndex(Schema.COL_ENCRYPTION);
 		final int columnIndex4 = cursor.getColumnIndex(Schema.COL_FREQUENCY);
 		final int columnIndex5 = cursor.getColumnIndex(Schema.COL_LEVEL);
 		final int columnIndex6 = cursor.getColumnIndex(Schema.COL_TIMESTAMP);
@@ -344,7 +344,7 @@ public class DataHelper {
 		// Performance tweaking: don't call ca.getColumnIndex on each iteration
 		final int columnIndex = cursor.getColumnIndex(Schema.COL_BSSID);
 		final int columnIndex2 = cursor.getColumnIndex(Schema.COL_SSID);
-		final int columnIndex3 = cursor.getColumnIndex(Schema.COL_CAPABILITIES);
+		final int columnIndex3 = cursor.getColumnIndex(Schema.COL_ENCRYPTION);
 		final int columnIndex4 = cursor.getColumnIndex(Schema.COL_FREQUENCY);
 		final int columnIndex5 = cursor.getColumnIndex(Schema.COL_MAX_LEVEL);
 		final int columnIndex6 = cursor.getColumnIndex(Schema.COL_TIMESTAMP);

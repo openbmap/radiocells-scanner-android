@@ -21,7 +21,7 @@ package org.openbmap.commands;
 import android.app.Activity;
 import android.content.Intent;
 
-import org.openbmap.activities.TabHostActivity;
+import org.openbmap.activities.tabs.TabHostActivity;
 
 /**
  * Dispatcher for external 'start tracking' command

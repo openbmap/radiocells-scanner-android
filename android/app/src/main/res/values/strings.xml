@@ -98,7 +98,8 @@
     <string name="deleted">Deleted!</string>
     <string name="warning_sd_not_writable">Can\'t write to SD card. Perhaps mounted on desktop pc?</string>
     <string name="error_save_file_failed">Download failed! Check SD card / permissions!</string>
-    <string name="tap_hotspot_to_see_details">Tap WiFi to see details</string>
+    <string name="tap_hotspot_to_see_details">Tap wifi for details</string>
+    <string name="tap_cell_to_see_details">Tap cell for details</string>
     <string name="stop_tracking">Stop tracking</string>
     <string name="battery_warning">Battery low: Stopping track</string>
 

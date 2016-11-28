@@ -265,7 +265,7 @@
 
     <fragment
         android:id="@+id/cellDetailsMap"
-        android:name="org.openbmap.activities.CellDetailsMap"
+        android:name="org.openbmap.activities.details.CellDetailsMap"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" >
     </fragment>

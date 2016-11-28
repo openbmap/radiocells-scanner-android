@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openbmap.activities;
+package org.openbmap.activities.tabs;
 
 import android.annotation.SuppressLint;
 import android.app.Fragment;
@@ -56,9 +56,9 @@ import org.openbmap.events.onWifiAdded;
 /**
  * Activity for displaying basic session infos (# of cells, wifis, etc.)
  */
-public class StatsActivity extends Fragment {
+public class OverviewFragment extends Fragment {
 
-    private static final String TAG = StatsActivity.class.getSimpleName();
+    private static final String TAG = OverviewFragment.class.getSimpleName();
 
     /**
      * Fade message after which time (in millis)
