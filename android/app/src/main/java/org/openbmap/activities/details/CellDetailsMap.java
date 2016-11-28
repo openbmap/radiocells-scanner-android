@@ -340,7 +340,8 @@ public class CellDetailsMap extends Fragment implements HeatmapBuilderListener, 
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    PreferenceManager.getDefaultSharedPreferences(getActivity()).edit().putString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_ONLINE).commit();
+                    PreferenceManager.getDefaultSharedPreferences(
+							getActivity()).edit().putString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_ONLINE).apply();
                     addOnlineLayer();
                 }
             });

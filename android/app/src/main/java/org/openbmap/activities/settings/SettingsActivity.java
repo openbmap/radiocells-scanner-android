@@ -247,7 +247,8 @@ public class SettingsActivity extends PreferenceActivity {
      * @param version
      */
     private void setLocalCatalogVersion(String version) {
-        PreferenceManager.getDefaultSharedPreferences(this).edit().putString(Preferences.KEY_CATALOG_VERSION, version).commit();
+        PreferenceManager.getDefaultSharedPreferences(this).edit().putString(
+                Preferences.KEY_CATALOG_VERSION, version).apply();
     }
 
     /**
@@ -305,7 +306,7 @@ public class SettingsActivity extends PreferenceActivity {
         final ListPreference lf = (ListPreference) findPreference(org.openbmap.Preferences.KEY_CATALOG_FILE);
 
         // get filename
-        final String[] filenameArray = absoluteFile.split("\\/");
+        final String[] filenameArray = absoluteFile.split("/");
         final String file = filenameArray[filenameArray.length - 1];
 
         final CharSequence[] values = lf.getEntryValues();

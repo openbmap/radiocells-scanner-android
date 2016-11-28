@@ -18,6 +18,7 @@
 
 package org.openbmap.db.models;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import org.openbmap.RadioBeacon;
@@ -54,10 +55,9 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 	/**
 	 * used for contains method
 	 */
-	public final boolean equals(final Object aWifi) {
-		WifiRecord oneWifi = (WifiRecord) aWifi;
-
-		return getBssid().equals(oneWifi.getBssid());
+	public final boolean equals(@NonNull final WifiRecord aWifi) {
+		if (aWifi == null) { return false;}
+		return getBssid().equals(aWifi.getBssid());
 	}
 
 	public WifiRecord() {

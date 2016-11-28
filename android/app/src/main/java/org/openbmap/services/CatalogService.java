@@ -56,7 +56,7 @@ import static org.openbmap.utils.LayerHelpers.filterToCriteria;
 public class CatalogService extends AbstractService {
 
     private static final String TAG = CatalogService.class.getSimpleName();
-    private static final int MAX_OBJECTS = 5000;
+    private static final int MAX_OBJECTS = 10000;
 
     private String POI_FILE = Environment.getExternalStorageDirectory() + "/de_current.sqlite";
 
@@ -287,7 +287,7 @@ public class CatalogService extends AbstractService {
             dbSpatialite.open(POI_FILE, jsqlite.Constants.SQLITE_OPEN_READWRITE | jsqlite.Constants.SQLITE_OPEN_CREATE);
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
-        };
+        }
     }
 
     private Collection<CatalogObject> queryDatabase(BoundingBox bbox, int maxObjects) {

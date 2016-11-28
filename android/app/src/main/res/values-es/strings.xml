@@ -36,9 +36,6 @@
 
 	<string name="prefs_wifi_catalog_folder">Carpeta del catálogo de WiFi</string>
 	<string name="prefs_wifi_catalog_folder_summary">"Seleccionar carpeta del catálogo de WiFi "</string>
-	<string name="operator">Operador</string>
-	<string name="type">Tipo</string>
-	<string name="level">Nivel</string>
 	<string name="networkTypeCaption">Tecnología</string>
 	<string name="operatorCaption">Operador</string>
 	<string name="strenghtDbmCaption">Fuerza (dbm)</string>
@@ -71,10 +68,8 @@
 	<string name="prefs_block_homezone_summary">"Bloques de registro en 500m cerca de la posición actual. Puede editar custom_location.xml directamente en la tarjeta SD "</string>
 	<string name="prefs_block_homezone_title">No analizar mi patio trasero</string>
 	<string name="prefs_anonymise_ssid_summary">"Reemplazar SSIDs en subidas con un hash MD5 para mitigar problemas de privacidad (el SSID \'John Does Wifi\' se convertiría en algo así como \'FD33531\') "</string>
-	<string name="cell">Red móvil</string>
 	<string name="cellIdCaption">Cell Id</string>
 	<string name="activity_settings_activity">Preferencias</string>
-	<string name="activity_map_view_activity">Mapas</string>
 	<string name="is_serving_cell_caption">¿La red móvil está funcionando?</string>
 	<string name="other_credits">"Algunas grandes ideas se tomaron de OSMTracker, stack overflow discussions and any many, many others "</string>
 	<string name="bug_report">"Siempre encontrar la última versión (y el seguimiento de errores) en "</string>
@@ -121,7 +116,6 @@
 	<string name="settings">Ajustes</string>
 	<string name="wifis">Redes WiFis</string>
 	<string name="cells">Redes móviles</string>
-	<string name="map">Mapa</string>
 	<string name="no_gps">¡El GPS se apagó!</string>
 	<string name="waiting_for_gps_fix">Esperando por corrección de GPS</string>
 	<string name="free_wifi">WiFi libre encontrada:</string>
@@ -149,10 +143,7 @@
 	<string name="error_opening_wifi_catalog">Error abriendo catálogo de WiFi</string>
 	<string name="error_accessing_wifi_catalog">Error accediendo al catalogo de WiFi</string>
 <string name="activity_cell_details">Detalles de red móvil</string>
-	<string name="activity_cells_list_container">Redes móviles</string>
 	<string name="activity_wifi_details_activity">Detalles de WiFi</string>
-	<string name="activity_wifi_list_container">WiFis</string>
-	<string name="activity_stats_activity">Resumen</string>
 	<string name="prefs_folder_various">Varios</string>
 	<string name="graph_title">Potencia de red móvil</string>
 	<string name="warning_bad_password">¡Nombre de usuario o contraseña erróneas!</string>

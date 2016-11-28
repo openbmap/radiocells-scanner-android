@@ -1,15 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<resources><string name="prefs">Beállítások</string>
+<resources>
 	<string name="prefs_maps">Térképek</string>
-	<string name="prefs_gps_os_settings">A telefon GPS beállításai</string>
-	<string name="prefs_gps_os_settings_summary">Kattints ide, hogy lásd a telefonod GPS beállításait</string>
-	<string name="prefs_check_gps_startup">GPS ellenőrzése indításkor</string>
-	<string name="prefs_check_gps_startup_summary">Figyelmeztetés indításnál ha a GPS ki van kapcsolva</string>
 	<string name="prefs_gps_logging_interval_summary">"0 a legkisebb lehetséges érték (befolyásolja az akkumulátor élettartamát) "</string>
 	<string name="prefs_gps_logging_interval_seconds">másodperc</string>
 	<string name="prefs_save_gpx">GPX útvonal mentése</string>
 	<string name="prefs_save_gpx_summary">Exportáláskor egy GPX fájlt hoz létre az eszközödön</string>
-	<string name="prefs_ui">Felhasználói felület</string>
 	<string name="prefs_map_none">Nincs</string>
 	<string name="prefs_ui_keep_screen_on">Képernyő ébrentartása</string>
 	<string name="prefs_ui_keep_screen_on_summary">"Megakadályozza a képernyő automatikus lezárását "</string>
@@ -38,10 +33,6 @@
 
 	<string name="prefs_wifi_catalog_folder">Wifi katalógusok mappája</string>
 	<string name="prefs_wifi_catalog_folder_summary">"Válaszd ki a wifi katalógusok mappáját "</string>
-	<string name="cell">Cella</string>
-	<string name="operator">Üzemeltető</string>
-	<string name="type">Típus</string>
-	<string name="level">Szint</string>
 	<string name="turn_on_gps_question">A GPS ki van kapcsolva! Szeretnéd aktiválni?</string>
 	<string name="networkTypeCaption">Technológia</string>
 	<string name="cellIdCaption">Cella ID</string>
@@ -60,37 +51,23 @@
 	<string name="sessions">Munkamenetek</string>
 	<string name="n_a">N/A</string>
 	<string name="frequency">Frekvencia</string>
-	<string name="channel">Csatorna</string>
 	<string name="date">Dátum</string>
-	<string name="please_select_map">Kérlek válaszd ki a térképfájlt először!</string>
-	<string name="error_dowload_error">"Hiba: a letöltés sikertelen. Lehet, hogy megszakadt a kapcsolat? "</string>
 	<string name="warning_outdated_client">A jelenlegi kliensed túl régi.\nKérjük frissíts!</string>
-	<string name="warning_no_server_connection">Nem lehetett kapcsolódni a szerverhez. Van internetkapcsolatod?</string>
 	<string name="capabilities">Képességek</string>
-	<string name="question_delete_session">Törölni szeretnéd a munkamenetet?</string>
-	<string name="session_already_uploaded">A munkamenet már fel lett töltve</string>
-	<string name="confirmation">Megerösítés</string>
-	<string name="user_or_password_missing">A felhasználónév vagy a jelszó hiányzik!</string>
 	<string name="deleted">Törölve!</string>
-	<string name="version">Verzió:</string>
 
-	<string name="warning">Figyelmeztetés!</string>
 	<string name="upload">Feltöltés</string>
 	<string name="delete_all">MINDEN TÖRLÉSE</string>
 	<string name="radiobeacon_licence_caption">Kliens</string>
-	<string name="session_uploaded">A munkamenet feltöltve</string>
 	<string name="do_you_want_to_delete_this_session">Törölni szeretnéd ezt a munkamenetet?</string>
 	<string name="do_you_want_to_delete_processed_sessions">Törölni szeretnéd a feltöltött munkameneteket?</string>
-	<string name="encryption">Titkosítás</string>
 	<string name="unknown">ismeretlen</string>
-	<string name="accuracy">Pontosság</string>
 	<string name="no_sat_signal">Nincsen műhold jel</string>
 	<string name="no_measurements"># mérés</string>
 	<string name="blacklisted_bssid">feketelistán van (BSSID)</string>
 	<string name="blacklisted_ssid">feketelistán van (SSID)</string>
 	<string name="is_new">Új?</string>
 	<string name="blacklisted_area">Figyelmen kívül hagyva: feketelistán lévő területen van</string>
-	<string name="download_failed">A letöltés sikertelen</string>
 	<string name="no">Nem</string>
 	<string name="yes">Igen</string>
 	<string name="saved_at">"Mentve "</string>

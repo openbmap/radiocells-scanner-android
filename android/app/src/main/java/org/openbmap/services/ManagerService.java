@@ -120,7 +120,7 @@ public class ManagerService extends Service {
     /**
      * Handler of incoming messages from clients.
      */
-    class UpstreamHandler extends Handler {
+    static class UpstreamHandler extends Handler {
     }
 
     private ServiceConnection positioningConnection = new ServiceConnection() {
@@ -246,7 +246,6 @@ public class ManagerService extends Service {
             unregisterReceiver(mReceiver);
         } catch (final IllegalArgumentException e) {
             // do nothing here {@see http://stackoverflow.com/questions/2682043/how-to-check-if-receiver-is-registered-in-android}
-            return;
         }
     }
 

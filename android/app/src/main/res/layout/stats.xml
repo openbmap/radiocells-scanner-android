@@ -18,7 +18,6 @@
         android:layout_weight="40">
 
         <TableRow
-            android:id="@+id/tableRow1"
             android:layout_width="fill_parent"
             android:layout_height="0dp">
 
@@ -53,7 +52,6 @@
         </TableRow>
 
         <TableRow
-            android:id="@+id/tableRow2"
             android:layout_width="fill_parent"
             android:layout_weight="10"
             android:layout_height="0dp">
@@ -87,7 +85,6 @@
         </TableRow>
 
         <TableRow android:layout_weight="10"
-            android:id="@+id/tableRow3"
             android:layout_height="0dp"
             android:layout_width="fill_parent">
 
@@ -123,7 +120,6 @@
         </TableRow>
 
         <TableRow android:layout_weight="10"
-            android:id="@+id/tableRow5"
             android:layout_height="0dp"
             android:layout_width="fill_parent">
             <ImageView

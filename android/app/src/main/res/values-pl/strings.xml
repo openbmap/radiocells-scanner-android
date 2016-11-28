@@ -1,7 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
     <!-- Preferences -->
-    <string name="prefs">Ustawienia</string>
     <string name="prefs_logging">Logowanie</string>
     <string name="prefs_wifi_catalog">Baza danych wifi</string>
     <!-- I translated wifi catalog as wifi database. In polish it sound more profesional and human friendly -->
@@ -58,11 +57,7 @@
 	<string name="prefs_wifi_catalog_folder_summary">Wybierz folder z bazą danych wifi</string>
     <!-- End of Preferences -->
 
-    <string name="cell">Sieć</string>
-    <string name="operator">Operator</string>
-    <string name="type">Typ</string>
-    <string name="level">Poziom</string>
-	<string name="turn_on_gps_question">GPS jest wyłączony! Czy chcesz aktywować GPS teraz?</string>
+    <string name="turn_on_gps_question">GPS jest wyłączony! Czy chcesz aktywować GPS teraz?</string>
     <string name="networkTypeCaption">Technologia</string>
     <string name="cellIdCaption">ID sieci</string>
     <string name="operatorCaption">Operator</string>
@@ -84,18 +79,9 @@
     <string name="capabilities">Możliwości</string>
     <string name="frequency">Częstotliwość</string>
     <string name="date">Data</string>
-    <string name="please_select_map">Proszę najpierw wybierz plik mapy!!</string>
-	<string name="error_dowload_error">"Błąd: Pobieranie przerwane. Może połączenie zostało zerwane? "</string>
     <string name="warning_outdated_client">Wersja Twojego klienta jest przestarzała.\nProszę zaktualizuj!</string>
-    <string name="warning_no_server_connection">Nie można było połączyć się z serwerem. Czy jesteś online?</string>
-	<string name="warning_client_version_not_checked">Nie można było połączyć się z serwerem. Jesteś offline albo serwer nie odpowiada!</string>
+    <string name="warning_client_version_not_checked">Nie można było połączyć się z serwerem. Jesteś offline albo serwer nie odpowiada!</string>
 	<string name="warning_session_closed">"Nie można kontynuować. Sesja została już wysłana. "</string>
-	<string name="warning_already_uploaded">"Pomijanie sesji. Sesja została już wysłana! "</string>
-    <string name="question_delete_session">Czy chcesz usunąć sesję?</string>
-    <string name="session_already_uploaded">Sesja została już wysłana</string>
-    <string name="confirmation">Potwierdzenie</string>
-    <string name="user_or_password_missing">Brakuje nazwy użytkownika lub hasła!</string>
-    <string name="question_enter_user">Wpisać teraz nazwę użytkownika i hasło?</string>
     <string name="deleted">Usunięto!</string>
 	<string name="warning_sd_not_writable">Nie można zapisać na karcie SD. Możliwe, że jest w użyciu przez PC?</string>
 	<string name="error_save_file_failed">Pobieranie przerwane! Sprawdz kartę SD / uprawnienia!</string>
@@ -148,7 +134,6 @@
     <string name="overview">Podsumowanie</string>
     <string name="wifis">Sieci Wifi</string>
     <string name="cells">Sieci Komórkowe</string>
-    <string name="map">Mapa</string>
     <string name="no_gps">GPS wyłączony!</string>
     <string name="waiting_for_gps_fix">Oczekiwanie na sygnał GPS</string>
     <string name="free_wifi">Znaleziono otwartą sieć wifi:</string>
@@ -190,12 +175,8 @@
     <string name="prefs_gpx_verbosity_summary">Wybierz jakie szczegóły są eksportowane do pliku GPX</string>
     <string name="waypoint">WP</string>
     <!-- out of context so I leave for now? -->
-    <string name="activity_stats_activity">Podsumowanie</string>
-    <string name="activity_wifi_list_container">Sieci wifi</string>
     <string name="activity_wifi_details_activity">Szczegóły sieci wifi</string>
-    <string name="activity_cells_list_container">Sieci komórkowe</string>
     <string name="activity_cell_details">Szczegóły sieci komórkowych</string>
-    <string name="activity_map_view_activity">Mapy</string>
     <string name="activity_settings_activity">Ustawienia</string>
     <string name="activity_credits_activity">Uznanie</string>
     <string name="error_opening_wifi_catalog">Błąd podczas otwierania bazy danych wifi</string>

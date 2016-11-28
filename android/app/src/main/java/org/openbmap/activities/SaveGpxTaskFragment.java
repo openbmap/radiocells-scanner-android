@@ -27,6 +27,9 @@ import org.openbmap.Preferences;
 import org.openbmap.soapclient.SaveGpxTask;
 import org.openbmap.soapclient.SaveGpxTask.SaveGpxTaskListener;
 
+/**
+ * The type Save gpx task fragment.
+ */
 public class SaveGpxTaskFragment extends Fragment implements SaveGpxTaskListener {
 
 	private String mTitle;
@@ -48,13 +51,14 @@ public class SaveGpxTaskFragment extends Fragment implements SaveGpxTaskListener
 		setRetainInstance(true);
 	}
 
-	/**
-	 * Does the actual work
-	 * @param session
-	 */
-
-
-	public void execute(final int session, final String path, final String filename) {
+    /**
+     * Does the actual work
+     *
+     * @param session  the session
+     * @param path     the path
+     * @param filename the filename
+     */
+    public void execute(final int session, final String path, final String filename) {
 
 		if (path == null || filename == null) {
 			throw new IllegalArgumentException("Path and file must not be null");
@@ -69,23 +73,25 @@ public class SaveGpxTaskFragment extends Fragment implements SaveGpxTaskListener
 		mTask.execute();
 	}
 
-	/**
-	 * Saves progress dialog state for later restore (e.g. on device rotation)
-	 * @param title
-	 * @param message
-	 * @param progress
-	 */
-	public void retainProgress(final String title, final String message, final int progress) {
+    /**
+     * Saves progress dialog state for later restore (e.g. on device rotation)
+     *
+     * @param title    the title
+     * @param message  the message
+     * @param progress the progress
+     */
+    public void retainProgress(final String title, final String message, final int progress) {
 		mTitle = title;
 		mMessage = message;
 		mProgress = progress;
 	}
 
-	/**
-	 * Restores previously retained progress dialog state
-	 * @param progressDialog
-	 */
-	public void restoreProgress(final ProgressDialog progressDialog) {
+    /**
+     * Restores previously retained progress dialog state
+     *
+     * @param progressDialog the progress dialog
+     */
+    public void restoreProgress(final ProgressDialog progressDialog) {
 		progressDialog.setTitle(mTitle);
 		progressDialog.setMessage(mMessage);
 		progressDialog.setProgress(mProgress);
@@ -106,7 +112,12 @@ public class SaveGpxTaskFragment extends Fragment implements SaveGpxTaskListener
 		((SaveGpxTaskListener) getActivity()).onSaveGpxFailed(id, error);
 	}
 
-	public boolean isExecuting() {
+    /**
+     * Is executing boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isExecuting() {
 		return mIsExecuting;
 	}
 

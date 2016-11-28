@@ -46,8 +46,9 @@ public class DataHelper {
 
 	/**
 	 * Persists scan's wifis in database.
-	 * @param begin	begin position which is equal across all wifis
-	 * @param end end posistion which is equal across all wifis
+	 *
+	 * @param begin begin position which is equal across all wifis
+	 * @param end   end posistion which is equal across all wifis
 	 * @param wifis list of wifis sharing same begin and end position (i.e. all wifis from one scan)
 	 */
 	public final void storeWifiScanResults(final PositionRecord begin, final PositionRecord end, final ArrayList<WifiRecord> wifis) {
@@ -114,10 +115,10 @@ public class DataHelper {
 
 	/**
 	 * Loads session's wifis.
-	 * @param session
-	 * 			Session to return
-	 * @param sort	Sort criteria
-	 * @return ArrayList<WifiRecord> with all wifis for given session
+	 *
+	 * @param session Session to return
+	 * @param sort    Sort criteria
+	 * @return ArrayList<WifiRecord>  with all wifis for given session
 	 */
 	public final ArrayList<WifiRecord> loadWifisBySession(final int session, final String sort) {
 		final ArrayList<WifiRecord> wifis = new ArrayList<>();
@@ -158,7 +159,8 @@ public class DataHelper {
 
 	/**
 	 * Loads unknown wifis (all sessions)
-	 * @return ArrayList<WifiRecord> with all wifis for given session
+	 *
+	 * @return ArrayList<WifiRecord>  with all wifis for given session
 	 */
 	public final ArrayList<WifiRecord> loadUnknownWifis() {
 		final ArrayList<WifiRecord> wifis = new ArrayList<>();
@@ -202,7 +204,8 @@ public class DataHelper {
 
 	/**
 	 * Counts number of wifis in session.
-	 * @param session
+	 *
+	 * @param session the session
 	 * @return number of wifis
 	 */
 	public final int countWifis(final int session) {
@@ -216,7 +219,8 @@ public class DataHelper {
 
 	/**
 	 * Counts number of wifis in session.
-	 * @param session
+	 *
+	 * @param session the session
 	 * @return number of wifis
 	 */
 	public final int countNewWifis(final int session) {
@@ -231,9 +235,9 @@ public class DataHelper {
 
 	/**
 	 * Loads single wifi from TBL_WIFIS
-	 * @param id
-	 * 			wifi id to return
-	 * @return WifiRecord
+	 *
+	 * @param id wifi id to return
+	 * @return WifiRecord wifi record
 	 */
 	public final WifiRecord loadWifiById(final int id) {
         // Log.d(TAG, "loadWifiById called");
@@ -261,7 +265,9 @@ public class DataHelper {
 
 	/**
 	 * Gets wifis by BSSID
-	 * @param bssid
+	 *
+	 * @param bssid   the bssid
+	 * @param session the session
 	 * @return Array (of measurements) for that BSSID
 	 */
 	public final ArrayList<WifiRecord> loadWifisByBssid(final String bssid, final Integer session) {
@@ -311,7 +317,9 @@ public class DataHelper {
 
 	/**
 	 * Returns strongest measurement for each wifi from TBL_WIFIS.
-	 * @return Arraylist<WifiRecord>
+	 *
+	 * @param session the session
+	 * @return Arraylist<WifiRecord> array list
 	 */
 	public final ArrayList<WifiRecord> loadWifisOverview(final int session) {
 		return loadWifisOverviewWithin(session, null, null, null, null);
@@ -319,11 +327,19 @@ public class DataHelper {
 
 	/**
 	 * Returns strongest measurement for each wifi within bounding box from TBL_WIFIS.
-	 * @return Arraylist<WifiRecord>
+	 *
+	 * @param session the session
+	 * @param minLon  the min lon
+	 * @param maxLon  the max lon
+	 * @param minLat  the min lat
+	 * @param maxLat  the max lat
+	 * @return Arraylist<WifiRecord> array list
 	 */
-	public final ArrayList<WifiRecord> loadWifisOverviewWithin(final int session, final Double minLon, final Double maxLon, final Double minLat, final Double maxLat) {
-        // Log.d(TAG, "loadWifisOverviewWithin called");
-		//long start = System.currentTimeMillis();
+	public final ArrayList<WifiRecord> loadWifisOverviewWithin(final int session,
+															   final Double minLon,
+															   final Double maxLon,
+															   final Double minLat,
+															   final Double maxLat) {
 		final ArrayList<WifiRecord> wifis = new ArrayList<>();
 
 		String selection = null;
@@ -376,8 +392,8 @@ public class DataHelper {
 
 	/**
 	 * Loads session by id.
-	 * @param id
-	 * 			Session to load
+	 *
+	 * @param id Session to load
 	 * @return On success session is returned, otherwise null.
 	 */
 	public final Session loadSession(final int id) {
@@ -401,10 +417,9 @@ public class DataHelper {
 
 	/**
 	 * Persists given session in database. If session already exists, session is updated, otherwise new session is created
-	 * @param session
-	 * 			session to store
-	 * @param invalidateActive
-	 * 			shall all other active sessions will be deactivated?
+	 *
+	 * @param session          session to store
+	 * @param invalidateActive shall all other active sessions will be deactivated?
 	 * @return Number of rows updated.
 	 */
 	public final int storeSession(final Session session, final boolean invalidateActive) {
@@ -444,8 +459,10 @@ public class DataHelper {
 	/**
 	 * Adds new session to TBL_SESSIONS.
 	 * default values:
-	 * 		COL_CREATED_AT = current time
-	 * 		COL_HAS_BEEN_EXPORTED = 0 (false)
+	 * COL_CREATED_AT = current time
+	 * COL_HAS_BEEN_EXPORTED = 0 (false)
+	 *
+	 * @param newSession the new session
 	 * @return uri of inserted row
 	 */
 	public final Uri storeSession(final Session newSession) {
@@ -465,8 +482,8 @@ public class DataHelper {
 
 	/**
 	 * Deletes a session. This will also delete all objects referencing this session as foreign key
-	 * @param id
-	 *            Session to delete
+	 *
+	 * @param id Session to delete
 	 * @return number of delete rows
 	 */
 	public final long deleteSession(final long id) {
@@ -475,6 +492,8 @@ public class DataHelper {
 
 	/**
 	 * Deletes all sessions. This will also delete all objects referencing this session as foreign key
+	 *
+	 * @return the long
 	 */
 	public final long deleteAllSession() {
 		return contentResolver.delete(ContentProvider.CONTENT_URI_SESSION, null, null);
@@ -483,6 +502,7 @@ public class DataHelper {
 	/**
 	 * Loads current session.
 	 * If you just need current session's id, you might consider {@link getActiveSessionId()}
+	 *
 	 * @return active session if any, null otherwise
 	 */
 	public final Session loadActiveSession() {
@@ -510,6 +530,7 @@ public class DataHelper {
 
 	/**
 	 * Gets session ids of all sessions
+	 *
 	 * @return ArrayList with session ids
 	 */
 	public final ArrayList<Integer> getSessionList() {
@@ -525,6 +546,7 @@ public class DataHelper {
 
 	/**
 	 * Returns Id of active session. (Faster than {@link loadActiveSession()} as no de-serialization to session object takes place
+	 *
 	 * @return session id if any active session, RadioBeacon.SESSION_NOT_TRACKING else
 	 */
 	public final int getActiveSessionId() {
@@ -541,7 +563,8 @@ public class DataHelper {
 
 	/**
 	 * Counts session, which haven't been exported yet
-	 * @return
+	 *
+	 * @return int
 	 */
 	public int countPendingExports() {
         // Log.d(TAG, "countPendingExports called");
@@ -554,8 +577,10 @@ public class DataHelper {
 	/**
 	 * Persists one scan with cell and neighbor records in database.
 	 * Automatically chooses, whether GSM or CDMA schema is used
-	 * @param begin position which is equal across all cells (i.e. serving cell + neighbors)
+	 *
 	 * @param cells list of cells sharing same begin and end position (i.e. all cells from one scan)
+	 * @param begin position which is equal across all cells (i.e. serving cell + neighbors)
+	 * @param end   the end
 	 */
 	public final void storeCellsScanResults(final ArrayList<CellRecord> cells, final PositionRecord begin, final PositionRecord end) {
 		if (cells == null || cells.size() == 0) {
@@ -663,8 +688,9 @@ public class DataHelper {
 
 	/**
 	 * Loads CellRecord from database.
-	 * @param id
-	 * @return
+	 *
+	 * @param id the id
+	 * @return cell record
 	 */
 	public final CellRecord loadCellById(final int id) {
         // Log.d(TAG, "loadCellById called");
@@ -680,9 +706,10 @@ public class DataHelper {
 
 	/**
 	 * Loads session's cells.
+	 *
 	 * @param session Session Id
-	 * @param sort	Sort criteria
-	 * @return ArrayList<CellRecord> with all cells for given session
+	 * @param sort    Sort criteria
+	 * @return ArrayList<CellRecord>  with all cells for given session
 	 */
 	public final ArrayList<CellRecord> loadCellsBySession(final long session, final String sort) {
 		final ArrayList<CellRecord> cells = new ArrayList<>();
@@ -758,7 +785,8 @@ public class DataHelper {
 
 	/**
 	 * Counts session's number of cells.
-	 * @param session
+	 *
+	 * @param session the session
 	 * @return number of wifis
 	 */
 	public final int countCells(final long session) {
@@ -770,12 +798,13 @@ public class DataHelper {
 		return count;
 	}
 
-    /**
-     * Counts session's number of waypoints.
-     * @param session
-     * @return number of wifis
-     */
-    public final int countWaypoints(final long session) {
+	/**
+	 * Counts session's number of waypoints.
+	 *
+	 * @param session the session
+	 * @return number of wifis
+	 */
+	public final int countWaypoints(final long session) {
 		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
 						ContentProvider.CONTENT_URI_POSITION, ContentProvider.CONTENT_URI_SESSION_SUFFIX), session),
 				new String[]{Schema.COL_ID}, null, null, null);
@@ -786,9 +815,9 @@ public class DataHelper {
 
 	/**
 	 * Loads positions from database.
-	 * @param id
-	 * 			Position id to return. If no id is provided, all positions are returned.
-	 * @return ArrayList<PositionRecord>
+	 *
+	 * @param id Position id to return. If no id is provided, all positions are returned.
+	 * @return ArrayList<PositionRecord> position record
 	 */
 	public final PositionRecord loadPositionById(final String id) {
         // Log.d(TAG, "loadPositionById called");
@@ -819,12 +848,13 @@ public class DataHelper {
 
 	/**
 	 * Loads positions within certain arrea
-	 * @param session
-	 * @param minLat
-	 * @param maxLat
-	 * @param minLon
-	 * @param maxLon
-	 * @return
+	 *
+	 * @param session the session
+	 * @param minLat  the min lat
+	 * @param maxLat  the max lat
+	 * @param minLon  the min lon
+	 * @param maxLon  the max lon
+	 * @return array list
 	 */
 	public final ArrayList<PositionRecord> loadPositions(final int session, final Double minLat, final Double maxLat, final Double minLon, final Double maxLon) {
         // Log.d(TAG, "loadPositions called");
@@ -897,9 +927,9 @@ public class DataHelper {
 
 	/**
 	 * Loads session's log file.
-	 * @param id
-	 * 		Session id for which log file is returned
-	 * @return LogFile
+	 *
+	 * @param id Session id for which log file is returned
+	 * @return LogFile log file
 	 */
 	public final LogFile loadLogFileBySession(final long id) {
         // Log.d(TAG, "loadLogFileBySession called");
@@ -926,8 +956,9 @@ public class DataHelper {
 
 	/**
 	 * Persists LogFile in database.
-	 * @param logFile
-	 * @return
+	 *
+	 * @param logFile the log file
+	 * @return uri
 	 */
 	public final Uri storeLogFile(final LogFile logFile) {
 		final ContentValues values = new ContentValues();
@@ -944,6 +975,7 @@ public class DataHelper {
 
 	/**
 	 * Deactivates all active sessions.
+	 *
 	 * @return number of updated rows
 	 */
 	public final int invalidateActiveSessions() {
@@ -954,13 +986,14 @@ public class DataHelper {
 				Schema.COL_IS_ACTIVE + " > 0" , null);
 	}
 
-    /**
-     * Stores position.
-     * This method is only used for separate positions. WifisRadiocells and cell positions are added in batch mode
-     * in storeCellsScanResults and storeWifiScanResults
-     * @param pos
-     * @return
-     */
+	/**
+	 * Stores position.
+	 * This method is only used for separate positions. WifisRadiocells and cell positions are added in batch mode
+	 * in storeCellsScanResults and storeWifiScanResults
+	 *
+	 * @param pos the pos
+	 * @return uri
+	 */
 	public final Uri storePosition(final PositionRecord pos) {
 		final ContentValues values = new ContentValues();
 		values.put(Schema.COL_LATITUDE, pos.getLatitude());

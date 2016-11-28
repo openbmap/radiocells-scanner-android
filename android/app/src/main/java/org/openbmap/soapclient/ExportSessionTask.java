@@ -415,12 +415,10 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 			if (mListener != null) {
 				mListener.onUploadCompleted(mSession);
 			}
-			return;
 		} else {
 			if (mListener != null) {
 				mListener.onUploadFailed(mSession, errorMsg);
 			}
-			return;
 		}
 	}
 

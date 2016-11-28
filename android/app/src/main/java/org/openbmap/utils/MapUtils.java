@@ -115,7 +115,7 @@ public final class MapUtils {
 			@Override
 			public boolean onLongPress(LatLong tapLatLong, Point thisXY, Point tapXY) {
                 if (handler != null) {
-                    ((onLongPressHandler)handler).onLongPress(tapLatLong, thisXY, tapXY);
+                    handler.onLongPress(tapLatLong, thisXY, tapXY);
                     return true;
                 } else {
                     return false;

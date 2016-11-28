@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openbmap.activities;
+package org.openbmap.activities.tabs;
 
 import android.app.Fragment;
 import android.content.Context;
@@ -59,16 +59,31 @@ private final ArrayList<TabInfo> mTabs = new ArrayList<>();
 
     }
 
+    /**
+     * The type Tab info.
+     */
     static final class TabInfo {
     private final Class<?> clss;
     private final Bundle args;
 
-    TabInfo(Class<?> _class, Bundle _args) {
+        /**
+         * Instantiates a new Tab info.
+         *
+         * @param _class the class
+         * @param _args  the args
+         */
+        TabInfo(Class<?> _class, Bundle _args) {
         clss = _class;
         args = _args;
     }
 }
 
+    /**
+     * Instantiates a new Custom view pager adapter.
+     *
+     * @param activity the activity
+     * @param pager    the pager
+     */
     public CustomViewPagerAdapter(AppCompatActivity activity, ViewPager pager) {
         super(activity.getFragmentManager());
         mContext = activity;
@@ -78,6 +93,13 @@ private final ArrayList<TabInfo> mTabs = new ArrayList<>();
         mViewPager.setOnPageChangeListener(this);
     }
 
+    /**
+     * Add tab.
+     *
+     * @param tab  the tab
+     * @param clss the clss
+     * @param args the args
+     */
     public void addTab(ActionBar.Tab tab, Class<?> clss, Bundle args) {
         TabInfo info = new TabInfo(clss, args);
         tab.setTag(info);

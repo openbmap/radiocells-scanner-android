@@ -632,16 +632,6 @@ public class ContentProvider extends android.content.ContentProvider {
         return selectionArgs;
     }
 
-    /**
-     * @param notifyUri
-     * @param projection
-     * @param selectionIn
-     * @param selectionArgsIn
-     * @param sortOrder
-     * @param limit
-     * @param groupBy
-     * @return
-     */
     private Cursor queryTable(
             final Uri notifyUri,
             final String tableName,
@@ -649,7 +639,8 @@ public class ContentProvider extends android.content.ContentProvider {
             final String selectionIn,
             final String[] selectionArgsIn,
             final String sortOrder,
-            final String groupBy, final String limit) {
+            final String groupBy,
+            final String limit) {
 
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         qb.setTables(tableName);

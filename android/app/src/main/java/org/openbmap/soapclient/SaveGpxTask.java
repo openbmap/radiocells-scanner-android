@@ -145,7 +145,6 @@ public class SaveGpxTask extends AsyncTask<Void, Object, Boolean> {
         } else if(mListener != null) {
             mListener.onSaveGpxFailed(mSession, errorMsg);
         }
-        return;
     }
 
     public void setContext(final Context context) {

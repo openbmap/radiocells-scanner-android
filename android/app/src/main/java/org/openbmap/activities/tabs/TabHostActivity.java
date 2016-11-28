@@ -41,7 +41,6 @@ import org.greenrobot.eventbus.Subscribe;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
-import org.openbmap.activities.CustomViewPagerAdapter;
 import org.openbmap.activities.SelectiveScrollViewPager;
 import org.openbmap.activities.StartscreenActivity;
 import org.openbmap.events.onServiceShutdown;

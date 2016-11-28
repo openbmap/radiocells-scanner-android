@@ -23,6 +23,7 @@ import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
@@ -36,9 +37,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.openbmap.R;
+import org.openbmap.activities.details.CellDetailsActivity;
 import org.openbmap.db.ContentProvider;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.Schema;
@@ -104,8 +105,6 @@ public class CellListFragment extends Fragment implements LoaderManager.LoaderCa
 
     private ColorStateList defaultColor;
 
-
-
     private enum LayoutManagerType {
         GRID_LAYOUT_MANAGER,
         LINEAR_LAYOUT_MANAGER
@@ -135,7 +134,15 @@ public class CellListFragment extends Fragment implements LoaderManager.LoaderCa
         mRecyclerView.addOnItemTouchListener(
                 new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {
                     @Override public void onItemClick(View view, int position) {
-                        Toast.makeText(getActivity(), "CLICK " + position, Toast.LENGTH_LONG).show();
+                        boolean found = adapter.dataCursor.moveToPosition(position);
+                        if (found) {
+                            long id = adapter.dataCursor.getLong(adapter.dataCursor.getColumnIndex(Schema.COL_ID));
+
+                            final Intent intent = new Intent();
+                            intent.setClass(getActivity(), CellDetailsActivity.class);
+                            intent.putExtra(Schema.COL_ID, (int) id);
+                            startActivity(intent);
+                        }
                     }
                 })
         );

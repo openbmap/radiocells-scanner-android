@@ -368,6 +368,8 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
 	/**
 	 * Deletes all session from pending list
+	 *
+	 * @param ids the ids
 	 */
 	public final void deleteBatchCommand(final ArrayList<Integer> ids) {
 		for (final int id : ids) {
@@ -377,7 +379,8 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
 	/**
 	 * User has confirmed delete
-	 * @param id
+	 *
+	 * @param id the id
 	 */
 	public final void deleteConfirmed(final int id) {
 		if (id == RadioBeacon.SESSION_NOT_TRACKING) {
@@ -413,6 +416,9 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
                 null, false).show(getSupportFragmentManager(), "delete_all");
 	}
 
+	/**
+	 * Delete all confirmed.
+	 */
 	public final void deleteAllConfirmed() {
 		// Signalling service stop request
         EventBus.getDefault().post(new onStopTracking());
@@ -565,9 +571,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	@Override
 	public void onAlertNegativeClick(final int alertId, final String args) {
 		if (alertId == ID_DELETE_ALL) {
-			return;
 		} else if (alertId == ID_DELETE_SESSION) {
-			return;
 		}
 	}
 

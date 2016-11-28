@@ -129,13 +129,11 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 			if (mListener != null) {
 				mListener.onHeatmapCompleted(mBackbuffer);
 			}
-			return;
 		} else {
 			if (mListener != null) {
 				Log.e(TAG, "Heat-map error or thread canceled");
 				mListener.onHeatmapFailed();
 			}
-			return;
 		}
 	}
 

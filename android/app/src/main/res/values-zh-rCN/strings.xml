@@ -42,10 +42,6 @@
 
 	<string name="prefs_wifi_catalog_folder">Wifi 目录文件夹</string>
 	<string name="prefs_wifi_catalog_folder_summary">"选择 Wifi 目录文件夹 "</string>
-	<string name="cell">蜂窝</string>
-	<string name="operator">运营商</string>
-	<string name="type">类型</string>
-	<string name="level">级别</string>
 	<string name="turn_on_gps_question">GPS 已关闭！您要立即激活 GPS 吗？</string>
 	<string name="networkTypeCaption">技术</string>
 	<string name="cellIdCaption">蜂窝 ID</string>
@@ -114,7 +110,6 @@
 	<string name="overview">概览</string>
 	<string name="wifis">Wifi</string>
 	<string name="cells">蜂窝</string>
-	<string name="map">地图</string>
 	<string name="no_gps">GPS 已关闭！</string>
 	<string name="waiting_for_gps_fix">正在等待 GPS 修正</string>
 	<string name="free_wifi">发现免费 wifi：</string>
@@ -147,12 +142,8 @@
 	<string name="downloading">正在下载</string>
 	<string name="invalid_download">无效下载</string>
 	<string name="waypoint">路径点</string>
-	<string name="activity_stats_activity">概览</string>
-	<string name="activity_wifi_list_container">Wifi</string>
 	<string name="activity_wifi_details_activity">Wifi 详情</string>
-	<string name="activity_cells_list_container">蜂窝</string>
 	<string name="activity_cell_details">蜂窝详情</string>
-	<string name="activity_map_view_activity">地图</string>
 	<string name="activity_settings_activity">选项</string>
 	<string name="activity_credits_activity">制作人员</string>
 	<string name="error_opening_wifi_catalog">打开 Wifi 目录时出错</string>

@@ -50,10 +50,6 @@
 
 	<string name="prefs_wifi_catalog_folder">Wifi カタログ フォルダー</string>
 	<string name="prefs_wifi_catalog_folder_summary">"Wifi カタログのフォルダーを選択します "</string>
-	<string name="cell">基地局</string>
-	<string name="operator">オペレーター</string>
-	<string name="type">タイプ</string>
-	<string name="level">レベル</string>
 	<string name="turn_on_gps_question">GPS はオフです! 今すぐ GPS をアクティブにしますか?</string>
 	<string name="networkTypeCaption">技術</string>
 	<string name="cellIdCaption">基地局 ID</string>
@@ -131,7 +127,6 @@
 	<string name="overview">概要</string>
 	<string name="wifis">Wifi</string>
 	<string name="cells">基地局</string>
-	<string name="map">マップ</string>
 	<string name="no_gps">GPS がオフになりました!</string>
 	<string name="waiting_for_gps_fix">GPS の修正を待っています</string>
 	<string name="free_wifi">フリー wifi が見つかりました:</string>
@@ -170,12 +165,8 @@
 	<string name="prefs_gpx_verbosity_title">GPX の詳細</string>
 	<string name="prefs_gpx_verbosity_summary">GPX ファイルにエクスポートする詳細を選択します</string>
 	<string name="waypoint">WP</string>
-	<string name="activity_stats_activity">概要</string>
-	<string name="activity_wifi_list_container">Wifi</string>
 	<string name="activity_wifi_details_activity">Wifi の詳細</string>
-	<string name="activity_cells_list_container">基地局</string>
 	<string name="activity_cell_details">基地局の詳細</string>
-	<string name="activity_map_view_activity">マップ</string>
 	<string name="activity_settings_activity">プリファレンス</string>
 	<string name="activity_credits_activity">クレジット</string>
 	<string name="error_opening_wifi_catalog">Wifi カタログを開く際にエラーが発生しました</string>

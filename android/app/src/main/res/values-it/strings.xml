@@ -9,10 +9,6 @@
 
 	<string name="prefs_wifi_catalog_folder">Cartella database Wi-Fi</string>
 	<string name="prefs_wifi_catalog_folder_summary">"Seleziona il percorso per il database locale "</string>
-	<string name="cell">Cella</string>
-	<string name="operator">Operatore</string>
-	<string name="type">Tipo</string>
-	<string name="level">Livello</string>
 	<string name="turn_on_gps_question">Il GPS è disattivato. Vuoi attivarlo ora?</string>
 	<string name="networkTypeCaption">Tecnologia</string>
 	<string name="cellIdCaption">ID cella</string>
@@ -30,25 +26,15 @@
 	<string name="sessions">Sessioni</string>
 	<string name="n_a">n/d</string>
 	<string name="frequency">Frequenza</string>
-	<string name="channel">Canale</string>
 	<string name="date">Data</string>
-	<string name="please_select_map">Seleziona prima una mappa!</string>
-	<string name="error_dowload_error">"Download fallito (connessione persa?) "</string>
 	<string name="warning_outdated_client">Versione del client troppo vecchia.\nAggiornala!</string>
-	<string name="warning_no_server_connection">Impossibile raggiungere il server. (Sei online?)</string>
-	<string name="prefs">Impostazioni</string>
 	<string name="prefs_logging">Registrazione</string>
 	<string name="prefs_maps">Mappe</string>
-	<string name="prefs_gps_os_settings">Impostazioni GPS del sistema</string>
-	<string name="prefs_gps_os_settings_summary">Seleziona per aprire le impostazioni di localizzazione del dispositivo.</string>
-	<string name="prefs_check_gps_startup">Controlla GPS all\'apertura</string>
-	<string name="prefs_check_gps_startup_summary">Avvisa se il GPS è disabilitato all\'avvio dell\'app.</string>
 	<string name="prefs_gps_logging_interval">Intervallo lettura GPS</string>
 	<string name="prefs_gps_logging_interval_summary">Periodo in secondi tra due calcoli della posizione.\n0 massimizza la precisione a scapito del consumo di batteria.</string>
 	<string name="prefs_gps_logging_interval_seconds">secondi</string>
 	<string name="prefs_save_gpx">Salva percorso come traccia GPX</string>
 	<string name="prefs_save_gpx_summary">Durante l\'esportazione, salva anche un GPX localmente</string>
-	<string name="prefs_ui">Interfaccia utente</string>
 	<string name="prefs_map_none">Nessuno</string>
 	<string name="prefs_ui_keep_screen_on">Mantieni schermo acceso</string>
 	<string name="prefs_ui_keep_screen_on_summary">Impedisce lo standby automatico dopo il tempo di inattività normalmente impostato</string>

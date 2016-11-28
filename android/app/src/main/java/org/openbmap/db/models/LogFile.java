@@ -60,6 +60,8 @@ public class LogFile implements Comparable<LogFile> {
 	 */
 	public final boolean equals(final LogFile aLog) {
 
+		if (aLog == null) {return false;}
+
 		return ((getManufacturer().equals(aLog.getManufacturer()))
 				&& (getModel().equals(aLog.getModel()))
 				&& (getRevision().equals(aLog.getRevision()))

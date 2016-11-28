@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/scrollView1"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
@@ -14,7 +13,6 @@
             android:layout_height="wrap_content" >
 
             <TextView
-                android:id="@+id/credits_app_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/app_name"
@@ -30,7 +28,6 @@
             android:src="@android:drawable/divider_horizontal_bright" />
 
         <TextView
-            android:id="@+id/credits_app_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/app_description"
@@ -46,8 +43,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="Version:"
-                android:id="@+id/credits_version" />
+                android:text="Version:" />
 
             <TextView
             android:id="@+id/credits_client_version"
@@ -70,7 +66,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <TextView
-                android:id="@+id/credits_build_signature_description"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/build_signature"
@@ -85,21 +80,18 @@
         </LinearLayout>
 
         <TextView
-            android:id="@+id/credits_bug_report"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/bug_report"
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
         <TextView
-            android:id="@+id/credits_latest_release"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:autoLink="web"
             android:text="@string/link_repository" />
 
         <TextView
-            android:id="@+id/credits_credits"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/credits"
@@ -107,7 +99,6 @@
             android:layout_gravity="center_horizontal|left" />
 
         <TextView
-            android:id="@+id/credits_other_credits"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/other_credits" />
@@ -124,7 +115,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal">
             <TextView
-                android:id="@+id/credits_radiobeacon_caption"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/radiobeacon_licence_caption"
@@ -132,7 +122,6 @@
 
 
             <TextView
-                android:id="@+id/credits_radiobeacon_license"
                 android:layout_width="fill_parent"
                 android:gravity="right"
                 android:layout_height="wrap_content"
@@ -146,14 +135,12 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal">
             <TextView
-                android:id="@+id/credits_openbmap_licence_caption"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/openbmap_licence_caption"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <TextView
-                android:id="@+id/credits_openbmap_license"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/openbmap_license"
@@ -167,14 +154,12 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal">
             <TextView
-                android:id="@+id/credits_mapsforge_caption"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/mapsforge_source"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <TextView
-                android:id="@+id/credits_mapsforge_licence"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/mapsforge_license"
@@ -188,14 +173,12 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal">
             <TextView
-                android:id="@+id/credits_map_data_source"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/map_data_source"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <TextView
-                android:id="@+id/credits_map_data_license"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/map_data_license"
@@ -208,14 +191,12 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal">
             <TextView
-                android:id="@+id/credits_library"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/chart_library"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <TextView
-                android:id="@+id/credits_chart_library_license"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/chart_library_license"

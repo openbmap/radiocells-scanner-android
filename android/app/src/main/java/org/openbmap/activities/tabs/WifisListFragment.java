@@ -23,6 +23,7 @@ import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
@@ -41,9 +42,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.openbmap.R;
+import org.openbmap.activities.details.WifiDetailsActivity;
 import org.openbmap.db.ContentProvider;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.Schema;
@@ -137,7 +138,15 @@ public class WifisListFragment extends Fragment implements LoaderManager.LoaderC
         mRecyclerView.addOnItemTouchListener(
                 new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {
                     @Override public void onItemClick(View view, int position) {
-                        Toast.makeText(getActivity(), "CLICK " + position, Toast.LENGTH_LONG).show();
+                        boolean found = adapter.dataCursor.moveToPosition(position);
+                        if (found) {
+                            String bssid = adapter.dataCursor.getString(adapter.dataCursor.getColumnIndex(Schema.COL_BSSID));
+
+                            final Intent intent = new Intent();
+                            intent.setClass(getActivity(), WifiDetailsActivity.class);
+                            intent.putExtra(Schema.COL_BSSID, bssid);
+                            startActivity(intent);
+                        }
                     }
                 })
         );

@@ -2,13 +2,8 @@
 <resources>
     <string name="activity_settings_activity">Einstellungen</string>
     <string name="activity_advanced_settings_activity">Erweiterte Einstellungen</string>
-    <string name="activity_wifi_list_container">WLANs</string>
     <string name="activity_wifi_details_activity">Details WLAN</string>
-    <string name="activity_stats_activity">Übersicht</string>
-    <string name="activity_map_view_activity">Karte</string>
-    <string name="activity_cells_list_container">Funkzellen</string>
     <string name="activity_cell_details">Details Funkzelle</string>
-    <string name="cell">Funkzelle</string>
     <string name="date">Datum</string>
     <string name="delete">Löschen</string>
     <string name="deleted">Gelöscht!</string>
@@ -57,7 +52,6 @@
     <string name="prefs_download_wifi_catalog">WLAN-Verzeichnis herunterladen</string>
     <string name="prefs_debug">Debug-Einstellungen</string>
     <string name="please_stay_patient">Bitte warten..</string>
-    <string name="map">Karte</string>
     <string name="gpx_export_failed">GPX-Export fehlgeschlagen</string>
     <string name="free_wifi">Freies WLAN gefunden:</string>
     <string name="do_you_want_to_delete_this_session">Möchtest Du die Session jetzt löschen?</string>
@@ -114,7 +108,6 @@
     <string name="no_measurements"># Messungen</string>
     <string name="openbmap_licence_caption">Daten: OpenBmap</string>
     <string name="other_download_active">Bitte warten, bis der aktuelle Download fertig!</string>
-    <string name="operator">Netzbetreiber</string>
     <string name="operatorCaption">Netzbetreiber</string>
     <string name="prefs_data_map_folder_summary">Karten-Ordner auswählen</string>
     <string name="prefs_data_map_summary">Eine lokal gespeicherte Karte auswählen</string>
@@ -168,14 +161,12 @@
     <string name="stopped_tracking">Aufzeichnung beendet</string>
     <string name="tap_hotspot_to_see_details">Klicke für WLAN-Details</string>
     <string name="turn_on_gps_question">GPS deaktiert! Jetzt aktivieren?</string>
-    <string name="type">Typ</string>
     <string name="upload_skipped">Upload übersprungen (Du hast dies in den Debug-Einstellungen so konfiguriert)</string>
     <string name="vacuuming">Optimiere</string>
     <string name="warning_client_version_not_checked">Server nicht erreichbar. Entweder bist Du offline oder wir haben ein Server-Problem!</string>
     <string name="warning_sd_not_writable">"Fehler beim Zugriff auf die SD-Karte. Wird sie gerade von deinem PC benutzt? "</string>
 <string name="error_accessing_wifi_catalog">Fehler beim Zugriff auf das WLAN-Verzeichnis</string>
-<string name="level">Ebene</string>
-	<string name="blacklisted_area">Ignoriert: In der ignorierten Zone</string>
+    <string name="blacklisted_area">Ignoriert: In der ignorierten Zone</string>
 	<string name="build_signature">"Build-Signatur: "</string>
 <string name="prefs_credentials_anonymous_upload_summary">Für anonymes hochladen aktivieren</string>
 	<string name="licences">Lizenzen</string>

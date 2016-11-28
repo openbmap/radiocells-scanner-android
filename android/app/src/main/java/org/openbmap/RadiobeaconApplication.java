@@ -31,13 +31,15 @@ import org.openbmap.services.ManagerService;
 
 public class RadiobeaconApplication extends Application {
 
+	public static final String TAG = RadiobeaconApplication.class.getSimpleName();
+
+
 	public static final String SETTING_SCALE = "scale";
 	public static final String SETTING_SCALEBAR = "scalebar";
 	public static final String SETTING_SCALEBAR_METRIC = "metric";
 	public static final String SETTING_SCALEBAR_IMPERIAL = "imperial";
 	public static final String SETTING_SCALEBAR_BOTH = "both";
 	public static final String SETTING_SCALEBAR_NONE = "none";
-	public static final String TAG = "SAMPLES APP";
 
 	@Override
 	public void onCreate() {

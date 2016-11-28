@@ -40,117 +40,116 @@ import java.nio.channels.FileChannel;
  */
 public final class FileUtils {
 
-	@SuppressWarnings("unused")
-	private static final String TAG = FileUtils.class.getSimpleName();
+    @SuppressWarnings("unused")
+    private static final String TAG = FileUtils.class.getSimpleName();
 
-	/**
-	 * Checks whether SD card is currently
-	 * @return true if SD card is mounted
-	 */
-	public static boolean isSdCardMounted() {
-		boolean externalStorageAvailable = false;
-		final String state = Environment.getExternalStorageState();
-		externalStorageAvailable = Environment.MEDIA_MOUNTED.equals(state);
-		return externalStorageAvailable;
-	}
+    /**
+     * Checks whether SD card is currently
+     *
+     * @return true if SD card is mounted
+     */
+    public static boolean isSdCardMounted() {
+        boolean externalStorageAvailable = false;
+        final String state = Environment.getExternalStorageState();
+        externalStorageAvailable = Environment.MEDIA_MOUNTED.equals(state);
+        return externalStorageAvailable;
+    }
 
-	public static boolean isSdCardWritable() {
-		@SuppressWarnings("unused")
-		boolean externalStorageAvailable = false;
-		boolean externalStorageWritable = false;
-		final String state = Environment.getExternalStorageState();
-		if (Environment.MEDIA_MOUNTED.equals(state)) {
-			externalStorageAvailable = externalStorageWritable = true;
-		} else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-			externalStorageAvailable = true;
-			externalStorageWritable = false;
-		} else {
-			externalStorageAvailable = externalStorageWritable = false;
-		}
+    public static boolean isSdCardWritable() {
+        @SuppressWarnings("unused")
+        boolean externalStorageAvailable = false;
+        boolean externalStorageWritable = false;
+        final String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            externalStorageAvailable = externalStorageWritable = true;
+        } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+            externalStorageAvailable = true;
+            externalStorageWritable = false;
+        } else {
+            externalStorageAvailable = externalStorageWritable = false;
+        }
 
-		return externalStorageWritable;
-	}
+        return externalStorageWritable;
+    }
 
-	/**
-	 * Moves file from source to destination
-	 * @param src
-	 * @param dst
-	 * @throws IOException
-	 */
-	public static void moveFile(final File src, final File dst) throws IOException
-	{
-		copyFile(src, dst);
-		src.delete();
-	}
+    /**
+     * Moves file from source to destination
+     *
+     * @param src
+     * @param dst
+     * @throws IOException
+     */
+    public static void moveFile(final File src, final File dst) throws IOException {
+        copyFile(src, dst);
+        src.delete();
+    }
 
-	/**
-	 * Copies file to destination.
-	 * This was needed to copy file from temp folder to SD card. A simple renameTo fails..
-	 * see http://stackoverflow.com/questions/4770004/how-to-move-rename-file-from-internal-app-storage-to-external-storage-on-android
-	 * @param src
-	 * @param dst
-	 * @throws IOException
-	 */
-	public static void copyFile(final File src, final File dst) throws IOException {
-		final FileChannel inChannel = new FileInputStream(src).getChannel();
-		final FileChannel outChannel = new FileOutputStream(dst).getChannel();
-		try {
-			inChannel.transferTo(0, inChannel.size(), outChannel);
-		}
-		finally {
-			if (inChannel != null) {
-				inChannel.close();
-			}
+    /**
+     * Copies file to destination.
+     * This was needed to copy file from temp folder to SD card. A simple renameTo fails..
+     * see http://stackoverflow.com/questions/4770004/how-to-move-rename-file-from-internal-app-storage-to-external-storage-on-android
+     *
+     * @param src
+     * @param dst
+     * @throws IOException
+     */
+    public static void copyFile(final File src, final File dst) throws IOException {
+        final FileChannel inChannel = new FileInputStream(src).getChannel();
+        final FileChannel outChannel = new FileOutputStream(dst).getChannel();
+        try {
+            inChannel.transferTo(0, inChannel.size(), outChannel);
+            inChannel.close();
 
-			if (outChannel != null) {
-				outChannel.close();
-			}
-		}
-	}
+            outChannel.close();
 
-	public static void copyFdToFile(FileDescriptor src, File dst) throws IOException {
-	    FileChannel inChannel = new FileInputStream(src).getChannel();
-	    FileChannel outChannel = new FileOutputStream(dst).getChannel();
-	    try {
-	        inChannel.transferTo(0, inChannel.size(), outChannel);
-	    } finally {
-	        if (inChannel != null)
-	            inChannel.close();
-	        if (outChannel != null)
-	            outChannel.close();
-	    }
-	}
+        } catch (IOException ex) {
+            Log.e(TAG, ex.getMessage());
+        }
+    }
 
-	/**
-	 * Moves folder from on location to another
-	 * @param sourceLocation
-	 * @param targetLocation
-	 * @throws IOException
-	 */
-	public static void moveFolder(final File sourceLocation , final File targetLocation) throws IOException {
-		Log.i(TAG, "Moving folder content " + sourceLocation + " to " + targetLocation);
-		if (sourceLocation.isDirectory()) {
-			if (!targetLocation.exists() && !targetLocation.mkdirs()) {
-				throw new IOException("Cannot create dir " + targetLocation.getAbsolutePath());
-			}
+    public static void copyFdToFile(FileDescriptor src, File dst) throws IOException {
+        FileChannel inChannel = new FileInputStream(src).getChannel();
+        FileChannel outChannel = new FileOutputStream(dst).getChannel();
+        try {
+            inChannel.transferTo(0, inChannel.size(), outChannel);
+            inChannel.close();
+            outChannel.close();
+        } catch (IOException ex) {
+            Log.e(TAG, ex.getMessage());
+        }
+    }
 
-			final String[] children = sourceLocation.list();
-			for (int i=0; i<children.length; i++) {
-				moveFolder(new File(sourceLocation, children[i]), new File(targetLocation, children[i]));
-			}
-		} else {
-			// make sure the directory we plan to store the recording in exists
-			final File directory = targetLocation.getParentFile();
-			if (directory != null && !directory.exists() && !directory.mkdirs()) {
-				throw new IOException("Cannot create dir " + directory.getAbsolutePath());
-			}
+    /**
+     * Moves folder from on location to another
+     *
+     * @param sourceLocation
+     * @param targetLocation
+     * @throws IOException
+     */
+    public static void moveFolder(final File sourceLocation, final File targetLocation) throws IOException {
+        Log.i(TAG, "Moving folder content " + sourceLocation + " to " + targetLocation);
+        if (sourceLocation.isDirectory()) {
+            if (!targetLocation.exists() && !targetLocation.mkdirs()) {
+                throw new IOException("Cannot create dir " + targetLocation.getAbsolutePath());
+            }
 
-			final boolean good = sourceLocation.renameTo(targetLocation);
-			if (!good) {
-				Log.e(TAG, "Error moving " + sourceLocation + " to " + targetLocation);
-			}
-			/* Copy
-	        InputStream in = new FileInputStream(sourceLocation);
+            final String[] children = sourceLocation.list();
+            for (int i = 0; i < children.length; i++) {
+                moveFolder(new File(sourceLocation, children[i]), new File(targetLocation, children[i]));
+            }
+        } else {
+            // make sure the directory we plan to store the recording in exists
+            final File directory = targetLocation.getParentFile();
+            if (directory != null && !directory.exists() && !directory.mkdirs()) {
+                throw new IOException("Cannot create dir " + directory.getAbsolutePath());
+            }
+
+            final boolean good = sourceLocation.renameTo(targetLocation);
+            if (!good) {
+                Log.e(TAG, "Error moving " + sourceLocation + " to " + targetLocation);
+            }
+            /* Copy
+            InputStream in = new FileInputStream(sourceLocation);
 	        OutputStream out = new FileOutputStream(targetLocation);
 
 	        // Copy the bits from instream to outstream
@@ -162,46 +161,48 @@ public final class FileUtils {
 	        in.close();
 	        out.close();
 			 */
-		}
-	}
+        }
+    }
 
-	/**
-	 * Private dummy constructor
-	 */
-	private FileUtils() {
+    /**
+     * Private dummy constructor
+     */
+    private FileUtils() {
 
-	}
+    }
 
-	/**
-	 * @param from
-	 * @param to
-	 */
-	public static void copyFromAssets(Context context, String from, File to) {
-		AssetManager am = context.getAssets();
-		AssetFileDescriptor afd = null;
-		try {
-		    afd = am.openFd(from);
-		    copyFdToFile(afd.getFileDescriptor(), to);
-		} catch (IOException e) {
-			Log.e(TAG, e.toString(), e);
-		}
+    /**
+     * @param from
+     * @param to
+     */
+    public static void copyFromAssets(Context context, String from, File to) {
+        AssetManager am = context.getAssets();
+        AssetFileDescriptor afd = null;
+        try {
+            afd = am.openFd(from);
+            copyFdToFile(afd.getFileDescriptor(), to);
+        } catch (IOException e) {
+            Log.e(TAG, e.toString(), e);
+        }
 
-	}
+    }
 
-	/**
-	 * Gets a file reference for map folder
-	 * @return map folder
-	 */
-	@NonNull
-	public static File getMapFolder(final Context context) {
+    /**
+     * Gets a file reference for map folder
+     *
+     * @return map folder
+     */
+    @NonNull
+    public static File getMapFolder(final Context context) {
         infoExternalStoragePermission();
 
-		return new File(PreferenceManager.getDefaultSharedPreferences(context).getString(Preferences.KEY_MAP_FOLDER,
-				context.getExternalFilesDir(null) + File.separator + Preferences.MAPS_SUBDIR + File.separator));
-	}
+        return new File(PreferenceManager.getDefaultSharedPreferences(context).getString(Preferences.KEY_MAP_FOLDER,
+                context.getExternalFilesDir(null) + File.separator + Preferences.MAPS_SUBDIR + File.separator));
+    }
 
-	/**
+    /**
      * Gets a file reference for catalog folder
+     *
      * @return map folder
      */
     @NonNull
@@ -213,9 +214,10 @@ public final class FileUtils {
 
     /**
      * Prints external storage permssions
+     *
      * @return true if external storage mounted writable
      */
-	private static boolean infoExternalStoragePermission() {
+    private static boolean infoExternalStoragePermission() {
         String state = Environment.getExternalStorageState();
 
         if (Environment.MEDIA_MOUNTED.equals(state)) {

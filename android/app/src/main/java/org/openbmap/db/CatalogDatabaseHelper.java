@@ -15,12 +15,21 @@ import org.openbmap.Preferences;
 import java.io.File;
 import java.util.ArrayList;
 
+/**
+ * The type Catalog database helper.
+ */
 public class CatalogDatabaseHelper extends SQLiteOpenHelper {
     private static final String TAG = CatalogDatabaseHelper.class.getSimpleName();
 
+    /**
+     * The constant VERBOSE_QUERY.
+     */
     public static final String VERBOSE_QUERY = "SELECT _id, latitude as grouped_lat, longitude as grouped_lon FROM wifi_zone WHERE "
             + "(latitude > ? AND latitude < ? AND longitude > ? AND longitude < ?)";
 
+    /**
+     * The constant HIGHSPEED_QUERY.
+     */
     public static final String HIGHSPEED_QUERY = "SELECT round(latitude,4) as grouped_lat, round(longitude,4) as grouped_lon FROM wifi_zone WHERE "
             + "(latitude > ? AND latitude < ? AND longitude > ? AND longitude < ?) GROUP BY grouped_lat, grouped_lon";
 
@@ -34,6 +43,12 @@ public class CatalogDatabaseHelper extends SQLiteOpenHelper {
 
     private static String mFileLocation;
 
+    /**
+     * Gets instance.
+     *
+     * @param context the context
+     * @return the instance
+     */
     public static synchronized CatalogDatabaseHelper getInstance(final Context context) {
         // Use the application context, which will ensure that you
         // don't accidentally leak an Activity's context.
@@ -49,6 +64,11 @@ public class CatalogDatabaseHelper extends SQLiteOpenHelper {
         return sInstance;
     }
 
+    /**
+     * Gets filename.
+     *
+     * @return the filename
+     */
     public String getFilename() {
         return mFileLocation;
     }
@@ -89,7 +109,13 @@ public class CatalogDatabaseHelper extends SQLiteOpenHelper {
 
     /**
      * Returns all points in the database
-      */
+     *
+     * @param min_lat the min lat
+     * @param max_lat the max lat
+     * @param min_lon the min lon
+     * @param max_lon the max lon
+     * @return the points
+     */
     public ArrayList<LatLong> getPoints(Double min_lat, Double max_lat, Double min_lon, Double max_lon) {
         ArrayList<LatLong> points = new ArrayList<>();
 
@@ -126,6 +152,15 @@ public class CatalogDatabaseHelper extends SQLiteOpenHelper {
         return points;
     }
 
+    /**
+     * Gets points lazy.
+     *
+     * @param min_lat the min lat
+     * @param max_lat the max lat
+     * @param min_lon the min lon
+     * @param max_lon the max lon
+     * @return the points lazy
+     */
     public ArrayList<LatLong> getPointsLazy(Double min_lat, Double max_lat, Double min_lon, Double max_lon) {
         ArrayList<LatLong> points = new ArrayList<>();
 

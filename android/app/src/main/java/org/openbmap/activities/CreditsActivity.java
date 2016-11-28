@@ -52,6 +52,11 @@ public class CreditsActivity extends Activity {
         tvSignature.setText(CertificateUtils.getCertificateSHA1Fingerprint(this));
 	}
 
+	/**
+	 * Read build info string.
+	 *
+	 * @return build info
+	 */
 	public final String readBuildInfo() {
 		final InputStream buildInStream = getResources().openRawResource(R.raw.build);
 	    final ByteArrayOutputStream buildOutStream = new ByteArrayOutputStream();

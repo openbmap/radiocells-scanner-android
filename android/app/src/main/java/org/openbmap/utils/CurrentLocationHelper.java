@@ -23,6 +23,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.Log;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -33,6 +34,8 @@ import java.util.TimerTask;
  *
  */
 public class CurrentLocationHelper {
+	private final String TAG = CurrentLocationHelper.class.getSimpleName();
+
 	private Timer mTimer;
 	private LocationManager mLocationManager;
 	private LocationResult mLocationResult;
@@ -50,25 +53,28 @@ public class CurrentLocationHelper {
 		try {
 			mGpsEnabled = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 		} catch (final Exception ex) {
+			Log.e(TAG, ex.getMessage());
 
 		}
 
 		try {
 			mNetworkEnabled = mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 		} catch(final Exception ex){
-
+            Log.e(TAG, ex.getMessage());
 		}
 
 		//don't start listeners if no provider is enabled
 		if (!mGpsEnabled && !mNetworkEnabled)
 			return false;
 
-		if (mGpsEnabled)
-			mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListenerGps);
-		if (mNetworkEnabled)
-			mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListenerNetwork);
+		if (mGpsEnabled) {
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListenerGps);
+        }
+		if (mNetworkEnabled) {
+            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListenerNetwork);
+        }
 		mTimer = new Timer();
-		mTimer.schedule(new GetLastLocation(), 20000);
+		mTimer.schedule(new GetLastLocationTask(), 20000);
 		return true;
 	}
 
@@ -96,7 +102,7 @@ public class CurrentLocationHelper {
 		public void onStatusChanged(final String provider, final int status, final Bundle extras) {}
 	};
 
-	class GetLastLocation extends TimerTask {
+	class GetLastLocationTask extends TimerTask {
 		@Override
 		public void run() {
 			mLocationManager.removeUpdates(locationListenerGps);

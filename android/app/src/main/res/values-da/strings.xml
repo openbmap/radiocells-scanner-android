@@ -43,10 +43,6 @@
 
 	<string name="prefs_wifi_catalog_folder">WiFi katalog mappe</string>
 	<string name="prefs_wifi_catalog_folder_summary">"Vælg WiFi katalog mappe "</string>
-	<string name="cell">Celle</string>
-	<string name="operator">Operatør</string>
-	<string name="type">Type</string>
-	<string name="level">Niveau</string>
 	<string name="turn_on_gps_question">GPS er slukket! Aktiver nu?</string>
 	<string name="networkTypeCaption">Teknologi</string>
 	<string name="cellIdCaption">Celle-ID</string>
@@ -85,9 +81,6 @@
 	<string name="export_gpx">Eksporter GPX spor</string>
 	<string name="delete_all">SLET ALLE</string>
 	<string name="preparing_export">Forbereder eksport...</string>
-	<string name="error">Fejl</string>
-	<string name="no_data_connection">Ingen dataforbindelse!</string>
-	<string name="session_uploaded">Session overført</string>
 	<string name="app_description">Openbmap.org WiFi og celle logger</string>
 	<string name="radiobeacon_licence_caption">Klient licens</string>
 	<string name="do_you_want_to_delete_this_session">Slet sessionen?</string>
@@ -108,7 +101,6 @@
 	<string name="overview">Oversigt</string>
 	<string name="wifis">WiFi</string>
 	<string name="cells">Celler</string>
-	<string name="map">Kort</string>
 	<string name="no_gps">GPS slukket!</string>
 	<string name="waiting_for_gps_fix">Venter på GPS fix</string>
 	<string name="free_wifi">Gratis WiFi fundet:</string>
@@ -134,12 +126,8 @@
 	<string name="downloading">Henter</string>
 	<string name="prefs_gpx_verbosity_summary">Vælg, hvilke oplysninger der eksporteres til GPX filer</string>
 	<string name="waypoint">RP</string>
-	<string name="activity_stats_activity">Oversigt</string>
-	<string name="activity_wifi_list_container">WiFi</string>
 	<string name="activity_wifi_details_activity">WiFi detaljer</string>
-	<string name="activity_cells_list_container">Celler</string>
 	<string name="activity_cell_details">Celle detaljer</string>
-	<string name="activity_map_view_activity">Kort</string>
 	<string name="activity_settings_activity">Præferencer</string>
 	<string name="error_opening_wifi_catalog">Fejl ved åbning af WiFi katalog</string>
 	<string name="error_accessing_wifi_catalog">Fejl ved adgang til WiFi katalog</string>
@@ -172,7 +160,6 @@
 
 	<string name="prefs_update_catalog_summary">Tilføjer scannede WiFi til lokalt WiFi katalog</string>
 	<string name="prefs_update_catalog">Synkroniser WiFi katalog lokalt</string>
-	<string name="time_since_last_wifi_update">Sidste WiFi opdatering %s siden</string>
 	<string name="dialog_found_pending_uploads_title">Fandt flere sessioner, der endnu ikke er overført</string>
 	<string name="dialog_found_pending_uploads_message">"Skal alle ventende sessioner overføres nu? "</string>
 	<string name="dialog_delete_all_sessions_message">Skal alle sessioner slettes?</string>
@@ -189,8 +176,6 @@
 	<string name="prefs_scan_mode">WiFi scanningstilstand</string>
     <string name="prefs_scan_mode_summary">Advarsel: Valg af højtydendetilstand vil hurtigt dræne batteriet!</string>
 	<string name="saved_at">"Gemt på "</string>
-<string name="error_version_check_body">"Kontroller online-forbindelsen!\n(fx. i browseren).\nPrøv en automatisk rettelse nu?\n(Skifter mellem WiFi tilstand for at udløse en reconnect) "</string>
-	<string name="time_since_last_cell_update">Sidste celle opdatering %s siden</string>
 	<string name="stopped_tracking">Stoppet sporing</string>
 	<string name="activity_credits_activity">Medvirkende</string>
 	<string name="build_signature">"Version signatur "</string>

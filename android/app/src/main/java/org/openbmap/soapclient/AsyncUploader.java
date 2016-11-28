@@ -183,11 +183,9 @@ public class AsyncUploader extends AsyncTask<String, Integer, Boolean> {
 
 		if (mResult == UploadResult.OK) {
 			mListener.onUploadCompleted(mFile, mSize, mSpeed);
-            return;
-        } else {
+		} else {
             Log.e(TAG, "Upload failed " + lastErrorMsg);
             mListener.onUploadFailed(mFile, lastErrorMsg);
-			return;
 		}
 	}
 
