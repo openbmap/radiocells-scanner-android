@@ -58,14 +58,13 @@ public class LogFile implements Comparable<LogFile> {
 	/**
 	 * used for contains method
 	 */
-	public final boolean equals(final Object aLog) {
-		LogFile oneCell = (LogFile) aLog;
+	public final boolean equals(final LogFile aLog) {
 
-		return ((getManufacturer().equals(oneCell.getManufacturer()))
-				&& (getModel().equals(oneCell.getModel()))
-				&& (getRevision().equals(oneCell.getRevision()))
-				&& (getSwid().equals(oneCell.getSwid()))
-				&& (getSwVersion().equals(oneCell.getSwVersion())));
+		return ((getManufacturer().equals(aLog.getManufacturer()))
+				&& (getModel().equals(aLog.getModel()))
+				&& (getRevision().equals(aLog.getRevision()))
+				&& (getSwid().equals(aLog.getSwid()))
+				&& (getSwVersion().equals(aLog.getSwVersion())));
 	}
 
 	/*
