@@ -19,18 +19,13 @@
 package org.openbmap.activities.tabs;
 
 import android.app.ActionBar;
-import android.app.Fragment;
-import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.graphics.Matrix;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.content.res.ResourcesCompat;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -45,7 +40,6 @@ import android.widget.Toast;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.mapsforge.core.graphics.Bitmap;
-import org.mapsforge.core.graphics.Filter;
 import org.mapsforge.core.graphics.Paint;
 import org.mapsforge.core.graphics.Style;
 import org.mapsforge.core.model.BoundingBox;
@@ -53,21 +47,13 @@ import org.mapsforge.core.model.LatLong;
 import org.mapsforge.core.model.Point;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
 import org.mapsforge.map.android.graphics.AndroidResourceBitmap;
-import org.mapsforge.map.android.util.AndroidPreferences;
-import org.mapsforge.map.android.util.AndroidUtil;
-import org.mapsforge.map.android.view.MapView;
 import org.mapsforge.map.layer.Layer;
-import org.mapsforge.map.layer.Layers;
-import org.mapsforge.map.layer.cache.TileCache;
-import org.mapsforge.map.layer.download.TileDownloadLayer;
-import org.mapsforge.map.layer.download.tilesource.OnlineTileSource;
 import org.mapsforge.map.layer.overlay.Circle;
 import org.mapsforge.map.layer.overlay.FixedPixelCircle;
 import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.layer.overlay.Polyline;
 import org.mapsforge.map.model.common.Observer;
 import org.mapsforge.map.util.MapPositionUtil;
-import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
@@ -88,26 +74,22 @@ import org.openbmap.utils.SessionObjectsLoader;
 import org.openbmap.utils.SessionObjectsLoader.OnSessionLoadedListener;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.Unbinder;
 
 /**
  * Fragment for displaying map with session's GPX track and wifis
  * Caution: due to ViewPager default implementation, this fragment is loaded even before it becomes
  * visible
  */
-public class MapFragment extends Fragment implements
+public class MapFragment extends BaseMapFragment implements
         OnSessionLoadedListener,
         OnGpxLoadedListener,
         ActionBar.OnNavigationListener, onLongPressHandler {
 
     private static final String TAG = MapFragment.class.getSimpleName();
-
-    private Unbinder unbinder;
 
     /**
      * The Direction symbol.
@@ -137,7 +119,6 @@ public class MapFragment extends Fragment implements
             AndroidGraphicFactory.INSTANCE.createColor(128, 0, 0, 255),
             STROKE_GPX_WIDTH,
             Style.STROKE);
-
 
     private static final Paint ALL_POI_PAINT = MapUtils.createPaint(
             AndroidGraphicFactory.INSTANCE.createColor(ALPHA_WIFI_CATALOG_FILL,
@@ -213,16 +194,9 @@ public class MapFragment extends Fragment implements
     private int mSession;
 
     /**
-     * MapView
-     */
-    @BindView(R.id.map)
-    public MapView mMapView;
-
-    /**
      * Marks current position
      */
-    private Circle mPositionMarker;
-
+    private Marker mPositionMarker;
     /**
      * Marker which indicates current GPS accuracy
      */
@@ -234,16 +208,6 @@ public class MapFragment extends Fragment implements
     private long gpxRefreshedAt;
 
     private byte lastZoom;
-
-    /**
-     * Baselayer cache
-     */
-    private TileCache mTileCache;
-
-    /**
-     * Online tile layer, used when no offline map available
-     */
-    private static TileDownloadLayer mOnlineLayer = null;
 
     /**
      * Layer with radiocells wifis
@@ -262,11 +226,6 @@ public class MapFragment extends Fragment implements
     private boolean followLocation = true;
 
     /**
-     * Used for persisting zoom and position settings onPause / onDestroy
-     */
-    private AndroidPreferences mPreferencesFacade;
-
-    /**
      * Checks whether wifis layer is active
      */
     private Boolean isWifisLayerEnabled = true;
@@ -275,7 +234,6 @@ public class MapFragment extends Fragment implements
      * Checks whether tower layer is active
      */
     private Boolean isTowersLayerEnabled = true;
-
 
     /**
      * Observes zoom and map movements (for triggering layer updates)
@@ -320,22 +278,30 @@ public class MapFragment extends Fragment implements
     @Override
     public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.mapview, container, false);
+        this.mUnbinder = ButterKnife.bind(this, view);
+
+        initMap();
+        addMapActions();
+
+        final Drawable posIcon = ResourcesCompat.getDrawable(getResources(), R.drawable.position, null);
+        Bitmap bitmap = AndroidGraphicFactory.convertToBitmap(posIcon);
+        bitmap.incrementRefCount();
+        mPositionMarker = new Marker(null, bitmap, 0, -bitmap.getHeight() / 2);
+        //add later on demand: mMapView.getLayerManager().getLayers().add(marker);
+
+        mAccuracyMarker = new Circle(null, 0, ACCURACY_FILL, null);
+        mMapView.getLayerManager().getLayers().add(mAccuracyMarker);
+
 
         // Register our gps broadcast mReceiver
         registerReceiver();
 
-        unbinder = ButterKnife.bind(this, view);
-
-        initMap();
         return view;
     }
 
     @Override
     public void onDestroyView() {
         unregisterReceiver();
-        unbinder.unbind();
-
-        releaseMap();
         super.onDestroyView();
     }
 
@@ -353,15 +319,6 @@ public class MapFragment extends Fragment implements
         super.onResume();
 
         getSession();
-
-        if (mMapView == null) {
-            initMap();
-        }
-
-        if (mOnlineLayer != null) {
-            mOnlineLayer.onResume();
-        }
-
         registerReceiver();
     }
 
@@ -382,7 +339,8 @@ public class MapFragment extends Fragment implements
 
     /**
      * Clean up layers and disable GPX events
-     * Should be callebefore leaving
+     * Should be called before leaving
+     *
      * @param isVisibleToUser
      */
     @Override
@@ -407,7 +365,6 @@ public class MapFragment extends Fragment implements
     @Override
     public final void onDestroy() {
         unregisterReceiver();
-        releaseMap();
         super.onDestroy();
     }
 
@@ -422,59 +379,10 @@ public class MapFragment extends Fragment implements
         }
     }
 
-    /**
-     * Initializes map components
-     */
-    private void initMap() {
-
+    private void addMapActions() {
         if (mMapView == null) {
             Log.e(TAG, "MapView is null");
             return;
-        }
-
-        final SharedPreferences prefs = getActivity().getApplicationContext().getSharedPreferences(
-                getPersistableId(), /*MODE_PRIVATE*/ 0);
-        mPreferencesFacade = new AndroidPreferences(prefs);
-
-        mMapView.getModel().init(mPreferencesFacade);
-        mMapView.setClickable(true);
-        mMapView.getMapScaleBar().setVisible(true);
-
-        mTileCache = createTileCache();
-
-        boolean NIGHT_MODE = true;
-        mMapView.getModel().displayModel.setFilter(NIGHT_MODE ? Filter.GRAYSCALE: Filter.NONE);
-
-       // zoom to moderate zoom level on startup
-        if (mMapView.getModel().mapViewPosition.getZoomLevel() < (byte) 10 || mMapView.getModel().mapViewPosition.getZoomLevel() > (byte) 18) {
-            Log.i(TAG, "Reseting zoom level");
-            mMapView.getModel().mapViewPosition.setZoomLevel((byte) 15);
-        }
-
-        if (MapUtils.hasOfflineMap(this.getActivity())) {
-            Log.i(TAG, "Using offline map mode");
-            mMapView.getLayerManager().getLayers().clear();
-            addOfflineLayer();
-        } else if (MapUtils.useOnlineMaps(this.getActivity())) {
-            Log.i(TAG, "Using online map mode");
-            Toast.makeText(this.getActivity(), R.string.info_using_online_map, Toast.LENGTH_LONG).show();
-            addOnlineLayer();
-        } else {
-            Log.w(TAG, "Neither online mode activated, nor offline map avaibable");
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    PreferenceManager.getDefaultSharedPreferences(
-                            getActivity()).edit().putString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_ONLINE).apply();
-                    addOnlineLayer();
-                }
-            });
-            builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    // User cancelled the dialog
-                }
-            });
-            AlertDialog dialog = builder.create();
         }
 
         mMapObserver = new Observer() {
@@ -485,21 +393,11 @@ public class MapFragment extends Fragment implements
                     // Zoom level changed
                     Log.i(TAG, "New zoom level " + zoom + ", reloading map objects");
                     updateAllLayers();
-
                     lastZoom = zoom;
                 }
 
                 if (!followLocation) {
                     // Free-move mode
-
-                    // hide direction indicator on manual move
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            displayDirections(false);
-                        }
-                    });
-
                     final LatLong tmp = mMapView.getModel().mapViewPosition.getCenter();
                     final Location position = new Location("DUMMY");
                     position.setLatitude(tmp.latitude);
@@ -512,15 +410,21 @@ public class MapFragment extends Fragment implements
                     if (poiLayerNeedsUpdate(position)) {
                         requestPoiUpdate();
                     }
+
+                    if (mMapView.getLayerManager().getLayers().indexOf(mPositionMarker) < 0 ) {
+                        mMapView.getLayerManager().getLayers().add(mPositionMarker);
+                    }
                 }
+
+                // hide direction indicator on manual move
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        displayDirections(false);
+                    }
+                });
             }
         };
-
-        mPositionMarker = new Circle(null, 0, POSITION_FILL, null);
-        mMapView.getLayerManager().getLayers().add(mPositionMarker);
-
-        mAccuracyMarker = new Circle(null, 0, ACCURACY_FILL, null);
-        mMapView.getLayerManager().getLayers().add(mAccuracyMarker);
 
         mMapView.getModel().mapViewPosition.addObserver(mMapObserver);
     }
@@ -532,7 +436,6 @@ public class MapFragment extends Fragment implements
             directionSymbol.setVisibility(View.VISIBLE);
         }
     }
-
 
     @Override
     public void onCreateOptionsMenu(final Menu menu, final MenuInflater inflater) {
@@ -553,8 +456,14 @@ public class MapFragment extends Fragment implements
 
                 if (followLocation) {
                     displayDirections(true);
+                    if (mMapView.getLayerManager().getLayers().indexOf(mPositionMarker) >= 0) {
+                        mMapView.getLayerManager().getLayers().remove(mPositionMarker);
+                    }
                 } else {
                     displayDirections(false);
+                    if (mMapView.getLayerManager().getLayers().indexOf(mPositionMarker) < 0) {
+                        mMapView.getLayerManager().getLayers().add(mPositionMarker);
+                    }
                 }
                 return true;
             case R.id.menu_enableTowers:
@@ -602,7 +511,7 @@ public class MapFragment extends Fragment implements
         Location location = event.location;
 
         if (mMapView == null) {
-            Log.wtf(TAG, "MapView is null");
+            Log.e(TAG, "MapView is null");
             return;
         }
 
@@ -630,6 +539,9 @@ public class MapFragment extends Fragment implements
 
                 // might have been disabled by user - reactivate automatically
                 displayDirections(true);
+
+                // hide position marker when in followLocation mode
+                //mMapView.getLayerManager().getLayers().remove(mPositionMarker);
             }
 
             if ((mMapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && sessionLayerNeedsUpdate(location)) {
@@ -656,7 +568,7 @@ public class MapFragment extends Fragment implements
      */
     private void updateAllLayers() {
         if (mMapView == null) {
-            Log.w(TAG, "Map view is null, ignoring");
+            Log.e(TAG, "MapView is null");
             return;
         }
 
@@ -721,8 +633,7 @@ public class MapFragment extends Fragment implements
             return;
         }
 
-        for (final Iterator<Layer> iterator = sessionObjects.iterator(); iterator.hasNext(); ) {
-            final Layer layer = iterator.next();
+        for (final Layer layer : sessionObjects) {
             this.mMapView.getLayerManager().getLayers().remove(layer);
         }
         sessionObjects.clear();
@@ -801,6 +712,7 @@ public class MapFragment extends Fragment implements
      */
     private void startSessionDatabaseTask(final WifiRecord highlight) {
         if (mMapView == null) {
+            Log.e(TAG, "MapView is null");
             return;
         }
 
@@ -902,10 +814,9 @@ public class MapFragment extends Fragment implements
         Log.d(TAG, "Loaded session objects");
 
         if (mMapView == null) {
+            Log.e(TAG, "MapView is null");
             return;
         }
-
-        final Layers layers = this.mMapView.getLayerManager().getLayers();
 
         clearSessionLayer();
 
@@ -964,6 +875,7 @@ public class MapFragment extends Fragment implements
      */
     private void startGpxDatabaseTask() {
         if (mMapView == null) {
+            Log.e(TAG, "MapView is null");
             return;
         }
 
@@ -985,6 +897,7 @@ public class MapFragment extends Fragment implements
         clearGpxLayer();
 
         if (mMapView == null) {
+            Log.e(TAG, "MapView is null");
             return;
         }
 
@@ -1002,8 +915,9 @@ public class MapFragment extends Fragment implements
     }
 
     /**
-     * Draws arrow in direction of travel. If bearing is unavailable a generic position symbol is used.
-     * If another refresh is taking place, update is skipped
+     * Draws arrow in direction of travel. If another refresh is taking place, update is skipped
+     *
+     *  @param location current location (with bearing)
      */
     private void updateDirection(final Location location) {
         if (location == null) {
@@ -1031,7 +945,7 @@ public class MapFragment extends Fragment implements
     }
 
     /**
-     * Draws compass
+     * Rotates direction image according to bearing
      *
      * @param iv          image view used for compass
      * @param resourceId resource id compass needle
@@ -1039,8 +953,8 @@ public class MapFragment extends Fragment implements
      */
     private void rotateDirection(final ImageView iv, final Integer resourceId, final float bearing) {
         // refresh only if needed
-        if (resourceId != R.drawable.arrow) {
-            iv.setImageResource(R.drawable.arrow);
+        if (resourceId != R.drawable.direction) {
+            iv.setImageResource(R.drawable.direction);
         }
 
         // rotate arrow
@@ -1051,55 +965,12 @@ public class MapFragment extends Fragment implements
     }
 
     /**
-     * Creates a tile cache for the baselayer
-     *
-     * @return tile cache
-     */
-    protected final TileCache createTileCache() {
-        if (mMapView == null) {
-            return null;
-        }
-        return AndroidUtil.createTileCache(
-                getActivity().getApplicationContext(),
-                "mapcache",
-                mMapView.getModel().displayModel.getTileSize(),
-                1f,
-                mMapView.getModel().frameBufferModel.getOverdrawFactor());
-    }
-
-    /**
      * Gets persistable id.
      *
      * @return the id that is used to save this mapview
      */
     protected final String getPersistableId() {
         return this.getClass().getSimpleName();
-    }
-
-    /**
-     * Cleans up mapsforge events
-     * Calls mapsforge destroy events and sets map-related object to
-     * null to enable garbage collection.
-     */
-    private void releaseMap() {
-        Log.i(TAG, "Cleaning mapsforge components");
-
-        if (mTileCache != null) {
-            mTileCache.destroy();
-        }
-
-        if (mMapView != null) {
-            // save map settings
-            mMapView.getModel().save(mPreferencesFacade);
-            mPreferencesFacade.save();
-            mMapView.destroyAll();
-            mMapView = null;
-        }
-
-        // release zoom / move observer for gc
-        this.mMapObserver = null;
-
-        MapUtils.clearAndroidRessources();
     }
 
     /* (non-Javadoc)
@@ -1128,38 +999,6 @@ public class MapFragment extends Fragment implements
         toneG.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 200);
     }
 
-    /**
-     * Creates a long-press enabled offline map layer
-     */
-    private void addOfflineLayer() {
-        final Layer offlineLayer = MapUtils.createTileRendererLayer(
-                this.mTileCache,
-                this.mMapView.getModel().mapViewPosition,
-                MapUtils.getMapFile(this.getActivity()),
-                MapUtils.getRenderTheme(this.getActivity()),
-                this
-        );
 
-        if (offlineLayer != null) this.mMapView.getLayerManager().getLayers().add(offlineLayer);
-    }
-
-    /**
-     * Creates a long-press enabled offline map layer
-     */
-    private void addOnlineLayer() {
-        final OnlineTileSource onlineTileSource = MapUtils.createOnlineTileSource();
-
-        mOnlineLayer = new TileDownloadLayer(mTileCache,
-                mMapView.getModel().mapViewPosition, onlineTileSource,
-                AndroidGraphicFactory.INSTANCE) {
-            @Override
-            public boolean onLongPress(LatLong tapLatLong, Point thisXY, Point tapXY) {
-                    MapFragment.this.onLongPress(tapLatLong, thisXY, tapXY);
-                    return true;
-            }
-        };
-        mMapView.getLayerManager().getLayers().add(mOnlineLayer);
-        mOnlineLayer.onResume();
-    }
 }
 

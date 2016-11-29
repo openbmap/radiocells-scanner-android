@@ -56,7 +56,7 @@ import static org.openbmap.utils.LayerHelpers.filterToCriteria;
 public class CatalogService extends AbstractService {
 
     private static final String TAG = CatalogService.class.getSimpleName();
-    private static final int MAX_OBJECTS = 10000;
+    private static final int MAX_OBJECTS = 5000;
 
     private String POI_FILE = Environment.getExternalStorageDirectory() + "/de_current.sqlite";
 
@@ -293,6 +293,10 @@ public class CatalogService extends AbstractService {
     private Collection<CatalogObject> queryDatabase(BoundingBox bbox, int maxObjects) {
         Log.i(TAG, "Searching within " + bbox.toString());
         ArrayList<CatalogObject> pois = new ArrayList<>();
+
+        if (dbSpatialite == null) {
+            Log.e(TAG, "Database not available, skipping catalog query");
+        }
 
         try {
             Stmt stmt = dbSpatialite.prepare(FIND_WIFI_IN_BOX_STATEMENT);
