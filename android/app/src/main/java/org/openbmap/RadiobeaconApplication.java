@@ -17,11 +17,16 @@
  */
 package org.openbmap;
 
+import android.Manifest;
 import android.app.Application;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 
+import com.orhanobut.logger.Logger;
 import com.squareup.leakcanary.LeakCanary;
 
 import org.greenrobot.eventbus.EventBus;
@@ -29,7 +34,7 @@ import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
 import org.mapsforge.map.model.DisplayModel;
 import org.openbmap.services.ManagerService;
 
-public class RadiobeaconApplication extends Application {
+public class RadiobeaconApplication extends Application implements ActivityCompat.OnRequestPermissionsResultCallback {
 
 	public static final String TAG = RadiobeaconApplication.class.getSimpleName();
 
@@ -54,6 +59,10 @@ public class RadiobeaconApplication extends Application {
 
         EventBus.builder().addIndex(new MyEventBusIndex()).installDefaultEventBus();
 
+		Logger.init()
+                .hideThreadInfo()
+                .logLevel(BuildConfig.LOGGER_LEVEL);  // default LogLevel.FULL
+
 		Intent serviceIntent = new Intent(getApplicationContext(), ManagerService.class);
 		startService(serviceIntent);
 
@@ -64,5 +73,18 @@ public class RadiobeaconApplication extends Application {
 		if (fs != DisplayModel.getDefaultUserScaleFactor()) {
 			DisplayModel.setDefaultUserScaleFactor(fs);
 		}
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+		boolean allGood = false;
+		for (int i = 0; i < grantResults.length; i++)
+			if (permissions[i].equals(Manifest.permission.ACCESS_FINE_LOCATION) && (grantResults[i] == PackageManager.PERMISSION_GRANTED))
+				allGood = true;
+		if (allGood) {
+            //
+        } else {
+            Log.w(TAG, "User did not grant required permissions");
+        }
 	}
 }

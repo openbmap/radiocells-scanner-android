@@ -18,6 +18,7 @@
 
 package org.openbmap.activities;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -28,6 +29,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -36,6 +38,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.TabHost;
 import android.widget.Toast;
+
+import com.fastaccess.permission.base.PermissionHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.openbmap.Preferences;
@@ -63,11 +67,15 @@ import butterknife.ButterKnife;
  * Parent screen for hosting main screen
  */
 public class StartscreenActivity extends AppCompatActivity
-implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, UploadTaskListener, SaveGpxTaskListener {
+implements SessionListFragment.SessionFragementListener,
+        OnAlertClickInterface,
+        UploadTaskListener,
+        SaveGpxTaskListener
+        {
 
 	private static final String TAG = StartscreenActivity.class.getSimpleName();
 
-	/**
+    /**
 	 *
 	 */
 	private static final String UPLOAD_TASK = "upload_task";
@@ -142,14 +150,17 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 	 */
 	private int failedExports;
 
-	@Override
+    private PermissionHelper permissionHelper;
+
+    @Override
 	public final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
 		ButterKnife.bind(this);
 
         initPersistantFragments();
 
-		// setup data connections
+        // setup data connections
 		mDataHelper = new DataHelper(this);
 
 		final Bundle b = getIntent().getExtras();
@@ -280,7 +291,7 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
 
 	/**
 	 * Uploads session
-	 * Once exported, {@link onExportCompleted} is called
+	 * Once exported, {@link onExportCompleted()} is called
 	 * @param session
 	 * 		session id
 	 */
@@ -965,6 +976,6 @@ implements SessionListFragment.SessionFragementListener, OnAlertClickInterface, 
         // Update the shared preferences with the current version code
         Log.i(TAG,  String.format("Saving current version %s", currentVersionCode));
         prefs.edit().putInt(PREF_VERSION_CODE_KEY, currentVersionCode).apply();
-
     }
+
 }

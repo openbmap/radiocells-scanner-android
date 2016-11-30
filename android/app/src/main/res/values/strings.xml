@@ -211,4 +211,6 @@
     <string name="follow_position">Follow position</string>
     <string name="enable_known_wifis">Radiocells.org wifis</string>
     <string name="enable_osm_towers">OSM towers</string>
+    <string name="permission_denied">Sorry, Radiobeacon won\'t work without this permissions</string>
+    <string name="title_activity_intro">IntroActivity</string>
 </resources>

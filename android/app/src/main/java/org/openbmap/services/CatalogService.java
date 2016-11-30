@@ -38,8 +38,8 @@ import org.mapsforge.poi.storage.UnknownPoiCategoryException;
 import org.openbmap.db.ContentProvider;
 import org.openbmap.db.DatabaseHelper;
 import org.openbmap.db.Schema;
-import org.openbmap.events.onPoiUpdateAvailable;
-import org.openbmap.events.onPoiUpdateRequested;
+import org.openbmap.events.onCatalogUpdateAvailable;
+import org.openbmap.events.onCatalogUpdateRequested;
 import org.openbmap.utils.CatalogObject;
 import org.openbmap.utils.LayerHelpers.LayerFilter;
 
@@ -362,7 +362,7 @@ public class CatalogService extends AbstractService {
     }
 
     @Subscribe
-    public void onEvent(onPoiUpdateRequested event) {
+    public void onEvent(onCatalogUpdateRequested event) {
         if (inSync) {
             Log.i(TAG, "Loading POI data");
             if (dbSpatialite == null) {
@@ -412,7 +412,7 @@ public class CatalogService extends AbstractService {
 
         @Override
         protected void onPostExecute(Collection<CatalogObject> pois) {
-            EventBus.getDefault().post(new onPoiUpdateAvailable(pois));
+            EventBus.getDefault().post(new onCatalogUpdateAvailable(pois));
         }
 
     }

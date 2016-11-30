@@ -179,7 +179,6 @@ public final class MapUtils {
         return (prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE).equals(Preferences.VAL_MAP_ONLINE));
     }
 
-
     /**
 	 * Opens map file
 	 * @param context
@@ -192,6 +191,7 @@ public final class MapUtils {
 
 		if (file.exists()) {
 			try {
+				Log.i(TAG, "Using map " + file);
 				return new MapFile(file);
 			} catch (MapFileException mfe) {
 				Toast.makeText(context,

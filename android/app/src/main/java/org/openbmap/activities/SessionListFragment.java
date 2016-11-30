@@ -216,8 +216,8 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	 */
 	private void resume(final int id) {
 		final DataHelper datahelper = new DataHelper(this.getActivity());
-		final Session check = datahelper.loadSession(id);
-		if (check != null && !check.hasBeenExported()) {
+		final Session session = datahelper.loadSession(id);
+		if (session != null && !session.hasBeenExported()) {
 			((SessionFragementListener) getActivity()).resumeCommand(id);
 		} else {
 			Toast.makeText(this.getActivity(), R.string.warning_session_closed, Toast.LENGTH_SHORT).show();

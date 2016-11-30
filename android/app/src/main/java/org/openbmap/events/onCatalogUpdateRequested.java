@@ -37,11 +37,11 @@ package org.openbmap.events;
 
 import org.mapsforge.core.model.BoundingBox;
 
-public class onPoiUpdateRequested {
+public class onCatalogUpdateRequested {
 
     public final BoundingBox bbox;
 
-    public onPoiUpdateRequested(BoundingBox bbox) {
+    public onCatalogUpdateRequested(BoundingBox bbox) {
         this.bbox = bbox;
     }
 

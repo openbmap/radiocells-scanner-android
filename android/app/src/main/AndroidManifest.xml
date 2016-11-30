@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.openbmap"
     android:versionCode="27"
-    android:versionName="0.8.18" >
+    android:versionName="0.8.18">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -16,71 +16,68 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <application
-        android:name="org.openbmap.RadiobeaconApplication"
+        android:name=".RadiobeaconApplication"
         android:allowBackup="true"
+        android:hardwareAccelerated="true"
         android:icon="@drawable/icon"
         android:label="@string/app_name"
-        android:theme="@style/Theme.AppCompat"
-        android:hardwareAccelerated="true"
-        >
+        android:theme="@style/Theme.AppCompat">
         <activity
-            android:name=".activities.tabs.TabHostActivity"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.AppCompat">
-        </activity>
-        <activity
-            android:name=".activities.StartscreenActivity"
-            android:label="@string/app_name"
-            android:uiOptions="splitActionBarWhenNarrow" >
-            <meta-data
-                android:name="android.support.UI_OPTIONS"
-                android:value="splitActionBarWhenNarrow" />
+            android:name=".activities.IntroActivity"
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.details.WifiDetailsActivity"
-            android:label="@string/activity_wifi_details_activity" >
+            android:name=".activities.StartscreenActivity"
+            android:label="@string/app_name"
+            android:uiOptions="splitActionBarWhenNarrow">
+            <meta-data
+                android:name="android.support.UI_OPTIONS"
+                android:value="splitActionBarWhenNarrow" />
         </activity>
+        <activity
+            android:name=".activities.tabs.TabHostActivity"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.AppCompat">
+        </activity>
+        <activity
+            android:name=".activities.details.WifiDetailsActivity"
+            android:label="@string/activity_wifi_details_activity"></activity>
         <activity
             android:name=".activities.details.CellDetailsActivity"
-            android:label="@string/activity_cell_details" >
-        </activity>
+            android:label="@string/activity_cell_details"></activity>
         <activity
             android:name=".activities.settings.SettingsActivity"
-            android:label="@string/activity_settings_activity" >
-        </activity>
+            android:label="@string/activity_settings_activity"></activity>
         <activity
             android:name=".activities.settings.AdvancedSettingsActivity"
-            android:label="@string/activity_advanced_settings_activity" >
-        </activity>
+            android:label="@string/activity_advanced_settings_activity"></activity>
         <activity
             android:name=".activities.CreditsActivity"
-            android:label="@string/activity_credits_activity" >
-        </activity>
+            android:label="@string/activity_credits_activity"></activity>
 
-        <!-- Exported activities, which can be used to automate Radiobeacon-->
-        <activity android:name=".commands.StartTracking" >
+        <!-- Exported activities, which can be used to automate Radiobeacon -->
+        <activity android:name=".commands.StartTracking">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
             </intent-filter>
         </activity>
-        <activity android:name=".commands.StopTracking" >
+        <activity android:name=".commands.StopTracking">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
             </intent-filter>
         </activity>
-        <activity android:name=".commands.UploadAll" >
+        <activity android:name=".commands.UploadAll">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
             </intent-filter>
         </activity>
 
         <!-- Master service controlling all other services -->
-        <service
-            android:name=".services.ManagerService" >
+        <service android:name=".services.ManagerService">
             <intent-filter>
                 <action android:name=".intent.START_TRACKING" />
                 <action android:name=".intent.STOP_TRACKING" />
@@ -90,7 +87,7 @@
         <!-- GPS receiver service -->
         <service
             android:name=".services.positioning.PositioningService"
-            android:exported="false" >
+            android:exported="false">
             <intent-filter>
                 <action android:name=".intent.GPS_SERVICE" />
             </intent-filter>
@@ -99,25 +96,18 @@
         <!-- POI manager service -->
         <service
             android:name=".services.CatalogService"
-            android:exported="false" >
-        </service>
-
+            android:exported="false"></service>
 
         <!-- Wireless (cell, wifi) logger service -->
-        <service
-            android:name=".services.wireless.ScannerService" >
-        </service>
+        <service android:name=".services.wireless.ScannerService"></service>
 
         <!-- GPX logger service -->
-        <service
-            android:name=".services.positioning.GpxLoggerService" >
-        </service>
+        <service android:name=".services.positioning.GpxLoggerService"></service>
 
         <provider
             android:name=".db.ContentProvider"
             android:authorities="org.openbmap.provider"
-            android:exported="false" >
-        </provider>
+            android:exported="false"></provider>
     </application>
 
 </manifest>

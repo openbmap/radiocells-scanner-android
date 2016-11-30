@@ -39,11 +39,11 @@ import org.openbmap.utils.CatalogObject;
 
 import java.util.Collection;
 
-public class onPoiUpdateAvailable {
+public class onCatalogUpdateAvailable {
 
     public Collection<CatalogObject> pois;
 
-    public onPoiUpdateAvailable(Collection<CatalogObject> pois) {
+    public onCatalogUpdateAvailable(Collection<CatalogObject> pois) {
         this.pois =  pois;
     }
 

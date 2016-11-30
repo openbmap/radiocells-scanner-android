@@ -265,6 +265,7 @@ public class ManagerService extends Service {
     @Subscribe
     public void onEvent(onStartTracking event){
         Log.d(TAG, "Received StartTracking event");
+
         currentSession = event.session;
         requirePowerLock();
         startTracking(currentSession);
