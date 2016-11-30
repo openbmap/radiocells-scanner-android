@@ -59,9 +59,9 @@ import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.PositionRecord;
 import org.openbmap.db.models.WifiRecord;
+import org.openbmap.events.onCatalogUpdateAvailable;
+import org.openbmap.events.onCatalogUpdateRequested;
 import org.openbmap.events.onLocationUpdate;
-import org.openbmap.events.onPoiUpdateAvailable;
-import org.openbmap.events.onPoiUpdateRequested;
 import org.openbmap.utils.CatalogObject;
 import org.openbmap.utils.GeometryUtils;
 import org.openbmap.utils.GpxMapObjectsLoader;
@@ -90,6 +90,10 @@ public class MapFragment extends BaseMapFragment implements
         ActionBar.OnNavigationListener, onLongPressHandler {
 
     private static final String TAG = MapFragment.class.getSimpleName();
+
+    private static final boolean DEBUG_SHOW_CATALOG = true;
+    private static final boolean DEBUG_SHOW_GPX = true;
+    private boolean DEBUG_SHOW_SESSION = true;
 
     /**
      * The Direction symbol.
@@ -256,6 +260,11 @@ public class MapFragment extends BaseMapFragment implements
     private boolean isUpdatingGpx;
 
     /**
+     * Catalog layer is currently refreshing
+     */
+    private boolean isUpdatingCatalog;
+
+    /**
      * System time of last session layer refresh (in millis)
      */
     private long sessionObjectsRefreshTime;
@@ -263,7 +272,7 @@ public class MapFragment extends BaseMapFragment implements
     /**
      * System time of last catalog layer refresh (in millis)
      */
-    private long poiLayerRefreshTime;
+    private long catalogLayerRefreshTime;
 
     /**
      * Location of last session layer refresh
@@ -273,7 +282,7 @@ public class MapFragment extends BaseMapFragment implements
     /**
      * Location of wifi layer refresh
      */
-    private Location poiLayerRefreshLocation = new Location("DUMMY");
+    private Location catalogLayerRefreshLocation = new Location("DUMMY");
 
     @Override
     public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
@@ -324,13 +333,12 @@ public class MapFragment extends BaseMapFragment implements
 
     @Override
     public final void onPause() {
-
         if (mOnlineLayer != null) {
             mOnlineLayer.onPause();
         }
 
-        clearSessionLayer();
-        clearGpxLayer();
+        clearSession();
+        clearGpx();
 
         unregisterReceiver();
 
@@ -347,14 +355,13 @@ public class MapFragment extends BaseMapFragment implements
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         if (isVisibleToUser) {
-            Log.d(TAG, "Map become visible, initializing");
             registerReceiver();
             // TODO: currently no possible due to https://github.com/mapsforge/mapsforge/issues/659
             //initMap();
         } else {
             Log.d(TAG, "Map not visible, releasing");
-            clearSessionLayer();
-            clearGpxLayer();
+            clearSession();
+            clearGpx();
             // TODO: currently no possible due to https://github.com/mapsforge/mapsforge/issues/659
             //releaseMap();
 
@@ -391,13 +398,14 @@ public class MapFragment extends BaseMapFragment implements
                 final byte zoom = mMapView.getModel().mapViewPosition.getZoomLevel();
                 if (zoom != lastZoom && zoom >= MIN_OBJECT_ZOOM) {
                     // Zoom level changed
-                    Log.i(TAG, "New zoom level " + zoom + ", reloading map objects");
+                    Log.v(TAG, "New zoom level " + zoom + ", reloading map objects");
                     updateAllLayers();
                     lastZoom = zoom;
                 }
 
                 if (!followLocation) {
                     // Free-move mode
+
                     final LatLong tmp = mMapView.getModel().mapViewPosition.getCenter();
                     final Location position = new Location("DUMMY");
                     position.setLatitude(tmp.latitude);
@@ -407,13 +415,11 @@ public class MapFragment extends BaseMapFragment implements
                         requestSessionUpdate(position);
                     }
 
-                    if (poiLayerNeedsUpdate(position)) {
-                        requestPoiUpdate();
+                    if (catalogLayerNeedsUpdate(position)) {
+                        requestCatalogUpdate();
                     }
 
-                    if (mMapView.getLayerManager().getLayers().indexOf(mPositionMarker) < 0 ) {
-                        mMapView.getLayerManager().getLayers().add(mPositionMarker);
-                    }
+                    mPositionMarker.setVisible(true);
                 }
 
                 // hide direction indicator on manual move
@@ -456,14 +462,13 @@ public class MapFragment extends BaseMapFragment implements
 
                 if (followLocation) {
                     displayDirections(true);
-                    if (mMapView.getLayerManager().getLayers().indexOf(mPositionMarker) >= 0) {
-                        mMapView.getLayerManager().getLayers().remove(mPositionMarker);
-                    }
+                    mPositionMarker.setVisible(false);
                 } else {
                     displayDirections(false);
-                    if (mMapView.getLayerManager().getLayers().indexOf(mPositionMarker) < 0) {
+                    if (!mMapView.getLayerManager().getLayers().contains(mPositionMarker)) {
                         mMapView.getLayerManager().getLayers().add(mPositionMarker);
                     }
+                    mPositionMarker.setVisible(true);
                 }
                 return true;
             case R.id.menu_enableTowers:
@@ -539,21 +544,21 @@ public class MapFragment extends BaseMapFragment implements
 
                 // might have been disabled by user - reactivate automatically
                 displayDirections(true);
-
-                // hide position marker when in followLocation mode
-                //mMapView.getLayerManager().getLayers().remove(mPositionMarker);
+                mPositionMarker.setVisible(false);
+            } else {
+                mPositionMarker.setVisible(true);
             }
 
             if ((mMapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && sessionLayerNeedsUpdate(location)) {
                 requestSessionUpdate(location);
             }
 
-            if ((mMapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && poiLayerNeedsUpdate(location)) {
-                requestPoiUpdate();
+            if ((mMapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && catalogLayerNeedsUpdate(location)) {
+                requestCatalogUpdate();
             }
 
             if (gpxNeedsUpdate()) {
-                refreshGpxTrace(location);
+                requestGpxUpdate(location);
             }
 
             // indicate direction
@@ -577,12 +582,19 @@ public class MapFragment extends BaseMapFragment implements
         mapCenter.setLongitude(mMapView.getModel().mapViewPosition.getCenter().longitude);
 
         requestSessionUpdate(mapCenter);
-        requestPoiUpdate();
+        requestCatalogUpdate();
     }
 
-    private void requestPoiUpdate() {
-        EventBus.getDefault().post(new onPoiUpdateRequested(this.mMapView.getBoundingBox()));
-        poiLayerRefreshTime = System.currentTimeMillis();
+    private void requestCatalogUpdate() {
+        if (!DEBUG_SHOW_CATALOG) {
+            return;
+        }
+
+        if (!isUpdatingCatalog) {
+            isUpdatingCatalog = true;
+            EventBus.getDefault().post(new onCatalogUpdateRequested(this.mMapView.getBoundingBox()));
+            catalogLayerRefreshTime = System.currentTimeMillis();
+        }
     }
 
     /**
@@ -623,7 +635,7 @@ public class MapFragment extends BaseMapFragment implements
     /**
      *
      */
-    private void clearSessionLayer() {
+    private void clearSession() {
         if (sessionObjects == null) {
             return;
         }
@@ -642,7 +654,7 @@ public class MapFragment extends BaseMapFragment implements
     /**
      * Clears GPX layer objects
      */
-    private void clearGpxLayer() {
+    private void clearGpx() {
         if (gpxObjects != null && mMapView != null) {
             synchronized (this) {
                 // clear layer
@@ -658,16 +670,16 @@ public class MapFragment extends BaseMapFragment implements
      * @param current new location
      * @return true if wifis layer needs a refresh
      */
-    private boolean poiLayerNeedsUpdate(final Location current) {
+    private boolean catalogLayerNeedsUpdate(final Location current) {
         if (current == null) {
             // fail safe: draw if something went wrong
             return true;
         }
 
-        return (
-                (poiLayerRefreshLocation.distanceTo(current) > CATALOG_REFRESH_DISTANCE)
-                        && ((System.currentTimeMillis() - poiLayerRefreshTime) > CATALOG_REFRESH_INTERVAL)
-        );
+        boolean status = (catalogLayerRefreshLocation.distanceTo(current) > CATALOG_REFRESH_DISTANCE)
+                && ((System.currentTimeMillis() - catalogLayerRefreshTime) > CATALOG_REFRESH_INTERVAL)
+                && (followLocation);
+        return status;
     }
 
     /**
@@ -677,8 +689,10 @@ public class MapFragment extends BaseMapFragment implements
      * @param location the location
      */
     protected final void requestSessionUpdate(final Location location) {
+        if (!DEBUG_SHOW_SESSION) {
+            return;
+        }
         if (!isUpdatingSession && isVisible()) {
-            Log.d(TAG, "Updating session layer");
             isUpdatingSession = true;
             startSessionDatabaseTask(null);
             sessionObjectsRefreshTime = System.currentTimeMillis();
@@ -701,7 +715,8 @@ public class MapFragment extends BaseMapFragment implements
         }
 
         return ((sessionObjectsRefreshLocation.distanceTo(current) > SESSION_REFRESH_DISTANCE)
-                        && ((System.currentTimeMillis() - sessionObjectsRefreshTime) > SESSION_REFRESH_INTERVAL));
+                && ((System.currentTimeMillis() - sessionObjectsRefreshTime) > SESSION_REFRESH_INTERVAL)
+                && (followLocation));
     }
 
     /**
@@ -763,7 +778,7 @@ public class MapFragment extends BaseMapFragment implements
      * @param event the event
      */
     @Subscribe
-    public void onEvent(onPoiUpdateAvailable event){
+    public void onEvent(onCatalogUpdateAvailable event){
         if (event.pois == null) {
             Log.d(TAG, "No POI founds");
             return;
@@ -804,6 +819,8 @@ public class MapFragment extends BaseMapFragment implements
             mMapView.getLayerManager().getLayers().add(towersLayer);
         }
         mMapView.getLayerManager().redrawLayers();
+
+        isUpdatingCatalog = false;
     }
 
     /* (non-Javadoc)
@@ -811,14 +828,13 @@ public class MapFragment extends BaseMapFragment implements
      */
     @Override
     public final void onSessionLoaded(final List<SessionLatLong> points) {
-        Log.d(TAG, "Loaded session objects");
 
         if (mMapView == null) {
             Log.e(TAG, "MapView is null");
             return;
         }
 
-        clearSessionLayer();
+        clearSession();
 
         for (final SessionLatLong point : points) {
             if (point.getSession() == mSession) {
@@ -848,9 +864,12 @@ public class MapFragment extends BaseMapFragment implements
     /**
      * @param location
      */
-    private void refreshGpxTrace(final Location location) {
+    private void requestGpxUpdate(final Location location) {
+        if (!DEBUG_SHOW_GPX) {
+            return;
+        }
+
         if (!isUpdatingGpx && isVisible()) {
-            Log.d(TAG, "Updating gpx layer");
             isUpdatingGpx = true;
             startGpxDatabaseTask();
             gpxRefreshedAt = System.currentTimeMillis();
@@ -867,7 +886,10 @@ public class MapFragment extends BaseMapFragment implements
      * @return true if layer needs refresh
      */
     private boolean gpxNeedsUpdate() {
-        return ((System.currentTimeMillis() - gpxRefreshedAt) > GPX_REFRESH_INTERVAL);
+        return (
+                ((System.currentTimeMillis() - gpxRefreshedAt) > GPX_REFRESH_INTERVAL)
+                && (followLocation)
+        );
     }
 
     /*
@@ -892,9 +914,9 @@ public class MapFragment extends BaseMapFragment implements
      */
     @Override
     public final void onGpxLoaded(final List<LatLong> points) {
-        Log.d(TAG, "Loading " + points.size() + " gpx objects");
+        Log.v(TAG, "Loading " + points.size() + " gpx objects");
 
-        clearGpxLayer();
+        clearGpx();
 
         if (mMapView == null) {
             Log.e(TAG, "MapView is null");

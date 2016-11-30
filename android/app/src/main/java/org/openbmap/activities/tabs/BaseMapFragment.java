@@ -28,6 +28,9 @@ import butterknife.Unbinder;
 
 public abstract class BaseMapFragment extends Fragment implements MapUtils.onLongPressHandler {
     private static final String TAG = BaseMapFragment.class.getSimpleName();
+
+    private boolean NIGHT_MODE = true;
+
     protected Unbinder mUnbinder;
 
     /**
@@ -115,7 +118,6 @@ public abstract class BaseMapFragment extends Fragment implements MapUtils.onLon
 
         mTileCache = createTileCache();
 
-        boolean NIGHT_MODE = true;
         mMapView.getModel().displayModel.setFilter(NIGHT_MODE ? Filter.GRAYSCALE : Filter.NONE);
 
         // zoom to moderate zoom level on startup
@@ -154,6 +156,7 @@ public abstract class BaseMapFragment extends Fragment implements MapUtils.onLon
          * Creates a long-press enabled offline map layer
          */
     private void addOfflineLayer() {
+        Log.i(TAG, "Adding offline tile layer");
         final Layer offlineLayer = MapUtils.createTileRendererLayer(
                 this.mTileCache,
                 this.mMapView.getModel().mapViewPosition,
@@ -171,6 +174,7 @@ public abstract class BaseMapFragment extends Fragment implements MapUtils.onLon
     private void addOnlineLayer() {
         final OnlineTileSource onlineTileSource = MapUtils.createOnlineTileSource();
 
+        Log.i(TAG, "Adding online tile layer");
         mOnlineLayer = new TileDownloadLayer(mTileCache,
                 mMapView.getModel().mapViewPosition, onlineTileSource,
                 AndroidGraphicFactory.INSTANCE) {
@@ -194,6 +198,8 @@ public abstract class BaseMapFragment extends Fragment implements MapUtils.onLon
         if (mMapView == null) {
             return null;
         }
+        Log.i(TAG, "Creating tile cache");
+
         return AndroidUtil.createTileCache(
                 getActivity().getApplicationContext(),
                 "mapcache",
