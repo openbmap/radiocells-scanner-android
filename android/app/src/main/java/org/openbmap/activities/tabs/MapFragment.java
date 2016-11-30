@@ -1,5 +1,5 @@
 /*
- Radiobeacon - Openbmap wifi and cell logger
+ Radiobeacon - Openbmap wifi and cell scanner
     Copyright (C) 2013  wish7
 
     This program is free software: you can redistribute it and/or modify
