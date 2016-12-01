@@ -21,9 +21,11 @@ package org.openbmap.utils;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import org.greenrobot.eventbus.EventBus;
 import org.mapsforge.core.model.LatLong;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.PositionRecord;
+import org.openbmap.events.onGpxUpdateAvailable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +35,6 @@ import java.util.List;
  */
 public class GpxMapObjectsLoader extends AsyncTask<Object, Void, List<LatLong>> {
 
-	@SuppressWarnings("unused")
 	private static final String	TAG	= GpxMapObjectsLoader.class.getSimpleName();
 
 	/**
@@ -47,24 +48,11 @@ public class GpxMapObjectsLoader extends AsyncTask<Object, Void, List<LatLong>> 
 	private static final int MIN_LON_COL = 3;
 	private static final int MAX_LON_COL = 4;
 
-	/**
-	 * Interface for activity.
-	 */
-	public interface OnGpxLoadedListener {
-		void onGpxLoaded(List<LatLong> points);
-	}
-
 	private Context	mContext;
+    private DataHelper dbHelper;
 
-	private OnGpxLoadedListener mListener;
-
-	public GpxMapObjectsLoader(final Context context, final OnGpxLoadedListener listener) {
-		mContext = context;
-		setOnGpxLoadedListener(listener);
-	}
-
-	public final void setOnGpxLoadedListener(final OnGpxLoadedListener listener) {
-		this.mListener = listener;
+    public GpxMapObjectsLoader(final Context context) {
+        dbHelper = new DataHelper(context.getApplicationContext());
 	}
 
 	/**
@@ -82,8 +70,6 @@ public class GpxMapObjectsLoader extends AsyncTask<Object, Void, List<LatLong>> 
 		//Log.d(TAG, "Loading gpx points");
 		List<LatLong> points = new ArrayList<>();
 
-		DataHelper dbHelper = new DataHelper(mContext);
-
 		final ArrayList<PositionRecord> positions = dbHelper.loadPositions((Integer) args[SESSION_ID],
 				(Double) args[MIN_LAT_COL], (Double) args[MAX_LAT_COL], (Double) args[MIN_LON_COL], (Double) args[MAX_LON_COL]);
 
@@ -99,9 +85,7 @@ public class GpxMapObjectsLoader extends AsyncTask<Object, Void, List<LatLong>> 
 	 */
 	@Override
 	protected final void onPostExecute(final List<LatLong> points) {
-		if (mListener != null) {
-			mListener.onGpxLoaded(points);
-		}
+		EventBus.getDefault().post(new onGpxUpdateAvailable(points));
 	}
 
 }

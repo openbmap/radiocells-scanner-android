@@ -61,17 +61,17 @@ import org.openbmap.db.models.PositionRecord;
 import org.openbmap.db.models.WifiRecord;
 import org.openbmap.events.onCatalogUpdateAvailable;
 import org.openbmap.events.onCatalogUpdateRequested;
+import org.openbmap.events.onGpxUpdateAvailable;
 import org.openbmap.events.onLocationUpdate;
+import org.openbmap.events.onSessionUpdateAvailable;
 import org.openbmap.utils.CatalogObject;
 import org.openbmap.utils.GeometryUtils;
 import org.openbmap.utils.GpxMapObjectsLoader;
-import org.openbmap.utils.GpxMapObjectsLoader.OnGpxLoadedListener;
 import org.openbmap.utils.LegacyGroupLayer;
 import org.openbmap.utils.MapUtils;
 import org.openbmap.utils.MapUtils.onLongPressHandler;
 import org.openbmap.utils.SessionLatLong;
 import org.openbmap.utils.SessionObjectsLoader;
-import org.openbmap.utils.SessionObjectsLoader.OnSessionLoadedListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,15 +85,13 @@ import butterknife.ButterKnife;
  * visible
  */
 public class MapFragment extends BaseMapFragment implements
-        OnSessionLoadedListener,
-        OnGpxLoadedListener,
         ActionBar.OnNavigationListener, onLongPressHandler {
 
     private static final String TAG = MapFragment.class.getSimpleName();
 
-    private static final boolean DEBUG_SHOW_CATALOG = true;
-    private static final boolean DEBUG_SHOW_GPX = true;
-    private boolean DEBUG_SHOW_SESSION = true;
+    private static final boolean DEBUG_IGNORE_CATALOG = false;
+    private static final boolean DEBUG_IGNORE_GPX = false;
+    private boolean DEBUG_IGNORE_SESSION = false;
 
     /**
      * The Direction symbol.
@@ -586,7 +584,7 @@ public class MapFragment extends BaseMapFragment implements
     }
 
     private void requestCatalogUpdate() {
-        if (!DEBUG_SHOW_CATALOG) {
+        if (DEBUG_IGNORE_CATALOG) {
             return;
         }
 
@@ -689,7 +687,7 @@ public class MapFragment extends BaseMapFragment implements
      * @param location the location
      */
     protected final void requestSessionUpdate(final Location location) {
-        if (!DEBUG_SHOW_SESSION) {
+        if (DEBUG_IGNORE_SESSION) {
             return;
         }
         if (!isUpdatingSession && isVisible()) {
@@ -760,20 +758,20 @@ public class MapFragment extends BaseMapFragment implements
                 maxLongitude += lonSpan * 0.5;
             }
 
-            final SessionObjectsLoader task = new SessionObjectsLoader(getActivity().getApplicationContext(), this, sessions);
+            final SessionObjectsLoader task = new SessionObjectsLoader(getActivity().getApplicationContext(), sessions);
             task.execute(minLatitude, maxLatitude, minLongitude, maxLongitude, null);
         } else {
             // draw specific wifi
             final List<Integer> sessions = new ArrayList<>();
             sessions.add(mSession);
 
-            final SessionObjectsLoader task = new SessionObjectsLoader(getActivity().getApplicationContext(), this, sessions);
+            final SessionObjectsLoader task = new SessionObjectsLoader(getActivity().getApplicationContext(), sessions);
             task.execute(bbox.minLatitude, bbox.maxLatitude, bbox.minLongitude, bbox.maxLatitude, highlight.getBssid());
         }
     }
 
     /**
-     * On event.
+     * Fired when new catalog items are available.
      *
      * @param event the event
      */
@@ -823,12 +821,8 @@ public class MapFragment extends BaseMapFragment implements
         isUpdatingCatalog = false;
     }
 
-    /* (non-Javadoc)
-     * @see org.openbmap.utils.SessionMapObjectsLoader.OnSessionLoadedListener#onSessionLoaded(java.util.ArrayList)
-     */
-    @Override
-    public final void onSessionLoaded(final List<SessionLatLong> points) {
-
+    @Subscribe
+    public void onEvent(onSessionUpdateAvailable event){
         if (mMapView == null) {
             Log.e(TAG, "MapView is null");
             return;
@@ -836,7 +830,7 @@ public class MapFragment extends BaseMapFragment implements
 
         clearSession();
 
-        for (final SessionLatLong point : points) {
+        for (final SessionLatLong point : event.items) {
             if (point.getSession() == mSession) {
                 // current session objects are larger
                 final Circle circle = new Circle(point, CIRCLE_SESSION_WIDTH, ACTIVE_SESSION_FILL, null);
@@ -861,11 +855,35 @@ public class MapFragment extends BaseMapFragment implements
         Log.d(TAG, "Drawed catalog objects");
     }
 
+    @Subscribe
+    public void onEvent(onGpxUpdateAvailable event){
+        Log.v(TAG, "Loading " + event.items.size() + " gpx objects");
+
+        clearGpx();
+
+        if (mMapView == null) {
+            Log.e(TAG, "MapView is null");
+            return;
+        }
+
+        gpxObjects = new Polyline(GPX_PAINT, AndroidGraphicFactory.INSTANCE);
+
+        for (final LatLong point : event.items) {
+            gpxObjects.getLatLongs().add(point);
+        }
+
+        synchronized (this) {
+            mMapView.getLayerManager().getLayers().add(gpxObjects);
+        }
+
+        isUpdatingGpx = false;
+    }
+
     /**
      * @param location
      */
     private void requestGpxUpdate(final Location location) {
-        if (!DEBUG_SHOW_GPX) {
+        if (DEBUG_IGNORE_GPX) {
             return;
         }
 
@@ -904,36 +922,9 @@ public class MapFragment extends BaseMapFragment implements
         final BoundingBox bbox = MapPositionUtil.getBoundingBox(
                 mMapView.getModel().mapViewPosition.getMapPosition(),
                 mMapView.getDimension(), mMapView.getModel().displayModel.getTileSize());
-        final GpxMapObjectsLoader task = new GpxMapObjectsLoader(getActivity().getApplicationContext(), this);
+        final GpxMapObjectsLoader task = new GpxMapObjectsLoader(getActivity());
         // query with some extra space
         task.execute(mSession, bbox.minLatitude - 0.01, bbox.maxLatitude + 0.01, bbox.minLongitude - 0.15, bbox.maxLatitude + 0.15);
-    }
-
-    /**
-     * Callback function for loadGpxObjects()
-     */
-    @Override
-    public final void onGpxLoaded(final List<LatLong> points) {
-        Log.v(TAG, "Loading " + points.size() + " gpx objects");
-
-        clearGpx();
-
-        if (mMapView == null) {
-            Log.e(TAG, "MapView is null");
-            return;
-        }
-
-        gpxObjects = new Polyline(GPX_PAINT, AndroidGraphicFactory.INSTANCE);
-
-        for (final LatLong point : points) {
-            gpxObjects.getLatLongs().add(point);
-        }
-
-        synchronized (this) {
-            mMapView.getLayerManager().getLayers().add(gpxObjects);
-        }
-
-        isUpdatingGpx = false;
     }
 
     /**

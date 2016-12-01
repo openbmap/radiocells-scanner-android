@@ -23,11 +23,11 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import org.openbmap.db.DataHelper;
+import org.greenrobot.eventbus.EventBus;
 import org.openbmap.db.DatabaseHelper;
 import org.openbmap.db.Schema;
 import org.openbmap.db.models.PositionRecord;
-import org.openbmap.db.models.WifiRecord;
+import org.openbmap.events.onSessionUpdateAvailable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,15 +39,26 @@ public class SessionObjectsLoader extends AsyncTask<Object, Void, List<SessionLa
 
     private static final String TAG = SessionObjectsLoader.class.getSimpleName();
 
-    /**
-     * Indices for doInBackground arguments
-     */
-    public enum Arguments {
-        MIN_LAT_COL,
-        MAX_LAT_COL,
-        MIN_LON_COL,
-        MIN_MAX_COL
-    }
+    private static final String SELECT_SQL = "SELECT w.rowid as " + Schema.COL_ID + ", "+
+            " MAX(" + Schema.COL_LEVEL + ")," +
+            " w." + Schema.COL_SESSION_ID + ", " +
+            " b." + Schema.COL_LATITUDE + ", b." + Schema.COL_LONGITUDE +
+            " FROM " + Schema.TBL_WIFIS + " as w " +
+            " JOIN " + Schema.TBL_POSITIONS + " as b" +
+            " ON " + Schema.COL_BEGIN_POSITION_ID + " = b." + Schema.COL_ID;
+
+    private static final String BBOX_CRITERIA = " WHERE w." + Schema.COL_SESSION_ID + " IN (%s) AND " +
+            " b.longitude >= %s AND " +
+            " b.longitude <= %s AND " +
+            " b.latitude >= %s AND " +
+            " b.latitude <= %s";
+
+    private static final String SSID_CRITERIA = "WHERE w." + Schema.COL_SSID + "= %s";
+
+    private static final String GROUP_BY = " GROUP BY w." + Schema.COL_BSSID;
+
+
+    private final DatabaseHelper mDbHelper;
 
     private static final int MIN_LAT_COL = 0;
     private static final int MAX_LAT_COL = 1;
@@ -56,32 +67,13 @@ public class SessionObjectsLoader extends AsyncTask<Object, Void, List<SessionLa
     private static final int HIGHLIGHT_WIFI_COL = 4;
 
     /**
-     * Interface for activity.
-     */
-    public interface OnSessionLoadedListener {
-
-        void onSessionLoaded(List<SessionLatLong> points);
-    }
-
-    private final Context mContext;
-
-    private OnSessionLoadedListener mListener;
-
-    /**
      * Sessions to load, by default only active session
      */
     private final List<Integer> mToLoad;
 
-    public SessionObjectsLoader(final Context context, final OnSessionLoadedListener listener,
-                                final List<Integer> sessions) {
-        mContext = context;
+    public SessionObjectsLoader(final Context context, final List<Integer> sessions) {
+        mDbHelper = new DatabaseHelper(context.getApplicationContext());
         mToLoad = sessions;
-
-        setOnSessionLoadedListener(listener);
-    }
-
-    public final void setOnSessionLoadedListener(final OnSessionLoadedListener listener) {
-        this.mListener = listener;
     }
 
     /**
@@ -99,9 +91,6 @@ public class SessionObjectsLoader extends AsyncTask<Object, Void, List<SessionLa
         if(args[HIGHLIGHT_WIFI_COL] == null) {
             // Draw either all session wifis ...
 
-            //long start = System.currentTimeMillis();
-            final DatabaseHelper mDbHelper = new DatabaseHelper(mContext.getApplicationContext());
-
             final StringBuilder selected = new StringBuilder();
             for(int i = 0; i < mToLoad.size(); i++) {
                 selected.append(mToLoad.get(i));
@@ -112,15 +101,13 @@ public class SessionObjectsLoader extends AsyncTask<Object, Void, List<SessionLa
             }
 
             // use raw query for performance reasons
-            final String query = "SELECT w.rowid as " + Schema.COL_ID + ", MAX(" + Schema.COL_LEVEL + "), w." + Schema.COL_SESSION_ID + ", "
-                                         + " b." + Schema.COL_LATITUDE + ", b." + Schema.COL_LONGITUDE
-                                         + " FROM " + Schema.TBL_WIFIS + " as w "
-                                         + " JOIN " + Schema.TBL_POSITIONS + " as b ON " + Schema.COL_BEGIN_POSITION_ID + " = b." + Schema.COL_ID
-                                         + " WHERE w." + Schema.COL_SESSION_ID + " IN (" + selected + ") AND "
-                                         + " b.longitude >= " + args[MIN_LON_COL] + " AND "
-                                         + " b.longitude <= " + args[MAX_LON_COL] + " AND "
-                                         + " b.latitude >= " + args[MIN_LAT_COL] + " AND "
-                                         + " b.latitude <= " + args[MAX_LAT_COL] + " GROUP BY w." + Schema.COL_BSSID;
+            final String query = SELECT_SQL + String.format(BBOX_CRITERIA,
+                    selected,
+                    args[MIN_LON_COL],
+                    args[MAX_LON_COL],
+                    args[MIN_LAT_COL],
+                    args[MAX_LAT_COL]
+            ) + GROUP_BY;
 
             final Cursor cursor = mDbHelper.getReadableDatabase().rawQuery(query, null);
             final int colLat = cursor.getColumnIndex(Schema.COL_LATITUDE);
@@ -136,14 +123,20 @@ public class SessionObjectsLoader extends AsyncTask<Object, Void, List<SessionLa
 
         } else {
             // ... or only selected
-            final DataHelper dbHelper = new DataHelper(mContext.getApplicationContext());
-            final ArrayList<WifiRecord> candidates = dbHelper.loadWifisByBssid(
-                    (String) args[HIGHLIGHT_WIFI_COL], mToLoad.get(0));
-            if(!candidates.isEmpty()) {
-                points.add(new SessionLatLong(candidates.get(0).getBeginPosition().getLatitude(),
-                                              candidates.get(0).getBeginPosition().getLongitude(),
-                                              candidates.get(0).getSessionId()));
+            // use raw query for performance reasons
+            final String query = SELECT_SQL + String.format(SSID_CRITERIA,mToLoad.get(0));
+
+            final Cursor cursor = mDbHelper.getReadableDatabase().rawQuery(query, null);
+            final int colLat = cursor.getColumnIndex(Schema.COL_LATITUDE);
+            final int colLon = cursor.getColumnIndex(Schema.COL_LONGITUDE);
+            final int colSession = cursor.getColumnIndex(Schema.COL_SESSION_ID);
+
+            if (cursor.moveToNext()) {
+                points.add(new SessionLatLong(cursor.getDouble(colLat), cursor.getDouble(colLon),
+                        cursor.getInt(colSession)));
             }
+            Log.d(TAG, cursor.getCount() + " session points loaded");
+            cursor.close();
         }
 
         return points;
@@ -154,9 +147,7 @@ public class SessionObjectsLoader extends AsyncTask<Object, Void, List<SessionLa
      */
     @Override
     protected final void onPostExecute(final List<SessionLatLong> points) {
-        if(mListener != null) {
-            mListener.onSessionLoaded(points);
-        }
+        EventBus.getDefault().post(new onSessionUpdateAvailable(points));
     }
 
     /**

@@ -341,7 +341,7 @@ public class CatalogService extends AbstractService {
                 double lon = stmt.column_double(2);
                 CatalogObject poi = new CatalogObject(id, lat, lon, null, "Towers");
 
-                pois.add(poi);
+                items.add(poi);
             }
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
