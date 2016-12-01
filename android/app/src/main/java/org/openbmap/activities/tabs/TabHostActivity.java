@@ -120,27 +120,22 @@ public class TabHostActivity extends AppCompatActivity {
 
 		initUi();
 
-        startManagerService();
 		// service related stuff
 		isGpsAvailable();
 		// TODO: show warning if wifi is not enabled
 		// TODO: show warning if GSM is not enabled
 	}
 
-
-
 	@Override
-	protected final void onStop() {
-        stopManagerService();
-        // ?? stopTracking();
-		super.onStop();
-	}
+	public final void onResume() {
+        super.onResume();
+        startManagerService();
+    }
 
 	@Override
 	protected final void onDestroy() {
         Log.d(TAG, "Destroying TabHost");
     //    EventBus.getDefault().unregister(this);
-        stopManagerService();
         // ?? stopTracking();
 		super.onDestroy();
 	}

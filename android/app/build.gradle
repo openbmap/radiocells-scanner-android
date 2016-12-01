@@ -31,13 +31,11 @@ android {
         debug {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
-            buildConfigField "com.orhanobut.logger.LogLevel", "LOGGER_LEVEL", "com.orhanobut.logger.LogLevel.FULL"
         }
         release {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.cfg'
-            buildConfigField "com.orhanobut.logger.LogLevel", "LOGGER_LEVEL", "com.orhanobut.logger.LogLevel.FULL"
         }
     }
 
@@ -79,7 +77,6 @@ dependencies {
     compile 'com.jakewharton:butterknife:8.4.0'
     apt 'com.jakewharton:butterknife-compiler:8.4.0'
 
-    compile 'com.orhanobut:logger:1.15'
     debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5'
     releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5'
     testCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5'

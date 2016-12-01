@@ -26,7 +26,6 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
-import com.orhanobut.logger.Logger;
 import com.squareup.leakcanary.LeakCanary;
 
 import org.greenrobot.eventbus.EventBus;
@@ -58,10 +57,6 @@ public class RadiobeaconApplication extends Application implements ActivityCompa
 		LeakCanary.install(this);
 
         EventBus.builder().addIndex(new MyEventBusIndex()).installDefaultEventBus();
-
-		Logger.init()
-                .hideThreadInfo()
-                .logLevel(BuildConfig.LOGGER_LEVEL);  // default LogLevel.FULL
 
 		Intent serviceIntent = new Intent(getApplicationContext(), ManagerService.class);
 		startService(serviceIntent);
