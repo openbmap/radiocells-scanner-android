@@ -51,7 +51,11 @@ import org.openbmap.db.models.Session;
 import org.openbmap.events.onBlacklisted;
 import org.openbmap.events.onCellSaved;
 import org.openbmap.events.onFreeWifi;
-import org.openbmap.events.onWifiAdded;
+import org.openbmap.events.onWifisAdded;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
 
 /**
  * Activity for displaying basic session infos (# of cells, wifis, etc.)
@@ -73,16 +77,27 @@ public class OverviewFragment extends Fragment {
     /**
      * UI controls
      */
+    @BindView(R.id.stats_cell_description)
     private TextView tvCellDescription;
+    @BindView(R.id.stats_cell_strength)
     private TextView tvCellStrength;
+    @BindView(R.id.stats_wifi_description)
     private TextView tvWifiDescription;
+    @BindView(R.id.stats_wifi_strength)
     private TextView tvWifiStrength;
+    @BindView(R.id.tvTechnology)
     private TextView tvTechnology;
+    @BindView(R.id.stats_blacklisted)
     private TextView tvIgnored;
+    @BindView(R.id.stats_free)
     private TextView tvFree;
+    @BindView(R.id.stats_icon_free)
     private ImageView ivFree;
+    @BindView(R.id.stats_icon_alert)
     private ImageView ivAlert;
+    @BindView(R.id.graph)
     private GraphView gvGraph;
+
     private LineGraphSeries mMeasurements;
     private PointsGraphSeries highlight;
 
@@ -118,6 +133,8 @@ public class OverviewFragment extends Fragment {
     private String mCurrentTechnology;
 
     private double graph2LastXValue;
+
+    private Unbinder mUnbinder;
 
     /**
      * Receives cell / wifi news
@@ -155,16 +172,15 @@ public class OverviewFragment extends Fragment {
     };
 
     @Subscribe
-    public void onEvent(onWifiAdded event) {
-        final String wifiDescription = event.wifiDescription;
-        final int wifiStrength = event.level;
-        if (wifiDescription != null) {
-            tvWifiDescription.setText(wifiDescription);
+    public void onEvent(onWifisAdded event) {
+        if (event.items.size()>0) {
+            tvWifiDescription.setText(event.items.get(0).getSsid());
+            tvWifiStrength.setText(String.format("%d dBm", event.items.get(0).getLevel()));
         } else {
             tvWifiDescription.setText(getString(R.string.n_a));
+            tvWifiStrength.setText("");
         }
 
-        tvWifiStrength.setText(String.format("%d dBm", wifiStrength));
         mLastWifiUpdate = System.currentTimeMillis();
     }
 
@@ -318,30 +334,25 @@ public class OverviewFragment extends Fragment {
     @Override
     public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.stats, container, false);
+        mUnbinder = ButterKnife.bind(this.getView());
+
         // setup UI controls
-        initUi(view);
+        initGraph();
 
         return view;
     }
 
+    @Override
+    public void onDestroyView() {
+        if (this.mUnbinder != null) {
+            this.mUnbinder.unbind();
+        }
+        super.onDestroyView();
+    }
     /**
      * Init UI contols
      */
-    private void initUi(final View view) {
-        tvCellDescription = (TextView) view.findViewById(R.id.stats_cell_description);
-        tvCellStrength = (TextView) view.findViewById(R.id.stats_cell_strength);
-
-        tvWifiDescription = (TextView) view.findViewById(R.id.stats_wifi_description);
-        tvWifiStrength = (TextView) view.findViewById(R.id.stats_wifi_strength);
-
-        tvIgnored = (TextView) view.findViewById(R.id.stats_blacklisted);
-        tvFree = (TextView) view.findViewById(R.id.stats_free);
-        ivFree = (ImageView) view.findViewById(R.id.stats_icon_free);
-        ivAlert = (ImageView) view.findViewById(R.id.stats_icon_alert);
-
-        tvTechnology = (TextView) view.findViewById(R.id.tvTechnology);
-
-        gvGraph = (GraphView) view.findViewById(R.id.graph);
+    private void initGraph() {
         gvGraph.getViewport().setXAxisBoundsManual(true);
         gvGraph.getViewport().setYAxisBoundsManual(true);
         gvGraph.getViewport().setMinY(-100);
