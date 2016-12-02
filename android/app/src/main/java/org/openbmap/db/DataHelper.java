@@ -90,6 +90,7 @@ public class DataHelper {
 		for (final WifiRecord wifi : wifis) {
 			operations.add(ContentProviderOperation.newInsert(ContentProvider.CONTENT_URI_WIFI)
 					.withValue(Schema.COL_BSSID, wifi.getBssid())
+                    .withValue(Schema.COL_BSSID_LONG, wifi.getBssidLong())
 					.withValue(Schema.COL_SSID, wifi.getSsid())
 					.withValue(Schema.COL_MD5_SSID, wifi.getMd5Ssid())
 					.withValue(Schema.COL_ENCRYPTION, wifi.getCapabilities())

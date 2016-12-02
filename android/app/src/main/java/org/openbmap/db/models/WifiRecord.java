@@ -33,7 +33,7 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 
 	private static final String TAG = WifiRecord.class.getSimpleName();
 
-	public enum CatalogStatus {NEW, OPENBMAP, LOCAL}
+    public enum CatalogStatus {NEW, OPENBMAP, LOCAL}
 
 	private String mBSsid;
 	private long mBssidLong;
@@ -53,6 +53,24 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 	private int mSessionID;
 
 	private CatalogStatus mCatalogStatus;
+
+
+    /**
+     * Converts string bssid to numeric representation
+     * @param bssid
+     * @return -1 on invalid bssid
+     */
+    public static final long bssid2Long(final String bssid) {
+        if (bssid == null) {
+            return -1;
+        }
+
+        try {
+            return Long.parseLong(bssid.toLowerCase().replace(":",""), 16);
+        } catch (NumberFormatException e) {
+            return  -1;
+        }
+    }
 
 	/**
 	 * used for contains method
@@ -191,12 +209,12 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
         this.mBssidLong = bssidLong;
     }
 
-    public void setBssidLong(final String bssidLong) {
-        try {
-            this.mBssidLong = Long.parseLong(bssidLong);
-        } catch (NumberFormatException e) {
-            this.mBssidLong = -1;
-        }
+    public void setBssidLong(final String bssid) {
+        this.mBssidLong = bssid2Long(bssid);
+    }
+
+    public long getBssidLong() {
+        return mBssidLong;
     }
 
 	public final String getSsid() {

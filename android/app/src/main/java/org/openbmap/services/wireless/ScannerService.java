@@ -570,6 +570,7 @@ public class ScannerService extends AbstractService {
                                     if (!skipThis) {
                                         final WifiRecord wifi = new WifiRecord(
                                                 r.BSSID,
+                                                WifiRecord.bssid2Long(r.BSSID),
                                                 r.SSID.toLowerCase(),
                                                 r.capabilities,
                                                 r.frequency,
@@ -578,8 +579,7 @@ public class ScannerService extends AbstractService {
                                                 begin,
                                                 end,
                                                 sessionId,
-                                                checkCatalogStatus(r.BSSID)
-                                        );
+                                                checkCatalogStatus(r.BSSID));
 
                                         wifis.add(wifi);
                                         if (wifi.isFree()) {

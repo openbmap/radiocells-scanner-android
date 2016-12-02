@@ -215,7 +215,8 @@ public class ContentProvider extends android.content.ContentProvider {
     }
 
     /**
-     * Inserts a wifi measurement
+     * Inserts a wifi measurement. Mandatory columns are begin/end position and timestamp set
+     * If any of the mandatory fields are missing, record is not inserted
      *
      * @param baseUri
      * @param values
@@ -236,7 +237,8 @@ public class ContentProvider extends android.content.ContentProvider {
     }
 
     /**
-     * Inserts a position
+     * Inserts a position. Mandatory fields are latitude, longitude, timestamp and a session id.
+     * If any of the mandatory fields are missing, record is not inserted
      *
      * @param baseUri
      * @param values
@@ -260,7 +262,8 @@ public class ContentProvider extends android.content.ContentProvider {
     }
 
     /**
-     * Inserts a log record
+     * Inserts a log record. Mandatory fields is timestamp
+     * If any of the mandatory fields are missing, record is not inserted
      *
      * @param baseUri
      * @param values
@@ -646,7 +649,14 @@ public class ContentProvider extends android.content.ContentProvider {
 
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         qb.setTables(tableName);
-        final Cursor cursor = qb.query(mDbHelper.getReadableDatabase(), projection, selectionIn, selectionArgsIn, groupBy, null, sortOrder, limit);
+        final Cursor cursor = qb.query(mDbHelper.getReadableDatabase(),
+                projection,
+                selectionIn,
+                selectionArgsIn,
+                groupBy,
+                null,
+                sortOrder,
+                limit);
         qb = null;
 
         cursor.setNotificationUri(getContext().getContentResolver(), notifyUri);
