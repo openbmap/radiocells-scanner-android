@@ -89,6 +89,7 @@ public final class Schema {
 	 * Columns TBL_WIFIS.
 	 */
 	public static final String COL_BSSID = "bssid";
+	public static final String COL_BSSID_LONG = "bssid_long";
 	public static final String COL_SSID = "ssid";
 	public static final String COL_MD5_SSID = "md5ssid";
 	public static final String COL_ENCRYPTION = "capabilities";

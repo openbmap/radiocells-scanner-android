@@ -64,6 +64,7 @@ import org.openbmap.events.onCatalogUpdateRequested;
 import org.openbmap.events.onGpxUpdateAvailable;
 import org.openbmap.events.onLocationUpdate;
 import org.openbmap.events.onSessionUpdateAvailable;
+import org.openbmap.events.onWifisAdded;
 import org.openbmap.utils.CatalogObject;
 import org.openbmap.utils.GeometryUtils;
 import org.openbmap.utils.GpxMapObjectsLoader;
@@ -74,6 +75,7 @@ import org.openbmap.utils.SessionLatLong;
 import org.openbmap.utils.SessionObjectsLoader;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import butterknife.BindView;
@@ -185,10 +187,14 @@ public class MapFragment extends BaseMapFragment implements
      */
     protected static final float GPX_REFRESH_INTERVAL = 1000;
 
+    private enum SessionLoadMode {BOOTSTRAP, BBOX};
+
+    private static final SessionLoadMode LOAD_MODE = SessionLoadMode.BOOTSTRAP;
     /**
      * Load more than currently visible objects?
      */
-    private static final boolean PREFETCH_MAP_OBJECTS = true;
+    private static final boolean PREFETCH_MAP_OBJECTS = false;
+
 
     /**
      * Session currently displayed
@@ -207,23 +213,23 @@ public class MapFragment extends BaseMapFragment implements
     /**
      * System time of last gpx refresh (in millis)
      */
-    private long gpxRefreshedAt;
+    private long mGpxRefreshedMillis;
 
-    private byte lastZoom;
+    private byte mLastZoom;
 
     /**
      * Layer with radiocells wifis
      */
-    private LegacyGroupLayer wifisLayer;
+    private LegacyGroupLayer mWifisLayer;
 
     /**
      * Openstreetmap towers layer
      */
-    private LegacyGroupLayer towersLayer;
+    private LegacyGroupLayer mTowersLayer;
 
-    private List<Layer> sessionObjects;
+    private Collection<Layer> mSessionObjects;
 
-    private Polyline gpxObjects;
+    private Polyline mGpxObjects;
 
     private boolean followLocation = true;
 
@@ -265,22 +271,22 @@ public class MapFragment extends BaseMapFragment implements
     /**
      * System time of last session layer refresh (in millis)
      */
-    private long sessionObjectsRefreshTime;
+    private long mSessionRefreshTime;
 
     /**
      * System time of last catalog layer refresh (in millis)
      */
-    private long catalogLayerRefreshTime;
+    private long mCatalogLayerRefreshMillis;
 
     /**
      * Location of last session layer refresh
      */
-    private Location sessionObjectsRefreshLocation = new Location("DUMMY");
+    private Location mSessionRefreshLocation = new Location("DUMMY");
 
     /**
      * Location of wifi layer refresh
      */
-    private Location catalogLayerRefreshLocation = new Location("DUMMY");
+    private Location mCatalogRefreshLocation = new Location("DUMMY");
 
     @Override
     public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
@@ -293,7 +299,7 @@ public class MapFragment extends BaseMapFragment implements
         final Drawable posIcon = ResourcesCompat.getDrawable(getResources(), R.drawable.position, null);
         Bitmap bitmap = AndroidGraphicFactory.convertToBitmap(posIcon);
         bitmap.incrementRefCount();
-        mPositionMarker = new Marker(null, bitmap, 0, -bitmap.getHeight() / 2);
+        mPositionMarker = new Marker(null, bitmap, 0, 0 /*-bitmap.getHeight() / 2*/);
         //add later on demand: mMapView.getLayerManager().getLayers().add(marker);
 
         mAccuracyMarker = new Circle(null, 0, ACCURACY_FILL, null);
@@ -303,6 +309,10 @@ public class MapFragment extends BaseMapFragment implements
         // Register our gps broadcast mReceiver
         registerReceiver();
 
+        if (LOAD_MODE == SessionLoadMode.BOOTSTRAP) {
+            // in bootstrap mode session objects are loaded in memory on start
+            requestSessionUpdate(null);
+        }
         return view;
     }
 
@@ -317,8 +327,8 @@ public class MapFragment extends BaseMapFragment implements
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        sessionObjects = new ArrayList<>();
-        gpxObjects = new Polyline(GPX_PAINT, AndroidGraphicFactory.INSTANCE);
+        mSessionObjects = new ArrayList<>();
+        mGpxObjects = new Polyline(GPX_PAINT, AndroidGraphicFactory.INSTANCE);
     }
 
     @Override
@@ -394,11 +404,11 @@ public class MapFragment extends BaseMapFragment implements
             @Override
             public void onChange() {
                 final byte zoom = mMapView.getModel().mapViewPosition.getZoomLevel();
-                if (zoom != lastZoom && zoom >= MIN_OBJECT_ZOOM) {
+                if (zoom != mLastZoom && zoom >= MIN_OBJECT_ZOOM) {
                     // Zoom level changed
                     Log.v(TAG, "New zoom level " + zoom + ", reloading map objects");
                     updateAllLayers();
-                    lastZoom = zoom;
+                    mLastZoom = zoom;
                 }
 
                 if (!followLocation) {
@@ -409,8 +419,11 @@ public class MapFragment extends BaseMapFragment implements
                     position.setLatitude(tmp.latitude);
                     position.setLongitude(tmp.longitude);
 
-                    if (sessionLayerNeedsUpdate(position)) {
-                        requestSessionUpdate(position);
+                    if (LOAD_MODE == SessionLoadMode.BBOX) {
+                        // if in bbox mode request periodic updates
+                        if (sessionLayerNeedsUpdate(position)) {
+                            requestSessionUpdate(position);
+                        }
                     }
 
                     if (catalogLayerNeedsUpdate(position)) {
@@ -547,8 +560,10 @@ public class MapFragment extends BaseMapFragment implements
                 mPositionMarker.setVisible(true);
             }
 
-            if ((mMapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && sessionLayerNeedsUpdate(location)) {
-                requestSessionUpdate(location);
+            if (LOAD_MODE == SessionLoadMode.BBOX) {
+                if ((mMapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && sessionLayerNeedsUpdate(location)) {
+                    requestSessionUpdate(location);
+                }
             }
 
             if ((mMapView.getModel().mapViewPosition.getZoomLevel() >= MIN_OBJECT_ZOOM) && catalogLayerNeedsUpdate(location)) {
@@ -567,7 +582,7 @@ public class MapFragment extends BaseMapFragment implements
     }
 
     /**
-     *
+     * Forces update on session and catalog layer and re-centers map view
      */
     private void updateAllLayers() {
         if (mMapView == null) {
@@ -591,7 +606,7 @@ public class MapFragment extends BaseMapFragment implements
         if (!isUpdatingCatalog) {
             isUpdatingCatalog = true;
             EventBus.getDefault().post(new onCatalogUpdateRequested(this.mMapView.getBoundingBox()));
-            catalogLayerRefreshTime = System.currentTimeMillis();
+            mCatalogLayerRefreshMillis = System.currentTimeMillis();
         }
     }
 
@@ -609,10 +624,10 @@ public class MapFragment extends BaseMapFragment implements
     private void clearWifis() {
         synchronized (this) {
 
-            if (wifisLayer != null) {
-                this.mMapView.getLayerManager().getLayers().remove(wifisLayer);
+            if (mWifisLayer != null) {
+                this.mMapView.getLayerManager().getLayers().remove(mWifisLayer);
             }
-            wifisLayer = null;
+            mWifisLayer = null;
         }
     }
 
@@ -622,44 +637,46 @@ public class MapFragment extends BaseMapFragment implements
     private void clearTowers() {
         synchronized (this) {
 
-            if (towersLayer != null) {
-                this.mMapView.getLayerManager().getLayers().remove(towersLayer);
+            if (mTowersLayer != null) {
+                this.mMapView.getLayerManager().getLayers().remove(mTowersLayer);
             }
-            towersLayer = null;
+            mTowersLayer = null;
             AndroidResourceBitmap.clearResourceBitmaps();
         }
     }
 
     /**
-     *
+     * Removes session objects from map
      */
     private void clearSession() {
-        if (sessionObjects == null) {
+        if (mSessionObjects == null) {
             return;
         }
 
         if (mMapView == null) {
-            sessionObjects = null;
+            mSessionObjects = null;
             return;
         }
 
-        for (final Layer layer : sessionObjects) {
-            this.mMapView.getLayerManager().getLayers().remove(layer);
+        synchronized (this) {
+            for (final Layer layer : mSessionObjects) {
+                this.mMapView.getLayerManager().getLayers().remove(layer);
+            }
         }
-        sessionObjects.clear();
+        mSessionObjects.clear();
     }
 
     /**
-     * Clears GPX layer objects
+     * Removes GPX trackpoints from map
      */
     private void clearGpx() {
-        if (gpxObjects != null && mMapView != null) {
+        if (mGpxObjects != null && mMapView != null) {
             synchronized (this) {
                 // clear layer
-                mMapView.getLayerManager().getLayers().remove(gpxObjects);
+                mMapView.getLayerManager().getLayers().remove(mGpxObjects);
             }
         } else {
-            gpxObjects = null;
+            mGpxObjects = null;
         }
     }
 
@@ -674,9 +691,8 @@ public class MapFragment extends BaseMapFragment implements
             return true;
         }
 
-        boolean status = (catalogLayerRefreshLocation.distanceTo(current) > CATALOG_REFRESH_DISTANCE)
-                && ((System.currentTimeMillis() - catalogLayerRefreshTime) > CATALOG_REFRESH_INTERVAL)
-                && (followLocation);
+        boolean status = (mCatalogRefreshLocation.distanceTo(current) > CATALOG_REFRESH_DISTANCE)
+                && ((System.currentTimeMillis() - mCatalogLayerRefreshMillis) > CATALOG_REFRESH_INTERVAL);
         return status;
     }
 
@@ -693,8 +709,8 @@ public class MapFragment extends BaseMapFragment implements
         if (!isUpdatingSession && isVisible()) {
             isUpdatingSession = true;
             startSessionDatabaseTask(null);
-            sessionObjectsRefreshTime = System.currentTimeMillis();
-            sessionObjectsRefreshLocation = location;
+            mSessionRefreshTime = System.currentTimeMillis();
+            mSessionRefreshLocation = location;
         } else if (!isVisible()) {
             Log.v(TAG, "Not visible, skipping refresh");
         } else {
@@ -712,9 +728,8 @@ public class MapFragment extends BaseMapFragment implements
             return true;
         }
 
-        return ((sessionObjectsRefreshLocation.distanceTo(current) > SESSION_REFRESH_DISTANCE)
-                && ((System.currentTimeMillis() - sessionObjectsRefreshTime) > SESSION_REFRESH_INTERVAL)
-                && (followLocation));
+        return ((mSessionRefreshLocation.distanceTo(current) > SESSION_REFRESH_DISTANCE)
+                && ((System.currentTimeMillis() - mSessionRefreshTime) > SESSION_REFRESH_INTERVAL));
     }
 
     /**
@@ -743,19 +758,27 @@ public class MapFragment extends BaseMapFragment implements
             sessions.add(mSession);
             //}
 
-            double minLatitude = bbox.minLatitude;
-            double maxLatitude = bbox.maxLatitude;
-            double minLongitude = bbox.minLongitude;
-            double maxLongitude = bbox.maxLongitude;
+            double minLatitude = -90;
+            double maxLatitude = 90;
+            double minLongitude = -180;
+            double maxLongitude = 180;
 
-            // query more than visible objects for smoother data scrolling / less database queries
-            if (PREFETCH_MAP_OBJECTS) {
-                final double latSpan = maxLatitude - minLatitude;
-                final double lonSpan = maxLongitude - minLongitude;
-                minLatitude -= latSpan * 0.5;
-                maxLatitude += latSpan * 0.5;
-                minLongitude -= lonSpan * 0.5;
-                maxLongitude += lonSpan * 0.5;
+            // restrict area on SessionLoadMode.BBOX
+            if (LOAD_MODE == SessionLoadMode.BBOX) {
+                minLatitude = bbox.minLatitude;
+                maxLatitude = bbox.maxLatitude;
+                minLongitude = bbox.minLongitude;
+                maxLongitude = bbox.maxLongitude;
+
+                // query more than visible objects for smoother data scrolling / less database queries
+                if (PREFETCH_MAP_OBJECTS) {
+                    final double latSpan = maxLatitude - minLatitude;
+                    final double lonSpan = maxLongitude - minLongitude;
+                    minLatitude -= latSpan * 0.5;
+                    maxLatitude += latSpan * 0.5;
+                    minLongitude -= lonSpan * 0.5;
+                    maxLongitude += lonSpan * 0.5;
+                }
             }
 
             final SessionObjectsLoader task = new SessionObjectsLoader(getActivity().getApplicationContext(), sessions);
@@ -777,26 +800,26 @@ public class MapFragment extends BaseMapFragment implements
      */
     @Subscribe
     public void onEvent(onCatalogUpdateAvailable event){
-        if (event.pois == null) {
+        if (event.items == null) {
             Log.d(TAG, "No POI founds");
             return;
         }
 
-        Log.d(TAG, event.pois.size() + " POI found");
+        Log.d(TAG, event.items.size() + " POI found");
 
         clearTowers();
         clearWifis();
 
         // sort results into their corresponding group layer
-        wifisLayer = new LegacyGroupLayer();
-        towersLayer = new LegacyGroupLayer();
-        for (final CatalogObject poi : event.pois) {
+        mWifisLayer = new LegacyGroupLayer();
+        mTowersLayer = new LegacyGroupLayer();
+        for (final CatalogObject poi : event.items) {
             if ("Radiocells.org".equals(poi.category)) {
                 final Circle allSymbol = new FixedPixelCircle(poi.latLong, 8, ALL_POI_PAINT, null);
-                wifisLayer.layers.add(allSymbol);
+                mWifisLayer.layers.add(allSymbol);
             } else if ("Own".equals(poi.category)) {
                 final Circle ownSymbol = new FixedPixelCircle(poi.latLong, 8, OWN_POI_PAINT, null);
-                wifisLayer.layers.add(ownSymbol);
+                mWifisLayer.layers.add(ownSymbol);
             } else if ("Towers".equals(poi.category)){
                 // Handling tower markers
                 //final Drawable drawable = ContextCompat.getDrawable(activity.getActivity(), R.drawable.icon);
@@ -804,23 +827,30 @@ public class MapFragment extends BaseMapFragment implements
                 Bitmap bitmap = AndroidGraphicFactory.convertToBitmap(towerIcon);
                 bitmap.incrementRefCount();
                 final Marker marker = new Marker(poi.latLong, bitmap, 0, -bitmap.getHeight() / 2);
-                towersLayer.layers.add(marker);
+                mTowersLayer.layers.add(marker);
             } else {
                 Log.w(TAG, "Unknown marker category:" + poi.category);
             }
         }
 
-        if (wifisLayer != null) {
-            mMapView.getLayerManager().getLayers().add(wifisLayer);
+        if (mWifisLayer != null) {
+            mMapView.getLayerManager().getLayers().add(mWifisLayer);
         }
-        if (towersLayer != null) {
-            mMapView.getLayerManager().getLayers().add(towersLayer);
+        if (mTowersLayer != null) {
+            mMapView.getLayerManager().getLayers().add(mTowersLayer);
         }
         mMapView.getLayerManager().redrawLayers();
 
         isUpdatingCatalog = false;
     }
 
+    /**
+     * Adds session objects from database to map. With SessionLoadMode.BBOX this function is called
+     * quite frequently on each change of map position, SessionLoadMode.BOOTSTRAP this should only
+     * happen once on view creation or upon forced manual refresh.
+     *
+     * @param event session objects
+     */
     @Subscribe
     public void onEvent(onSessionUpdateAvailable event){
         if (mMapView == null) {
@@ -834,53 +864,76 @@ public class MapFragment extends BaseMapFragment implements
             if (point.getSession() == mSession) {
                 // current session objects are larger
                 final Circle circle = new Circle(point, CIRCLE_SESSION_WIDTH, ACTIVE_SESSION_FILL, null);
-                sessionObjects.add(circle);
+                mSessionObjects.add(circle);
             } else {
                 // other session objects are smaller and in other color
                 final Circle circle = new Circle(point, CIRCLE_OTHER_SESSION_WIDTH, OTHER_SESSIONS_FILL, null);
-                sessionObjects.add(circle);
+                mSessionObjects.add(circle);
             }
         }
 
-        /*
-         *
-        // if we have just loaded on point, set map center
-        if (points.size() == 1) {
-            mMapView.getModel().mapViewPosition.setCenter((LatLong) points.get(0));
+        synchronized (this) {
+            mMapView.getLayerManager().getLayers().addAll(mSessionObjects);
         }
-         */
 
         // enable next refresh
         isUpdatingSession = false;
         Log.d(TAG, "Drawed catalog objects");
     }
 
+    /**
+     * Called when scanner found new wifi objects. In SessionLoadMode.BOOTSTRAP such new wifis
+     * are continously added to session layer (without reloading from database).
+     * In SessionLoadMode.BBOX onWifisAdded event is ignored
+     *
+     * @param event
+     */
+    @Subscribe
+    public void onEvent(onWifisAdded event) {
+        if (mMapView == null) {
+            Log.e(TAG, "MapView is null");
+            return;
+        }
+
+        if (LOAD_MODE == SessionLoadMode.BOOTSTRAP) {
+            for (final WifiRecord wifi : event.items) {
+                final Circle circle = new Circle(new LatLong(wifi.getBeginPosition().getLatitude(),
+                        wifi.getBeginPosition().getLongitude()),
+                        CIRCLE_SESSION_WIDTH,
+                        ACTIVE_SESSION_FILL,
+                        null);
+                mSessionObjects.add(circle);
+            }
+        }
+    }
+
     @Subscribe
     public void onEvent(onGpxUpdateAvailable event){
         Log.v(TAG, "Loading " + event.items.size() + " gpx objects");
-
-        clearGpx();
 
         if (mMapView == null) {
             Log.e(TAG, "MapView is null");
             return;
         }
 
-        gpxObjects = new Polyline(GPX_PAINT, AndroidGraphicFactory.INSTANCE);
+        clearGpx();
 
+        mGpxObjects = new Polyline(GPX_PAINT, AndroidGraphicFactory.INSTANCE);
         for (final LatLong point : event.items) {
-            gpxObjects.getLatLongs().add(point);
+            mGpxObjects.getLatLongs().add(point);
         }
 
         synchronized (this) {
-            mMapView.getLayerManager().getLayers().add(gpxObjects);
+            mMapView.getLayerManager().getLayers().add(mGpxObjects);
         }
 
         isUpdatingGpx = false;
     }
 
     /**
-     * @param location
+     * Requests a GPX track refresh. Results contain visible points only
+     *
+     * @param location current location
      */
     private void requestGpxUpdate(final Location location) {
         if (DEBUG_IGNORE_GPX) {
@@ -890,7 +943,7 @@ public class MapFragment extends BaseMapFragment implements
         if (!isUpdatingGpx && isVisible()) {
             isUpdatingGpx = true;
             startGpxDatabaseTask();
-            gpxRefreshedAt = System.currentTimeMillis();
+            mGpxRefreshedMillis = System.currentTimeMillis();
         } else if (!isVisible()) {
             Log.v(TAG, "Not visible, skipping refresh");
         }  else {
@@ -905,8 +958,7 @@ public class MapFragment extends BaseMapFragment implements
      */
     private boolean gpxNeedsUpdate() {
         return (
-                ((System.currentTimeMillis() - gpxRefreshedAt) > GPX_REFRESH_INTERVAL)
-                && (followLocation)
+                ((System.currentTimeMillis() - mGpxRefreshedMillis) > GPX_REFRESH_INTERVAL)
         );
     }
 
@@ -921,10 +973,16 @@ public class MapFragment extends BaseMapFragment implements
 
         final BoundingBox bbox = MapPositionUtil.getBoundingBox(
                 mMapView.getModel().mapViewPosition.getMapPosition(),
-                mMapView.getDimension(), mMapView.getModel().displayModel.getTileSize());
+                mMapView.getDimension(),
+                mMapView.getModel().displayModel.getTileSize());
+
         final GpxMapObjectsLoader task = new GpxMapObjectsLoader(getActivity());
         // query with some extra space
-        task.execute(mSession, bbox.minLatitude - 0.01, bbox.maxLatitude + 0.01, bbox.minLongitude - 0.15, bbox.maxLatitude + 0.15);
+        task.execute(mSession,
+                bbox.minLatitude - 0.01,
+                bbox.maxLatitude + 0.01,
+                bbox.minLongitude - 0.15,
+                bbox.maxLatitude + 0.15);
     }
 
     /**
@@ -995,8 +1053,8 @@ public class MapFragment extends BaseMapFragment implements
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see org.openbmap.utils.MapUtils.onLongPressHandler#onLongPress(org.mapsforge.core.model.LatLong, org.mapsforge.core.model.Point, org.mapsforge.core.model.Point)
+    /**
+     * Saves a user defined waypoint in GPX
      */
     @Override
     public void onLongPress(final LatLong tapLatLong, final Point thisXY, final Point tapXY) {
@@ -1004,7 +1062,10 @@ public class MapFragment extends BaseMapFragment implements
 
         final DataHelper dbHelper = new DataHelper(getActivity().getApplicationContext());
 
-        final PositionRecord pos = new PositionRecord(GeometryUtils.toLocation(tapLatLong), mSession, RadioBeacon.PROVIDER_USER_DEFINED, true);
+        final PositionRecord pos = new PositionRecord(GeometryUtils.toLocation(tapLatLong),
+                mSession,
+                RadioBeacon.PROVIDER_USER_DEFINED,
+                true);
         dbHelper.storePosition(pos);
 
         // beep once point has been saved

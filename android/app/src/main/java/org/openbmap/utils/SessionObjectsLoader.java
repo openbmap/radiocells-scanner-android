@@ -57,7 +57,6 @@ public class SessionObjectsLoader extends AsyncTask<Object, Void, List<SessionLa
 
     private static final String GROUP_BY = " GROUP BY w." + Schema.COL_BSSID;
 
-
     private final DatabaseHelper mDbHelper;
 
     private static final int MIN_LAT_COL = 0;

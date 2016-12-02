@@ -113,94 +113,6 @@ public class DataHelper {
 		}
 	}
 
-	/**
-	 * Loads session's wifis.
-	 *
-	 * @param session Session to return
-	 * @param sort    Sort criteria
-	 * @return ArrayList<WifiRecord>  with all wifis for given session
-	 */
-	public final ArrayList<WifiRecord> loadWifisBySession(final int session, final String sort) {
-		final ArrayList<WifiRecord> wifis = new ArrayList<>();
-
-		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
-				ContentProvider.CONTENT_URI_WIFI, ContentProvider.CONTENT_URI_SESSION_SUFFIX), session),
-				null, null, null, sort);
-
-		// Performance tweaking: don't call ca.getColumnIndex on each iteration
-		final int columnIndex = cursor.getColumnIndex(Schema.COL_BSSID);
-		final int columnIndex2 = cursor.getColumnIndex(Schema.COL_SSID);
-		final int columnIndex3 = cursor.getColumnIndex(Schema.COL_ENCRYPTION);
-		final int columnIndex4 = cursor.getColumnIndex(Schema.COL_FREQUENCY);
-		final int columnIndex5 = cursor.getColumnIndex(Schema.COL_LEVEL);
-		final int columnIndex6 = cursor.getColumnIndex(Schema.COL_TIMESTAMP);
-		final int columnIndex7 = cursor.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
-		final int columnIndex8 = cursor.getColumnIndex(Schema.COL_END_POSITION_ID);
-		final int columnIndex9 = cursor.getColumnIndex(Schema.COL_KNOWN_WIFI);
-
-		while (cursor.moveToNext()) {
-			final WifiRecord wifi = new WifiRecord();
-			wifi.setBssid(cursor.getString(columnIndex));
-			wifi.setSsid(cursor.getString(columnIndex2));
-			wifi.setCapabilities(cursor.getString(columnIndex3));
-			wifi.setFrequency(cursor.getInt(columnIndex4));
-			wifi.setLevel(cursor.getInt(columnIndex5));
-			wifi.setOpenBmapTimestamp(cursor.getLong(columnIndex6));
-
-			wifi.setBeginPosition(loadPositionById(cursor.getString(columnIndex7)));
-			wifi.setEndPosition(loadPositionById(cursor.getString(columnIndex8)));
-			//wifi.setNew(ca.getInt(columnIndex9) == 1);
-			wifi.setCatalogStatus(CatalogStatus.values()[cursor.getInt(columnIndex9)]);
-			wifis.add(wifi);
-		}
-		cursor.close();
-		return wifis;
-	}
-
-	/**
-	 * Loads unknown wifis (all sessions)
-	 *
-	 * @return ArrayList<WifiRecord>  with all wifis for given session
-	 */
-	public final ArrayList<WifiRecord> loadUnknownWifis() {
-		final ArrayList<WifiRecord> wifis = new ArrayList<>();
-
-		final Cursor cursor = contentResolver.query(Uri.withAppendedPath(
-				ContentProvider.CONTENT_URI_WIFI, ContentProvider.CONTENT_URI_OVERVIEW_SUFFIX + "/" + ContentProvider.CONTENT_URI_UNKNOWN_SUFFIX),
-				null, null, null, null);
-
-		// Performance tweaking: don't call ca.getColumnIndex on each iteration
-		final int columnIndex = cursor.getColumnIndex(Schema.COL_BSSID);
-		final int columnIndex2 = cursor.getColumnIndex(Schema.COL_SSID);
-		final int columnIndex3 = cursor.getColumnIndex(Schema.COL_ENCRYPTION);
-		final int columnIndex4 = cursor.getColumnIndex(Schema.COL_FREQUENCY);
-		final int columnIndex5 = cursor.getColumnIndex(Schema.COL_MAX_LEVEL);
-		final int columnIndex6 = cursor.getColumnIndex(Schema.COL_TIMESTAMP);
-		final int columnIndex7 = cursor.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
-		final int columnIndex8 = cursor.getColumnIndex(Schema.COL_END_POSITION_ID);
-		final int columnIndex9 = cursor.getColumnIndex(Schema.COL_KNOWN_WIFI);
-
-        long i = 0;
-		while (cursor.moveToNext()) {
-			final WifiRecord wifi = new WifiRecord();
-			wifi.setBssid(cursor.getString(columnIndex));
-			wifi.setSsid(cursor.getString(columnIndex2));
-			wifi.setCapabilities(cursor.getString(columnIndex3));
-			wifi.setFrequency(cursor.getInt(columnIndex4));
-			wifi.setLevel(cursor.getInt(columnIndex5));
-			wifi.setOpenBmapTimestamp(cursor.getLong(columnIndex6));
-
-			wifi.setBeginPosition(loadPositionById(cursor.getString(columnIndex7)));
-			wifi.setEndPosition(loadPositionById(cursor.getString(columnIndex8)));
-			//wifi.setNew(ca.getInt(columnIndex9) == 1);
-			wifi.setCatalogStatus(CatalogStatus.values()[cursor.getInt(columnIndex9)]);
-			wifis.add(wifi);
-            i=i+1;
-            Log.d(TAG, "Iteration " + String.valueOf(i));
-        }
-		cursor.close();
-		return wifis;
-	}
 
 	/**
 	 * Counts number of wifis in session.
@@ -246,18 +158,29 @@ public class DataHelper {
 		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(ContentProvider.CONTENT_URI_WIFI, id), null, null, null, null);
 		//Log.d(TAG, "getWifiMeasurement returned " + ca.getCount() + " records");
 		if (cursor.moveToNext()) {
-			wifi = new WifiRecord(
-					cursor.getString(cursor.getColumnIndex(Schema.COL_BSSID)),
-					cursor.getString(cursor.getColumnIndex(Schema.COL_SSID)),
-					cursor.getString(cursor.getColumnIndex(Schema.COL_ENCRYPTION)),
-					cursor.getInt(cursor.getColumnIndex(Schema.COL_FREQUENCY)),
-					cursor.getInt(cursor.getColumnIndex(Schema.COL_LEVEL)),
-					cursor.getLong(cursor.getColumnIndex(Schema.COL_TIMESTAMP)),
 
-					loadPositionById(cursor.getString(cursor.getColumnIndex(Schema.COL_BEGIN_POSITION_ID))),
-					loadPositionById(cursor.getString(cursor.getColumnIndex(Schema.COL_END_POSITION_ID))),
-					//ca.getInt(ca.getColumnIndex(Schema.COL_IS_NEW_WIFI)) == 1);
-					CatalogStatus.values()[cursor.getInt(cursor.getColumnIndex(Schema.COL_KNOWN_WIFI))]);
+            final int colBssid = cursor.getColumnIndex(Schema.COL_BSSID);
+            final int colBssidLong = cursor.getColumnIndex(Schema.COL_BSSID_LONG);
+            final int colSsid = cursor.getColumnIndex(Schema.COL_SSID);
+            final int colEncryption = cursor.getColumnIndex(Schema.COL_ENCRYPTION);
+            final int colFrequency = cursor.getColumnIndex(Schema.COL_FREQUENCY);
+            final int colLevel = cursor.getColumnIndex(Schema.COL_MAX_LEVEL);
+            final int colTime = cursor.getColumnIndex(Schema.COL_TIMESTAMP);
+            final int colRequest = cursor.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
+            final int colLast = cursor.getColumnIndex(Schema.COL_END_POSITION_ID);
+            final int colStatus = cursor.getColumnIndex(Schema.COL_KNOWN_WIFI);
+
+            wifi = new WifiRecord(
+                    cursor.getString(colBssid),
+                    cursor.getLong(colBssidLong),
+                    cursor.getString(colSsid),
+                    cursor.getString(colEncryption),
+                    cursor.getInt(colFrequency),
+                    cursor.getInt(colLevel),
+                    cursor.getLong(colTime),
+                    loadPositionById(cursor.getString(colRequest)),
+                    loadPositionById(cursor.getString(colLast)),
+                    CatalogStatus.values()[cursor.getInt(colStatus)]);
 		}
 		cursor.close();
 		return wifi;
@@ -284,31 +207,43 @@ public class DataHelper {
 		final Cursor cursor = contentResolver.query(ContentProvider.CONTENT_URI_WIFI, null, selectSql, null, null);
 
 		// Performance tweaking: don't call ca.getColumnIndex on each iteration
-		final int columnIndex = cursor.getColumnIndex(Schema.COL_BSSID);
-		final int columnIndex2 = cursor.getColumnIndex(Schema.COL_SSID);
-		final int columnIndex3 = cursor.getColumnIndex(Schema.COL_ENCRYPTION);
-		final int columnIndex4 = cursor.getColumnIndex(Schema.COL_FREQUENCY);
-		final int columnIndex5 = cursor.getColumnIndex(Schema.COL_LEVEL);
-		final int columnIndex6 = cursor.getColumnIndex(Schema.COL_TIMESTAMP);
-		final int columnIndex7 = cursor.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
-		final int columnIndex8 = cursor.getColumnIndex(Schema.COL_END_POSITION_ID);
-		final int columnIndex9 = cursor.getColumnIndex(Schema.COL_KNOWN_WIFI);
+		final int colBssid = cursor.getColumnIndex(Schema.COL_BSSID);
+        final int colBssidLong = cursor.getColumnIndex(Schema.COL_BSSID_LONG);
+		final int colSsid = cursor.getColumnIndex(Schema.COL_SSID);
+		final int colEncryption = cursor.getColumnIndex(Schema.COL_ENCRYPTION);
+		final int colFreq = cursor.getColumnIndex(Schema.COL_FREQUENCY);
+		final int colLevel = cursor.getColumnIndex(Schema.COL_LEVEL);
+		final int colTime = cursor.getColumnIndex(Schema.COL_TIMESTAMP);
+		final int colRequest = cursor.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
+		final int colLast = cursor.getColumnIndex(Schema.COL_END_POSITION_ID);
+		final int colStatus = cursor.getColumnIndex(Schema.COL_KNOWN_WIFI);
 
 		while (cursor.moveToNext()) {
-			final WifiRecord wifi = new WifiRecord();
-			wifi.setBssid(cursor.getString(columnIndex));
-			wifi.setSsid(cursor.getString(columnIndex2));
-			wifi.setCapabilities(cursor.getString(columnIndex3));
-			wifi.setFrequency(cursor.getInt(columnIndex4));
-			wifi.setLevel(cursor.getInt(columnIndex5));
-			wifi.setOpenBmapTimestamp(cursor.getLong(columnIndex6));
+            /*
+            			final WifiRecord wifi = new WifiRecord(
+                    bssid,
+                    bssidLong,
+                    ssid,
+                    capa,
+                    freq,
+                    level,
+                    time,
+                    request,
+                    last,
+                    status)
+             */
+			final WifiRecord wifi = new WifiRecord(
+                    cursor.getString(colBssid),
+                    cursor.getLong(colBssidLong),
+                    cursor.getString(colSsid),
+                    cursor.getString(colEncryption),
+                    cursor.getInt(colFreq),
+                    cursor.getInt(colLevel),
+                    cursor.getLong(colTime),
+                    loadPositionById(cursor.getString(colRequest)),
+                    loadPositionById(cursor.getString(colLast)),
+                    CatalogStatus.values()[cursor.getInt(colStatus)]);
 
-			// TODO: not too safe ..
-			wifi.setBeginPosition(loadPositionById(cursor.getString(columnIndex7)));
-			// TODO: not too safe ..
-			wifi.setEndPosition(loadPositionById(cursor.getString(columnIndex8)));
-			//wifi.setNew(ca.getInt(columnIndex9) == 1);
-			wifi.setCatalogStatus(CatalogStatus.values()[cursor.getInt(columnIndex9)]);
 			wifis.add(wifi);
 		}
 		cursor.close();
@@ -358,30 +293,31 @@ public class DataHelper {
 				null, selection, selectionArgs, null);
 
 		// Performance tweaking: don't call ca.getColumnIndex on each iteration
-		final int columnIndex = cursor.getColumnIndex(Schema.COL_BSSID);
-		final int columnIndex2 = cursor.getColumnIndex(Schema.COL_SSID);
-		final int columnIndex3 = cursor.getColumnIndex(Schema.COL_ENCRYPTION);
-		final int columnIndex4 = cursor.getColumnIndex(Schema.COL_FREQUENCY);
-		final int columnIndex5 = cursor.getColumnIndex(Schema.COL_MAX_LEVEL);
-		final int columnIndex6 = cursor.getColumnIndex(Schema.COL_TIMESTAMP);
-		final int columnIndex7 = cursor.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
-		final int columnIndex8 = cursor.getColumnIndex(Schema.COL_END_POSITION_ID);
-		final int columnIndex9 = cursor.getColumnIndex(Schema.COL_KNOWN_WIFI);
+		final int colBssid = cursor.getColumnIndex(Schema.COL_BSSID);
+        final int colBssidLong = cursor.getColumnIndex(Schema.COL_BSSID_LONG);
+		final int colSsid = cursor.getColumnIndex(Schema.COL_SSID);
+		final int colEncryption = cursor.getColumnIndex(Schema.COL_ENCRYPTION);
+		final int colFrequency = cursor.getColumnIndex(Schema.COL_FREQUENCY);
+		final int colLevel = cursor.getColumnIndex(Schema.COL_MAX_LEVEL);
+		final int colTime = cursor.getColumnIndex(Schema.COL_TIMESTAMP);
+		final int colRequest = cursor.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
+		final int colLast = cursor.getColumnIndex(Schema.COL_END_POSITION_ID);
+		final int colStatus = cursor.getColumnIndex(Schema.COL_KNOWN_WIFI);
 
 		while (cursor.moveToNext()) {
-			final WifiRecord wifi = new WifiRecord();
-			wifi.setBssid(cursor.getString(columnIndex));
-			wifi.setSsid(cursor.getString(columnIndex2));
-			wifi.setCapabilities(cursor.getString(columnIndex3));
-			wifi.setFrequency(cursor.getInt(columnIndex4));
-			wifi.setLevel(cursor.getInt(columnIndex5));
-			wifi.setOpenBmapTimestamp(cursor.getLong(columnIndex6));
 
-			wifi.setBeginPosition(loadPositionById(cursor.getString(columnIndex7)));
-			wifi.setEndPosition(loadPositionById(cursor.getString(columnIndex8)));
+			final WifiRecord wifi = new WifiRecord(
+                    cursor.getString(colBssid),
+                    cursor.getLong(colBssidLong),
+                    cursor.getString(colSsid),
+                    cursor.getString(colEncryption),
+                    cursor.getInt(colFrequency),
+                    cursor.getInt(colLevel),
+                    cursor.getLong(colTime),
+                    loadPositionById(cursor.getString(colRequest)),
+                    loadPositionById(cursor.getString(colLast)),
+                    CatalogStatus.values()[cursor.getInt(colStatus)]);
 
-			//wifi.setNew(ca.getInt(columnIndex9) == 1);
-			wifi.setCatalogStatus(CatalogStatus.values()[cursor.getInt(columnIndex9)]);
 			wifis.add(wifi);
 		}
 

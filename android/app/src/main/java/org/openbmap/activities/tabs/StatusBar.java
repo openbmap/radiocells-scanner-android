@@ -41,7 +41,7 @@ import org.openbmap.db.DataHelper;
 import org.openbmap.events.onCellChanged;
 import org.openbmap.events.onCellSaved;
 import org.openbmap.events.onLocationUpdate;
-import org.openbmap.events.onWifiAdded;
+import org.openbmap.events.onWifisAdded;
 
 import java.text.DecimalFormat;
 
@@ -201,7 +201,7 @@ public class StatusBar extends LinearLayout {
     }
 
     @Subscribe
-	public void onEvent (onWifiAdded event) {
+	public void onEvent (onWifisAdded event) {
 		if (mDataHelper != null) {
 			tvWifiCount.setText(String.valueOf(mDataHelper.countWifis(mDataHelper.getActiveSessionId())));
 			tvNewWifiCount.setText(String.valueOf(mDataHelper.countNewWifis(mDataHelper.getActiveSessionId())));

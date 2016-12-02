@@ -36,6 +36,8 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 	public enum CatalogStatus {NEW, OPENBMAP, LOCAL}
 
 	private String mBSsid;
+	private long mBssidLong;
+
 	private String mSsid;
 	private String mCapabilities;
 	private int mFrequency;
@@ -60,34 +62,91 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 		return getBssid().equals(aWifi.getBssid());
 	}
 
-	public WifiRecord() {
-
-	}
-
 	/**
 	 * Initialises WifisRadiocells Record without setting session id
 	 */
-	public WifiRecord(String bssid, String ssid, String capabilities, int frequency, int level, long timestamp, PositionRecord request, PositionRecord last, CatalogStatus catalogStatus)
-	{
-		this(bssid, ssid, capabilities, frequency, level, timestamp, request, last, RadioBeacon.SESSION_NOT_TRACKING, catalogStatus);
+	public WifiRecord(String bssid,
+                      long bssidLong,
+                      String ssid,
+                      String capabilities,
+                      int frequency,
+                      int level,
+                      long timestamp,
+                      PositionRecord request,
+                      PositionRecord last,
+                      CatalogStatus catalogStatus) {
+		this(bssid, bssidLong, ssid, capabilities, frequency, level, timestamp, request, last, RadioBeacon.SESSION_NOT_TRACKING, catalogStatus);
 	}
 
-	public WifiRecord(String bssid, String ssid, String capabilities, int frequency, int level, long timestamp, PositionRecord request, PositionRecord last, int session, CatalogStatus catalogStatus)
-	{
-		setBssid(bssid);
-		setSsid(ssid);
-		setCapabilities(capabilities);
-		setFrequency(frequency);
-		setLevel(level);
-		setOpenBmapTimestamp(timestamp);
-		setBeginPosition(request);
-		setEndPosition(last);
-		setSessionId(session);
-		//setNew(knownWifi);
-		setCatalogStatus(catalogStatus);
-	}
+    /**
+     * Creates new wifi record - bssid long is calculated automatically
+     * @param bssid
+     * @param ssid
+     * @param capabilities
+     * @param frequency
+     * @param level
+     * @param timestamp
+     * @param request
+     * @param last
+     * @param session
+     * @param catalogStatus
+     */
+    public WifiRecord(String bssid,
+                      String ssid,
+                      String capabilities,
+                      int frequency,
+                      int level,
+                      long timestamp,
+                      PositionRecord request,
+                      PositionRecord last,
+                      int session,
+                      CatalogStatus catalogStatus) {
+        this(bssid, -1, ssid, capabilities, frequency, level, timestamp, request, last, session, catalogStatus);
+        setBssidLong(bssid);
+    }
 
-	@Override
+    /**
+     * Creates new wifi record - full constructor, i.e. all fields can be set explicitly
+     *
+     * @param bssid
+     * @param bssidLong
+     * @param ssid
+     * @param capabilities
+     * @param frequency
+     * @param level
+     * @param timestamp
+     * @param request
+     * @param last
+     * @param session
+     * @param catalogStatus
+     */
+    public WifiRecord(String bssid,
+                      long bssidLong,
+                      String ssid,
+                      String capabilities,
+                      int frequency,
+                      int level,
+                      long timestamp,
+                      PositionRecord request,
+                      PositionRecord last,
+                      int session,
+                      CatalogStatus catalogStatus) {
+        setBssid(bssid);
+        setBssidLong(bssidLong);
+        setSsid(ssid);
+        setCapabilities(capabilities);
+        setFrequency(frequency);
+        setLevel(level);
+        setOpenBmapTimestamp(timestamp);
+        setBeginPosition(request);
+        setEndPosition(last);
+        setSessionId(session);
+        //setNew(knownWifi);
+        setCatalogStatus(catalogStatus);
+    }
+
+
+    @Override
 	public final int compareTo(final WifiRecord aWifi) {
 		if (this.equals(aWifi)) {
 			return 0;
@@ -127,6 +186,18 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 	public final void setBssid(final String bssid) {
 		this.mBSsid = bssid.toUpperCase();
 	}
+
+    public void setBssidLong(final long bssidLong) {
+        this.mBssidLong = bssidLong;
+    }
+
+    public void setBssidLong(final String bssidLong) {
+        try {
+            this.mBssidLong = Long.parseLong(bssidLong);
+        } catch (NumberFormatException e) {
+            this.mBssidLong = -1;
+        }
+    }
 
 	public final String getSsid() {
 		return mSsid;

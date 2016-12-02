@@ -69,7 +69,7 @@ import org.openbmap.events.onFreeWifi;
 import org.openbmap.events.onLocationUpdate;
 import org.openbmap.events.onStartWireless;
 import org.openbmap.events.onStopTracking;
-import org.openbmap.events.onWifiAdded;
+import org.openbmap.events.onWifisAdded;
 import org.openbmap.services.AbstractService;
 import org.openbmap.services.wireless.blacklists.BlacklistReasonType;
 import org.openbmap.services.wireless.blacklists.LocationBlackList;
@@ -81,7 +81,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import static android.os.Build.VERSION.SDK_INT;
 
@@ -569,20 +568,19 @@ public class ScannerService extends AbstractService {
                                     }
 
                                     if (!skipThis) {
-                                        final WifiRecord wifi = new WifiRecord();
-                                        wifi.setBssid(r.BSSID);
-                                        wifi.setSsid(r.SSID.toLowerCase(Locale.US));
-                                        wifi.setCapabilities(r.capabilities);
-                                        wifi.setFrequency(r.frequency);
-                                        wifi.setLevel(r.level);
-                                        // TODO: clumsy: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
-                                        wifi.setOpenBmapTimestamp(begin.getOpenBmapTimestamp());
-                                        wifi.setBeginPosition(begin);
-                                        wifi.setEndPosition(end);
-                                        wifi.setSessionId(sessionId);
-                                        //wifi.setNew(checkIsNew(r.BSSID));
-                                        Log.i(TAG, "Checking catalog status");
-                                        wifi.setCatalogStatus(checkCatalogStatus(r.BSSID));
+                                        final WifiRecord wifi = new WifiRecord(
+                                                r.BSSID,
+                                                r.SSID.toLowerCase(),
+                                                r.capabilities,
+                                                r.frequency,
+                                                r.level,
+                                                begin.getOpenBmapTimestamp(),
+                                                begin,
+                                                end,
+                                                sessionId,
+                                                checkCatalogStatus(r.BSSID)
+                                        );
+
                                         wifis.add(wifi);
                                         if (wifi.isFree()) {
                                             Log.i(TAG, "Found free wifi");
@@ -617,8 +615,7 @@ public class ScannerService extends AbstractService {
      * Broadcasts human-readable description of last wifi.
      */
     private void broadcastWifiDetails(final ArrayList<WifiRecord> wifis) {
-        final WifiRecord recent = wifis.get(wifis.size() - 1);
-        EventBus.getDefault().post(new onWifiAdded(recent.getSsid(), recent.getLevel()));
+        EventBus.getDefault().post(new onWifisAdded(wifis));
     }
 
     /**

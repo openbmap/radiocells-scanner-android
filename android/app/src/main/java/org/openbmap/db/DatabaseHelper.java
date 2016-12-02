@@ -89,6 +89,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+  "CREATE TABLE " + Schema.TBL_WIFIS + " ("
 			+  Schema.COL_ID	 +  " INTEGER PRIMARY KEY AUTOINCREMENT,"
 			+  Schema.COL_BSSID + " TEXT,"
+			+  Schema.COL_BSSID_LONG + " INTEGER,"
 			+  Schema.COL_SSID + " TEXT,"
 			+  Schema.COL_MD5_SSID + " TEXT,"
 			+  Schema.COL_ENCRYPTION + " TEXT,"
@@ -110,6 +111,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	private static final String SQL_CREATE_VIEW_WIFI_POSITIONS = "CREATE VIEW IF NOT EXISTS " + Schema.VIEW_WIFIS_EXTENDED + " AS "
 			+ " SELECT w." + Schema.COL_ID + ","
 			+ " w." + Schema.COL_BSSID + " AS " + Schema.COL_BSSID + ","
+			+ " w." + Schema.COL_BSSID_LONG + " AS " + Schema.COL_BSSID_LONG + ","
 			+ " w." + Schema.COL_SSID +  " AS " + Schema.COL_SSID + ","
 			+ " w." + Schema.COL_MD5_SSID + " AS " + Schema.COL_MD5_SSID + ","
 			+ " w." + Schema.COL_ENCRYPTION +  " AS " + Schema.COL_ENCRYPTION + ","
@@ -243,6 +245,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+  Schema.COL_BSSID + ", "
 			+  Schema.COL_LEVEL + ""
 			+  ")";
+
+    private static final String SQL_CREATE_IDX_WIFIS_LONG = ""
+            +  "CREATE INDEX idx_wifis ON "
+            +  Schema.TBL_WIFIS + "("
+            +  Schema.COL_BSSID_LONG + ", "
+            +  Schema.COL_LEVEL + ""
+            +  ")";
 
 	private static final String SQL_CREATE_IDX_WIFIS_SESSION_ID = ""
 			+  "CREATE INDEX idx_wifis_sessions_id ON "
@@ -513,6 +522,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 Log.w(TAG, "Database upgrade: rebuilding idx_wifis_sessions_id. This may take some time!!!");
                 db.execSQL("DROP INDEX IF EXISTS idx_wifis_sessions_id");
                 db.execSQL(SQL_CREATE_IDX_WIFIS_SESSION_ID);
+
+            } catch (final SQLException e) {
+                Log.w(TAG, "Couldn't create cell position timestamp index");
+            }
+        }
+
+        // Rebuild wifi index (bssid added)
+        // see https://github.com/wish7code/openbmap/issues/92
+        if (oldVersion <= 13) {
+            try {
+                Log.w(TAG, "Database upgrade: Add numeric BSSID field");
+                db.execSQL("ALTER TABLE " + Schema.TBL_WIFIS + " ADD COLUMN " + Schema.COL_BSSID_LONG + " INTEGER" );
+                db.execSQL(SQL_CREATE_IDX_WIFIS_LONG);
+                db.execSQL("DROP INDEX IF EXISTS " + Schema.VIEW_WIFIS_EXTENDED);
+                db.execSQL(SQL_CREATE_VIEW_WIFI_POSITIONS);
 
             } catch (final SQLException e) {
                 Log.w(TAG, "Couldn't create cell position timestamp index");

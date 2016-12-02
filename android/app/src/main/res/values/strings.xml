@@ -58,7 +58,7 @@
     <string name="prefs_wifi_catalog_folder_summary">Select WiFi catalog folder</string>
     <!-- End of Preferences -->
 
-    <string name="app_name" translatable="false">RadioBeacon</string>
+    <string name="app_name" translatable="false">Radiocells</string>
     <string name="dbm" translatable="false">dBm</string>
     <string name="ssid" translatable="false">SSID</string>
     <string name="turn_on_gps_question">GPS is switched off! Would you like to activate GPS now?</string>

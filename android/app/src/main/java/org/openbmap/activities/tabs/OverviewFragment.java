@@ -78,25 +78,25 @@ public class OverviewFragment extends Fragment {
      * UI controls
      */
     @BindView(R.id.stats_cell_description)
-    private TextView tvCellDescription;
+    public TextView tvCellDescription;
     @BindView(R.id.stats_cell_strength)
-    private TextView tvCellStrength;
+    public TextView tvCellStrength;
     @BindView(R.id.stats_wifi_description)
-    private TextView tvWifiDescription;
+    public TextView tvWifiDescription;
     @BindView(R.id.stats_wifi_strength)
-    private TextView tvWifiStrength;
+    public TextView tvWifiStrength;
     @BindView(R.id.tvTechnology)
-    private TextView tvTechnology;
+    public TextView tvTechnology;
     @BindView(R.id.stats_blacklisted)
-    private TextView tvIgnored;
+    public TextView tvIgnored;
     @BindView(R.id.stats_free)
-    private TextView tvFree;
+    public TextView tvFree;
     @BindView(R.id.stats_icon_free)
-    private ImageView ivFree;
+    public ImageView ivFree;
     @BindView(R.id.stats_icon_alert)
-    private ImageView ivAlert;
+    public ImageView ivAlert;
     @BindView(R.id.graph)
-    private GraphView gvGraph;
+    public GraphView gvGraph;
 
     private LineGraphSeries mMeasurements;
     private PointsGraphSeries highlight;
@@ -116,17 +116,17 @@ public class OverviewFragment extends Fragment {
     /**
      * Fades ignore messages after certain time
      */
-    private Runnable fadeIgnoreTask;
-    private final Handler fadeIgnoreHandler = new Handler();
+    private Runnable mFadeIgnoreTask;
+    private final Handler mFadeIgnoreHandler = new Handler();
 
-    private Runnable fadeFreeTask;
+    private Runnable mFadeFreeTask;
     private final Handler mFadeFreeHandler = new Handler();
 
     /**
      * Update certain infos at periodic intervals
      */
-    private final Handler refreshHandler = new Handler();
-    private Runnable periodicRefreshTask;
+    private Runnable mRefreshTask;
+    private final Handler mRefreshHandler = new Handler();
 
     private int mCurrentLevel;
 
@@ -186,14 +186,14 @@ public class OverviewFragment extends Fragment {
 
     @Subscribe
     public void onEvent(onFreeWifi event) {
-        mFadeFreeHandler.removeCallbacks(fadeFreeTask);
+        mFadeFreeHandler.removeCallbacks(mFadeFreeTask);
         final String ssid = event.ssid;
         if (ssid != null) {
             tvFree.setText(getResources().getString(R.string.free_wifi) + "\n" + ssid);
         }
         tvFree.setVisibility(View.VISIBLE);
         ivFree.setVisibility(View.VISIBLE);
-        mFadeFreeHandler.postDelayed(fadeFreeTask, FADE_TIME);
+        mFadeFreeHandler.postDelayed(mFadeFreeTask, FADE_TIME);
     }
 
     /**
@@ -202,7 +202,7 @@ public class OverviewFragment extends Fragment {
      */
     @Subscribe
     public void onEvent(onBlacklisted event) {
-        fadeIgnoreHandler.removeCallbacks(fadeIgnoreTask);
+        mFadeIgnoreHandler.removeCallbacks(mFadeIgnoreTask);
 
         switch (event.reason) {
             case BadSSID:
@@ -217,7 +217,7 @@ public class OverviewFragment extends Fragment {
         }
         tvIgnored.setVisibility(View.VISIBLE);
         ivAlert.setVisibility(View.VISIBLE);
-        fadeIgnoreHandler.postDelayed(fadeIgnoreTask, FADE_TIME);
+        mFadeIgnoreHandler.postDelayed(mFadeIgnoreTask, FADE_TIME);
     }
 
     @Subscribe
@@ -275,7 +275,7 @@ public class OverviewFragment extends Fragment {
     public final void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        fadeIgnoreTask = new Runnable() {
+        mFadeIgnoreTask = new Runnable() {
             @Override
             public void run() {
                 tvIgnored.setVisibility(View.INVISIBLE);
@@ -283,7 +283,7 @@ public class OverviewFragment extends Fragment {
             }
         };
 
-        fadeFreeTask = new Runnable() {
+        mFadeFreeTask = new Runnable() {
             @Override
             public void run() {
                 tvFree.setVisibility(View.INVISIBLE);
@@ -291,13 +291,13 @@ public class OverviewFragment extends Fragment {
             }
         };
 
-        periodicRefreshTask = new Runnable() {
+        mRefreshTask = new Runnable() {
             @SuppressLint("DefaultLocale")
             @Override
             public void run() {
                 updateTimeSinceUpdate();
                 updateGraph();
-                refreshHandler.postDelayed(periodicRefreshTask, REFRESH_INTERVAL);
+                mRefreshHandler.postDelayed(mRefreshTask, REFRESH_INTERVAL);
             }
         };
 
@@ -315,11 +315,11 @@ public class OverviewFragment extends Fragment {
     }
 
     void startRepeatingTask() {
-        periodicRefreshTask.run();
+        mRefreshTask.run();
     }
 
     void stopRepeatingTask() {
-        refreshHandler.removeCallbacks(periodicRefreshTask);
+        mRefreshHandler.removeCallbacks(mRefreshTask);
     }
 
     @Override
@@ -334,7 +334,7 @@ public class OverviewFragment extends Fragment {
     @Override
     public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.stats, container, false);
-        mUnbinder = ButterKnife.bind(this.getView());
+        mUnbinder = ButterKnife.bind(this, view);
 
         // setup UI controls
         initGraph();

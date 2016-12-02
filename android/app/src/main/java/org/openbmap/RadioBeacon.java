@@ -151,7 +151,7 @@ public final class RadioBeacon {
 	/**
 	 * Database scheme version, increment to trigger database update
 	 */
-	public static final int DATABASE_VERSION = 13;
+	public static final int DATABASE_VERSION = 14;
 
     /**
      * Server host name excluding final slash

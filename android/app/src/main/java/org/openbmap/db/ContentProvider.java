@@ -358,6 +358,7 @@ public class ContentProvider extends android.content.ContentProvider {
                 String columns[] = {
                         "w.rowid as " + Schema.COL_ID,
                         "w." + Schema.COL_BSSID,
+                        "w." + Schema.COL_BSSID_LONG,
                         "w." + Schema.COL_MD5_SSID,
                         "w." + Schema.COL_SSID,
                         "MAX(" + Schema.COL_LEVEL + ")",
@@ -370,7 +371,7 @@ public class ContentProvider extends android.content.ContentProvider {
                 };
 
                 sortOrder = "w." + Schema.COL_TIMESTAMP;
-                String groupBy = "w." + Schema.COL_BSSID + ", w." + Schema.COL_MD5_SSID;
+                String groupBy = "w." + Schema.COL_BSSID + ", w." + Schema.COL_BSSID_LONG + ", w." + Schema.COL_MD5_SSID;
                 return queryTable(uri, table, columns,
                         extendWhereBy("w." + Schema.COL_SESSION_ID, where),
                         extendCriteriaBy(uri.getLastPathSegment(), criteria),
@@ -392,6 +393,7 @@ public class ContentProvider extends android.content.ContentProvider {
                 String columns[] = {
                         "w.rowid as " + Schema.COL_ID,
                         "w." + Schema.COL_BSSID,
+                        "w." + Schema.COL_BSSID_LONG,
                         "w." + Schema.COL_MD5_SSID,
                         "w." + Schema.COL_SSID,
                         "MAX(" + Schema.COL_LEVEL + ")",
@@ -404,7 +406,7 @@ public class ContentProvider extends android.content.ContentProvider {
                 };
 
                 sortOrder = "w." + Schema.COL_TIMESTAMP;
-                String groupBy = "w." + Schema.COL_BSSID + ", w." + Schema.COL_MD5_SSID;
+                String groupBy = "w." + Schema.COL_BSSID + ", w." + Schema.COL_BSSID_LONG + ", w." + Schema.COL_MD5_SSID;
                 return queryTable(uri,
                         table,
                         columns,

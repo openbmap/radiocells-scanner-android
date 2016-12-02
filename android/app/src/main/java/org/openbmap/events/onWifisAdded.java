@@ -18,13 +18,15 @@
 
 package org.openbmap.events;
 
-public class onWifiAdded {
+import org.openbmap.db.models.WifiRecord;
 
-    public final String wifiDescription;
-    public final int level;
+import java.util.ArrayList;
 
-    public onWifiAdded(final String wifiDescription, final int level) {
-            this.wifiDescription = wifiDescription;
-            this.level = level;
-        }
+public class onWifisAdded {
+
+    public final ArrayList<WifiRecord> items;
+
+    public onWifisAdded(ArrayList<WifiRecord> items) {
+        this.items = items;
     }
+}

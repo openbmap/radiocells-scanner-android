@@ -41,10 +41,10 @@ import java.util.Collection;
 
 public class onCatalogUpdateAvailable {
 
-    public Collection<CatalogObject> pois;
+    public Collection<CatalogObject> items;
 
-    public onCatalogUpdateAvailable(Collection<CatalogObject> pois) {
-        this.pois =  pois;
+    public onCatalogUpdateAvailable(Collection<CatalogObject> items) {
+        this.items = items;
     }
 
 }
