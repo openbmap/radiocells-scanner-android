@@ -13,6 +13,8 @@ import com.fastaccess.permission.base.activity.BasePermissionActivity;
 import com.fastaccess.permission.base.model.PermissionModel;
 import com.fastaccess.permission.base.model.PermissionModelBuilder;
 
+import org.openbmap.R;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,8 +35,8 @@ public class IntroActivity extends BasePermissionActivity {
             permissions.add(PermissionModelBuilder.withContext(this)
                     .withCanSkip(false)
                     .withPermissionName(Manifest.permission.ACCESS_FINE_LOCATION)
-                    .withTitle("We need to setup a few permissions before we can start!")
-                    .withMessage("GPS access is required to localize cell tower and wifi positions.")
+                    .withTitle(R.string.location_permission_required)
+                    .withMessage(R.string.location_permission_explanation)
                     //.withExplanationMessage("We need this permission to save your captured images and videos to your SD-Card")
                     .build());
         }
@@ -42,8 +44,8 @@ public class IntroActivity extends BasePermissionActivity {
             permissions.add(PermissionModelBuilder.withContext(this)
                     .withCanSkip(false)
                     .withPermissionName(Manifest.permission.READ_PHONE_STATE)
-                    .withTitle("We need to setup a few permissions before we can start!")
-                    .withMessage("We need this read phone state permission to collect cell tower information")
+                    .withTitle(R.string.phone_state_permission_required)
+                    .withMessage(R.string.phone_state_permission_explanation)
                     //.withExplanationMessage("We need this permission to collect cell tower information")
                     .build());
         }
@@ -51,8 +53,8 @@ public class IntroActivity extends BasePermissionActivity {
             permissions.add(PermissionModelBuilder.withContext(this)
                     .withCanSkip(false)
                     .withPermissionName(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    .withTitle("We need to setup a few permissions before we can start!")
-                    .withMessage("We need this permission to store map files on your SD card")
+                    .withTitle(R.string.external_storage_permission_required)
+                    .withMessage(R.string.external_storage_permission_explanation)
                     //.withExplanationMessage("We need this permission to store map files on your SD card")
                     .build());
         }
@@ -62,8 +64,8 @@ public class IntroActivity extends BasePermissionActivity {
                 permissions.add(PermissionModelBuilder.withContext(this)
                         .withCanSkip(false)
                         .withPermissionName(Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                        .withTitle("We need to setup a few permissions before we can start!")
-                        .withMessage("This permission ensures that your device stays awake while scanning")
+                        .withTitle(R.string.ignore_battery_permission)
+                        .withMessage(R.string.ignore_battery_explanation)
                         //.withExplanationMessage("We need this permission to store map files on your SD card")
                         .build());
             }

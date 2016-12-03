@@ -20,10 +20,11 @@ package org.openbmap.services;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
-import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
@@ -35,6 +36,7 @@ import org.mapsforge.poi.storage.PoiFileInfo;
 import org.mapsforge.poi.storage.PoiPersistenceManager;
 import org.mapsforge.poi.storage.PointOfInterest;
 import org.mapsforge.poi.storage.UnknownPoiCategoryException;
+import org.openbmap.Preferences;
 import org.openbmap.db.ContentProvider;
 import org.openbmap.db.DatabaseHelper;
 import org.openbmap.db.Schema;
@@ -43,6 +45,7 @@ import org.openbmap.events.onCatalogUpdateRequested;
 import org.openbmap.utils.CatalogObject;
 import org.openbmap.utils.LayerHelpers.LayerFilter;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Random;
@@ -58,7 +61,7 @@ public class CatalogService extends AbstractService {
     private static final String TAG = CatalogService.class.getSimpleName();
     private static final int MAX_OBJECTS = 5000;
 
-    private String POI_FILE = Environment.getExternalStorageDirectory() + "/de_current.sqlite";
+    private String mCatalogLocation;
 
     public static final String FIND_CELL_IN_BOX_STATEMENT =
             "SELECT cell_poi_index.id, cell_poi_index.minLat, cell_poi_index.minLon "
@@ -91,6 +94,16 @@ public class CatalogService extends AbstractService {
     public final void onCreate() {
         super.onCreate();
         Log.d(TAG, "CatalogService created");
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        if (!prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_NONE).equals(Preferences.VAL_CATALOG_NONE)) {
+            // Open catalog database
+            String folder = prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
+                    this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.CATALOG_SUBDIR);
+
+            Log.i(TAG, "Using catalog folder:" + folder);
+            mCatalogLocation = folder + File.separator + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_FILE);
+            Log.i(TAG, "Selected catalog file: " + mCatalogLocation);
+        }
     }
 
     /*
@@ -128,13 +141,13 @@ public class CatalogService extends AbstractService {
         private boolean addToPoiDatabase(ArrayList<ContentValues> newWifis) {
             Log.i(TAG, "Starting POI update for " + String.valueOf(newWifis.size()) + " bssid");
             try {
-                Log.i(TAG, "Target " + POI_FILE);
-                writableManager = AndroidPoiPersistenceManagerFactory.getPoiPersistenceManager(POI_FILE, false);
+                Log.i(TAG, "Target " + mCatalogLocation);
+                writableManager = AndroidPoiPersistenceManagerFactory.getPoiPersistenceManager(mCatalogLocation, false);
                 if (!writableManager.isValidDataBase()) {
-                    Log.e(TAG, "Invalid POI database " + POI_FILE);
+                    Log.e(TAG, "Invalid POI database " + mCatalogLocation);
                 } else {
                     PoiFileInfo info = writableManager.getPoiFileInfo();
-                    Log.i(TAG, "POI metadata for " + POI_FILE);
+                    Log.i(TAG, "POI metadata for " + mCatalogLocation);
                     Log.i(TAG, String.format("Bounds %s", info.bounds));
                     Log.i(TAG, String.format("Date %s", info.date));
                     Log.i(TAG, String.format("Comment: %s", info.comment));
@@ -175,7 +188,7 @@ public class CatalogService extends AbstractService {
                 */
 
                 if (writableManager != null) {
-                    Log.i(TAG, "Closing POI database " + POI_FILE);
+                    Log.i(TAG, "Closing POI database " + mCatalogLocation);
                     writableManager.close();
                     writableManager = null;
                 }
@@ -278,15 +291,19 @@ public class CatalogService extends AbstractService {
     }
 
     private void openDatabase() {
+        if (mCatalogLocation == null) {
+            Log.w(TAG, "Catalog file not set! Aborting..");
+            return;
+        }
         try {
             if (dbSpatialite == null) {
                 dbSpatialite = new jsqlite.Database();
             } else {
                 dbSpatialite.close();
             }
-            dbSpatialite.open(POI_FILE, jsqlite.Constants.SQLITE_OPEN_READWRITE | jsqlite.Constants.SQLITE_OPEN_CREATE);
+            dbSpatialite.open(mCatalogLocation, jsqlite.Constants.SQLITE_OPEN_READWRITE | jsqlite.Constants.SQLITE_OPEN_CREATE);
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, "Error opening catalog file " + mCatalogLocation + ":" + e.getMessage());
         }
     }
 

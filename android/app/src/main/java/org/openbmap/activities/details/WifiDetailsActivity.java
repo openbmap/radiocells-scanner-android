@@ -25,8 +25,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,7 +55,7 @@ public class WifiDetailsActivity extends FragmentActivity {
     private static final String TAG = WifiDetailsActivity.class.getSimpleName();
 
     @BindView(R.id.wifidetails_ssid) TextView tvSsid;
-    @BindView(R.id.wifidetails_capa) TextView tvCapabilities;
+    @BindView(R.id.wifidetails_capa) TextView tvEncryption;
     @BindView(R.id.wifidetails_freq) TextView tvFrequency;
     @BindView(R.id.wifidetails_no_measurements) TextView tvNoMeasurements;
     @BindView(R.id.wifidetails_manufactor) TextView tvManufactor;
@@ -86,18 +88,11 @@ public class WifiDetailsActivity extends FragmentActivity {
         tvNoMeasurements.setText(String.valueOf(wifis.size()));
 
         mWifi = wifis.get(0);
-        displayRecord(mWifi);
     }
 
     @Override
     protected final void onResume() {
         super.onResume();
-
-        // get the wifi _id
-        final Bundle extras = getIntent().getExtras();
-        final int id = extras.getInt(Schema.COL_ID);
-        // query content provider for wifi details
-        mWifi = mDatahelper.loadWifiById(id);
 
         displayRecord(mWifi);
     }
@@ -105,12 +100,12 @@ public class WifiDetailsActivity extends FragmentActivity {
     /**
      * @param wifi
      */
-    private void displayRecord(final WifiRecord wifi) {
+    private void displayRecord(@NonNull final WifiRecord wifi) {
 
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         if (wifi == null) {
-            Log.e(TAG, "WifisRadiocells argument was null");
+            Log.e(TAG, "Wifi argument was null");
             return;
         }
 
@@ -120,17 +115,19 @@ public class WifiDetailsActivity extends FragmentActivity {
                     this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.CATALOG_SUBDIR)
                     + File.separator + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_FILE);
             try {
+                final String search = wifi.getBssid().replace(":", "").replace("-", "").substring(0, 6).toUpperCase();
+                Log.v(TAG, "Looking up manufactor " + search);
                 final SQLiteDatabase mCatalog = SQLiteDatabase.openDatabase(file, null, SQLiteDatabase.OPEN_READONLY);
-                Cursor cur = null;
-                cur = mCatalog.rawQuery("SELECT _id, manufactor FROM manufactors WHERE "
+                Cursor cursor = null;
+                cursor = mCatalog.rawQuery("SELECT _id, manufactor FROM manufactors WHERE "
                                 + "(bssid = ?) LIMIT 1",
-                        new String[]{wifi.getBssid().replace(":", "").replace("-", "").substring(0, 6).toUpperCase()});
+                        new String[]{search});
 
-                if (cur.moveToFirst()) {
-                    final String manufactor = cur.getString(cur.getColumnIndex("manufactor"));
+                if (cursor.moveToFirst()) {
+                    final String manufactor = cursor.getString(cursor.getColumnIndex("manufactor"));
                     tvManufactor.setText(manufactor);
                 }
-                cur.close();
+                cursor.close();
             } catch (SQLiteCantOpenDatabaseException e1) {
                 Log.e(TAG, e1.getMessage());
                 Toast.makeText(this, getString(R.string.error_opening_wifi_catalog), Toast.LENGTH_LONG).show();
@@ -143,28 +140,22 @@ public class WifiDetailsActivity extends FragmentActivity {
         }
 
         tvSsid.setText(wifi.getSsid() + " (" + wifi.getBssid() + ")");
-        if (wifi.getCapabilities() != null)
-
-        {
-            tvCapabilities.setText(wifi.getCapabilities().replace("[", "\n["));
-        } else
-
-        {
-            tvCapabilities.setText(getResources().getString(R.string.n_a));
+        if (wifi.getCapabilities() != null) {
+            tvEncryption.setText(wifi.getCapabilities().replace("[", "").replace("]","\n"));
+        } else {
+            tvEncryption.setText(getResources().getString(R.string.n_a));
         }
 
         final Integer freq = wifi.getFrequency();
-        if (freq != null)
-
-        {
-            tvFrequency.setText(((WifiChannel.getChannel(freq) == null) ? getResources().getString(R.string.unknown) : WifiChannel.getChannel(freq))
+        if (freq != null) {
+            tvFrequency.setText(((WifiChannel.getChannel(freq) == null) ? getResources().getString(R.string.unknown) : getString(R.string.frequency) + WifiChannel.getChannel(freq))
                             + "  (" + freq + " MHz)");
         }
 
         if (wifi.getCatalogStatus().equals(CatalogStatus.NEW)) {
-            ivIsNew.setImageResource(android.R.drawable.checkbox_on_background);
+            ivIsNew.setVisibility(View.VISIBLE);
         } else {
-            ivIsNew.setImageResource(android.R.drawable.checkbox_off_background);
+            ivIsNew.setVisibility(View.INVISIBLE);
         }
     }
 

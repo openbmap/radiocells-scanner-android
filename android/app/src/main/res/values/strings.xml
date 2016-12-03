@@ -86,7 +86,7 @@
     <string name="id" translatable="false">#</string>
     <string name="n_a">N/A</string>
     <string name="capabilities">Capabilities</string>
-    <string name="frequency">Frequency</string>
+    <string name="frequency">Channel</string>
     <string name="date">Date</string>
     <string name="warning_outdated_client">Your client version is too old.\nPlease update!</string>
     <string name="warning_client_version_not_checked">Couldn\'t contact server. Either you\'re offline or the server is down!</string>
@@ -213,4 +213,12 @@
     <string name="enable_osm_towers">OSM towers</string>
     <string name="permission_denied">Sorry, Radiobeacon won\'t work without this permissions</string>
     <string name="title_activity_intro">IntroActivity</string>
+    <string name="location_permission_required">Location permission required</string>
+    <string name="location_permission_explanation">GPS access is required to localize cell tower and wifi positions.</string>
+    <string name="phone_state_permission_required">Phone state permssion required</string>
+    <string name="phone_state_permission_explanation">We need this read phone state permission to collect cell tower information</string>
+    <string name="external_storage_permission_required">SD card permission required</string>
+    <string name="external_storage_permission_explanation">We need this permission to store map files and session data on your SD card</string>
+    <string name="ignore_battery_permission">Battery optimization permission required</string>
+    <string name="ignore_battery_explanation">This allows you to to continue scanning even on low battery. You must manually activate this feature</string>
 </resources>
