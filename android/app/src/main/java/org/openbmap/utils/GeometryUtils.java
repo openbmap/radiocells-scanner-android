@@ -136,15 +136,18 @@ public final class GeometryUtils {
 	}
 
 	/**
-	 * Converts LatLong to Location
+	 * Converts {@link org.mapsforge.core.model.LatLong} to {@link android.location.Location}.
+     * Location time will be set to current time
+     *
 	 * @throws IllegalArgumentException on invalid location
-	 * @param latlon
-	 * @return Corresponding Location
+	 * @param latlon LatLong to convert
+	 * @return location
 	 */
 	public static Location toLocation(final LatLong latlon) {
 		Location result = new Location(RadioBeacon.PROVIDER_NONE);
 		result.setLatitude(latlon.latitude);
 		result.setLongitude(latlon.longitude);
+		result.setTime(System.currentTimeMillis());
 		if (!isValidLocation(result, false)) {
 			throw new IllegalArgumentException("Invalid location");
 		}
