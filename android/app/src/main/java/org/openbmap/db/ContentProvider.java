@@ -476,7 +476,7 @@ public class ContentProvider extends android.content.ContentProvider {
                         Schema.COL_PSC,
                         Schema.COL_NETWORKTYPE,
                         Schema.COL_IS_SERVING,
-                        " MAX(" + Schema.COL_STRENGTHDBM + ") "
+                        " MAX(" + Schema.COL_STRENGTH_DBM + ") "
                 };
 
                 where = "c." + Schema.COL_SESSION_ID + " = ? AND " + Schema.COL_LOGICAL_CELLID + " > ?";

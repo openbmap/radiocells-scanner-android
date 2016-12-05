@@ -117,7 +117,7 @@ public class CellListFragment extends Fragment implements LoaderManager.LoaderCa
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         final DataHelper dataHelper = new DataHelper(getActivity());
-        mSession = dataHelper.getActiveSessionId();
+        mSession = dataHelper.getCurrentSessionID();
     }
 
     @Override
@@ -141,6 +141,7 @@ public class CellListFragment extends Fragment implements LoaderManager.LoaderCa
                             final Intent intent = new Intent();
                             intent.setClass(getActivity(), CellDetailsActivity.class);
                             intent.putExtra(Schema.COL_ID, (int) id);
+                            intent.putExtra(Schema.COL_SESSION_ID, mSession);
                             startActivity(intent);
                         }
                     }
@@ -159,6 +160,7 @@ public class CellListFragment extends Fragment implements LoaderManager.LoaderCa
 
         adapter = new CellAdapter(getActivity(), null);
         mRecyclerView.setAdapter(adapter);
+        mRecyclerView.setHasFixedSize(true);
         getLoaderManager().initLoader(CELL_LOADER_ID, null, this);
 
         return rootView;

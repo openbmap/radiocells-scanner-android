@@ -26,7 +26,7 @@
     <string name="prefs_data_map">Offline map</string>
     <string name="prefs_data_map_summary">Browse your offline map repository</string>
     <string name="prefs_data_ref_database">Select Wifi Catalog</string>
-    <string name="prefs_data_ref_database_summary">Install a WiFi catalog to see all known RadioCells WiFis on the map. This helps you, when you\'re looking for new WiFis</string>
+    <string name="prefs_data_ref_database_summary">Install a WiFi catalog to see community collected WiFis on the map. This helps you, when you\'re looking for new WiFis</string>
     <string name="prefs_download_wifi_catalog">Download WiFi Catalog</string>
     <string name="prefs_download_wifi_catalog_summary">Current size (10–400MB depending on country)</string>
     <string name="prefs_min_cell_distance">Cell log interval</string>
@@ -99,7 +99,7 @@
     <string name="stop_tracking">Stop tracking</string>
     <string name="battery_warning">Battery low: Stopping track</string>
 
-    <string name="notification_caption">RadioBeacon is scanning</string>
+    <string name="notification_caption">Scanning..</string>
     <string name="exporting_wifis">Exporting WiFis</string>
     <string name="uploading_wifis">Uploading WiFis</string>
     <string name="exporting_cells">Exporting cells</string>
@@ -207,11 +207,11 @@
     <string name="prefs_map_online">Online mode</string>
     <string name="failed_to_load_map_file_can_be_damaged">Failed to load map. File can be damaged.</string>
     <string name="dialog_ignore_doze_title">Ignore DOZE mode?</string>
-    <string name="dialog_ignore_doze_message">Android 6 new DOZE mode may prevent Radiobeacon from working properly.\nWhitelist Radiobeacon from aggressive power-safe optimizations?</string>
+    <string name="dialog_ignore_doze_message">Android 6 DOZE mode may prevent app from working properly.\nWhitelist app from aggressive power-safe optimizations?</string>
     <string name="follow_position">Follow position</string>
     <string name="enable_known_wifis">Radiocells.org wifis</string>
     <string name="enable_osm_towers">OSM towers</string>
-    <string name="permission_denied">Sorry, Radiobeacon won\'t work without this permissions</string>
+    <string name="permission_denied">Sorry, Radiocells scanner won\'t work without this permissions</string>
     <string name="title_activity_intro">IntroActivity</string>
     <string name="location_permission_required">Location permission required</string>
     <string name="location_permission_explanation">GPS access is required to localize cell tower and wifi positions.</string>

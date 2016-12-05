@@ -75,8 +75,8 @@ public final class Schema {
 	public static final String COL_MNC = "mnc";
 	public static final String COL_AREA = "lac";
 	public static final String COL_PSC = "psc";
-	public static final String COL_STRENGTHDBM = "dbm";
-	public static final String	COL_STRENGTHASU	= "asu";
+	public static final String COL_STRENGTH_DBM = "dbm";
+	public static final String COL_STRENGTH_ASU = "asu";
 	
 	/**
 	 * Additional TBL_CDMACELLS, rest is same as TBL_CELLS.

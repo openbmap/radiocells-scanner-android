@@ -26,7 +26,7 @@ import android.util.Log;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.DatabaseHelper;
 import org.openbmap.db.Schema;
-import org.openbmap.db.models.LogFile;
+import org.openbmap.db.models.MetaData;
 import org.openbmap.utils.XmlSanitizer;
 
 import java.io.BufferedWriter;
@@ -246,7 +246,7 @@ public class WifiSerializer {
 	protected final ArrayList<String> export() {
 		Log.d(TAG, "Start wifi export. Data source: " + WIFI_SQL_QUERY);
 
-		final LogFile headerRecord = mDataHelper.loadLogFileBySession(mSession);
+		final MetaData headerRecord = mDataHelper.getMetaDataForSession(mSession);
 
 		final DatabaseHelper mDbHelper = new DatabaseHelper(mContext.getApplicationContext());
 
@@ -345,7 +345,7 @@ public class WifiSerializer {
 	 * @param headerRecord Header information record
 	 * @param cursor Cursor to read from
 	 */
-	private String saveAndMoveCursor(final String fileName, final LogFile headerRecord, final Cursor cursor) {
+	private String saveAndMoveCursor(final String fileName, final MetaData headerRecord, final Cursor cursor) {
 		// for performance reasons direct database access is used here (instead of content provider)
 		//TODO: behaves strange on non-ascii characters, maybe get ideas from https://android.googlesource.com/platform/frameworks/base.git/+/android-4.2.2_r1/wifi/java/android/net/wifi/WifiSsid.java
 		try {

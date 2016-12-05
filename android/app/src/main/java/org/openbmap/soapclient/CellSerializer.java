@@ -26,7 +26,7 @@ import org.openbmap.db.DataHelper;
 import org.openbmap.db.DatabaseHelper;
 import org.openbmap.db.Schema;
 import org.openbmap.db.models.CellRecord;
-import org.openbmap.db.models.LogFile;
+import org.openbmap.db.models.MetaData;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -191,8 +191,8 @@ public class CellSerializer {
 			+ Schema.COL_CDMA_SYSTEMID + ", "
 			+ Schema.COL_OPERATORNAME + ", "
 			+ Schema.COL_OPERATOR + ", "
-			+ Schema.COL_STRENGTHDBM + ", "
-			+ Schema.COL_STRENGTHASU + ", "
+			+ Schema.COL_STRENGTH_DBM + ", "
+			+ Schema.COL_STRENGTH_ASU + ", "
 			+ Schema.TBL_CELLS + "." + Schema.COL_TIMESTAMP + ", "
 			+ Schema.COL_BEGIN_POSITION_ID + ", "
 			+ " \"req\".\"latitude\" AS \"req_latitude\","
@@ -265,7 +265,7 @@ public class CellSerializer {
 	protected final ArrayList<String> export() {
 		Log.d(TAG, "Start cell export. Data source: " + CELL_SQL_QUERY);
 
-		final LogFile headerRecord = mDataHelper.loadLogFileBySession(mSession);
+		final MetaData headerRecord = mDataHelper.getMetaDataForSession(mSession);
 
 		final DatabaseHelper mDbHelper = new DatabaseHelper(mContext.getApplicationContext());
 
@@ -289,8 +289,8 @@ public class CellSerializer {
 		mColMcc = cursorCells.getColumnIndex(Schema.COL_MCC);
 		mColMnc = cursorCells.getColumnIndex(Schema.COL_MNC);
 		mColLac = cursorCells.getColumnIndex(Schema.COL_AREA);
-		mColStrengthDbm = cursorCells.getColumnIndex(Schema.COL_STRENGTHDBM);
-		mColStrengthAsu = cursorCells.getColumnIndex(Schema.COL_STRENGTHASU);
+		mColStrengthDbm = cursorCells.getColumnIndex(Schema.COL_STRENGTH_DBM);
+		mColStrengthAsu = cursorCells.getColumnIndex(Schema.COL_STRENGTH_ASU);
 		mColTimestamp = cursorCells.getColumnIndex(Schema.COL_TIMESTAMP);
 		mColBeginPosId = cursorCells.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
 		mColEndPosId = cursorCells.getColumnIndex(Schema.COL_END_POSITION_ID);
@@ -390,7 +390,7 @@ public class CellSerializer {
 	 * @param headerRecord Header information record
 	 * @param cursor Cursor to read from
 	 */
-	private void saveAndMoveCursor(final String fileName, final LogFile headerRecord, final Cursor cursor) {
+	private void saveAndMoveCursor(final String fileName, final MetaData headerRecord, final Cursor cursor) {
 
 		// for performance reasons direct database access is used here (instead of content provider)
 		try {

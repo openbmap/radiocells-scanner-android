@@ -20,7 +20,6 @@ package org.openbmap.activities;
 import android.content.Context;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 import org.mapsforge.map.android.view.MapView;
@@ -43,7 +42,7 @@ public class SelectiveScrollViewPager extends ViewPager {
     @Override
     protected boolean canScroll(final View v, final boolean checkV, final int dx, final int x, final int y) {
         if (v instanceof MapView) {
-        	Log.i(TAG, "Scrolling disabled for map view");
+        	//Log.i(TAG, "Scrolling disabled for map view");
             return true;
         }
         return super.canScroll(v, checkV, dx, x, y);

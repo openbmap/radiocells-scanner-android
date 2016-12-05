@@ -4,113 +4,152 @@
     android:layout_height="wrap_content"
     android:orientation="vertical" xmlns:tools="http://schemas.android.com/tools">
 
-    <TableLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent" >
-
-        <TableRow
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
-
-            <TextView
-                android:id="@+id/wifidetails_ssid"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/ssid"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <TextView
-                android:layout_width="0dip"
-                android:layout_weight="0.35"
-                android:layout_height="wrap_content"
-                android:text="Manufactor" />
-
-            <TextView
-                android:id="@+id/wifidetails_manufactor"
-                android:layout_width="0dip"
-                android:layout_weight="0.65"
-                android:layout_height="wrap_content"
-                android:text="@string/n_a"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
-        </TableRow>
-
-        <TableRow>
-            <TextView
-                android:layout_width="0dip"
-                android:layout_weight="0.35"
-                android:layout_height="wrap_content"
-                android:text="@string/capabilities" />
-
-            <TextView
-                android:id="@+id/wifidetails_capa"
-                android:layout_width="0dip"
-                android:layout_weight="0.65"
-                android:layout_height="wrap_content"
-                android:text="[...]"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
-
-        </TableRow>
-        <TableRow>
-
-            <TextView
-                android:layout_width="0dip"
-                android:layout_weight="0.35"
-                android:layout_height="wrap_content"
-                android:text="@string/frequency" />
-
-            <TextView
-                android:id="@+id/wifidetails_freq"
-                android:layout_width="0dip"
-                android:layout_weight="0.65"
-                android:layout_height="wrap_content"
-                android:text="[...]"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
-
-        </TableRow>
-         <TableRow>
-
-            <TextView
-                android:id="@+id/textView1"
-                android:layout_width="0dip"
-                android:layout_weight="0.35"
-                android:layout_height="wrap_content"
-                android:text="@string/no_measurements" />
-
-            <TextView
-                android:id="@+id/wifidetails_no_measurements"
-                android:layout_width="0dip"
-                android:layout_weight="0.4"
-                android:layout_height="wrap_content"
-                android:text="123"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
-
-            <TextView
-                android:layout_width="0dip"
-                android:layout_weight="0.2"
-                android:layout_height="wrap_content"
-                android:text="@string/is_new"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
-
-            <ImageView
-                android:id="@+id/wifidetails_is_new"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@android:drawable/checkbox_off_background" />
-            
-        </TableRow>
-    </TableLayout>
-    
-    <fragment
-        android:id="@+id/wifiDetailsMap"
-        android:name="org.openbmap.activities.details.WifiDetailsMap"
-        android:layout_width="fill_parent"
+    <android.support.v7.widget.CardView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:layout="@layout/wifidetailsmap" >
-    </fragment>
+        app:cardCornerRadius="10dp"
+        app:cardUseCompatPadding="true"
+        app:cardElevation="6dp"
+        android:layout_marginBottom="@dimen/activity_small_vertical_margin">
+        <TableLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:stretchColumns="1"
+            android:layout_margin="@dimen/activity_vertical_margin">
+
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/wifidetails_ssid"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ssid"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    tools:elevation="2dp"
+                    android:layout_span="2"
+                    android:textColor="?android:attr/textColorLink"
+                    android:elegantTextHeight="false"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/wifidetails_is_new"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_gravity="end"
+                    android:src="@drawable/ic_new_badge" />
+            </TableRow>
+            <View
+                android:layout_height="2dip"
+                android:background="#FF909090" />
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/manufactor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_manufactor"
+                    android:tint="@color/cardview_light_background" />
+
+                <TextView
+                    android:id="@+id/wifidetails_manufactor"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                    android:text="@string/n_a"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content">
+                <ImageView
+                    android:id="@+id/encryption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_encryption"
+                    android:tint="@color/cardview_light_background" />
+
+                <TextView
+                    android:id="@+id/wifidetails_capa"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                    android:text="[...]"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:layout_width="match_parent" />
+            </TableRow>
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content">
+                <ImageView
+                    android:id="@+id/wave"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_wave"
+                    android:tint="@color/cardview_light_background" />
+
+                <TextView
+                    android:id="@+id/wifidetails_freq"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                    android:text="[...]"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:layout_weight="1" />
+            </TableRow>
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content">
+                <ImageView
+                    android:id="@+id/measurements"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_number_sign"
+                    android:tint="@color/cardview_light_background" />
+
+                <TextView
+                    android:id="@+id/wifidetails_no_measurements"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                    android:text="123"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:layout_weight="1" />
+            </TableRow>
+        </TableLayout>
+
+    </android.support.v7.widget.CardView>
+
+    <android.support.v7.widget.CardView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="10dp"
+        app:cardUseCompatPadding="true"
+        app:cardElevation="4dp">
+        <fragment
+            android:id="@+id/wifiDetailsMap"
+            android:name="org.openbmap.activities.details.WifiDetailsHeatmap"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            tools:layout="@layout/wifidetailsmap"
+            android:layout_margin="@dimen/activity_vertical_margin"
+            >
+        </fragment>
+    </android.support.v7.widget.CardView>
 
 </LinearLayout>

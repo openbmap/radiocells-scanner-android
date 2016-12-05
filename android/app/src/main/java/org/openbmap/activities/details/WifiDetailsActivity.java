@@ -31,7 +31,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.openbmap.Preferences;
 import org.openbmap.R;
@@ -48,7 +47,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 /**
- * Parent activity for hosting wifi detail fragment
+ * Display details for specific wifi. WifiDetailsActivity also takes care of
+ * loading the records from the database. It also hosts the heatmap fragment.
  */
 public class WifiDetailsActivity extends FragmentActivity {
 
@@ -61,40 +61,37 @@ public class WifiDetailsActivity extends FragmentActivity {
     @BindView(R.id.wifidetails_manufactor) TextView tvManufactor;
     @BindView(R.id.wifidetails_is_new) ImageView ivIsNew;
 
-    private DataHelper mDatahelper;
+    private ArrayList<WifiRecord> mMeasurements;
+    private Integer mSession;
+    private String mBssid;
 
-    private WifiRecord mWifi;
-
-    /**
-     * Called when the activity is first created.
-     */
     @Override
     public final void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.wifidetails);
-
         ButterKnife.bind(this);
 
         final Bundle extras = getIntent().getExtras();
-        final String bssid = extras.getString(Schema.COL_BSSID);
-        Integer session = null;
+        mBssid = extras.getString(Schema.COL_BSSID);
+        mSession = null;
         if (extras.getInt(Schema.COL_SESSION_ID) != 0) {
-            session = extras.getInt(Schema.COL_SESSION_ID);
+            mSession = extras.getInt(Schema.COL_SESSION_ID);
         }
 
         // query content provider for wifi details
-        mDatahelper = new DataHelper(this);
-        final ArrayList<WifiRecord> wifis = mDatahelper.loadWifisByBssid(bssid, session);
-        tvNoMeasurements.setText(String.valueOf(wifis.size()));
+        DataHelper datahelper = new DataHelper(this);
+        this.mMeasurements = datahelper.getAllMeasurementsForBssid(this.mBssid, this.mSession);
 
-        mWifi = wifis.get(0);
+        tvNoMeasurements.setText(String.valueOf(mMeasurements.size()));
+        displayRecord(mMeasurements.get(0));
     }
 
     @Override
     protected final void onResume() {
         super.onResume();
 
-        displayRecord(mWifi);
+        displayRecord(mMeasurements.get(0));
+
     }
 
     /**
@@ -110,32 +107,13 @@ public class WifiDetailsActivity extends FragmentActivity {
         }
 
         if (!prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_NONE).equals(Preferences.VAL_CATALOG_NONE)) {
-            // Open catalog database
-            final String file = prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
-                    this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.CATALOG_SUBDIR)
-                    + File.separator + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_FILE);
-            try {
-                final String search = wifi.getBssid().replace(":", "").replace("-", "").substring(0, 6).toUpperCase();
-                Log.v(TAG, "Looking up manufactor " + search);
-                final SQLiteDatabase mCatalog = SQLiteDatabase.openDatabase(file, null, SQLiteDatabase.OPEN_READONLY);
-                Cursor cursor = null;
-                cursor = mCatalog.rawQuery("SELECT _id, manufactor FROM manufactors WHERE "
-                                + "(bssid = ?) LIMIT 1",
-                        new String[]{search});
+            final String search = wifi.getBssid().replace(":", "").replace("-", "").substring(0, 6).toUpperCase();
+            String manufactor = getManufactorName(search);
 
-                if (cursor.moveToFirst()) {
-                    final String manufactor = cursor.getString(cursor.getColumnIndex("manufactor"));
-                    tvManufactor.setText(manufactor);
-                }
-                cursor.close();
-            } catch (SQLiteCantOpenDatabaseException e1) {
-                Log.e(TAG, e1.getMessage());
-                Toast.makeText(this, getString(R.string.error_opening_wifi_catalog), Toast.LENGTH_LONG).show();
-                return;
-            } catch (SQLiteException e2) {
-                Log.e(TAG, e2.getMessage());
-                Toast.makeText(this, R.string.error_accessing_wifi_catalog, Toast.LENGTH_LONG).show();
-                return;
+            if (manufactor != null) {
+                tvManufactor.setText(manufactor);
+            } else {
+                tvManufactor.setText(R.string.n_a);
             }
         }
 
@@ -148,8 +126,9 @@ public class WifiDetailsActivity extends FragmentActivity {
 
         final Integer freq = wifi.getFrequency();
         if (freq != null) {
-            tvFrequency.setText(((WifiChannel.getChannel(freq) == null) ? getResources().getString(R.string.unknown) : getString(R.string.frequency) + WifiChannel.getChannel(freq))
-                            + "  (" + freq + " MHz)");
+            tvFrequency.setText(
+                    ((WifiChannel.getChannel(freq) == null) ? getResources().getString(R.string.unknown) : getString(R.string.frequency) + " " + WifiChannel.getChannel(freq))
+                            + " (" + freq + " MHz)");
         }
 
         if (wifi.getCatalogStatus().equals(CatalogStatus.NEW)) {
@@ -159,8 +138,38 @@ public class WifiDetailsActivity extends FragmentActivity {
         }
     }
 
-    public final WifiRecord getWifi() {
-        return mWifi;
+    private String getManufactorName(String search) {
+        String result = null;
+        // Open catalog database
+        final String file = PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
+                this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.CATALOG_SUBDIR)
+                + File.separator + PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_FILE);
+        try {
+
+            Log.v(TAG, "Looking up manufactor " + search);
+            final SQLiteDatabase mCatalog = SQLiteDatabase.openDatabase(file, null, SQLiteDatabase.OPEN_READONLY);
+            Cursor cursor = null;
+            cursor = mCatalog.rawQuery("SELECT _id, manufactor FROM manufactors WHERE "
+                            + "(mBssid = ?) LIMIT 1",
+                    new String[]{search});
+
+            if (cursor.moveToFirst()) {
+                result = cursor.getString(cursor.getColumnIndex("manufactor"));
+            }
+            cursor.close();
+        } catch (SQLiteCantOpenDatabaseException e1) {
+            Log.e(TAG, "Error opening catalog: " + e1.getMessage());
+            result = null;
+            // Toast.makeText(this, getString(R.string.error_opening_wifi_catalog), Toast.LENGTH_LONG).show();
+        } catch (SQLiteException e2) {
+            Log.e(TAG, "SQL exception on catalog: "  + e2.getMessage());
+            result = null;
+            //Toast.makeText(this, R.string.error_accessing_wifi_catalog, Toast.LENGTH_LONG).show();
+        }
+        return result;
     }
 
+    public ArrayList<WifiRecord> getMeasurements() {
+        return mMeasurements;
+    }
 }

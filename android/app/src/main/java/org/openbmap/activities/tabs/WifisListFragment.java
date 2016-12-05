@@ -68,7 +68,7 @@ public class WifisListFragment extends Fragment implements LoaderManager.LoaderC
      * Cursor loader id
      * must be different from CELL_LOADER_ID !
      */
-    private static final int WIFI_LOADER_ID	= 1;
+    private static final int WIFI_LIST_LOADER_ID = 1;
 
     /**
      * By default, sort by wifi ssid
@@ -121,7 +121,7 @@ public class WifisListFragment extends Fragment implements LoaderManager.LoaderC
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         final DataHelper dataHelper = new DataHelper(getActivity());
-        mSession = dataHelper.getActiveSessionId();
+        mSession = dataHelper.getCurrentSessionID();
     }
 
     @Override
@@ -145,6 +145,7 @@ public class WifisListFragment extends Fragment implements LoaderManager.LoaderC
                             final Intent intent = new Intent();
                             intent.setClass(getActivity(), WifiDetailsActivity.class);
                             intent.putExtra(Schema.COL_BSSID, bssid);
+                            intent.putExtra(Schema.COL_SESSION_ID, mSession);
                             startActivity(intent);
                         }
                     }
@@ -164,7 +165,8 @@ public class WifisListFragment extends Fragment implements LoaderManager.LoaderC
 
         adapter = new WifiAdapter(getActivity(), null);
         mRecyclerView.setAdapter(adapter);
-        getLoaderManager().initLoader(WIFI_LOADER_ID, null, this);
+        mRecyclerView.setHasFixedSize(true);
+        getLoaderManager().initLoader(WIFI_LIST_LOADER_ID, null, this);
 
         return rootView;
     }
@@ -175,6 +177,7 @@ public class WifisListFragment extends Fragment implements LoaderManager.LoaderC
         super.onDestroyView();
     }
 
+    @Override
     public void onCreateOptionsMenu (final Menu menu, final MenuInflater inflater){
         inflater.inflate(R.menu.wifilist_context, menu);
     }
@@ -239,7 +242,7 @@ public class WifisListFragment extends Fragment implements LoaderManager.LoaderC
      * Forces database reload
      */
     private void reload() {
-        getLoaderManager().restartLoader(WIFI_LOADER_ID, null, this);
+        getLoaderManager().restartLoader(WIFI_LIST_LOADER_ID, null, this);
     }
 
     @Override
@@ -368,7 +371,7 @@ public class WifisListFragment extends Fragment implements LoaderManager.LoaderC
             final int result = dataCursor.getInt(dataCursor.getColumnIndex(Schema.COL_KNOWN_WIFI));
             if (result == 0) {
                 // (+) icon for new wifis
-                holder.status.setImageResource(android.R.drawable.stat_notify_more);
+                holder.status.setImageResource(R.drawable.ic_new);
                 holder.status.setVisibility(View.VISIBLE);
             } else {
                 holder.status.setVisibility(View.INVISIBLE);

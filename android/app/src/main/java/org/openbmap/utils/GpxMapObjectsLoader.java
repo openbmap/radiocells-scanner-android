@@ -70,7 +70,7 @@ public class GpxMapObjectsLoader extends AsyncTask<Object, Void, List<LatLong>> 
 		//Log.d(TAG, "Loading gpx points");
 		List<LatLong> points = new ArrayList<>();
 
-		final ArrayList<PositionRecord> positions = dbHelper.loadPositions((Integer) args[SESSION_ID],
+		final ArrayList<PositionRecord> positions = dbHelper.getSessionPositions((Integer) args[SESSION_ID],
 				(Double) args[MIN_LAT_COL], (Double) args[MAX_LAT_COL], (Double) args[MIN_LON_COL], (Double) args[MAX_LON_COL]);
 
 		for (PositionRecord position : positions) {

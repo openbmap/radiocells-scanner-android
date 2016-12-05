@@ -25,6 +25,7 @@ import android.location.Location;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.os.Bundle;
+import android.support.annotation.UiThread;
 import android.support.v4.content.res.ResourcesCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -293,7 +294,7 @@ public class MapFragment extends BaseMapFragment implements
         final View view = inflater.inflate(R.layout.mapview, container, false);
         this.mUnbinder = ButterKnife.bind(this, view);
 
-        initMap();
+        initBaseMap();
         addMapActions();
 
         final Drawable posIcon = ResourcesCompat.getDrawable(getResources(), R.drawable.position, null);
@@ -341,10 +342,6 @@ public class MapFragment extends BaseMapFragment implements
 
     @Override
     public final void onPause() {
-        if (mOnlineLayer != null) {
-            mOnlineLayer.onPause();
-        }
-
         clearSession();
         clearGpx();
 
@@ -365,7 +362,7 @@ public class MapFragment extends BaseMapFragment implements
         if (isVisibleToUser) {
             registerReceiver();
             // TODO: currently no possible due to https://github.com/mapsforge/mapsforge/issues/659
-            //initMap();
+            //initBaseMap();
         } else {
             Log.d(TAG, "Map not visible, releasing");
             clearSession();
@@ -385,7 +382,7 @@ public class MapFragment extends BaseMapFragment implements
 
     private void getSession() {
         final DataHelper dbHelper = new DataHelper(getActivity().getApplicationContext());
-        mSession = dbHelper.getActiveSessionId();
+        mSession = dbHelper.getCurrentSessionID();
 
         if (mSession != RadioBeacon.SESSION_NOT_TRACKING) {
             Log.i(TAG, "Displaying session " + mSession);
@@ -446,7 +443,12 @@ public class MapFragment extends BaseMapFragment implements
         mMapView.getModel().mapViewPosition.addObserver(mMapObserver);
     }
 
+    @UiThread
     private void displayDirections(boolean show) {
+        if (directionSymbol == null) {
+            return;
+        }
+
         if (!show) {
             directionSymbol.setVisibility(View.INVISIBLE);
         } else {
@@ -753,7 +755,7 @@ public class MapFragment extends BaseMapFragment implements
             final List<Integer> sessions = new ArrayList<>();
             /*if (allLayerSelected()) {
                 // load all session wifis
-                sessions = new DataHelper(this).getSessionList();
+                sessions = new DataHelper(this).getSessionIDs();
             } else {*/
             sessions.add(mSession);
             //}
@@ -801,11 +803,11 @@ public class MapFragment extends BaseMapFragment implements
     @Subscribe
     public void onEvent(onCatalogUpdateAvailable event){
         if (event.items == null) {
-            Log.d(TAG, "No POI founds");
+            Log.d(TAG, "Catalog objects null");
             return;
         }
 
-        Log.d(TAG, event.items.size() + " POI found");
+        Log.d(TAG, event.items.size() + " catalog objects found");
 
         clearTowers();
         clearWifis();
@@ -1066,7 +1068,7 @@ public class MapFragment extends BaseMapFragment implements
                 mSession,
                 RadioBeacon.PROVIDER_USER_DEFINED,
                 true);
-        dbHelper.storePosition(pos);
+        dbHelper.savePosition(pos);
 
         // beep once point has been saved
         ToneGenerator toneG = new ToneGenerator(AudioManager.STREAM_ALARM, 100);

@@ -32,11 +32,14 @@ import org.openbmap.db.DataHelper;
 import org.openbmap.db.Schema;
 import org.openbmap.db.models.CellRecord;
 
+import java.util.ArrayList;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 /**
- * Parent activity for hosting cell detail fragement
+ * Display details for specific cell. CellDetailsActivity also takes care of
+ * loading the records from the database. It also hosts the heatmap fragment
  */
 public class CellDetailsActivity  extends FragmentActivity {
     @BindView(R.id.celldetails_networktype)	TextView tvNetworkType;
@@ -59,15 +62,12 @@ public class CellDetailsActivity  extends FragmentActivity {
 
 	private DataHelper mDatahelper;
 
-	/**
-	 * Displayed Cell's COL_ID 
-	 */
-	private int	mId;
+    private CellRecord mCell;
+    private Integer mSession;
 
-	private CellRecord	mDisplayed;
+    private ArrayList<CellRecord> mMeasurements;
 
-	/** Called when the activity is first created. */
-	@Override
+    @Override
 	public final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);	
 	
@@ -75,12 +75,17 @@ public class CellDetailsActivity  extends FragmentActivity {
 		ButterKnife.bind(this);
 
 		mDatahelper = new DataHelper(this);
-		// get the cell _id
+
+        // get the cell _id
 		final Bundle extras = getIntent().getExtras();
 		final int id = extras.getInt(Schema.COL_ID);
-		// query content provider for cell details
-		mDisplayed = mDatahelper.loadCellById(id);
-		mId = id;
+        mSession = null;
+        if (extras.getInt(Schema.COL_SESSION_ID) != 0) {
+            mSession = extras.getInt(Schema.COL_SESSION_ID);
+        }
+
+        mCell = mDatahelper.getCellByID(id);
+        this.mMeasurements = mDatahelper.getAllMeasurementsForCell(this.mCell, this.mSession);
 	}
 
 	@Override
@@ -92,10 +97,8 @@ public class CellDetailsActivity  extends FragmentActivity {
 		final int id = extras.getInt(Schema.COL_ID);
 
 		// query content provider for cell details
-		mDisplayed = mDatahelper.loadCellById(id);
-		mId = id;
-
-		displayRecord(mDisplayed);
+		mCell = mDatahelper.getCellByID(id);
+		displayRecord(mCell);
 	}
 
 	/**
@@ -148,7 +151,7 @@ public class CellDetailsActivity  extends FragmentActivity {
 	}
 
 	public final CellRecord getCell() {
-		return mDisplayed;
+		return mCell;
 	}
 
 	/**
@@ -169,4 +172,7 @@ public class CellDetailsActivity  extends FragmentActivity {
 	}
 
 
+    public ArrayList<CellRecord> getMeasurements() {
+        return mMeasurements;
+    }
 }

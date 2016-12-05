@@ -265,6 +265,14 @@ public class ManagerService extends Service {
     @Subscribe
     public void onEvent(onStartTracking event){
         Log.d(TAG, "Received StartTracking event");
+        Log.i(TAG, "=============================================================================");
+        Log.i(TAG, "Configuration");
+        Log.i(TAG, "Ignore low battery: " + prefs.getBoolean(Preferences.KEY_IGNORE_BATTERY, Preferences.VAL_IGNORE_BATTERY));
+        Log.i(TAG, "Min GPS accuracy: " + prefs.getString(Preferences.KEY_REQ_GPS_ACCURACY, Preferences.VAL_REQ_GPS_ACCURACY));
+        Log.i(TAG, "Scan mode: " + prefs.getString(Preferences.KEY_WIFI_SCAN_MODE, Preferences.VAL_WIFI_SCAN_MODE));
+        Log.i(TAG, "Map: " + prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE));
+        Log.i(TAG, "Catalog: " + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_FILE));
+        Log.i(TAG, "=============================================================================");
 
         currentSession = event.session;
         requirePowerLock();
@@ -385,6 +393,7 @@ public class ManagerService extends Service {
      * Unbinds all sub-services
      */
     private void unbindAll() {
+        Log.d(TAG, "Unbinding services");
         // Unbind from the service
         if (positioningBound) {
             unbindService(positioningConnection);
@@ -412,7 +421,7 @@ public class ManagerService extends Service {
      */
     private int newSession() {
         // invalidate all active session
-        dataHelper.invalidateActiveSessions();
+        dataHelper.invalidateCurrentSessions();
         // Create a new session and activate it
         // Then start HostActivity. HostActivity onStart() and onResume() check active session
         // and starts services for active session
@@ -422,7 +431,7 @@ public class ManagerService extends Service {
         active.setDescription("No description yet");
         active.isActive(true);
         // id can only be set after session has been stored to database.
-        final Uri result = dataHelper.storeSession(active);
+        final Uri result = dataHelper.insertSession(active);
         final int id = Integer.valueOf(result.getLastPathSegment());
         active.setId(id);
         return id;
@@ -433,7 +442,7 @@ public class ManagerService extends Service {
      * @param id
      */
     private void resumeSession(final int id) {
-        final Session resume = dataHelper.loadSession(id);
+        final Session resume = dataHelper.getSessionById(id);
 
         if (resume == null) {
             Log.e(TAG, "Error loading session " + id);
@@ -441,21 +450,21 @@ public class ManagerService extends Service {
         }
 
         resume.isActive(true);
-        dataHelper.storeSession(resume, true);
+        dataHelper.insertSession(resume, true);
     }
 
     /**
      * Updates cell and wifi count for active session and closes active session
      */
     private void closeSession() {
-        final Session active = dataHelper.loadActiveSession();
+        final Session active = dataHelper.getCurrentSession();
         if (active != null) {
             active.setWifisCount(dataHelper.countWifis(active.getId()));
             active.setCellsCount(dataHelper.countCells(active.getId()));
             active.setWaypointsCount(dataHelper.countWaypoints(active.getId()));
-            dataHelper.storeSession(active, false);
+            dataHelper.insertSession(active, false);
         }
-        dataHelper.invalidateActiveSessions();
+        dataHelper.invalidateCurrentSessions();
     }
 
     /**

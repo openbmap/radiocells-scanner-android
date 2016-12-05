@@ -98,7 +98,7 @@ public class GpxLoggerService extends AbstractService {
 		final PositionRecord pos = new PositionRecord(location, session, source);
 
 		// so far we set end position = begin position
-		dataHelper.storePosition(pos);
+		dataHelper.savePosition(pos);
 	}
 
 	@Override

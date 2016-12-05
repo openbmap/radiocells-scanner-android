@@ -176,7 +176,7 @@ public class StatusBar extends LinearLayout {
             }
 
             if (event.location.hasAccuracy()) {
-				Log.v(TAG, "GPS Accuracy " + event.location.getAccuracy());
+				//Log.v(TAG, "GPS Accuracy " + event.location.getAccuracy());
                 tvAccuracy.setText(ACCURACY_FORMAT.format(event.location.getAccuracy()) + getResources().getString(R.string.meter));
             } else {
                 tvAccuracy.setText(getResources().getString(R.string.empty));
@@ -186,7 +186,7 @@ public class StatusBar extends LinearLayout {
     @Subscribe
 	public void onEvent(onCellSaved event) {
 		if (mDataHelper != null) {
-			tvCellCount.setText(String.valueOf(mDataHelper.countCells(mDataHelper.getActiveSessionId())));
+			tvCellCount.setText(String.valueOf(mDataHelper.countCells(mDataHelper.getCurrentSessionID())));
 		}
 	}
 
@@ -203,8 +203,8 @@ public class StatusBar extends LinearLayout {
     @Subscribe
 	public void onEvent (onWifisAdded event) {
 		if (mDataHelper != null) {
-			tvWifiCount.setText(String.valueOf(mDataHelper.countWifis(mDataHelper.getActiveSessionId())));
-			tvNewWifiCount.setText(String.valueOf(mDataHelper.countNewWifis(mDataHelper.getActiveSessionId())));
+			tvWifiCount.setText(String.valueOf(mDataHelper.countWifis(mDataHelper.getCurrentSessionID())));
+			tvNewWifiCount.setText(String.valueOf(mDataHelper.countNewWifis(mDataHelper.getCurrentSessionID())));
 		}
 	}
 
@@ -213,8 +213,8 @@ public class StatusBar extends LinearLayout {
 		super.onAttachedToWindow();
 		mDataHelper = new DataHelper(context);
 
-        tvWifiCount.setText(String.valueOf(mDataHelper.countWifis(mDataHelper.getActiveSessionId())));
-        tvNewWifiCount.setText(String.valueOf(mDataHelper.countNewWifis(mDataHelper.getActiveSessionId())));
+        tvWifiCount.setText(String.valueOf(mDataHelper.countWifis(mDataHelper.getCurrentSessionID())));
+        tvNewWifiCount.setText(String.valueOf(mDataHelper.countNewWifis(mDataHelper.getCurrentSessionID())));
 
 		registerReceiver();
 	}

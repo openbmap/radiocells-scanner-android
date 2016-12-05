@@ -25,10 +25,10 @@ import java.util.ArrayList;
 /**
  * Model for general log file properties (cell manufacturer, model, etc.)
  */
-public class LogFile implements Comparable<LogFile> {
+public class MetaData implements Comparable<MetaData> {
 
 	@SuppressWarnings("unused")
-	private static final String TAG = LogFile.class.getSimpleName();
+	private static final String TAG = MetaData.class.getSimpleName();
 
 	private String mManufacturer;
 	private String mModel;
@@ -40,11 +40,11 @@ public class LogFile implements Comparable<LogFile> {
 	private ArrayList<AbstractLogEntry<WifiRecord>> wifis;
 	private ArrayList<AbstractLogEntry<CellRecord>> cells;
 
-	public LogFile(final String manufacturer, final String model, final String revision, final String swId, final String swVer) {
+	public MetaData(final String manufacturer, final String model, final String revision, final String swId, final String swVer) {
 		this(manufacturer, model, revision, swId, swVer, RadioBeacon.SESSION_NOT_TRACKING);
 	}
 
-	public LogFile(final String manufacturer, final String model, final String revision, final String swId, final String swVer, final int session) {
+	public MetaData(final String manufacturer, final String model, final String revision, final String swId, final String swVer, final int session) {
 		setManufacturer(manufacturer);
 		setModel(model);
 		setRevision(revision);
@@ -58,7 +58,7 @@ public class LogFile implements Comparable<LogFile> {
 	/**
 	 * used for contains method
 	 */
-	public final boolean equals(final LogFile aLog) {
+	public final boolean equals(final MetaData aLog) {
 
 		if (aLog == null) {return false;}
 
@@ -99,7 +99,7 @@ public class LogFile implements Comparable<LogFile> {
 	}
 
 	@Override
-	public final int compareTo(final LogFile aCell) {
+	public final int compareTo(final MetaData aCell) {
 		if (this.equals(aCell)) {
 			return 0;
 		}

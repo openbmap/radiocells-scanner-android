@@ -60,9 +60,14 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 		void onHeatmapFailed();
 	}
 
-	public HeatmapBuilder(final HeatmapBuilderListener listener, final int width, final int height,
-			final BoundingBox bbox, final byte zoom, final float scaleFactor,
-				final int tilesize, final float radius) {
+	public HeatmapBuilder(final HeatmapBuilderListener listener,
+						  final int width,
+                          final int height,
+                          final BoundingBox bbox,
+                          final byte zoom,
+                          final float scaleFactor,
+                          final int tilesize,
+                          final float radius) {
 		this.mListener = listener;
 		this.mBbox = bbox;
 		this.mBackbuffer = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
@@ -94,9 +99,8 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 			throw new IllegalArgumentException("No heat points provided");
 		}
 
-		@SuppressWarnings("unchecked")
-		final
-		ArrayList<HeatLatLong> heatLatLongs = ((ArrayList<HeatLatLong>) params[0]);
+
+		final ArrayList<HeatLatLong> heatLatLongs = ((ArrayList<HeatLatLong>) params[0]);
 
 		for (final HeatLatLong heat : heatLatLongs) {
 
@@ -137,9 +141,12 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 		}
 	}
 
-
 	private void addPoint(final float x, final float y, final int times) {
-		final RadialGradient g = new RadialGradient(x, y, mRadius, Color.argb(Math.max(10 * times, 255), 0, 0, 0), Color.TRANSPARENT, TileMode.CLAMP);
+		final RadialGradient g = new RadialGradient(x, y,
+                mRadius,
+                Color.argb(getScaledIntensity(times), 0, 0, 0),
+                Color.TRANSPARENT,
+                TileMode.CLAMP);
 
 		final Paint gp = new Paint();
 		gp.setShader(g);
@@ -147,7 +154,16 @@ public class HeatmapBuilder extends AsyncTask<Object, Integer, Boolean> {
 		mCanvas.drawCircle(x, y, mRadius, gp);
 	}
 
-	private void colorize(final float x, final float y) {
+    private int getScaledIntensity(int times) {
+        final int MIN = -120;
+        final int MAX = -45;
+
+        double scaled = ((times-MIN)/((double)Math.abs(MAX-MIN)) * 255);
+        //Log.v(TAG, "Heat conversion " + times + " --> " + scaled);
+        return Math.max((int)scaled, 255);
+    }
+
+    private void colorize(final float x, final float y) {
 		final int[] pixels = new int[this.mWidth * this.mHeight];
 
 		mBackbuffer.getPixels(pixels, 0, this.mWidth, 0, 0, this.mWidth, this.mHeight);

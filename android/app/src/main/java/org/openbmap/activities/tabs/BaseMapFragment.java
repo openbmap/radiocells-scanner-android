@@ -26,6 +26,15 @@ import org.openbmap.utils.MapUtils;
 import butterknife.BindView;
 import butterknife.Unbinder;
 
+/**
+ * Base class for fragment with a mapsforge map. Class takes care of cache initialization,
+ * map setup and cleanup.
+ *
+ * Important notes:
+ * - Derived classes must call {@code initBaseMap()} in their onCreateView() method <p>
+ * - Derived classes must all register themselves to Butterknife using {@code this.mUnbinder = ButterKnife.bind(this, view)}
+ * in their onCreateView() method
+ */
 public abstract class BaseMapFragment extends Fragment implements MapUtils.onLongPressHandler {
     private static final String TAG = BaseMapFragment.class.getSimpleName();
 
@@ -41,7 +50,7 @@ public abstract class BaseMapFragment extends Fragment implements MapUtils.onLon
     /**
      * Online tile layer, used when no offline map available
      */
-    protected static TileDownloadLayer mOnlineLayer = null;
+    protected TileDownloadLayer mOnlineLayer = null;
 
     /**
      * Used for persisting zoom and position settings onPause / onDestroy
@@ -76,9 +85,8 @@ public abstract class BaseMapFragment extends Fragment implements MapUtils.onLon
     public void onResume(){
         super.onResume();
         if (mMapView == null) {
-            initMap();
+            initBaseMap();
         }
-
         if (mOnlineLayer != null) {
             mOnlineLayer.onResume();
         }
@@ -86,11 +94,11 @@ public abstract class BaseMapFragment extends Fragment implements MapUtils.onLon
 
     @Override
     public void onPause() {
-
         if (mOnlineLayer != null) {
             mOnlineLayer.onPause();
         }
 
+        //releaseMap();
         super.onPause();
     }
 
@@ -99,9 +107,10 @@ public abstract class BaseMapFragment extends Fragment implements MapUtils.onLon
     /**
      * Initializes map components
      * <p/>
-     * initMap must be called in onCreateView of subclasses
+     * Important note:
+     * {@code initBaseMap()} must be called in onCreateView of subclasses
      */
-    protected void initMap() {
+    protected void initBaseMap() {
 
         if (mMapView == null) {
             Log.e(TAG, "MapView is null");
@@ -126,11 +135,11 @@ public abstract class BaseMapFragment extends Fragment implements MapUtils.onLon
             mMapView.getModel().mapViewPosition.setZoomLevel((byte) 15);
         }
 
-        if (MapUtils.hasOfflineMap(this.getActivity())) {
+        if (MapUtils.hasOfflineMap(this.getActivity().getApplicationContext())) {
             Log.i(TAG, "Using offline map mode");
             mMapView.getLayerManager().getLayers().clear();
             addOfflineLayer();
-        } else if (MapUtils.useOnlineMaps(this.getActivity())) {
+        } else if (MapUtils.useOnlineMaps(this.getActivity().getApplicationContext())) {
             Log.i(TAG, "Using online map mode");
             Toast.makeText(this.getActivity(), R.string.info_using_online_map, Toast.LENGTH_LONG).show();
             addOnlineLayer();
@@ -185,9 +194,7 @@ public abstract class BaseMapFragment extends Fragment implements MapUtils.onLon
             }
         };
         mMapView.getLayerManager().getLayers().add(mOnlineLayer);
-        mOnlineLayer.onResume();
     }
-
 
     /**
      * Creates a tile cache for the baselayer

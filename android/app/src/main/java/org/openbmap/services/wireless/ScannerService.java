@@ -58,7 +58,7 @@ import org.openbmap.Preferences;
 import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.CellRecord;
-import org.openbmap.db.models.LogFile;
+import org.openbmap.db.models.MetaData;
 import org.openbmap.db.models.PositionRecord;
 import org.openbmap.db.models.WifiRecord;
 import org.openbmap.db.models.WifiRecord.CatalogStatus;
@@ -590,7 +590,7 @@ public class ScannerService extends AbstractService {
                                     }
                                 }
                                 // Log.i(TAG, "Saving wifis");
-                                dataHelper.storeWifiScanResults(begin, end, wifis);
+                                dataHelper.saveWifiScanResults(wifis, begin, end);
 
 
                                 // take last seen wifi and broadcast infos in ui
@@ -683,7 +683,7 @@ public class ScannerService extends AbstractService {
             }
             // now persist list of cell records in database
             // Caution: So far we set end position = begin position
-            dataHelper.storeCellsScanResults(cells, pos, pos);
+            dataHelper.saveCellsScanResults(cells, pos, pos);
             currentCell = cellInfoList.get(0);
 
             if (cells.size() > 0) {
@@ -703,7 +703,7 @@ public class ScannerService extends AbstractService {
 
                 final ArrayList<CellRecord> neigbors = processNeighbors(serving, pos);
                 cells.addAll(neigbors);
-                dataHelper.storeCellsScanResults(cells, pos, pos);
+                dataHelper.saveCellsScanResults(cells, pos, pos);
 
                 if (serving != null) {
                     broadcastCellInfo(serving);
@@ -1299,7 +1299,7 @@ public class ScannerService extends AbstractService {
         // invalidate current wifi scans
         pendingWifiScanResults = false;
 
-        dataHelper.storeLogFile(new LogFile(
+        dataHelper.saveMetaData(new MetaData(
                 Build.MANUFACTURER,
                 Build.MODEL,
                 Build.VERSION.RELEASE,

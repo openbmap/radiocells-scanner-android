@@ -216,7 +216,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	 */
 	private void resume(final int id) {
 		final DataHelper datahelper = new DataHelper(this.getActivity());
-		final Session session = datahelper.loadSession(id);
+		final Session session = datahelper.getSessionById(id);
 		if (session != null && !session.hasBeenExported()) {
 			((SessionFragementListener) getActivity()).resumeCommand(id);
 		} else {

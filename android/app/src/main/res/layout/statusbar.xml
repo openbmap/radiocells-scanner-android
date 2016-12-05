@@ -40,7 +40,7 @@
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:layout_gravity="center_vertical|center_horizontal"
-        android:src="@drawable/ic_added" />
+        android:src="@drawable/ic_count_new" />
 
     <TextView
         android:id="@+id/gpsstatus_new_wifi_count"

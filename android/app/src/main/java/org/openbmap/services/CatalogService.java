@@ -336,7 +336,7 @@ public class CatalogService extends AbstractService {
                 pois.add(poi);
             }
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, "Error executing catalog query: " + e.getMessage());
         }
 
         /*

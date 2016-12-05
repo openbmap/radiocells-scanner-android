@@ -18,7 +18,6 @@
 
 package org.openbmap.activities;
 
-import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -29,7 +28,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -320,7 +318,7 @@ implements SessionListFragment.SessionFragementListener,
 		completedExports = 0;
 		failedExports = 0;
 
-		final ArrayList<Integer> sessions = mDataHelper.getSessionList();
+		final ArrayList<Integer> sessions = mDataHelper.getSessionIDs();
 		for (final int id : sessions) {
 			if (!hasBeenUploaded(id)) {
 				Log.i(TAG, "Adding " + id + " to export task list");
@@ -354,7 +352,7 @@ implements SessionListFragment.SessionFragementListener,
      */
 	@Override
 	public final void stopCommand(final int id) {
-		mDataHelper.invalidateActiveSessions();
+		mDataHelper.invalidateCurrentSessions();
 		// Signalling host activity to stop services
         EventBus.getDefault().post(new onStopTracking());
 
@@ -433,7 +431,7 @@ implements SessionListFragment.SessionFragementListener,
 	public final void deleteAllConfirmed() {
 		// Signalling service stop request
         EventBus.getDefault().post(new onStopTracking());
-		mDataHelper.deleteAllSession();
+		mDataHelper.deleteAllSessions();
 
 		updateUI();
 	}
@@ -504,7 +502,7 @@ implements SessionListFragment.SessionFragementListener,
 	 */
 	private boolean hasBeenUploaded(final int id) {
 		final DataHelper dataHelper = new DataHelper(this);
-		final Session session = dataHelper.loadSession(id);
+		final Session session = dataHelper.getSessionById(id);
 
 		if (session != null) {
 			return session.hasBeenExported();
@@ -614,10 +612,10 @@ implements SessionListFragment.SessionFragementListener,
 	@Override
 	public void onUploadCompleted(final int id) {
 		// mark as exported
-		final Session session = mDataHelper.loadSession(id);
+		final Session session = mDataHelper.getSessionById(id);
 		session.hasBeenExported(true);
 		session.isActive(false);
-		mDataHelper.storeSession(session, false);
+		mDataHelper.insertSession(session, false);
 
 		completedExports += 1;
 		Log.i(TAG, "Session " + id + " exported");

@@ -71,8 +71,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+ Schema.COL_CDMA_SYSTEMID + " INTEGER DEFAULT -1,"
 			+ Schema.COL_OPERATORNAME + " TEXT, "
 			+ Schema.COL_OPERATOR + " TEXT, "
-			+ Schema.COL_STRENGTHDBM + " INTEGER DEFAULT 0, "
-			+ Schema.COL_STRENGTHASU + " INTEGER DEFAULT 0, "
+			+ Schema.COL_STRENGTH_DBM + " INTEGER DEFAULT 0, "
+			+ Schema.COL_STRENGTH_ASU + " INTEGER DEFAULT 0, "
 			+ Schema.COL_TIMESTAMP + " LONG NOT NULL, "
 			+ Schema.COL_BEGIN_POSITION_ID + " INTEGER NOT NULL, "
 			+ Schema.COL_END_POSITION_ID + " INTEGER NOT NULL, "
@@ -161,8 +161,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+ " w." +  Schema.COL_CDMA_SYSTEMID  + " AS " + Schema.COL_CDMA_SYSTEMID + ","
 			+ " w." +  Schema.COL_OPERATORNAME  + " AS " + Schema.COL_OPERATORNAME + ","
 			+ " w." +  Schema.COL_OPERATOR  + " AS " + Schema.COL_OPERATOR + ","
-			+ " w." +  Schema.COL_STRENGTHDBM  + " AS " + Schema.COL_STRENGTHDBM + ","
-			+ " w." +  Schema.COL_STRENGTHASU  + " AS " + Schema.COL_STRENGTHASU + ","
+			+ " w." +  Schema.COL_STRENGTH_DBM + " AS " + Schema.COL_STRENGTH_DBM + ","
+			+ " w." +  Schema.COL_STRENGTH_ASU + " AS " + Schema.COL_STRENGTH_ASU + ","
 			+ " w." +  Schema.COL_TIMESTAMP  + " AS " + Schema.COL_TIMESTAMP + ","
 			+ " w." +  Schema.COL_BEGIN_POSITION_ID + " AS " + Schema.COL_BEGIN_POSITION_ID + ","
 			+ " w." +  Schema.COL_END_POSITION_ID + " AS " + Schema.COL_END_POSITION_ID + ","
@@ -297,7 +297,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			+  "CREATE INDEX idx_cells ON "
 			+  Schema.TBL_CELLS + "("
 			+  Schema.COL_LOGICAL_CELLID + ", "
-			+  Schema.COL_STRENGTHDBM + ""
+			+  Schema.COL_STRENGTH_DBM + ""
 			+  ")";
 
 	/**
@@ -387,7 +387,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		if (oldVersion <= 2) {
 			// add asu fields
 			Log.i(TAG, "Migrate to db version 3");
-			db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_STRENGTHASU + " INTEGER DEFAULT 0");
+			db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_STRENGTH_ASU + " INTEGER DEFAULT 0");
 		}
 
 		if (oldVersion <= 3) {
@@ -421,7 +421,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			// on some clients column from version 2 wasn't added
 			Log.i(TAG, "Migrate to db version 6");
 			try {
-				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_STRENGTHASU + " INTEGER DEFAULT 0");
+				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_STRENGTH_ASU + " INTEGER DEFAULT 0");
 			} catch (final SQLException e) {
 				Log.i(TAG, "Nothing to do: asu column already exists");
 			}
@@ -473,7 +473,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 			// repeat migration 5
 			try {
-				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_STRENGTHASU + " INTEGER DEFAULT 0");
+				db.execSQL("ALTER TABLE " + Schema.TBL_CELLS + " ADD COLUMN " + Schema.COL_STRENGTH_ASU + " INTEGER DEFAULT 0");
 			} catch (final SQLException e) {
 				Log.i(TAG, "Nothing to do: asu column already exists");
 			}

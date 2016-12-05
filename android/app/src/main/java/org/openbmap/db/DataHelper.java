@@ -14,7 +14,7 @@ import android.util.Log;
 
 import org.openbmap.RadioBeacon;
 import org.openbmap.db.models.CellRecord;
-import org.openbmap.db.models.LogFile;
+import org.openbmap.db.models.MetaData;
 import org.openbmap.db.models.PositionRecord;
 import org.openbmap.db.models.Session;
 import org.openbmap.db.models.WifiRecord;
@@ -24,7 +24,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Data helper for talking to content resolver
+ * Data helper easy saving and retrieving data from the database.
+ * Performance advice: use helper methods only for retrieving smaller amounts of data.
+ *
+ * As an object is created for each row, using helper methods for large amounts of data
+ * can lead to performance issues.
  */
 public class DataHelper {
 
@@ -51,7 +55,7 @@ public class DataHelper {
 	 * @param end   end posistion which is equal across all wifis
 	 * @param wifis list of wifis sharing same begin and end position (i.e. all wifis from one scan)
 	 */
-	public final void storeWifiScanResults(final PositionRecord begin, final PositionRecord end, final ArrayList<WifiRecord> wifis) {
+	public final void saveWifiScanResults(final ArrayList<WifiRecord> wifis, final PositionRecord begin, final PositionRecord end) {
 
 		if (wifis == null || wifis.size() == 0) {
 			return;
@@ -116,9 +120,9 @@ public class DataHelper {
 
 
 	/**
-	 * Counts number of wifis in session.
+	 * Returns number of wifis in session.
 	 *
-	 * @param session the session
+	 * @param session session id
 	 * @return number of wifis
 	 */
 	public final int countWifis(final int session) {
@@ -131,13 +135,12 @@ public class DataHelper {
 	}
 
 	/**
-	 * Counts number of wifis in session.
+	 * Returns number of wifis in session.
 	 *
-	 * @param session the session
+	 * @param session session id
 	 * @return number of wifis
 	 */
 	public final int countNewWifis(final int session) {
-        //Log.d(TAG, "countNewWifis called");
 		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
 				ContentProvider.CONTENT_URI_WIFI, ContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
 				new String[]{Schema.COL_ID}, Schema.COL_KNOWN_WIFI + " = ?", new String[]{"0"}, null);
@@ -147,55 +150,14 @@ public class DataHelper {
 	}
 
 	/**
-	 * Loads single wifi from TBL_WIFIS
-	 *
-	 * @param id wifi id to return
-	 * @return WifiRecord wifi record
-	 */
-	public final WifiRecord loadWifiById(final int id) {
-        // Log.d(TAG, "loadWifiById called");
-		WifiRecord wifi = null;
-
-		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(ContentProvider.CONTENT_URI_WIFI, id), null, null, null, null);
-		//Log.d(TAG, "getWifiMeasurement returned " + ca.getCount() + " records");
-		if (cursor.moveToNext()) {
-
-            final int colBssid = cursor.getColumnIndex(Schema.COL_BSSID);
-            final int colBssidLong = cursor.getColumnIndex(Schema.COL_BSSID_LONG);
-            final int colSsid = cursor.getColumnIndex(Schema.COL_SSID);
-            final int colEncryption = cursor.getColumnIndex(Schema.COL_ENCRYPTION);
-            final int colFrequency = cursor.getColumnIndex(Schema.COL_FREQUENCY);
-            final int colLevel = cursor.getColumnIndex(Schema.COL_MAX_LEVEL);
-            final int colTime = cursor.getColumnIndex(Schema.COL_TIMESTAMP);
-            final int colRequest = cursor.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
-            final int colLast = cursor.getColumnIndex(Schema.COL_END_POSITION_ID);
-            final int colStatus = cursor.getColumnIndex(Schema.COL_KNOWN_WIFI);
-
-            wifi = new WifiRecord(
-                    cursor.getString(colBssid),
-                    cursor.getLong(colBssidLong),
-                    cursor.getString(colSsid),
-                    cursor.getString(colEncryption),
-                    cursor.getInt(colFrequency),
-                    cursor.getInt(colLevel),
-                    cursor.getLong(colTime),
-                    loadPositionById(cursor.getString(colRequest)),
-                    loadPositionById(cursor.getString(colLast)),
-                    CatalogStatus.values()[cursor.getInt(colStatus)]);
-		}
-		cursor.close();
-		return wifi;
-	}
-
-	/**
-	 * Gets wifis by BSSID
+	 * Gets all measurements for given BSSID
 	 *
 	 * @param bssid   the bssid
-	 * @param session the session
-	 * @return Array (of measurements) for that BSSID
+	 * @param session session id, may be null to retrieve data across all sessions
+	 * @return wifi records containing all measurements for given BSSID
 	 */
-	public final ArrayList<WifiRecord> loadWifisByBssid(final String bssid, final Integer session) {
-        //Log.d(TAG, "loadWifisByBssid called");
+	public final ArrayList<WifiRecord> getAllMeasurementsForBssid(final String bssid, final Integer session) {
+        //Log.d(TAG, "getAllMeasurementsForBssid called");
 		final ArrayList<WifiRecord> wifis = new ArrayList<>();
 
 		String selectSql;
@@ -207,133 +169,74 @@ public class DataHelper {
 
 		final Cursor cursor = contentResolver.query(ContentProvider.CONTENT_URI_WIFI, null, selectSql, null, null);
 
-		// Performance tweaking: don't call ca.getColumnIndex on each iteration
-		final int colBssid = cursor.getColumnIndex(Schema.COL_BSSID);
-        final int colBssidLong = cursor.getColumnIndex(Schema.COL_BSSID_LONG);
-		final int colSsid = cursor.getColumnIndex(Schema.COL_SSID);
-		final int colEncryption = cursor.getColumnIndex(Schema.COL_ENCRYPTION);
-		final int colFreq = cursor.getColumnIndex(Schema.COL_FREQUENCY);
-		final int colLevel = cursor.getColumnIndex(Schema.COL_LEVEL);
-		final int colTime = cursor.getColumnIndex(Schema.COL_TIMESTAMP);
-		final int colRequest = cursor.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
-		final int colLast = cursor.getColumnIndex(Schema.COL_END_POSITION_ID);
-		final int colStatus = cursor.getColumnIndex(Schema.COL_KNOWN_WIFI);
-
 		while (cursor.moveToNext()) {
-            /*
-            			final WifiRecord wifi = new WifiRecord(
-                    bssid,
-                    bssidLong,
-                    ssid,
-                    capa,
-                    freq,
-                    level,
-                    time,
-                    request,
-                    last,
-                    status)
-             */
-			final WifiRecord wifi = new WifiRecord(
-                    cursor.getString(colBssid),
-                    cursor.getLong(colBssidLong),
-                    cursor.getString(colSsid),
-                    cursor.getString(colEncryption),
-                    cursor.getInt(colFreq),
-                    cursor.getInt(colLevel),
-                    cursor.getLong(colTime),
-                    loadPositionById(cursor.getString(colRequest)),
-                    loadPositionById(cursor.getString(colLast)),
-                    CatalogStatus.values()[cursor.getInt(colStatus)]);
-
+			final WifiRecord wifi = cursorToWifi(cursor);
 			wifis.add(wifi);
 		}
 		cursor.close();
 		return wifis;
 	}
 
-	/**
-	 * Returns strongest measurement for each wifi from TBL_WIFIS.
-	 *
-	 * @param session the session
-	 * @return Arraylist<WifiRecord> array list
-	 */
-	public final ArrayList<WifiRecord> loadWifisOverview(final int session) {
-		return loadWifisOverviewWithin(session, null, null, null, null);
-	}
+	public ArrayList<CellRecord> getAllMeasurementsForCell(CellRecord cell, final Integer session) {
+        final ArrayList<CellRecord> cells = new ArrayList<>();
 
-	/**
-	 * Returns strongest measurement for each wifi within bounding box from TBL_WIFIS.
-	 *
-	 * @param session the session
-	 * @param minLon  the min lon
-	 * @param maxLon  the max lon
-	 * @param minLat  the min lat
-	 * @param maxLat  the max lat
-	 * @return Arraylist<WifiRecord> array list
-	 */
-	public final ArrayList<WifiRecord> loadWifisOverviewWithin(final int session,
-															   final Double minLon,
-															   final Double maxLon,
-															   final Double minLat,
-															   final Double maxLat) {
-		final ArrayList<WifiRecord> wifis = new ArrayList<>();
+        String selectSql = "";
 
-		String selection = null;
-		String[] selectionArgs = null;
+        if (cell != null && cell.getLogicalCellId() != -1  && !cell.isCdma()) {
+            // GSM/HDSPA cells are looked up by logical cell id and psc
+            selectSql =
+                    Schema.COL_LOGICAL_CELLID + " = \"" + cell.getLogicalCellId() + "\" AND "
+                    + Schema.COL_PSC + " = \"" + cell.getPsc() + "\"";
+        } else if (cell != null && cell.getLogicalCellId() == -1 && !cell.isCdma()) {
+            // UMTS cells are looked up by PSC
+            selectSql = Schema.COL_PSC + " = \"" + cell.getPsc() + "\"";
+        } else if (cell != null && cell.isCdma()
+            // CDMA cells are looked up by Base ID, Network ID and System ID as well as PSC
+                && !cell.getBaseId().equals("-1")
+                && !cell.getNetworkId().equals("-1")
+                && !cell.getSystemId().equals("-1")) {
 
-		if (minLon != null && maxLon != null && minLat != null && maxLat != null) {
-			selection = "b." + Schema.COL_LONGITUDE + " >= ?"
-					+ " AND b." + Schema.COL_LONGITUDE + " <= ?"
-					+ " AND b." + Schema.COL_LATITUDE + " >= ?"
-					+ " AND b." + Schema.COL_LATITUDE + " <= ?";
-			selectionArgs = new String[]{String.valueOf(minLon), String.valueOf(maxLon), String.valueOf(minLat), String.valueOf(maxLat)};
-		}
+            selectSql = Schema.COL_CDMA_BASEID + " = \"" + cell.getBaseId() + "\" AND "
+                    + Schema.COL_CDMA_NETWORKID + " = \"" + cell.getNetworkId() + "\" AND "
+                    + Schema.COL_CDMA_SYSTEMID + " = \"" + cell.getSystemId() + "\" AND "
+                    + Schema.COL_PSC + " = \"" + cell.getPsc() + "\"";
+        }
 
-		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(ContentProvider.CONTENT_URI_WIFI,
-				ContentProvider.CONTENT_URI_OVERVIEW_SUFFIX), session),
-				null, selection, selectionArgs, null);
+        if (selectSql.length() > 0) {
+            selectSql += " AND ";
+        }
 
-		// Performance tweaking: don't call ca.getColumnIndex on each iteration
-		final int colBssid = cursor.getColumnIndex(Schema.COL_BSSID);
-        final int colBssidLong = cursor.getColumnIndex(Schema.COL_BSSID_LONG);
-		final int colSsid = cursor.getColumnIndex(Schema.COL_SSID);
-		final int colEncryption = cursor.getColumnIndex(Schema.COL_ENCRYPTION);
-		final int colFrequency = cursor.getColumnIndex(Schema.COL_FREQUENCY);
-		final int colLevel = cursor.getColumnIndex(Schema.COL_MAX_LEVEL);
-		final int colTime = cursor.getColumnIndex(Schema.COL_TIMESTAMP);
-		final int colRequest = cursor.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
-		final int colLast = cursor.getColumnIndex(Schema.COL_END_POSITION_ID);
-		final int colStatus = cursor.getColumnIndex(Schema.COL_KNOWN_WIFI);
+        if (session != null) {
+            selectSql += Schema.COL_SESSION_ID + " = \"" + session + "\"";
+        }
 
-		while (cursor.moveToNext()) {
+        /*
+        final String[] projection = {Schema.COL_ID,
+                Schema.COL_STRENGTH_DBM,
+                Schema.COL_TIMESTAMP,
+                "begin_" + Schema.COL_LATITUDE,
+                "begin_" + Schema.COL_LONGITUDE};
+        */
+        final Cursor cursor = contentResolver.query(ContentProvider.CONTENT_URI_CELL, null, selectSql, null, null);
 
-			final WifiRecord wifi = new WifiRecord(
-                    cursor.getString(colBssid),
-                    cursor.getLong(colBssidLong),
-                    cursor.getString(colSsid),
-                    cursor.getString(colEncryption),
-                    cursor.getInt(colFrequency),
-                    cursor.getInt(colLevel),
-                    cursor.getLong(colTime),
-                    loadPositionById(cursor.getString(colRequest)),
-                    loadPositionById(cursor.getString(colLast)),
-                    CatalogStatus.values()[cursor.getInt(colStatus)]);
+        // query data from content provider
+        //return new CursorLoader(getActivity().getBaseContext(),
+        //        ContentProvider.CONTENT_URI_CELL_EXTENDED, projection, selectSql, args.toArray(new String[args.size()]), Schema.COL_STRENGTH_DBM + " DESC");
 
-			wifis.add(wifi);
-		}
-
-		cursor.close();
-		//Log.d(TAG, "loadWifisOverviewWithiny executed (" + (System.currentTimeMillis() - start) + " ms)");
-		return wifis;
-	}
-
+        while (cursor.moveToNext()) {
+            final CellRecord wifi = cursorToCell(cursor);
+            cells.add(wifi);
+        }
+        cursor.close();
+        return cells;
+    }
 	/**
 	 * Loads session by id.
 	 *
 	 * @param id Session to load
 	 * @return On success session is returned, otherwise null.
 	 */
-	public final Session loadSession(final int id) {
+	public final Session getSessionById(final int id) {
 		Session session = null;
 		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(ContentProvider.CONTENT_URI_SESSION, id), null, null, null, null);
 		if (cursor.moveToNext()) {
@@ -359,7 +262,7 @@ public class DataHelper {
 	 * @param invalidateActive shall all other active sessions will be deactivated?
 	 * @return Number of rows updated.
 	 */
-	public final int storeSession(final Session session, final boolean invalidateActive) {
+	public final int insertSession(final Session session, final boolean invalidateActive) {
 		if (session == null) {
 			Log.e(TAG, "Error storing session: Session is null");
 			return 0;
@@ -367,13 +270,13 @@ public class DataHelper {
 
 		if (invalidateActive) {
 			// deactivate all active sessions
-			invalidateActiveSessions();
+			invalidateCurrentSessions();
 		}
 
 		// check, whether session already exists, then update, otherwise save new session
 		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(ContentProvider.CONTENT_URI_SESSION, session.getId()), null, null, null, null);
 		if (!cursor.moveToNext()) {
-			storeSession(session);
+			insertSession(session);
 			cursor.close();
 			return 1;
 		} else {
@@ -399,19 +302,19 @@ public class DataHelper {
 	 * COL_CREATED_AT = current time
 	 * COL_HAS_BEEN_EXPORTED = 0 (false)
 	 *
-	 * @param newSession the new session
+	 * @param session the new session
 	 * @return uri of inserted row
 	 */
-	public final Uri storeSession(final Session newSession) {
-		Log.d(TAG, "Storing new session " + newSession.toString());
+	public final Uri insertSession(final Session session) {
+		Log.d(TAG, "Storing new session " + session.toString());
 
 		final ContentValues values = new ContentValues();
 		// id is auto-assigned, remember to update new session manually
-		values.put(Schema.COL_CREATED_AT, newSession.getCreatedAt());
-		values.put(Schema.COL_LAST_UPDATED, newSession.getLastUpdated());
-		values.put(Schema.COL_DESCRIPTION, newSession.getDescription());
-		values.put(Schema.COL_HAS_BEEN_EXPORTED, newSession.hasBeenExported());
-		values.put(Schema.COL_IS_ACTIVE, newSession.isActive());
+		values.put(Schema.COL_CREATED_AT, session.getCreatedAt());
+		values.put(Schema.COL_LAST_UPDATED, session.getLastUpdated());
+		values.put(Schema.COL_DESCRIPTION, session.getDescription());
+		values.put(Schema.COL_HAS_BEEN_EXPORTED, session.hasBeenExported());
+		values.put(Schema.COL_IS_ACTIVE, session.isActive());
 		values.put(Schema.COL_NUMBER_OF_CELLS, 0);
 		values.put(Schema.COL_NUMBER_OF_WIFIS, 0);
 		return contentResolver.insert(ContentProvider.CONTENT_URI_SESSION, values);
@@ -432,18 +335,18 @@ public class DataHelper {
 	 *
 	 * @return the long
 	 */
-	public final long deleteAllSession() {
+	public final long deleteAllSessions() {
 		return contentResolver.delete(ContentProvider.CONTENT_URI_SESSION, null, null);
 	}
 
 	/**
 	 * Loads current session.
-	 * If you just need current session's id, you might consider {@link getActiveSessionId()}
+	 * If you just need current session's id, you might consider {@link DataHelper#getCurrentSessionID()}
 	 *
 	 * @return active session if any, null otherwise
 	 */
-	public final Session loadActiveSession() {
-        // Log.d(TAG, "loadActiveSession called");
+	public final Session getCurrentSession() {
+        // Log.d(TAG, "getCurrentSession called");
 		Session session = null;
 		final Cursor cursor = contentResolver.query(Uri.withAppendedPath(ContentProvider.CONTENT_URI_SESSION, "active"), null, null, null, null);
 		if (cursor.moveToFirst()) {
@@ -470,8 +373,8 @@ public class DataHelper {
 	 *
 	 * @return ArrayList with session ids
 	 */
-	public final ArrayList<Integer> getSessionList() {
-        // Log.d(TAG, "getSessionList called");
+	public final ArrayList<Integer> getSessionIDs() {
+        // Log.d(TAG, "getSessionIDs called");
 		final ArrayList<Integer> sessions = new ArrayList<>();
 		final Cursor cursor = contentResolver.query(ContentProvider.CONTENT_URI_SESSION, new String[]{Schema.COL_ID}, null, null, null);
 		while (cursor.moveToNext()) {
@@ -482,12 +385,12 @@ public class DataHelper {
 	}
 
 	/**
-	 * Returns Id of active session. (Faster than {@link loadActiveSession()} as no de-serialization to session object takes place
+	 * Returns Id of active session. Faster than {@link DataHelper#getCurrentSession()}
 	 *
 	 * @return session id if any active session, RadioBeacon.SESSION_NOT_TRACKING else
 	 */
-	public final int getActiveSessionId() {
-        // Log.d(TAG, "getActiveSessionId called");
+	public final int getCurrentSessionID() {
+        // Log.d(TAG, "getCurrentSessionID called");
 		final Cursor cursor = contentResolver.query(Uri.withAppendedPath(ContentProvider.CONTENT_URI_SESSION, "active"), null, null, null, null);
 		if (cursor.moveToFirst()) {
             int session = cursor.getInt(cursor.getColumnIndex(Schema.COL_ID));
@@ -519,7 +422,7 @@ public class DataHelper {
 	 * @param begin position which is equal across all cells (i.e. serving cell + neighbors)
 	 * @param end   the end
 	 */
-	public final void storeCellsScanResults(final ArrayList<CellRecord> cells, final PositionRecord begin, final PositionRecord end) {
+	public final void saveCellsScanResults(final ArrayList<CellRecord> cells, final PositionRecord begin, final PositionRecord end) {
 		if (cells == null || cells.size() == 0) {
 			return;
 		}
@@ -570,8 +473,8 @@ public class DataHelper {
 						.withValue(Schema.COL_MNC, cell.getMnc())
 						.withValue(Schema.COL_OPERATORNAME, cell.getOperatorName())
 						.withValue(Schema.COL_OPERATOR, cell.getOperator())
-						.withValue(Schema.COL_STRENGTHDBM, cell.getStrengthdBm())
-						.withValue(Schema.COL_STRENGTHASU, cell.getStrengthAsu())
+						.withValue(Schema.COL_STRENGTH_DBM, cell.getStrengthdBm())
+						.withValue(Schema.COL_STRENGTH_ASU, cell.getStrengthAsu())
 						.withValue(Schema.COL_TIMESTAMP, cell.getOpenBmapTimestamp())
 						.withValueBackReference (Schema.COL_BEGIN_POSITION_ID, 0) // Index is 0 because first operation stores cell position
 						.withValueBackReference (Schema.COL_END_POSITION_ID, 1)
@@ -601,7 +504,7 @@ public class DataHelper {
 						.withValue(Schema.COL_PSC, cell.getPsc())
 						.withValue(Schema.COL_OPERATORNAME, cell.getOperatorName())
 						.withValue(Schema.COL_OPERATOR, cell.getOperator())
-						.withValue(Schema.COL_STRENGTHDBM, cell.getStrengthdBm())
+						.withValue(Schema.COL_STRENGTH_DBM, cell.getStrengthdBm())
 						.withValue(Schema.COL_TIMESTAMP, cell.getOpenBmapTimestamp())
 						.withValueBackReference (Schema.COL_BEGIN_POSITION_ID, 0) // Index is 0 because first operation stores cell position
 						.withValueBackReference (Schema.COL_END_POSITION_ID, 1)
@@ -629,9 +532,8 @@ public class DataHelper {
 	 * @param id the id
 	 * @return cell record
 	 */
-	public final CellRecord loadCellById(final int id) {
-        // Log.d(TAG, "loadCellById called");
-		CellRecord cell = null;
+	public final CellRecord getCellByID(final int id) {
+        CellRecord cell = null;
 
 		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(ContentProvider.CONTENT_URI_CELL, id) , null, null, null, null);
 		if (cursor.moveToNext()) {
@@ -640,32 +542,9 @@ public class DataHelper {
 		cursor.close();
 		return cell;
 	}
-
-	/**
-	 * Loads session's cells.
-	 *
-	 * @param session Session Id
-	 * @param sort    Sort criteria
-	 * @return ArrayList<CellRecord>  with all cells for given session
-	 */
-	public final ArrayList<CellRecord> loadCellsBySession(final long session, final String sort) {
-		final ArrayList<CellRecord> cells = new ArrayList<>();
-
-		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
-				ContentProvider.CONTENT_URI_CELL, ContentProvider.CONTENT_URI_SESSION_SUFFIX), session),
-				null, null, null, sort);
-
-		while (cursor.moveToNext()) {
-			cells.add(cursorToCell(cursor));
-		}
-
-		cursor.close();
-		return cells;
-	}
-
 	/**
 	 * Creates a CellRecord from cursor row.
-	 * @param cursor
+	 * @param cursor, which holds all necessary columns
 	 * @return CellRecord
 	 */
 	private CellRecord cursorToCell(final Cursor cursor) {
@@ -686,8 +565,8 @@ public class DataHelper {
 		final int colBaseId = cursor.getColumnIndex(Schema.COL_CDMA_BASEID);
 		final int colNetworkId = cursor.getColumnIndex(Schema.COL_CDMA_NETWORKID);
 		final int colSystemId = cursor.getColumnIndex(Schema.COL_CDMA_SYSTEMID);
-		final int colStrengthDbm = cursor.getColumnIndex(Schema.COL_STRENGTHDBM);
-		final int colStrengthAsu = cursor.getColumnIndex(Schema.COL_STRENGTHASU);
+		final int colStrengthDbm = cursor.getColumnIndex(Schema.COL_STRENGTH_DBM);
+		final int colStrengthAsu = cursor.getColumnIndex(Schema.COL_STRENGTH_ASU);
 		final int colTimestamp = cursor.getColumnIndex(Schema.COL_TIMESTAMP);
 		final int colBeginPositionId = cursor.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
 		final int colEndPositionId = cursor.getColumnIndex(Schema.COL_END_POSITION_ID);
@@ -713,13 +592,44 @@ public class DataHelper {
 		cell.setStrengthAsu(cursor.getInt(colStrengthAsu));
 		cell.setOpenBmapTimestamp(cursor.getLong(colTimestamp));
 		// TODO: dirty ...
-		cell.setBeginPosition(loadPositionById(cursor.getString(colBeginPositionId)));
-		cell.setEndPosition(loadPositionById(cursor.getString(colEndPositionId)));
+		cell.setBeginPosition(getPositionByID(cursor.getString(colBeginPositionId)));
+		cell.setEndPosition(getPositionByID(cursor.getString(colEndPositionId)));
 		cell.setSessionId(cursor.getInt(columnIndex18));
 
 		return cell;
 	}
 
+    /**
+     * Creates a CellRecord from cursor row.
+     * @param cursor
+     * @return CellRecord
+     */
+    private WifiRecord cursorToWifi(final Cursor cursor) {
+        final int colBssid = cursor.getColumnIndex(Schema.COL_BSSID);
+        final int colBssidLong = cursor.getColumnIndex(Schema.COL_BSSID_LONG);
+        final int colSsid = cursor.getColumnIndex(Schema.COL_SSID);
+        final int colEncryption = cursor.getColumnIndex(Schema.COL_ENCRYPTION);
+        final int colFreq = cursor.getColumnIndex(Schema.COL_FREQUENCY);
+        final int colLevel = cursor.getColumnIndex(Schema.COL_LEVEL);
+        final int colTime = cursor.getColumnIndex(Schema.COL_TIMESTAMP);
+        final int colRequest = cursor.getColumnIndex(Schema.COL_BEGIN_POSITION_ID);
+        final int colLast = cursor.getColumnIndex(Schema.COL_END_POSITION_ID);
+        final int colStatus = cursor.getColumnIndex(Schema.COL_KNOWN_WIFI);
+
+        final WifiRecord wifi = new WifiRecord(
+                cursor.getString(colBssid),
+                cursor.getLong(colBssidLong),
+                cursor.getString(colSsid),
+                cursor.getString(colEncryption),
+                cursor.getInt(colFreq),
+                cursor.getInt(colLevel),
+                cursor.getLong(colTime),
+                getPositionByID(cursor.getString(colRequest)),
+                getPositionByID(cursor.getString(colLast)),
+                CatalogStatus.values()[cursor.getInt(colStatus)]);
+
+        return wifi;
+    }
 	/**
 	 * Counts session's number of cells.
 	 *
@@ -756,8 +666,8 @@ public class DataHelper {
 	 * @param id Position id to return. If no id is provided, all positions are returned.
 	 * @return ArrayList<PositionRecord> position record
 	 */
-	public final PositionRecord loadPositionById(final String id) {
-        // Log.d(TAG, "loadPositionById called");
+	public final PositionRecord getPositionByID(final String id) {
+        // Log.d(TAG, "getPositionByID called");
 
 		if (id == null) {
 			throw new IllegalArgumentException("Position id is null");
@@ -779,7 +689,7 @@ public class DataHelper {
 		}
 
 		cursor.close();
-		//Log.d(TAG, "loadPositionById executed (" + (System.currentTimeMillis() - start) + " ms)");
+		//Log.d(TAG, "getPositionByID executed (" + (System.currentTimeMillis() - start) + " ms)");
 		return position;
 	}
 
@@ -793,8 +703,8 @@ public class DataHelper {
 	 * @param maxLon  the max lon
 	 * @return array list
 	 */
-	public final ArrayList<PositionRecord> loadPositions(final int session, final Double minLat, final Double maxLat, final Double minLon, final Double maxLon) {
-        // Log.d(TAG, "loadPositions called");
+	public final ArrayList<PositionRecord> getSessionPositions(final int session, final Double minLat, final Double maxLat, final Double minLon, final Double maxLon) {
+        // Log.d(TAG, "getSessionPositions called");
 		final ArrayList<PositionRecord> positions = new ArrayList<>();
 		String selection = Schema.COL_SESSION_ID + " = ?";
 
@@ -866,19 +776,19 @@ public class DataHelper {
 	 * Loads session's log file.
 	 *
 	 * @param id Session id for which log file is returned
-	 * @return LogFile log file
+	 * @return MetaData log file
 	 */
-	public final LogFile loadLogFileBySession(final long id) {
-        // Log.d(TAG, "loadLogFileBySession called");
+	public final MetaData getMetaDataForSession(final long id) {
+        // Log.d(TAG, "getMetaDataForSession called");
 
-		LogFile logFile = null;
+		MetaData metaData = null;
 
 		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(Uri.withAppendedPath(
 				ContentProvider.CONTENT_URI_LOGFILE, ContentProvider.CONTENT_URI_SESSION_SUFFIX), id),
 				null, null, null, null);
 
 		if (cursor.moveToNext()) {
-			logFile = new LogFile(
+			metaData = new MetaData(
 					cursor.getString(cursor.getColumnIndex(Schema.COL_MANUFACTURER)),
 					cursor.getString(cursor.getColumnIndex(Schema.COL_MODEL)),
 					cursor.getString(cursor.getColumnIndex(Schema.COL_REVISION)),
@@ -888,24 +798,24 @@ public class DataHelper {
 		}
 
 		cursor.close();
-		return logFile;
+		return metaData;
 	}
 
 	/**
-	 * Persists LogFile in database.
+	 * Persists MetaData in database.
 	 *
-	 * @param logFile the log file
+	 * @param metaData the log file
 	 * @return uri
 	 */
-	public final Uri storeLogFile(final LogFile logFile) {
+	public final Uri saveMetaData(final MetaData metaData) {
 		final ContentValues values = new ContentValues();
-		values.put(Schema.COL_MANUFACTURER, logFile.getManufacturer());
-		values.put(Schema.COL_MODEL, logFile.getModel());
-		values.put(Schema.COL_REVISION, logFile.getRevision());
-		values.put(Schema.COL_SWID, logFile.getSwid());
-		values.put(Schema.COL_SWVER, logFile.getSwVersion());
+		values.put(Schema.COL_MANUFACTURER, metaData.getManufacturer());
+		values.put(Schema.COL_MODEL, metaData.getModel());
+		values.put(Schema.COL_REVISION, metaData.getRevision());
+		values.put(Schema.COL_SWID, metaData.getSwid());
+		values.put(Schema.COL_SWVER, metaData.getSwVersion());
 		values.put(Schema.COL_TIMESTAMP, System.currentTimeMillis());
-		values.put(Schema.COL_SESSION_ID, logFile.getSessionId());
+		values.put(Schema.COL_SESSION_ID, metaData.getSessionId());
 
 		return contentResolver.insert(ContentProvider.CONTENT_URI_LOGFILE, values);
 	}
@@ -915,7 +825,7 @@ public class DataHelper {
 	 *
 	 * @return number of updated rows
 	 */
-	public final int invalidateActiveSessions() {
+	public final int invalidateCurrentSessions() {
 		final ContentValues values = new ContentValues();
 		values.put(Schema.COL_IS_ACTIVE, 0);
 		// disables all active sessions
@@ -926,12 +836,12 @@ public class DataHelper {
 	/**
 	 * Stores position.
 	 * This method is only used for separate positions. WifisRadiocells and cell positions are added in batch mode
-	 * in storeCellsScanResults and storeWifiScanResults
+	 * in saveCellsScanResults and saveWifiScanResults
 	 *
 	 * @param pos the pos
 	 * @return uri
 	 */
-	public final Uri storePosition(final PositionRecord pos) {
+	public final Uri savePosition(final PositionRecord pos) {
 		final ContentValues values = new ContentValues();
 		values.put(Schema.COL_LATITUDE, pos.getLatitude());
 		values.put(Schema.COL_LONGITUDE, pos.getLongitude());
