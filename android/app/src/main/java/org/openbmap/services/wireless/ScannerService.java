@@ -565,10 +565,10 @@ public class ScannerService extends AbstractService {
                                         broadcastBlacklisted(BlacklistReasonType.BadSSID, r.SSID + "/" + r.BSSID);
                                         skipThis = true;
                                     }
-                                    if (r.BSSID == "00:00:00:00:00:00") {
+                                    if (r.BSSID.equals("00:00:00:00:00:00")) {
                                         // Quick-fix for issue on some Samsung modems reporting a non existing AP
-                                        Log.w(TAG, "Received bad bssid, ignoring");
-                                        skipThis =true;
+                                        Log.w(TAG, "Received bad bssid 00:00:00:00:00:00, ignoring..");
+                                        skipThis = true;
                                     }
 
                                     if (!skipThis) {
