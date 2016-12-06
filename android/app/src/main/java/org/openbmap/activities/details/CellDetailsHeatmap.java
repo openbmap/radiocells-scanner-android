@@ -27,6 +27,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.ProgressBar;
 
 import org.mapsforge.core.model.BoundingBox;
 import org.mapsforge.core.model.LatLong;
@@ -44,6 +45,7 @@ import org.openbmap.heatmap.HeatmapBuilder.HeatmapBuilderListener;
 
 import java.util.ArrayList;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 /**
@@ -52,6 +54,9 @@ import butterknife.ButterKnife;
 public class CellDetailsHeatmap extends BaseMapFragment implements HeatmapBuilderListener {
 
 	private static final String TAG = CellDetailsHeatmap.class.getSimpleName();
+
+    @BindView(R.id.celldetails_map_progress)
+    ProgressBar loading;
 
 	/**
 	 * Radius heat-map circles
@@ -86,7 +91,6 @@ public class CellDetailsHeatmap extends BaseMapFragment implements HeatmapBuilde
     @Override
     public final void onActivityCreated(final Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
 
         mCell = ((CellDetailsActivity) getActivity()).getCell();
         mMeasurements = ((CellDetailsActivity) getActivity()).getMeasurements();
@@ -134,7 +138,7 @@ public class CellDetailsHeatmap extends BaseMapFragment implements HeatmapBuilde
                     // if another update is pending, wait for complete
                     if (!mUpdatePending) {
                         clearLayer();
-                        proceedAfterHeatmapCompleted();
+                        requestHeatmapUpdate();
                     }
                     mCurrentZoom = newZoom;
                 }
@@ -179,6 +183,7 @@ public class CellDetailsHeatmap extends BaseMapFragment implements HeatmapBuilde
     private void requestHeatmapUpdate() {
         if (mLayoutInflated && !mUpdatePending) {
             mUpdatePending = true;
+            loading.setVisibility(View.VISIBLE);
             mZoomOnStartUpdate = mMapView.getModel().mapViewPosition.getZoomLevel();
 
             clearLayer();
@@ -206,42 +211,15 @@ public class CellDetailsHeatmap extends BaseMapFragment implements HeatmapBuilde
         }
     }
 
-	/**
-	 * 
-	 */
-	private void proceedAfterHeatmapCompleted() {
-		if (mLayoutInflated && !mUpdatePending) {
-			mUpdatePending = true;
-
-			clearLayer();
-
-			final BoundingBox bbox = MapPositionUtil.getBoundingBox(
-					mMapView.getModel().mapViewPosition.getMapPosition(),
-					mMapView.getDimension(), mMapView.getModel().displayModel.getTileSize());
-
-			mTarget = mMapView.getModel().mapViewPosition.getCenter();
-			mZoomOnStartUpdate = mMapView.getModel().mapViewPosition.getZoomLevel();
-
-			mHeatmapLayer = new Marker(mTarget, null, 0, 0);
-			mMapView.getLayerManager().getLayers().add(mHeatmapLayer);
-
-			new HeatmapBuilder(
-					CellDetailsHeatmap.this, mMapView.getWidth(), mMapView.getHeight(), bbox,
-					mMapView.getModel().mapViewPosition.getZoomLevel(), mMapView.getModel().displayModel.getScaleFactor(),
-					mMapView.getModel().displayModel.getTileSize(), RADIUS).execute(mPoints);
-		} else {
-			Log.i(TAG, "Another heat-map is currently generated. Skipped");
-		}
-	}
-
     @Override
     public final void onHeatmapCompleted(final Bitmap backbuffer) {
         if (mMapView.getModel().mapViewPosition.getZoomLevel() != mZoomOnStartUpdate) {
-            // zoom level has changed in the mean time - regenerate
+            // zoom level has changed in the mean time - reload!
             mUpdatePending = false;
+
             Log.i(TAG, "Zoom level has changed - have to re-generate heat-map");
             clearLayer();
-            proceedAfterHeatmapCompleted();
+            requestHeatmapUpdate();
             return;
         }
 
@@ -252,7 +230,10 @@ public class CellDetailsHeatmap extends BaseMapFragment implements HeatmapBuilde
         } else {
             Log.w(TAG, "Skipped heatmap draw: either layer or bitmap is null");
         }
+
         mUpdatePending = false;
+        loading.setVisibility(View.GONE);
+
         //saveHeatmapToFile(backbuffer);
     }
 	/** 
