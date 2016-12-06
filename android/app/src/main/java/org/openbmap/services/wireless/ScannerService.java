@@ -182,9 +182,9 @@ public class ScannerService extends AbstractService {
     private final boolean isWifiEnabled = false;
 
     /**
-     * WifisRadiocells scan is asynchronous. pendingWifiScanResults ensures that only one scan is mIsRunning
+     * WifisRadiocells scan is asynchronous. awaitingWifiScanResults ensures that only one scan is mIsRunning
      **/
-    private boolean pendingWifiScanResults = false;
+    private boolean awaitingWifiScanResults = false;
 
     /**
      * Current serving cell
@@ -519,10 +519,10 @@ public class ScannerService extends AbstractService {
         }
 
         // only start new scan if previous scan results have already been processed
-        if (!pendingWifiScanResults) {
+        if (!awaitingWifiScanResults) {
             Log.d(TAG, "Initiated wifi scan. Waiting for results..");
             wifiManager.startScan();
-            pendingWifiScanResults = true;
+            awaitingWifiScanResults = true;
 
             // initialize wifi scan callback if needed
             if (this.wifiScanResults == null) {
@@ -536,10 +536,9 @@ public class ScannerService extends AbstractService {
                             return;
                         }
 
-                        if (pendingWifiScanResults) {
+                        if (awaitingWifiScanResults) {
                             final List<ScanResult> scanlist = wifiManager.getScanResults();
                             if (scanlist != null) {
-
                                 // Common position for all scan result wifis
                                 if (!GeometryUtils.isValidLocation(startScanLocation) || !GeometryUtils.isValidLocation(lastLocation)) {
                                     Log.e(TAG, "Couldn't save wifi result: invalid location");
@@ -565,6 +564,11 @@ public class ScannerService extends AbstractService {
                                         Log.i(TAG, "Ignored " + r.SSID + " (on SSID blacklist)");
                                         broadcastBlacklisted(BlacklistReasonType.BadSSID, r.SSID + "/" + r.BSSID);
                                         skipThis = true;
+                                    }
+                                    if (r.BSSID == "00:00:00:00:00:00") {
+                                        // Quick-fix for issue on some Samsung modems reporting a non existing AP
+                                        Log.w(TAG, "Received bad bssid, ignoring");
+                                        skipThis =true;
                                     }
 
                                     if (!skipThis) {
@@ -603,7 +607,7 @@ public class ScannerService extends AbstractService {
                                 // @see http://code.google.com/p/android/issues/detail?id=19078
                                 Log.e(TAG, "WifiManager.getScanResults returned null");
                             }
-                            pendingWifiScanResults = false;
+                            awaitingWifiScanResults = false;
                         }
                     }
                 };
@@ -1297,7 +1301,7 @@ public class ScannerService extends AbstractService {
         this.sessionId = sessionId;
 
         // invalidate current wifi scans
-        pendingWifiScanResults = false;
+        awaitingWifiScanResults = false;
 
         dataHelper.saveMetaData(new MetaData(
                 Build.MANUFACTURER,
