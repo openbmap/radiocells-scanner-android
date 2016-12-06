@@ -26,24 +26,25 @@ public class HeatLatLong extends LatLong {
 	 * LatLong type with support for (heat map) intensity
 	 */
 	private static final long	serialVersionUID	= 1L;
-		private int	mIntensity;
-		/**
-		 * @param latitude
-		 * @param longitude
-		 */
-		public HeatLatLong(final double latitude, final double longitude) {
-			super(latitude, longitude);
-			setIntensity(1);
-		}
-		public HeatLatLong(final double latitude, final double longitude, final int intensity) {
-			super(latitude, longitude);
-			this.setIntensity(intensity);
-		}
-		public final int getIntensity() {
-			return mIntensity;
-		}
-		public final void setIntensity(final int intensity) {
-			this.mIntensity = intensity;
-		}
-		
+	private int mStrength;
+
+	/**
+	 * @param latitude
+	 * @param longitude
+	 */
+	public HeatLatLong(final double latitude, final double longitude) {
+		super(latitude, longitude);
+		setStrength(1);
 	}
+	public HeatLatLong(final double latitude, final double longitude, final int strength) {
+		super(latitude, longitude);
+		this.setStrength(strength);
+	}
+	public final int getStrength() {
+		return mStrength;
+	}
+	public final void setStrength(final int strength) {
+		this.mStrength = strength;
+	}
+
+}

@@ -85,7 +85,10 @@ public class CellDetailsActivity  extends FragmentActivity {
         }
 
         mCell = mDatahelper.getCellByID(id);
-        this.mMeasurements = mDatahelper.getAllMeasurementsForCell(this.mCell, this.mSession);
+        // load only session measurements
+        //this.mMeasurements = mDatahelper.getAllMeasurementsForCell(this.mCell, this.mSession);
+        // load all measurements
+        this.mMeasurements = mDatahelper.getAllMeasurementsForCell(this.mCell, null);
 	}
 
 	@Override

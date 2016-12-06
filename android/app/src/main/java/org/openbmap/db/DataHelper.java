@@ -202,11 +202,10 @@ public class DataHelper {
                     + Schema.COL_PSC + " = \"" + cell.getPsc() + "\"";
         }
 
-        if (selectSql.length() > 0) {
-            selectSql += " AND ";
-        }
-
         if (session != null) {
+            if (selectSql.length() > 0) {
+                selectSql += " AND ";
+            }
             selectSql += Schema.COL_SESSION_ID + " = \"" + session + "\"";
         }
 

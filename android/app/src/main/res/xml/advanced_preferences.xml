@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
-    <PreferenceCategory android:title="@string/prefs_folder_various">
+<PreferenceScreen xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory android:title="@string/prefs_folder_various"
+        android:icon="@drawable/direction">
         <CheckBoxPreference
             android:key="ignore_battery"
             android:summary="@string/prefs_ignore_battery_summary"
@@ -11,6 +13,14 @@
             android:summary="@string/prefs_auto_delete_tracks_summary"
             android:title="@string/prefs_auto_delete_sessions_title"
             />
+        <ListPreference android:title="@string/prefs_scan_mode"
+            android:summary="@string/prefs_scan_mode_summary"
+            android:key="logging.wifi_scan_mode"
+            android:defaultValue="1"
+            android:entries="@array/scan_mode_entries"
+            android:entryValues="@array/scan_mode_values" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/pref_gpx_settings" >
         <CheckBoxPreference
             android:key="gpx.save_track"
             android:summary="@string/prefs_save_gpx"
@@ -22,12 +32,7 @@
             android:defaultValue="1"
             android:entries="@array/gpx_verbosity_entries"
             android:entryValues="@array/gpx_verbosity_values" />
-        <ListPreference android:title="@string/prefs_scan_mode"
-            android:summary="@string/prefs_scan_mode_summary"
-            android:key="logging.wifi_scan_mode"
-            android:defaultValue="1"
-            android:entries="@array/scan_mode_entries"
-            android:entryValues="@array/scan_mode_values" />
+
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/prefs_privacy" >
         <Preference

@@ -299,7 +299,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 				final int result = cursor.getInt(columnIndex);
 				if (result > 0) {
 					// Lock icon for uploaded sessions
-					imgUpload.setImageResource(android.R.drawable.ic_lock_lock);
+					imgUpload.setImageResource(R.drawable.ic_lock);
 					imgUpload.setVisibility(View.VISIBLE);
 				} else {
 					imgUpload.setVisibility(View.INVISIBLE);

@@ -221,4 +221,5 @@
     <string name="external_storage_permission_explanation">We need this permission to store map files and session data on your SD card</string>
     <string name="ignore_battery_permission">Battery optimization permission required</string>
     <string name="ignore_battery_explanation">This allows you to to continue scanning even on low battery. You must manually activate this feature</string>
+    <string name="pref_gpx_settings">GPX settings</string>
 </resources>

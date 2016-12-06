@@ -56,7 +56,7 @@ public class CellDetailsHeatmap extends BaseMapFragment implements HeatmapBuilde
 	/**
 	 * Radius heat-map circles
 	 */
-	private static final float RADIUS = 50f;
+	private static final float RADIUS = 150f;
 
 	private CellRecord mCell;
 
