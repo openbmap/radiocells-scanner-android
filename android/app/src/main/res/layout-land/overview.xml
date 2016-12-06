@@ -16,11 +16,11 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_menu_wifi"
+                android:src="@drawable/ic_wifi"
                 tools:ignore="ContentDescription" />
 
             <TextView
-                android:id="@+id/stats_wifi_description"
+                android:id="@+id/overview_wifi_description"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="0.8"
@@ -29,7 +29,7 @@
                 android:textAppearance="?android:attr/textAppearanceLarge" />
 
             <TextView
-                android:id="@+id/stats_wifi_strength"
+                android:id="@+id/overview_wifi_strength"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="0.2"
@@ -45,11 +45,11 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_menu_cell"
+                android:src="@drawable/ic_cell"
                 tools:ignore="ContentDescription" />
 
             <TextView
-                android:id="@+id/stats_cell_description"
+                android:id="@+id/overview__cell_description"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.6"
@@ -57,7 +57,7 @@
                 android:textAppearance="?android:attr/textAppearanceLarge" />
 
             <TextView
-                android:id="@+id/tvTechnology"
+                android:id="@+id/overview_technology"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="0.2"
@@ -66,7 +66,7 @@
                 android:textAppearance="?android:attr/textAppearanceLarge" />
 
             <TextView
-                android:id="@+id/stats_cell_strength"
+                android:id="@+id/overview_cell_strength"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="0.2"
@@ -78,7 +78,7 @@
         <TableRow>
 
             <ImageView
-                android:id="@+id/stats_icon_alert"
+                android:id="@+id/overview_alert_icon"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.1"
@@ -86,7 +86,7 @@
                 android:visibility="gone" />
 
             <TextView
-                android:id="@+id/stats_blacklisted"
+                android:id="@+id/overview_blacklisted"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.9"
@@ -100,7 +100,7 @@
         <TableRow>
 
             <ImageView
-                android:id="@+id/stats_icon_free"
+                android:id="@+id/overview_free_wifi_found_icon"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.1"
@@ -108,7 +108,7 @@
                 android:visibility="gone" />
 
             <TextView
-                android:id="@+id/stats_free"
+                android:id="@+id/overview_free_wifi_found"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.9"
@@ -125,7 +125,7 @@
         android:orientation="horizontal">
 
         <com.jjoe64.graphview.GraphView
-            android:id="@+id/graph"
+            android:id="@+id/overview_graph"
             android:layout_gravity="top"
             android:layout_width="match_parent"
             android:layout_height="100dip" />

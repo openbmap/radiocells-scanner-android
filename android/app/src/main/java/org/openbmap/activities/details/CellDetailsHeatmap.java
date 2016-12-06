@@ -119,6 +119,7 @@ public class CellDetailsHeatmap extends BaseMapFragment implements HeatmapBuilde
 
 		initBaseMap();
         mHeatmapLayer = new Marker(null, null, 0, 0);
+        mMapView.getLayerManager().getLayers().add(mHeatmapLayer);
 
         // Register for zoom changes
         this.mMapObserver = new Observer() {
@@ -139,6 +140,8 @@ public class CellDetailsHeatmap extends BaseMapFragment implements HeatmapBuilde
                     if (!mUpdatePending) {
                         clearLayer();
                         requestHeatmapUpdate();
+                    } else {
+                        Log.i(TAG, "Map moved, but we can't update heatmap: Another update in progress");
                     }
                     mCurrentZoom = newZoom;
                 }
@@ -183,7 +186,13 @@ public class CellDetailsHeatmap extends BaseMapFragment implements HeatmapBuilde
     private void requestHeatmapUpdate() {
         if (mLayoutInflated && !mUpdatePending) {
             mUpdatePending = true;
-            loading.setVisibility(View.VISIBLE);
+
+            getActivity().runOnUiThread(new Runnable() {
+                public void run() {
+                    loading.setVisibility(View.VISIBLE);
+                }
+            });
+
             mZoomOnStartUpdate = mMapView.getModel().mapViewPosition.getZoomLevel();
 
             clearLayer();
@@ -195,8 +204,6 @@ public class CellDetailsHeatmap extends BaseMapFragment implements HeatmapBuilde
             mTarget = mMapView.getModel().mapViewPosition.getCenter();
             mHeatmapLayer.setLatLong(mTarget);
             mHeatmapLayer.setVisible(true);
-
-            mMapView.getLayerManager().getLayers().add(mHeatmapLayer);
 
             builder = new HeatmapBuilder(
                     CellDetailsHeatmap.this,
@@ -232,7 +239,13 @@ public class CellDetailsHeatmap extends BaseMapFragment implements HeatmapBuilde
         }
 
         mUpdatePending = false;
-        loading.setVisibility(View.GONE);
+
+        getActivity().runOnUiThread(new Runnable() {
+            public void run() {
+                loading.setVisibility(View.GONE);
+            }
+        });
+
 
         //saveHeatmapToFile(backbuffer);
     }

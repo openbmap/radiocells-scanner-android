@@ -528,10 +528,10 @@ public class DataHelper {
 	/**
 	 * Loads CellRecord from database.
 	 *
-	 * @param id the id
+	 * @param id row id (CAREFUL: row id != cell id)
 	 * @return cell record
 	 */
-	public final CellRecord getCellByID(final int id) {
+	public final CellRecord getCellByRowID(final int id) {
         CellRecord cell = null;
 
 		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(ContentProvider.CONTENT_URI_CELL, id) , null, null, null, null);

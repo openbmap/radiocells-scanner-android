@@ -111,7 +111,7 @@ public class TabHostActivity extends AppCompatActivity {
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-        setContentView(R.layout.host_activity);
+        setContentView(R.layout.tabhost_activity);
 
 		ButterKnife.bind(this);
 
@@ -233,9 +233,9 @@ public class TabHostActivity extends AppCompatActivity {
         // add tabs to actionbar
         final CustomViewPagerAdapter mTabsAdapter = new CustomViewPagerAdapter(this, mPager);
 
-        mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.overview)), OverviewFragment.class, null);
-        mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.wifis)), WifisListFragment.class, null);
-        mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.cells)), CellListFragment.class, null);
+        mTabsAdapter.addTab(mActionBar.newTab().setIcon(R.drawable.ic_overview)/*.setText(getResources().getString(R.string.overview))*/, OverviewFragment.class, null);
+        mTabsAdapter.addTab(mActionBar.newTab().setIcon(R.drawable.ic_wifi),/*.setText(getResources().getString(R.string.wifis)*/ WifisListFragment.class, null);
+        mTabsAdapter.addTab(mActionBar.newTab().setIcon(R.drawable.ic_cell)/*setText(getResources().getString(R.string.cells))*/, CellListFragment.class, null);
         //mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.map)), MapFragment.class, null);
 		mTabsAdapter.addTab(mActionBar.newTab().setIcon(android.R.drawable.ic_dialog_map), MapFragment.class, null);
 	}

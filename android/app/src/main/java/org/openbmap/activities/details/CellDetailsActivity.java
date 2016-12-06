@@ -84,7 +84,7 @@ public class CellDetailsActivity  extends FragmentActivity {
             mSession = extras.getInt(Schema.COL_SESSION_ID);
         }
 
-        mCell = mDatahelper.getCellByID(id);
+        mCell = mDatahelper.getCellByRowID(id);
         // load only session measurements
         //this.mMeasurements = mDatahelper.getAllMeasurementsForCell(this.mCell, this.mSession);
         // load all measurements
@@ -100,7 +100,7 @@ public class CellDetailsActivity  extends FragmentActivity {
 		final int id = extras.getInt(Schema.COL_ID);
 
 		// query content provider for cell details
-		mCell = mDatahelper.getCellByID(id);
+		mCell = mDatahelper.getCellByRowID(id);
 		displayRecord(mCell);
 	}
 

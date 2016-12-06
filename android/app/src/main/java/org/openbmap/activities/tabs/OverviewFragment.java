@@ -33,8 +33,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.GridLabelRenderer;
@@ -46,8 +48,10 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
+import org.openbmap.activities.details.WifiDetailsActivity;
+import org.openbmap.db.DataHelper;
+import org.openbmap.db.Schema;
 import org.openbmap.db.models.CellRecord;
-import org.openbmap.db.models.Session;
 import org.openbmap.events.onBlacklisted;
 import org.openbmap.events.onCellSaved;
 import org.openbmap.events.onFreeWifi;
@@ -77,31 +81,38 @@ public class OverviewFragment extends Fragment {
     /**
      * UI controls
      */
-    @BindView(R.id.stats_cell_description)
+    @BindView(R.id.overview__cell_description)
     public TextView tvCellDescription;
-    @BindView(R.id.stats_cell_strength)
+    @BindView(R.id.overview_cell_strength)
     public TextView tvCellStrength;
-    @BindView(R.id.stats_wifi_description)
+    @BindView(R.id.overview_wifi_description)
     public TextView tvWifiDescription;
-    @BindView(R.id.stats_wifi_strength)
+    @BindView(R.id.overview_wifi_strength)
     public TextView tvWifiStrength;
-    @BindView(R.id.tvTechnology)
+    @BindView(R.id.overview_technology)
     public TextView tvTechnology;
-    @BindView(R.id.stats_blacklisted)
+    @BindView(R.id.overview_blacklisted)
     public TextView tvIgnored;
-    @BindView(R.id.stats_free)
+    @BindView(R.id.overview_free_wifi_found)
     public TextView tvFree;
-    @BindView(R.id.stats_icon_free)
+    @BindView(R.id.overview_free_wifi_found_icon)
     public ImageView ivFree;
-    @BindView(R.id.stats_icon_alert)
+    @BindView(R.id.overview_alert_icon)
     public ImageView ivAlert;
-    @BindView(R.id.graph)
+    @BindView(R.id.overview_graph)
     public GraphView gvGraph;
+    @BindView(R.id.overview_wifi_details_button)
+    public ImageButton btnWifiDetails;
+    @BindView(R.id.overview_cell_details_button)
+    public ImageButton btnCellDetails;
 
     private LineGraphSeries mMeasurements;
     private PointsGraphSeries highlight;
 
-    private Session mSession;
+    /**
+     * Last wifi as displayed
+     */
+    private String mLastBssid;
 
     /**
      * Time of last new wifi in millis
@@ -176,6 +187,7 @@ public class OverviewFragment extends Fragment {
         if (event.items.size()>0) {
             tvWifiDescription.setText(event.items.get(0).getSsid());
             tvWifiStrength.setText(String.format("%d dBm", event.items.get(0).getLevel()));
+            mLastBssid = event.items.get(0).getBssid();
         } else {
             tvWifiDescription.setText(getString(R.string.n_a));
             tvWifiStrength.setText("");
@@ -333,9 +345,34 @@ public class OverviewFragment extends Fragment {
 
     @Override
     public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.stats, container, false);
+        final View view = inflater.inflate(R.layout.overview, container, false);
         mUnbinder = ButterKnife.bind(this, view);
 
+        btnCellDetails.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v)
+            {
+
+            }
+        });
+
+        btnWifiDetails.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v)
+            {
+                if (mLastBssid != null) {
+                    DataHelper helper = new DataHelper(getActivity().getApplicationContext());
+                    int session = helper.getCurrentSessionID();
+                    final Intent intent = new Intent();
+                    intent.setClass(getActivity(), WifiDetailsActivity.class);
+                    intent.putExtra(Schema.COL_BSSID, mLastBssid);
+                    intent.putExtra(Schema.COL_SESSION_ID, session);
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(getActivity(), getString(R.string.no_wifi_details_available), Toast.LENGTH_LONG).show();
+                }
+            }
+        });
         // setup UI controls
         initGraph();
 

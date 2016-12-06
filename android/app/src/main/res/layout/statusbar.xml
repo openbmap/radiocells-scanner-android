@@ -30,7 +30,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical|center_horizontal"
-            android:src="@drawable/ic_menu_cell" />
+            android:src="@drawable/ic_cell" />
 
         <TextView
             android:id="@+id/gpsstatus_cell_count"
@@ -46,7 +46,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical|center_horizontal"
-            android:src="@drawable/ic_menu_wifi" />
+            android:src="@drawable/ic_wifi" />
 
         <TextView
             android:id="@+id/gpsstatus_wifi_count"

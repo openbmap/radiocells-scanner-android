@@ -485,8 +485,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
      * @link https://radiocells.org/default/wiki/cell-format
      * @return technology name
      */
-    @SuppressLint("InlinedApi")
-	public static Map<Integer, String> TECHNOLOGY_MAP() {
+    public static Map<Integer, String> TECHNOLOGY_MAP() {
 		Map<Integer, String> result = new HashMap<>();
 		result.put(TelephonyManager.NETWORK_TYPE_UNKNOWN, "NA");
 		// GPRS shall be mapped to "GSM"

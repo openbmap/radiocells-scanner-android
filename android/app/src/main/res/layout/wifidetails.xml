@@ -111,13 +111,14 @@
             <TableRow
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content">
-                <ImageView
+                <TextView
                     android:id="@+id/measurements"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:src="@drawable/ic_number_sign"
-                    android:tint="@color/cardview_light_background" />
+                    android:text="#"
+                    android:tint="@color/cardview_light_background"
+                    android:textAlignment="center" />
 
                 <TextView
                     android:id="@+id/wifidetails_no_measurements"
