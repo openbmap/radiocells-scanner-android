@@ -18,9 +18,9 @@
 
 package org.openbmap.db.models;
 
-import android.annotation.SuppressLint;
 import android.os.Build;
 import android.telephony.TelephonyManager;
+import android.telephony.gsm.GsmCellLocation;
 
 import org.openbmap.RadioBeacon;
 
@@ -206,6 +206,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 
     /**
      * Sets operator name
+	 * e.g. Orange France
      * @param operatorName operator name
      */
 	public final void setOperatorName(final String operatorName) {
@@ -228,6 +229,11 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 		this.mOperator = operator;
 	}
 
+    /**
+     * Returns MCC
+     * e.g. 208 (=France)
+     * @return
+     */
 	public final String getMcc() {
 		return mMcc;
 	}
@@ -241,7 +247,8 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	}
 
     /**
-     * Gets MNC (mobile network code)
+     * Returns MNC (mobile network code)
+     * e.g. 01 (=Orange France)
      * @return mnc Mobile network code
      */
 	public final String getMnc() {
@@ -257,6 +264,30 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 		this.mMnc = mnc;
 	}
 
+    /**
+     * Returns network type, see {@link TelephonyManager} for constants
+     *  NETWORK_TYPE_1xRTT = 7;
+     *  NETWORK_TYPE_CDMA = 4;
+     *  NETWORK_TYPE_EDGE = 2;
+     *  NETWORK_TYPE_EHRPD = 14;
+     *  NETWORK_TYPE_EVDO_0 = 5;
+     *  NETWORK_TYPE_EVDO_A = 6;
+     *  NETWORK_TYPE_EVDO_B = 12;
+     *  NETWORK_TYPE_GPRS = 1;
+     *  NETWORK_TYPE_GSM = 16;
+     *  NETWORK_TYPE_HSDPA = 8;
+     *  NETWORK_TYPE_HSPA = 10;
+     *  NETWORK_TYPE_HSPAP = 15;
+     *  NETWORK_TYPE_HSUPA = 9;
+     *  NETWORK_TYPE_IDEN = 11;
+     *  NETWORK_TYPE_IWLAN = 18;
+     *  NETWORK_TYPE_LTE = 13;
+     *  NETWORK_TYPE_TD_SCDMA = 17;
+     *  NETWORK_TYPE_UMTS = 3;
+     *  NETWORK_TYPE_UNKNOWN = 0;
+
+     * @return network type
+     */
 	public final int getNetworkType() {
 		return mNetworkType;
 	}
@@ -266,7 +297,8 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	}
 
 	/**
-	 * Returns cell id as returned by android.telephony.gsmlocation.getCid(). Be careful: by default this is the LCID)
+	 * Returns cell id as returned by {@link GsmCellLocation#getCid()}.
+     * Hint: by default this is the LCID
      * @return logical cell id
      */
     public final int getLogicalCellId() {
@@ -274,7 +306,8 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	}
 
 	/**
-	 * Sets cell id (as returned by android.telephony.gsmlocation.getCid(). Be careful: by default this is the LCID)
+	 * Sets cell id (as returned by {@link GsmCellLocation#getCid()}.
+     * Hint: by default this is the LCID
 	 * @param logicalCellId GSM cell id; UMTS and other UTRAN networks LCID; -1 if unknown, 0xffff max legal value
 	 */
 	public final void setLogicalCellId(final int logicalCellId) {
@@ -282,16 +315,19 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	}
 
 	/**
-	 * For GSM networks equals cell id; for UMTS and other UTRAN networks this is the actual cell id (as opposed to lcid)
+	 * Returns cell id. This might differ from LCID
+     *   For GSM networks equals cell id;
+     *   For UMTS and other UTRAN networks this is the actual cell id (as opposed to LCID)
 	 */
 	public final int getActualCellId() {
 		return mActualCellId;
 	}
 
 	/**
-	 * On GSM networks equals cell id;
-	 * On UMTS and other UTRAN networks this is the actual cell id (as opposed to lcid)
-	 * On LTE this is the physical cell id
+	 * Set actual cell id
+     * For GSM networks equals cell id;
+	 * For UMTS and other UTRAN networks this is the actual cell id (as opposed to lcid)
+	 * For LTE this is the physical cell id
 	 *
      * @param actualCellId Actual cell id
      */
@@ -308,7 +344,9 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	}
 
 	/**
-	 * Gets location area code
+	 * Gets location area code (LAC)
+     * @see <a href="https://en.wikipedia.org/wiki/Mobility_management#Location_area">LAC on wikipedia</a>
+     *
 	 * @return location area code
 	 */
     public final int getArea() {
@@ -316,7 +354,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
     }
 
 	/**
-	 * Sets location area code
+	 * Sets location area code (LAC)
      * @param area
      * 		On GSM networks this is set to location area code
      *		On LTE networks this is set to TAC (tracking area)
@@ -333,6 +371,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 
 	/**
 	 * Sets primary scrambling code for UMTS
+     *
 	 * @param psc primary scrambling code for UMTS, -1 if unknown or GSM
 	 */
 	public final void setPsc(final int psc) {
@@ -340,7 +379,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	}
 
     /**
-     * Gets dbm level
+     * Returns strength measurement in dbm
      * @return received signal strength in dBm
      */
 	public final int getStrengthdBm() {
@@ -362,6 +401,10 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
         }
 	}
 
+    /**
+     * Returns strength measurements in ASU
+     * @return received signal strength in ASU
+     */
 	public final int getStrengthAsu() {
 		return mStrengthAsu;
 	}
@@ -371,7 +414,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	}
 
     /**
-     * Checks if cell a CDMA
+     * Checks if cell a CDMA cell
      * @return true if CDMA cell
      */
 	public final boolean isCdma() {
@@ -383,8 +426,8 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	}
 
     /**
-     * Checks if cell is serving cell (instead of neighboring cell)
-     * @return
+     * Checks if cell is serving cell
+     * @return true if cell is currently serving cell, false if neighboring cell
      */
 	public final boolean isServing() {
 		return mIsServing;
@@ -403,6 +446,10 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 		this.mIsNeighbor = isNeighbor;
 	}
 
+    /**
+     * Returns position, where cell scan was started
+     * @return position record
+     */
 	public final PositionRecord getBeginPosition() {
 		return mBeginPosition;
 	}
@@ -411,7 +458,13 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 		this.mBeginPosition = position;
 	}
 
-	public final PositionRecord getEndPosition() {
+    /**
+     * Returns position, where cell scan results were received
+     * Note: currently not used, per default set to begin position
+     * @return position record
+     */
+
+    public final PositionRecord getEndPosition() {
 		return mEndPosition;
 	}
 
@@ -450,24 +503,23 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 		result.put(TelephonyManager.NETWORK_TYPE_HSPA, "HSPA");
 		result.put(TelephonyManager.NETWORK_TYPE_IDEN, "IDEN");
 
+        result.put(TelephonyManager.NETWORK_TYPE_EVDO_B, "EDV0_B");
+        result.put(TelephonyManager.NETWORK_TYPE_LTE, "LTE");
+        result.put(TelephonyManager.NETWORK_TYPE_EHRPD, "eHRPD");
+        result.put(TelephonyManager.NETWORK_TYPE_HSPAP, "HSPA+");
+
 		// add new network types not available in all revisions
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-			result.put(TelephonyManager.NETWORK_TYPE_EVDO_B, "EDV0_B");
-		}
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-			result.put(TelephonyManager.NETWORK_TYPE_LTE, "LTE");
-			result.put(TelephonyManager.NETWORK_TYPE_EHRPD, "eHRPD");
-		}
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-			result.put(TelephonyManager.NETWORK_TYPE_HSPAP, "HSPA+");
-		}
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+            result.put(TelephonyManager.NETWORK_TYPE_TD_SCDMA, "TD-SCDMA");
+        }
 
 		return Collections.unmodifiableMap(result);
 
 	}
 
 	/**
-	 * Gets base station id (CDMA only)
+	 * Returns base station id (CDMA only)
 	 * @return base station id
      */
 	public final String getBaseId() {
@@ -483,7 +535,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	}
 
     /**
-     * Get network id (CDMA only)
+     * Returns network id (CDMA only)
      * @return network id
      */
     public final String getNetworkId() {
@@ -491,7 +543,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	}
 
     /**
-     * Sets network id (CDMA only)
+     * Returns network id (CDMA only)
      * @param networkId network id
      */
 	public final void setNetworkId(final String networkId) {
@@ -499,7 +551,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	}
 
     /**
-     * Gets system id (CDMA only)
+     * Returns system id (CDMA only)
      * @return system id
      */
 	public final String getSystemId() {
