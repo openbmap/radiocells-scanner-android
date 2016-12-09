@@ -358,8 +358,7 @@ public class OverviewFragment extends Fragment {
 
         btnWifiDetails.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 if (mLastBssid != null) {
                     DataHelper helper = new DataHelper(getActivity().getApplicationContext());
                     int session = helper.getCurrentSessionID();
@@ -373,9 +372,9 @@ public class OverviewFragment extends Fragment {
                 }
             }
         });
+
         // setup UI controls
         initGraph();
-
         return view;
     }
 

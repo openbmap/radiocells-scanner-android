@@ -36,6 +36,11 @@
                 android:gravity="center"
                 android:text="@string/n_a"
                 android:textAppearance="?android:attr/textAppearanceLarge" />
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_zoom_in"
+                android:id="@+id/overview_wifi_details_button"/>
         </TableRow>
 
         <TableRow
@@ -73,6 +78,11 @@
                 android:gravity="center"
                 android:text="@string/n_a"
                 android:textAppearance="?android:attr/textAppearanceLarge" />
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_zoom_in"
+                android:id="@+id/overview_cell_details_button"/>
         </TableRow>
 
         <TableRow>
