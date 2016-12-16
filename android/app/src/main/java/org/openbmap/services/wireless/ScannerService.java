@@ -74,6 +74,7 @@ import org.openbmap.services.AbstractService;
 import org.openbmap.services.wireless.blacklists.BlacklistReasonType;
 import org.openbmap.services.wireless.blacklists.LocationBlackList;
 import org.openbmap.services.wireless.blacklists.SsidBlackList;
+import org.openbmap.utils.CellUtils;
 import org.openbmap.utils.GeometryUtils;
 
 import java.io.File;
@@ -83,6 +84,7 @@ import java.util.Date;
 import java.util.List;
 
 import static android.os.Build.VERSION.SDK_INT;
+import static org.openbmap.utils.CellUtils.isValidCell;
 
 /**
  * ScannerService takes care of wireless logging, i.e. cell & wifi logging
@@ -733,7 +735,7 @@ public class ScannerService extends AbstractService {
 			 */
             final CellIdentityGsm gsmIdentity = ((CellInfoGsm) cell).getCellIdentity();
 
-            if (isValidGsmCell(gsmIdentity)) {
+            if (isValidCell(gsmIdentity)) {
                 Log.i(TAG, "Processing gsm cell " + gsmIdentity.getCid());
                 final CellRecord result = new CellRecord(sessionId);
                 result.setIsCdma(false);
@@ -790,7 +792,7 @@ public class ScannerService extends AbstractService {
             }
         } else if (cell instanceof CellInfoWcdma) {
             final CellIdentityWcdma wcdmaIdentity = ((CellInfoWcdma) cell).getCellIdentity();
-            if (isValidWcdmaCell(wcdmaIdentity)) {
+            if (isValidCell(wcdmaIdentity)) {
                 Log.i(TAG, "Processing wcdma cell " + wcdmaIdentity.getCid());
                 final CellRecord result = new CellRecord(sessionId);
                 result.setIsCdma(false);
@@ -848,7 +850,7 @@ public class ScannerService extends AbstractService {
             }
         } else if (cell instanceof CellInfoCdma) {
             final CellIdentityCdma cdmaIdentity = ((CellInfoCdma) cell).getCellIdentity();
-            if (isValidCdmaCell(cdmaIdentity)) {
+            if (isValidCell(cdmaIdentity)) {
 				/*
 				 * In case of CDMA network set CDMA specific values
 				 * Assume CDMA network, if cdma location and basestation, network and system id are available
@@ -899,7 +901,7 @@ public class ScannerService extends AbstractService {
             }
         } else if (cell instanceof CellInfoLte) {
             final CellIdentityLte lteIdentity = ((CellInfoLte) cell).getCellIdentity();
-            if (isValidLteCell(lteIdentity)) {
+            if (isValidCell(lteIdentity)) {
                 Log.i(TAG, "Processing LTE cell " + lteIdentity.getCi());
                 final CellRecord result = new CellRecord(sessionId);
                 result.setIsCdma(false);
@@ -965,7 +967,7 @@ public class ScannerService extends AbstractService {
 			 */
             final GsmCellLocation gsmLocation = (GsmCellLocation) cell;
 
-            if (isValidGsmCell(gsmLocation)) {
+            if (isValidCell(gsmLocation)) {
                 Log.i(TAG, "Assuming gsm (assumption based on cell-id" + gsmLocation.getCid() + ")");
                 final CellRecord serving = processGsm(position, gsmLocation);
 
@@ -1063,7 +1065,7 @@ public class ScannerService extends AbstractService {
 
         // TODO: neighbor cell information in 3G mode is unreliable: lots of n/a in data.. Skip neighbor cell logging when in 3G mode or try to autocomplete missing data
         for (final NeighboringCellInfo ci : neighboringCellInfos) {
-            final boolean skip = !isValidNeigbor(ci);
+            final boolean skip = !CellUtils.isValidNeigbor(ci);
             if (!skip) {
                 // add neigboring cells
                 final CellRecord neighbor = new CellRecord(sessionId);
@@ -1134,99 +1136,6 @@ public class ScannerService extends AbstractService {
         }
 
         return neighbors;
-    }
-
-    /**
-     * A valid gsm cell must have cell id != -1
-     * Note: cells with cid > max value 0xffff are accepted (typically UMTS cells. We handle them separately)
-     *
-     * @param gsmIdentity {@link CellIdentityGsm}
-     * @return true if valid gsm cell
-     */
-    private boolean isValidGsmCell(final CellIdentityGsm gsmIdentity) {
-        if (gsmIdentity == null) {
-            return false;
-        }
-
-        final Integer cid = gsmIdentity.getCid();
-        return (cid > 0 && cid != Integer.MAX_VALUE);
-    }
-
-    /**
-     * A valid gsm cell must have cell id != -1
-     * Use only in legacy mode, i.e. when telephonyManager.getAllCellInfos() isn't implemented on devices (some SAMSUNGS e.g.)
-     * Note: cells with cid > max value 0xffff are accepted (typically UMTS cells. We handle them separately
-     *
-     * @param gsmLocation {@link GsmCellLocation}
-     * @return true if valid gsm cell
-     */
-    @Deprecated
-    private boolean isValidGsmCell(final GsmCellLocation gsmLocation) {
-        if (gsmLocation == null) {
-            return false;
-        }
-        final Integer cid = gsmLocation.getCid();
-        return (cid > 0 && cid != Integer.MAX_VALUE);
-    }
-
-    /**
-     * A valid wcdma cell must have cell id set
-     *
-     * @param wcdmaInfo {@link CellIdentityWcdma}
-     * @return true if valid cdma id
-     */
-    private boolean isValidWcdmaCell(final CellIdentityWcdma wcdmaInfo) {
-        if (wcdmaInfo == null) {
-            return false;
-        }
-        final Integer cid = wcdmaInfo.getCid();
-        return ((cid > -1) && (cid < Integer.MAX_VALUE));
-    }
-
-    /**
-     * A valid LTE cell must have cell id set
-     *
-     * @param lteInfo {@link CellIdentityLte}
-     * @return true if valid cdma id
-     */
-    private boolean isValidLteCell(final CellIdentityLte lteInfo) {
-        if (lteInfo == null) {
-            return false;
-        }
-        final Integer cid = lteInfo.getCi();
-        return ((cid > -1) && (cid < Integer.MAX_VALUE));
-    }
-
-    /**
-     * A valid cdma location must have base station id, network id and system id set
-     *
-     * @param cdmaIdentity {@link CellInfoCdma}
-     * @return true if valid cdma id
-     */
-    private boolean isValidCdmaCell(final CellIdentityCdma cdmaIdentity) {
-        if (cdmaIdentity == null) {
-            return false;
-        }
-        return ((cdmaIdentity.getBasestationId() != -1) && (cdmaIdentity.getNetworkId() != -1) && (cdmaIdentity.getSystemId() != -1));
-    }
-
-    /**
-     * Tests if given cell is a valid neigbor cell
-     * Check is required as some modems only return dummy values for neighboring cells
-     * <p>
-     * Note: PSC is not checked, as PSC may be -1 on GSM networks
-     * see https://developer.android.com/reference/android/telephony/gsm/GsmCellLocation.html#getPsc()
-     *
-     * @param cell Neighbor cell
-     * @return true if cell has a valid cell id and lac
-     */
-    private boolean isValidNeigbor(final NeighboringCellInfo cell) {
-        if (cell == null) {
-            return false;
-        }
-        return (
-                (cell.getCid() != NeighboringCellInfo.UNKNOWN_CID && cell.getCid() < 0xffff) &&
-                        (cell.getLac() != NeighboringCellInfo.UNKNOWN_CID && cell.getLac() < 0xffff));
     }
 
     /**
