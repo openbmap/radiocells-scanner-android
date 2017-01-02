@@ -58,7 +58,7 @@ buildscript {
     }
     dependencies {
         // replace with the current version of the Android plugin
-        classpath 'com.android.tools.build:gradle:2.2.2'
+        classpath 'com.android.tools.build:gradle:2.2.3'
         // the latest version of the android-apt plugin
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
 
@@ -92,13 +92,14 @@ dependencies {
     compile 'com.jjoe64:graphview:4.1.0'
 
     compile 'com.caverock:androidsvg:1.2.1'
-    compile 'org.mapsforge:mapsforge-core:master-SNAPSHOT'
-    compile 'org.mapsforge:mapsforge-map:master-SNAPSHOT'
-    compile 'org.mapsforge:mapsforge-map-android:0.6.1'
-    compile 'org.mapsforge:mapsforge-poi:master-SNAPSHOT'
-    compile 'org.mapsforge:mapsforge-poi-android:0.6.1'
-    compile 'org.mapsforge:spatialite-android:master-SNAPSHOT'
-    compile 'org.mapsforge:mapsforge-map-reader:master-SNAPSHOT'
+    compile 'org.mapsforge:mapsforge-core:0.7.0'
+    compile 'org.mapsforge:mapsforge-map:0.7.0'
+    compile 'org.mapsforge:mapsforge-themes:0.7.0'
+    compile 'org.mapsforge:mapsforge-map-android:0.7.0'
+    compile 'org.mapsforge:mapsforge-poi:0.7.0'
+    compile 'org.mapsforge:mapsforge-poi-android:0.7.0'
+    compile 'org.mapsforge:spatialite-android:0.7.0'
+    compile 'org.mapsforge:mapsforge-map-reader:0.7.0'
 }
 
 apt {

@@ -30,7 +30,6 @@ import org.mapsforge.core.model.LatLong;
 import org.mapsforge.core.model.Point;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
 import org.mapsforge.map.android.graphics.AndroidResourceBitmap;
-import org.mapsforge.map.android.rendertheme.AssetsRenderTheme;
 import org.mapsforge.map.android.util.AndroidUtil;
 import org.mapsforge.map.layer.Layer;
 import org.mapsforge.map.layer.cache.TileCache;
@@ -41,12 +40,10 @@ import org.mapsforge.map.model.MapViewPosition;
 import org.mapsforge.map.reader.MapFile;
 import org.mapsforge.map.reader.header.MapFileException;
 import org.mapsforge.map.rendertheme.InternalRenderTheme;
-import org.mapsforge.map.rendertheme.XmlRenderTheme;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Utility functions that can be used across different mapsforge based activities
@@ -101,11 +98,12 @@ public final class MapUtils {
 	 * @param tileCache
 	 * @param mapViewPosition
 	 * @param mapFile
-	 * @param renderTheme
 	 * @return
 	 */
-	public static Layer createTileRendererLayer(final TileCache tileCache, final MapViewPosition mapViewPosition,
-			final MapFile mapFile, final XmlRenderTheme renderTheme, final onLongPressHandler handler) {
+	public static Layer createTileRendererLayer(final TileCache tileCache,
+												final MapViewPosition mapViewPosition,
+												final MapFile mapFile,
+												final onLongPressHandler handler) {
 
 		if (mapFile == null) {
 			return null;
@@ -123,14 +121,7 @@ public final class MapUtils {
 			}
 		};
 
-        if (renderTheme == null) {
-            Log.i(TAG, "Using default render theme");
-            tileRendererLayer.setXmlRenderTheme(InternalRenderTheme.OSMARENDER);
-        } else {
-            Log.i(TAG, "Using custom theme");
-            tileRendererLayer.setXmlRenderTheme(renderTheme);
-        }
-
+        tileRendererLayer.setXmlRenderTheme(InternalRenderTheme.DEFAULT);
         tileRendererLayer.setTextScale(1.5f);
         return tileRendererLayer;
 	}
@@ -143,19 +134,6 @@ public final class MapUtils {
         return AndroidUtil.createTileCache(ctx.getApplicationContext(), "mapcache", tileSize, 1f, overdrawFactor);
     }
 
-	/**
-	 * Reads custom render theme from assets
-	 *
-	 * @return render theme
-	 */
-	public static XmlRenderTheme getRenderTheme(final Context ctx) {
-		try {
-			return new AssetsRenderTheme(ctx, "", Preferences.RENDER_THEME);
-		} catch (final IOException e) {
-			Log.e(TAG, "Render theme failure " + e.toString());
-		}
-		return null;
-	}
 
 	/**
 	 * Checks whether a valid map file has been selected
@@ -218,7 +196,7 @@ public final class MapUtils {
         .setBaseUrl("")
         .setExtension("png")
         .setParallelRequestsLimit(8)
-        .setProtocol("http")
+        .setProtocol("https")
         .setTileSize(256)
         .setZoomLevelMax((byte) 18)
         .setZoomLevelMin((byte) 0);

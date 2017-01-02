@@ -170,7 +170,6 @@ public abstract class BaseMapFragment extends Fragment implements MapUtils.onLon
                 this.mTileCache,
                 this.mMapView.getModel().mapViewPosition,
                 MapUtils.getMapFile(this.getActivity()),
-                MapUtils.getRenderTheme(this.getActivity()),
                 this
         );
 
