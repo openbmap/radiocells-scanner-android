@@ -122,6 +122,7 @@ public class GpsProvider extends LocationProviderImpl implements Listener, Locat
 	@Override
 	public final void onProviderDisabled(final String provider) {
 		isGpsEnabled = false;
+		disableUpdates();
 	}
 
 	/* (non-Javadoc)
@@ -130,6 +131,7 @@ public class GpsProvider extends LocationProviderImpl implements Listener, Locat
 	@Override
 	public final void onProviderEnabled(final String provider) {
 		isGpsEnabled = true;
+		enableUpdates();
 	}
 
 	/* (non-Javadoc)
