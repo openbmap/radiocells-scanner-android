@@ -214,13 +214,16 @@
     <string name="permission_denied">Sorry, Radiocells scanner won\'t work without this permissions</string>
     <string name="title_activity_intro">IntroActivity</string>
     <string name="location_permission_required">Location permission required</string>
-    <string name="location_permission_explanation">GPS access is required to localize cell tower and wifi positions.</string>
+    <string name="permission_explanation_location">GPS access is required to localize cell tower and wifi positions.</string>
     <string name="phone_state_permission_required">Phone state permssion required</string>
-    <string name="phone_state_permission_explanation">We need this read phone state permission to collect cell tower information</string>
+    <string name="permission_explanation_phone_state">We need this read phone state permission to collect cell tower information</string>
     <string name="external_storage_permission_required">SD card permission required</string>
-    <string name="external_storage_permission_explanation">We need this permission to store map files and session data on your SD card</string>
+    <string name="permission_explanation_external_storage">We need this permission to store map files and session data on your SD card</string>
     <string name="ignore_battery_permission">Battery optimization permission required</string>
-    <string name="ignore_battery_explanation">This allows you to to continue scanning even on low battery. You must manually activate this feature</string>
+    <string name="permission_explanation_ignore_battery">This allows you to to continue scanning even on low battery. You must manually activate this feature</string>
     <string name="pref_gpx_settings">GPX settings</string>
     <string name="no_wifi_details_available">Wait a second! We haven\'t received wifi scan results yet!</string>
+    <string name="permission_setup_title">Permission setup</string>
+    <string name="permission_needed">Sorry, Radiobeacon won\'t work without permission</string>
+    <string name="download_completed">Download completed</string>
 </resources>

@@ -267,11 +267,11 @@ public class ManagerService extends Service {
         Log.d(TAG, "Received StartTracking event");
         Log.i(TAG, "=============================================================================");
         Log.i(TAG, "Configuration");
-        Log.i(TAG, "Ignore low battery: " + prefs.getBoolean(Preferences.KEY_IGNORE_BATTERY, Preferences.VAL_IGNORE_BATTERY));
-        Log.i(TAG, "Min GPS accuracy: " + prefs.getString(Preferences.KEY_REQ_GPS_ACCURACY, Preferences.VAL_REQ_GPS_ACCURACY));
-        Log.i(TAG, "Scan mode: " + prefs.getString(Preferences.KEY_WIFI_SCAN_MODE, Preferences.VAL_WIFI_SCAN_MODE));
-        Log.i(TAG, "Map: " + prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE));
-        Log.i(TAG, "Catalog: " + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_FILE));
+        Log.i(TAG, "Ignore low battery: " + prefs.getBoolean(Preferences.KEY_IGNORE_BATTERY, Preferences.DEFAULT_IGNORE_BATTERY));
+        Log.i(TAG, "Min GPS accuracy: " + prefs.getString(Preferences.KEY_REQ_GPS_ACCURACY, Preferences.DEFAULT_REQ_GPS_ACCURACY));
+        Log.i(TAG, "Scan mode: " + prefs.getString(Preferences.KEY_WIFI_SCAN_MODE, Preferences.DEFAULT_WIFI_SCAN_MODE));
+        Log.i(TAG, "Map: " + prefs.getString(Preferences.KEY_MAP_FILE, Preferences.DEFAULT_MAP_FILE));
+        Log.i(TAG, "Catalog: " + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.DEFAULT_CATALOG_FILE));
         Log.i(TAG, "=============================================================================");
 
         currentSession = event.session;
@@ -327,7 +327,7 @@ public class ManagerService extends Service {
         public void onReceive(final Context context, final Intent intent) {
             if (Intent.ACTION_BATTERY_LOW.equals(intent.getAction())) {
                 Log.d(TAG, "ACTION_BATTERY_LOW received");
-                final boolean ignoreBattery = prefs.getBoolean(Preferences.KEY_IGNORE_BATTERY, Preferences.VAL_IGNORE_BATTERY);
+                final boolean ignoreBattery = prefs.getBoolean(Preferences.KEY_IGNORE_BATTERY, Preferences.DEFAULT_IGNORE_BATTERY);
                 if (!ignoreBattery) {
                     Toast.makeText(context, getString(R.string.battery_warning), Toast.LENGTH_LONG).show();
                     stopTracking(RadioBeacon.SHUTDOWN_REASON_LOW_POWER);

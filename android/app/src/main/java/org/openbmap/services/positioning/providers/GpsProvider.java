@@ -69,7 +69,7 @@ public class GpsProvider extends LocationProviderImpl implements Listener, Locat
 
 		//read the logging interval from preferences
 		gpsLoggingInterval = Long.parseLong(PreferenceManager.getDefaultSharedPreferences(mContext.getApplicationContext()).getString(
-				Preferences.KEY_GPS_LOGGING_INTERVAL, Preferences.VAL_GPS_LOGGING_INTERVAL)) * 1000;
+				Preferences.KEY_GPS_LOGGING_INTERVAL, Preferences.DEFAULT_GPS_LOGGING_INTERVAL)) * 1000;
 
 		// Register ourselves for location updates
 		lmgr = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);

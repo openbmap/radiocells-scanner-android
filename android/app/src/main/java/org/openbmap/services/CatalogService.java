@@ -101,7 +101,7 @@ public class CatalogService extends AbstractService {
                     this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.CATALOG_SUBDIR);
 
             Log.i(TAG, "Using catalog folder:" + folder);
-            mCatalogLocation = folder + File.separator + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_FILE);
+            mCatalogLocation = folder + File.separator + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.DEFAULT_CATALOG_FILE);
             Log.i(TAG, "Selected catalog file: " + mCatalogLocation);
         }
     }

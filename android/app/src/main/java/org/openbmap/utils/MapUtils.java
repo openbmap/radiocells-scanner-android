@@ -121,7 +121,7 @@ public final class MapUtils {
 			}
 		};
 
-        tileRendererLayer.setXmlRenderTheme(InternalRenderTheme.DEFAULT);
+        tileRendererLayer.setXmlRenderTheme(InternalRenderTheme.OSMARENDER);
         tileRendererLayer.setTextScale(1.5f);
         return tileRendererLayer;
 	}
@@ -142,7 +142,7 @@ public final class MapUtils {
 	 */
 	public static Boolean hasOfflineMap(final Context context) {
 		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        final String map = prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE);
+        final String map = prefs.getString(Preferences.KEY_MAP_FILE, Preferences.DEFAULT_MAP_FILE);
         Log.i(TAG, "Selected map: " + map);
 		return (!map.equals(Preferences.VAL_MAP_NONE) && !map.equals(Preferences.VAL_MAP_ONLINE));
 	}
@@ -154,7 +154,7 @@ public final class MapUtils {
      */
     public static Boolean useOnlineMaps(final Context context) {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return (prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE).equals(Preferences.VAL_MAP_ONLINE));
+        return (prefs.getString(Preferences.KEY_MAP_FILE, Preferences.DEFAULT_MAP_FILE).equals(Preferences.VAL_MAP_ONLINE));
     }
 
     /**
@@ -165,7 +165,7 @@ public final class MapUtils {
 	public static MapFile getMapFile(final Context context) {
 		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		File file = new File(FileUtils.getMapFolder(context).getAbsolutePath(),
-				prefs.getString(Preferences.KEY_MAP_FILE, Preferences.VAL_MAP_FILE));
+				prefs.getString(Preferences.KEY_MAP_FILE, Preferences.DEFAULT_MAP_FILE));
 
 		if (file.exists()) {
 			try {
@@ -175,7 +175,7 @@ public final class MapUtils {
 				Toast.makeText(context,
 							   context.getString(R.string.failed_to_load_map_file_can_be_damaged),
 							   Toast.LENGTH_SHORT).show();
-				Log.e(TAG, "Failed to load map, file can be damaged " + mfe.getMessage(), mfe);
+				Log.e(TAG, "Failed to load map, file may be damaged " + mfe.getMessage(), mfe);
 				return null;
 			}
 		} else {

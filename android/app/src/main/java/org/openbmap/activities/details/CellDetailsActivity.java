@@ -26,6 +26,8 @@ import android.widget.ImageView;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.ViewById;
 import org.openbmap.R;
 import org.openbmap.activities.tabs.MapFragment;
 import org.openbmap.db.DataHelper;
@@ -34,33 +36,34 @@ import org.openbmap.db.models.CellRecord;
 
 import java.util.ArrayList;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
 /**
  * Display details for specific cell. CellDetailsActivity also takes care of
  * loading the records from the database. It also hosts the heatmap fragment
  */
+@EActivity(R.layout.celldetails)
 public class CellDetailsActivity  extends FragmentActivity {
-    @BindView(R.id.celldetails_networktype)	TextView tvNetworkType;
-    @BindView(R.id.celldetails_cellid)	TextView tvCellId;
-    @BindView(R.id.celldetails_operator) TextView tvOperator;
-    @BindView(R.id.celldetails_mcc) TextView tvMcc;
-    @BindView(R.id.celldetails_mnc) TextView tvMnc;
-    @BindView(R.id.celldetails_lac) TextView tvLac;
-    @BindView(R.id.celldetails_strength) TextView tvStrength;
-    @BindView(R.id.celldetails_psc) TextView tvPsc;
-    @BindView(R.id.celldetails_no_measurements) TextView tvNoMeasurements;
-    @BindView(R.id.celldetails_cdma_row) TableRow rowCdma;
-    @BindView(R.id.celldetails_baseid) TextView tvBaseId;
-    @BindView(R.id.celldetails_system_id) TextView tvSystemId;
-    @BindView(R.id.celldetails_network_id) TextView tvNetworkId;
-    @BindView(R.id.celldetails_utran_row) TableRow rowUtran;
-    @BindView(R.id.celldetails_lcid) TextView tvLcid;
-    @BindView(R.id.celldetails_rnc) TextView tvRnc;
-    @BindView(R.id.celldetails_serving) ImageView ivIsIserving;
 
-	private DataHelper mDatahelper;
+    public static final int MAX_HEATMAP_POINTS = 1000;
+
+    @ViewById(R.id.celldetails_networktype)	TextView tvNetworkType;
+    @ViewById(R.id.celldetails_cellid)	TextView tvCellId;
+    @ViewById(R.id.celldetails_operator) TextView tvOperator;
+    @ViewById(R.id.celldetails_mcc) TextView tvMcc;
+    @ViewById(R.id.celldetails_mnc) TextView tvMnc;
+    @ViewById(R.id.celldetails_lac) TextView tvLac;
+    @ViewById(R.id.celldetails_strength) TextView tvStrength;
+    @ViewById(R.id.celldetails_psc) TextView tvPsc;
+    @ViewById(R.id.celldetails_no_measurements) TextView tvNoMeasurements;
+    @ViewById(R.id.celldetails_cdma_row) TableRow rowCdma;
+    @ViewById(R.id.celldetails_baseid) TextView tvBaseId;
+    @ViewById(R.id.celldetails_system_id) TextView tvSystemId;
+    @ViewById(R.id.celldetails_network_id) TextView tvNetworkId;
+    @ViewById(R.id.celldetails_utran_row) TableRow rowUtran;
+    @ViewById(R.id.celldetails_lcid) TextView tvLcid;
+    @ViewById(R.id.celldetails_rnc) TextView tvRnc;
+    @ViewById(R.id.celldetails_serving) ImageView ivIsIserving;
+
+    private DataHelper mDatahelper;
 
     private CellRecord mCell;
     private Integer mSession;
@@ -68,11 +71,8 @@ public class CellDetailsActivity  extends FragmentActivity {
     private ArrayList<CellRecord> mMeasurements;
 
     @Override
-	public final void onCreate(final Bundle savedInstanceState) {
+	public void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);	
-	
-		setContentView(R.layout.celldetails);
-		ButterKnife.bind(this);
 
 		mDatahelper = new DataHelper(this);
 
@@ -88,11 +88,11 @@ public class CellDetailsActivity  extends FragmentActivity {
         // load only session measurements
         //this.mMeasurements = mDatahelper.getAllMeasurementsForCell(this.mCell, this.mSession);
         // load all measurements
-        this.mMeasurements = mDatahelper.getAllMeasurementsForCell(this.mCell, null);
+        mMeasurements = mDatahelper.getAllMeasurementsForCell(this.mCell, null, MAX_HEATMAP_POINTS);
 	}
 
 	@Override
-	protected final void onResume() {
+	protected void onResume() {
 		super.onResume();
 
 		// get the cell _id
@@ -148,12 +148,7 @@ public class CellDetailsActivity  extends FragmentActivity {
 		}
 	}
 
-	@Override
-	public final void onStart() {
-		super.onStart();
-	}
-
-	public final CellRecord getCell() {
+	public CellRecord getCell() {
 		return mCell;
 	}
 
@@ -161,7 +156,7 @@ public class CellDetailsActivity  extends FragmentActivity {
 	 * highlights selected wifi on MapView
 	 * @param id
 	 */
-	public final void onCellSelected(final long id) {
+	public void onCellSelected(final long id) {
 		final Intent intent = new Intent(this, MapFragment.class);
 		intent.putExtra(Schema.COL_ID, (int) id);
 		startActivity(intent);

@@ -28,16 +28,16 @@ import android.os.Bundle;
 import android.support.annotation.UiThread;
 import android.support.v4.content.res.ResourcesCompat;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.Toast;
 
+import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.ViewById;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.mapsforge.core.graphics.Bitmap;
@@ -48,6 +48,7 @@ import org.mapsforge.core.model.LatLong;
 import org.mapsforge.core.model.Point;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
 import org.mapsforge.map.android.graphics.AndroidResourceBitmap;
+import org.mapsforge.map.layer.GroupLayer;
 import org.mapsforge.map.layer.Layer;
 import org.mapsforge.map.layer.overlay.Circle;
 import org.mapsforge.map.layer.overlay.FixedPixelCircle;
@@ -69,7 +70,6 @@ import org.openbmap.events.onWifisAdded;
 import org.openbmap.utils.CatalogObject;
 import org.openbmap.utils.GeometryUtils;
 import org.openbmap.utils.GpxMapObjectsLoader;
-import org.openbmap.utils.LegacyGroupLayer;
 import org.openbmap.utils.MapUtils;
 import org.openbmap.utils.MapUtils.onLongPressHandler;
 import org.openbmap.utils.SessionLatLong;
@@ -79,14 +79,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
 /**
  * Fragment for displaying map with session's GPX track and wifis
  * Caution: due to ViewPager default implementation, this fragment is loaded even before it becomes
  * visible
  */
+@EFragment(R.layout.mapview)
 public class MapFragment extends BaseMapFragment implements
         ActionBar.OnNavigationListener, onLongPressHandler {
 
@@ -99,7 +97,8 @@ public class MapFragment extends BaseMapFragment implements
     /**
      * The Direction symbol.
      */
-    @BindView(R.id.direction) ImageView directionSymbol;
+    @ViewById(R.id.direction)
+    ImageView directionSymbol;
 
     /**
      * If zoom level < MIN_OBJECT_ZOOM session wifis and wifi catalog objects won't be displayed for performance reasons
@@ -221,12 +220,12 @@ public class MapFragment extends BaseMapFragment implements
     /**
      * Layer with radiocells wifis
      */
-    private LegacyGroupLayer mWifisLayer;
+    private GroupLayer mWifisLayer;
 
     /**
      * Openstreetmap towers layer
      */
-    private LegacyGroupLayer mTowersLayer;
+    private GroupLayer mTowersLayer;
 
     private Collection<Layer> mSessionObjects;
 
@@ -290,11 +289,9 @@ public class MapFragment extends BaseMapFragment implements
     private Location mCatalogRefreshLocation = new Location("DUMMY");
 
     @Override
-    public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.mapview, container, false);
-        this.mUnbinder = ButterKnife.bind(this, view);
+    public void initUi() {
+        super.initUi();
 
-        initBaseMap();
         addMapActions();
 
         final Drawable posIcon = ResourcesCompat.getDrawable(getResources(), R.drawable.position, null);
@@ -306,7 +303,6 @@ public class MapFragment extends BaseMapFragment implements
         mAccuracyMarker = new Circle(null, 0, ACCURACY_FILL, null);
         mMapView.getLayerManager().getLayers().add(mAccuracyMarker);
 
-
         // Register our gps broadcast mReceiver
         registerReceiver();
 
@@ -314,7 +310,6 @@ public class MapFragment extends BaseMapFragment implements
             // in bootstrap mode session objects are loaded in memory on start
             requestSessionUpdate(null);
         }
-        return view;
     }
 
     @Override
@@ -324,7 +319,7 @@ public class MapFragment extends BaseMapFragment implements
     }
 
     @Override
-    public final void onCreate(final Bundle savedInstanceState) {
+    public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
@@ -333,7 +328,7 @@ public class MapFragment extends BaseMapFragment implements
     }
 
     @Override
-    public final void onResume() {
+    public void onResume() {
         super.onResume();
 
         getSession();
@@ -341,7 +336,7 @@ public class MapFragment extends BaseMapFragment implements
     }
 
     @Override
-    public final void onPause() {
+    public void onPause() {
         clearSession();
         clearGpx();
 
@@ -375,7 +370,7 @@ public class MapFragment extends BaseMapFragment implements
     }
 
     @Override
-    public final void onDestroy() {
+    public void onDestroy() {
         unregisterReceiver();
         super.onDestroy();
     }
@@ -813,8 +808,8 @@ public class MapFragment extends BaseMapFragment implements
         clearWifis();
 
         // sort results into their corresponding group layer
-        mWifisLayer = new LegacyGroupLayer();
-        mTowersLayer = new LegacyGroupLayer();
+        mWifisLayer = new GroupLayer();
+        mTowersLayer = new GroupLayer();
         for (final CatalogObject poi : event.items) {
             if ("Radiocells.org".equals(poi.category)) {
                 final Circle allSymbol = new FixedPixelCircle(poi.latLong, 8, ALL_POI_PAINT, null);

@@ -31,10 +31,13 @@ public final class Preferences {
 	// 'Button id' catalog download preference
 	public static final String KEY_CATALOGS_DIALOG = "catalogs_dialog";
 
+    // gps interval settings
 	public static final String KEY_GPS_LOGGING_INTERVAL = "gps.interval";
 
+    // absolute map folder
 	public static final String KEY_MAP_FOLDER = "data.folder_map";
 
+    // absolute wifi catalog folder
 	public static final String KEY_WIFI_CATALOG_FOLDER = "data.folder_catalog";
 
 	/**
@@ -159,31 +162,31 @@ public final class Preferences {
     /**
      * Default: upload using username / password
      */
-    public static final boolean VAL_ANONYMOUS_UPLOAD = false;
+    public static final boolean DEFAULT_ANONYMOUS_UPLOAD = false;
     /**
      * Default: background wifi scanning
      */
-    public static final String VAL_WIFI_SCAN_MODE = "1";
+    public static final String DEFAULT_WIFI_SCAN_MODE = "1";
 
     /**
      * Default: stop tracking on low battery
      */
-    public static final boolean VAL_IGNORE_BATTERY = false;
+    public static final boolean DEFAULT_IGNORE_BATTERY = false;
 
     /**
      * Default: don't delete sessions after successful upload
      */
-    public static final boolean VAL_DELETE_SESSIONS = false;
+    public static final boolean DEFAULT_DELETE_SESSIONS = false;
 
     /**
      * Default: don't create a GPX file
      */
-    public static final boolean VAL_SAVE_GPX = false;
+    public static final boolean DEFAULT_SAVE_GPX = false;
 
     /**
      * Default: export track and waypoints
      */
-    public static final String VAL_GPX_VERBOSITY = "1";
+    public static final String DEFAULT_GPX_VERBOSITY = "1";
 
     /**
 	 * No map set
@@ -198,12 +201,12 @@ public final class Preferences {
 	/**
 	 * Default map file name
 	 */
-	public static final String VAL_MAP_FILE = VAL_MAP_NONE;
+	public static final String DEFAULT_MAP_FILE = VAL_MAP_NONE;
 
 	/**
 	 * Default reference database filename
 	 */
-	public static final String VAL_CATALOG_FILE = "openbmap.sqlite";
+	public static final String DEFAULT_CATALOG_FILE = "openbmap.sqlite";
 
 	/**
 	 * Reference database not set
@@ -221,54 +224,54 @@ public final class Preferences {
     public static final String CATALOG_VERSION_NONE = "not yet downloaded";
 
 	/**
-	 * Default minimum distance cells
+	 * Default minimum distance cells, default 35m
 	 */
-	public static final String VAL_MIN_CELL_DISTANCE = "35";
+	public static final String DEFAULT_MIN_CELL_DISTANCE = "35";
 
 	/**
-	 * Default minimum distance wifis
+	 * Default minimum distance wifis, default 5m
 	 */
-	public static final String VAL_MIN_WIFI_DISTANCE = "5";
+	public static final String DEFAULT_MIN_WIFI_DISTANCE = "5";
 
 	/**
-	 * Default GPS accuracy
+	 * Default GPS accuracy, default 25m
 	 */
-	public static final String VAL_REQ_GPS_ACCURACY = "25";
-
-	/**
-	 * Default screen lock settings
-	 */
-	public static final boolean VAL_KEY_KEEP_SCREEN_ON = true;
-
-	/**
-	 * By default upload session
-	 */
-	public static final boolean	VAL_SKIP_UPLOAD = false;
-
-	/**
-	 * By default delete local temp files after upload
-	 */
-	public static final boolean VAL_KEEP_XML = false;
-
-	/**
-	 * Save cells by default
-	 */
-	public static final boolean VAL_SAVE_CELLS = true;
-
-	/**
-	 * Save wifis by default
-	 */
-	public static final boolean VAL_SAVE_WIFIS = true;
+	public static final String DEFAULT_REQ_GPS_ACCURACY = "25";
 
 	/**
 	 * GPS update frequence in seconds, 0 = update position as often as possible by default
 	 */
-	public static final String VAL_GPS_LOGGING_INTERVAL = "0";
+	public static final String DEFAULT_GPS_LOGGING_INTERVAL = "0";
+
+	/**
+	 * Default screen lock settings, default keep screen on
+	 */
+	public static final boolean DEFAULT_KEEP_SCREEN_ON = true;
+
+	/**
+	 * By default upload session
+	 */
+	public static final boolean DEFAULT_SKIP_UPLOAD = false;
+
+	/**
+	 * By default delete local temp files after upload
+	 */
+	public static final boolean DEFAULT_KEEP_XML = false;
+
+	/**
+	 * Save cells by default
+	 */
+	public static final boolean DEFAULT_SAVE_CELLS = true;
+
+	/**
+	 * Save wifis by default
+	 */
+	public static final boolean DEFAULT_SAVE_WIFIS = true;
 
 	/**
 	 * Don't anonymise SSIDS by default
 	 */
-	public static final boolean VAL_ANONYMISE_SSID = false;
+	public static final boolean DEFAULT_ANONYMISE_SSID = false;
 
 	/**
 	 * Default maps folder name, relative to application root dir.
@@ -311,11 +314,6 @@ public final class Preferences {
      * URL, which is called to validate user credentials
      */
 	public static final String PASSWORD_VALIDATION_URL = RadioBeacon.SERVER_BASE + "/uploads/check_login";
-
-	/**
-	 * Mapsforge render theme
-	 */
-	public static final String RENDER_THEME = "renderthemes/rendertheme-v4.xml";
 
     /**
 	 * Private dummy constructor

@@ -43,21 +43,21 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.ViewById;
 import org.openbmap.R;
-import org.openbmap.activities.details.WifiDetailsActivity;
+import org.openbmap.activities.details.WifiDetailsActivity_;
 import org.openbmap.db.ContentProvider;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.Schema;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.Unbinder;
 
 /**
  * Wifi list fragment
  * lists current sessions wifis
  * logic according to https://github.com/googlesamples/android-RecyclerView/blob/master/Application/src/main/java/com/example/android/recyclerview/RecyclerViewFragment.java
  */
+@EFragment(R.layout.wifis_list)
 public class WifisListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = WifisListFragment.class.getSimpleName();
 
@@ -100,10 +100,10 @@ public class WifisListFragment extends Fragment implements LoaderManager.LoaderC
      */
     private String mSortOrder = DEFAULT_SORT_ORDER;
 
-    @BindView(R.id.wifi_list) RecyclerView mRecyclerView;
+    @ViewById(R.id.wifi_list)
+    RecyclerView mRecyclerView;
     private LinearLayoutManager mLayoutManager;
 
-    private Unbinder unbinder;
     private int mSession;
     private WifiAdapter adapter;
 
@@ -122,19 +122,14 @@ public class WifisListFragment extends Fragment implements LoaderManager.LoaderC
         setHasOptionsMenu(true);
         final DataHelper dataHelper = new DataHelper(getActivity());
         mSession = dataHelper.getCurrentSessionID();
-    }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
         TextView dummy = new TextView(getActivity());
         defaultColor = dummy.getTextColors();
         dummy = null;
+    }
 
-        View rootView = inflater.inflate(R.layout.wifis, container, false);
-        unbinder = ButterKnife.bind(this,rootView);
-        rootView.setTag(TAG);
-
+    @AfterViews
+    public void initUi(){
         mRecyclerView.addOnItemTouchListener(
                 new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {
                     @Override public void onItemClick(View view, int position) {
@@ -143,7 +138,7 @@ public class WifisListFragment extends Fragment implements LoaderManager.LoaderC
                             String bssid = adapter.dataCursor.getString(adapter.dataCursor.getColumnIndex(Schema.COL_BSSID));
 
                             final Intent intent = new Intent();
-                            intent.setClass(getActivity(), WifiDetailsActivity.class);
+                            intent.setClass(getActivity(), WifiDetailsActivity_.class);
                             intent.putExtra(Schema.COL_BSSID, bssid);
                             intent.putExtra(Schema.COL_SESSION_ID, mSession);
                             startActivity(intent);
@@ -155,26 +150,12 @@ public class WifisListFragment extends Fragment implements LoaderManager.LoaderC
         mLayoutManager = new LinearLayoutManager(getActivity());
 
         mCurrentLayoutManagerType = LayoutManagerType.LINEAR_LAYOUT_MANAGER;
-
-        if (savedInstanceState != null) {
-            // Restore saved layout manager type.
-            mCurrentLayoutManagerType = (LayoutManagerType) savedInstanceState
-                    .getSerializable(KEY_LAYOUT_MANAGER);
-        }
         setRecyclerViewLayoutManager(mCurrentLayoutManagerType);
 
         adapter = new WifiAdapter(getActivity(), null);
         mRecyclerView.setAdapter(adapter);
         mRecyclerView.setHasFixedSize(true);
         getLoaderManager().initLoader(WIFI_LIST_LOADER_ID, null, this);
-
-        return rootView;
-    }
-
-    @Override
-    public void onDestroyView() {
-        unbinder.unbind();
-        super.onDestroyView();
     }
 
     @Override
@@ -341,8 +322,7 @@ public class WifisListFragment extends Fragment implements LoaderManager.LoaderC
 
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View cardview = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.wifi_row, parent, false);
+            View cardview = LayoutInflater.from(parent.getContext()).inflate(R.layout.wifi_row, parent, false);
             return new ViewHolder(cardview);
         }
 

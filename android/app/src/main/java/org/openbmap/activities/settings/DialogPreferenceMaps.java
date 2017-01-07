@@ -171,7 +171,7 @@ public class DialogPreferenceMaps extends DialogPreference implements IMapsListA
                 file = moveToFolder(file, FileUtils.getMapFolder(getContext()).getAbsolutePath());
             }
 
-            //-initActiveMapControl();
+            //-refreshMapList();
             // handling map files
             activateMap(file);
         }

@@ -126,27 +126,27 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
     /**
      * Anonymous upload using one-time token
      */
-    private boolean mAnonymousUpload = Preferences.VAL_ANONYMOUS_UPLOAD;
+    private boolean mAnonymousUpload = Preferences.DEFAULT_ANONYMOUS_UPLOAD;
 
     /**
 	 * Upload md5ssid only?
 	 */
-	private boolean	mAnonymiseSsid = Preferences.VAL_ANONYMISE_SSID;
+	private boolean	mAnonymiseSsid = Preferences.DEFAULT_ANONYMISE_SSID;
 
     /**
 	 * Skip upload?
 	 */
-	private boolean	mSkipUpload = Preferences.VAL_SKIP_UPLOAD;
+	private boolean	mSkipUpload = Preferences.DEFAULT_SKIP_UPLOAD;
 
 	/**
 	 * Skip cleanup?
 	 */
-	private boolean mKeepXml = Preferences.VAL_KEEP_XML;
+	private boolean mKeepXml = Preferences.DEFAULT_KEEP_XML;
 
     /**
      * Create a GPX track
      */
-    private boolean mSaveGpx = Preferences.VAL_SAVE_GPX;
+    private boolean mSaveGpx = Preferences.DEFAULT_SAVE_GPX;
 
 	/**
 	 * Update wifi catalog with new wifis?
@@ -282,7 +282,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 
             final String filename = GpxSerializer.suggestGpxFilename(mSession);
             final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mAppContext);
-            final int verbosity = Integer.parseInt(prefs.getString(Preferences.KEY_GPX_VERBOSITY, Preferences.VAL_GPX_VERBOSITY));
+            final int verbosity = Integer.parseInt(prefs.getString(Preferences.KEY_GPX_VERBOSITY, Preferences.DEFAULT_GPX_VERBOSITY));
 
             final SaveGpxTask task = new SaveGpxTask(mAppContext, null, mSession, mTempPath, filename, verbosity);
             task.execute();

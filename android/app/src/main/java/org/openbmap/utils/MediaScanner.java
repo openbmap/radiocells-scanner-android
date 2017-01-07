@@ -37,6 +37,11 @@ public class MediaScanner implements MediaScannerConnectionClient {
 	private final MediaScannerConnection mScanner;
 	private final File mFolder;
 
+	/**
+	 *
+	 * @param context
+	 * @param folder Folder to scan
+     */
 	public MediaScanner(final Context context, final File folder) {
 		mFolder = folder;
 		mScanner = new MediaScannerConnection(context, this);

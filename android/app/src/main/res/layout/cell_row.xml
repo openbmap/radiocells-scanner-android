@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="4dp"
+    android:elevation="100dp"
+    app:cardCornerRadius="2dp"
+    app:cardElevation="2dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="4dp">
+
+        <TextView
+            android:text="ID"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+
+        <TextView
+            android:text="@string/cellIdCaption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginRight="16dp"
+            android:id="@+id/cell_row_caption_cell_id" />
+
+        <TextView
+            android:text="Cell ID"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="16dp"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@id/cell_row_caption_cell_id"
+            android:id="@+id/cell_row_cell_id" />
+
+        <TextView
+            android:text="Techology"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/cell_row_cell_id"
+            android:layout_alignParentTop="true"
+            android:layout_marginRight="16dp"
+            android:id="@+id/cell_row_technology" />
+
+        <!-- second row -->
+        <TextView
+            android:text="@string/lac"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/cell_row_caption_cell_id"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginRight="16dp"
+            android:id="@+id/cell_row_caption_lac" />
+
+        <TextView
+            android:text="LAC"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/cell_row_caption_lac"
+            android:layout_alignParentBottom="true"
+            android:layout_marginRight="16dp"
+            android:id="@+id/cell_row_lac" />
+
+        <TextView
+            android:text="Operator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/cell_row_lac"
+            android:layout_alignParentBottom="true"
+            android:layout_marginRight="16dp"
+            android:id="@+id/cell_row_operator" />
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>

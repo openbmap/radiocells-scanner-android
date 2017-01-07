@@ -263,7 +263,7 @@
         app:cardElevation="6dp">
     <fragment
         android:id="@+id/cellDetailsMap"
-        android:name="org.openbmap.activities.details.CellDetailsHeatmap"
+        android:name="org.openbmap.activities.details.CellDetailsHeatmap_"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         tools:layout="@layout/celldetailsmap">

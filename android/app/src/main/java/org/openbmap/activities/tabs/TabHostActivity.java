@@ -36,32 +36,33 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.ViewById;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.activities.SelectiveScrollViewPager;
-import org.openbmap.activities.StartscreenActivity;
+import org.openbmap.activities.StartscreenActivity_;
 import org.openbmap.events.onServiceShutdown;
 import org.openbmap.events.onStopTracking;
 import org.openbmap.services.ManagerService;
 import org.openbmap.utils.ActivityUtils;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
 /**
  * TabHostActivity for "tracking" mode. It hosts the tabs "Stats", "WifisRadiocells Overview", "Cell Overview" and "Map".
  * TabHostActivity is also in charge of service communication.
  */
+@EActivity(R.layout.tabhost_activity)
 public class TabHostActivity extends AppCompatActivity {
 	private static final String	TAG	= TabHostActivity.class.getSimpleName();
 
 	/**
 	 * Tab pager
 	 */
-    @BindView(R.id.pager)
+    @ViewById(R.id.pager)
     SelectiveScrollViewPager mPager;
 
 	/**
@@ -109,16 +110,13 @@ public class TabHostActivity extends AppCompatActivity {
 
 	/** Called when the activity is first created. */
 	@Override
-	public final void onCreate(final Bundle savedInstanceState) {
+	public void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-        setContentView(R.layout.tabhost_activity);
 
-		ButterKnife.bind(this);
+		//mPager = (SelectiveScrollViewPager) findViewById(R.id.pager);
 
 		// get shared preferences
 		mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-		initUi();
 
 		// service related stuff
 		isGpsAvailable();
@@ -127,13 +125,13 @@ public class TabHostActivity extends AppCompatActivity {
 	}
 
 	@Override
-	public final void onResume() {
+	public void onResume() {
         super.onResume();
         startManagerService();
     }
 
 	@Override
-	protected final void onDestroy() {
+	protected void onDestroy() {
         Log.d(TAG, "Destroying TabHost");
     //    EventBus.getDefault().unregister(this);
         // ?? stopTracking();
@@ -171,7 +169,7 @@ public class TabHostActivity extends AppCompatActivity {
         Log.d(TAG, "REQ StopTrackingEvent");
                 EventBus.getDefault().post(new onStopTracking());
 
-        final Intent intent = new Intent(this, StartscreenActivity.class);
+        final Intent intent = new Intent(this, StartscreenActivity_.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         this.finish();
@@ -213,7 +211,8 @@ public class TabHostActivity extends AppCompatActivity {
 	/**
 	 * Configures UI elements.
 	 */
-	private void initUi() {
+    @AfterViews
+	public void initUi() {
         final boolean keepScreenOn = mPrefs.getBoolean(Preferences.KEY_KEEP_SCREEN_ON, false);
         ActivityUtils.setKeepScreenOn(this, keepScreenOn);
 
@@ -233,10 +232,10 @@ public class TabHostActivity extends AppCompatActivity {
         // add tabs to actionbar
         final CustomViewPagerAdapter mTabsAdapter = new CustomViewPagerAdapter(this, mPager);
 
-        mTabsAdapter.addTab(mActionBar.newTab().setIcon(R.drawable.ic_overview)/*.setText(getResources().getString(R.string.overview))*/, OverviewFragment.class, null);
-        mTabsAdapter.addTab(mActionBar.newTab().setIcon(R.drawable.ic_wifi),/*.setText(getResources().getString(R.string.wifis)*/ WifisListFragment.class, null);
-        mTabsAdapter.addTab(mActionBar.newTab().setIcon(R.drawable.ic_cell)/*setText(getResources().getString(R.string.cells))*/, CellListFragment.class, null);
+        mTabsAdapter.addTab(mActionBar.newTab().setIcon(R.drawable.ic_overview)/*.setText(getResources().getString(R.string.overview))*/, OverviewFragment_.class, null);
+        mTabsAdapter.addTab(mActionBar.newTab().setIcon(R.drawable.ic_wifi),/*.setText(getResources().getString(R.string.wifis)*/ WifisListFragment_.class, null);
+        mTabsAdapter.addTab(mActionBar.newTab().setIcon(R.drawable.ic_cell)/*setText(getResources().getString(R.string.cells))*/, CellListFragment_.class, null);
         //mTabsAdapter.addTab(mActionBar.newTab().setText(getResources().getString(R.string.map)), MapFragment.class, null);
-		mTabsAdapter.addTab(mActionBar.newTab().setIcon(android.R.drawable.ic_dialog_map), MapFragment.class, null);
+		mTabsAdapter.addTab(mActionBar.newTab().setIcon(android.R.drawable.ic_dialog_map), MapFragment_.class, null);
 	}
 }

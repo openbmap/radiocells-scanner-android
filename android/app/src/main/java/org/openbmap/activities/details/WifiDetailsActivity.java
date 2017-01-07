@@ -32,6 +32,9 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.ViewById;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.db.DataHelper;
@@ -43,33 +46,29 @@ import org.openbmap.db.models.WifiRecord.CatalogStatus;
 import java.io.File;
 import java.util.ArrayList;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
 /**
  * Display details for specific wifi. WifiDetailsActivity also takes care of
  * loading the records from the database. It also hosts the heatmap fragment.
  */
+@EActivity(R.layout.wifidetails)
 public class WifiDetailsActivity extends FragmentActivity {
 
     private static final String TAG = WifiDetailsActivity.class.getSimpleName();
 
-    @BindView(R.id.wifidetails_ssid) TextView tvSsid;
-    @BindView(R.id.wifidetails_capa) TextView tvEncryption;
-    @BindView(R.id.wifidetails_freq) TextView tvFrequency;
-    @BindView(R.id.wifidetails_no_measurements) TextView tvNoMeasurements;
-    @BindView(R.id.wifidetails_manufactor) TextView tvManufactor;
-    @BindView(R.id.wifidetails_is_new) ImageView ivIsNew;
+    @ViewById(R.id.wifidetails_ssid) TextView tvSsid;
+    @ViewById(R.id.wifidetails_capa) TextView tvEncryption;
+    @ViewById(R.id.wifidetails_freq) TextView tvFrequency;
+    @ViewById(R.id.wifidetails_no_measurements) TextView tvNoMeasurements;
+    @ViewById(R.id.wifidetails_manufactor) TextView tvManufactor;
+    @ViewById(R.id.wifidetails_is_new) ImageView ivIsNew;
 
     private ArrayList<WifiRecord> mMeasurements;
     private Integer mSession;
     private String mBssid;
 
     @Override
-    public final void onCreate(final Bundle savedInstanceState) {
+    public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.wifidetails);
-        ButterKnife.bind(this);
 
         final Bundle extras = getIntent().getExtras();
         mBssid = extras.getString(Schema.COL_BSSID);
@@ -77,19 +76,20 @@ public class WifiDetailsActivity extends FragmentActivity {
         if (extras.getInt(Schema.COL_SESSION_ID) != 0) {
             mSession = extras.getInt(Schema.COL_SESSION_ID);
         }
+    }
 
+    @AfterViews
+    public void initUi() {
         // query content provider for wifi details
         DataHelper datahelper = new DataHelper(this);
-        this.mMeasurements = datahelper.getAllMeasurementsForBssid(this.mBssid, this.mSession);
-
+        mMeasurements = datahelper.getAllMeasurementsForBssid(this.mBssid, this.mSession);
         tvNoMeasurements.setText(String.valueOf(mMeasurements.size()));
         displayRecord(mMeasurements.get(0));
     }
 
     @Override
-    protected final void onResume() {
+    protected void onResume() {
         super.onResume();
-
         displayRecord(mMeasurements.get(0));
 
     }
@@ -143,7 +143,7 @@ public class WifiDetailsActivity extends FragmentActivity {
         // Open catalog database
         final String file = PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
                 this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.CATALOG_SUBDIR)
-                + File.separator + PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_FILE);
+                + File.separator + PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_CATALOG_FILE, Preferences.DEFAULT_CATALOG_FILE);
         try {
 
             Log.v(TAG, "Looking up manufactor " + search);

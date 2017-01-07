@@ -20,7 +20,7 @@
 
 package pl.polidea.treeview;
 
-import org.openbmap.activities.settings.RemoteFile;
+import org.openbmap.utils.RemoteFile;
 
 import java.util.List;
 /**

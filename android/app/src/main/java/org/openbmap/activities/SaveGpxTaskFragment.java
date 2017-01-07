@@ -65,7 +65,7 @@ public class SaveGpxTaskFragment extends Fragment implements SaveGpxTaskListener
 		}
 
 		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        final int verbosity = Integer.parseInt(prefs.getString(Preferences.KEY_GPX_VERBOSITY, Preferences.VAL_GPX_VERBOSITY));
+        final int verbosity = Integer.parseInt(prefs.getString(Preferences.KEY_GPX_VERBOSITY, Preferences.DEFAULT_GPX_VERBOSITY));
 
 		mIsExecuting = true;
 		// Create and execute the background task.

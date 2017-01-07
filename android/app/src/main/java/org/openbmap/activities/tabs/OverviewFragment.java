@@ -28,9 +28,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.ImageButton;
@@ -44,11 +42,15 @@ import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 import com.jjoe64.graphview.series.PointsGraphSeries;
 
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.Click;
+import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.ViewById;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
-import org.openbmap.activities.details.WifiDetailsActivity;
+import org.openbmap.activities.details.WifiDetailsActivity_;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.Schema;
 import org.openbmap.db.models.CellRecord;
@@ -57,13 +59,11 @@ import org.openbmap.events.onCellSaved;
 import org.openbmap.events.onFreeWifi;
 import org.openbmap.events.onWifisAdded;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.Unbinder;
 
 /**
  * Activity for displaying basic session infos (# of cells, wifis, etc.)
  */
+@EFragment(R.layout.overview)
 public class OverviewFragment extends Fragment {
 
     private static final String TAG = OverviewFragment.class.getSimpleName();
@@ -81,29 +81,29 @@ public class OverviewFragment extends Fragment {
     /**
      * UI controls
      */
-    @BindView(R.id.overview__cell_description)
+    @ViewById(R.id.overview__cell_description)
     public TextView tvCellDescription;
-    @BindView(R.id.overview_cell_strength)
+    @ViewById(R.id.overview_cell_strength)
     public TextView tvCellStrength;
-    @BindView(R.id.overview_wifi_description)
+    @ViewById(R.id.overview_wifi_description)
     public TextView tvWifiDescription;
-    @BindView(R.id.overview_wifi_strength)
+    @ViewById(R.id.overview_wifi_strength)
     public TextView tvWifiStrength;
-    @BindView(R.id.overview_technology)
+    @ViewById(R.id.overview_technology)
     public TextView tvTechnology;
-    @BindView(R.id.overview_blacklisted)
+    @ViewById(R.id.overview_blacklisted)
     public TextView tvIgnored;
-    @BindView(R.id.overview_free_wifi_found)
+    @ViewById(R.id.overview_free_wifi_found)
     public TextView tvFree;
-    @BindView(R.id.overview_free_wifi_found_icon)
+    @ViewById(R.id.overview_free_wifi_found_icon)
     public ImageView ivFree;
-    @BindView(R.id.overview_alert_icon)
+    @ViewById(R.id.overview_alert_icon)
     public ImageView ivAlert;
-    @BindView(R.id.overview_graph)
+    @ViewById(R.id.overview_graph)
     public GraphView gvGraph;
-    @BindView(R.id.overview_wifi_details_button)
+    @ViewById(R.id.overview_wifi_details_button)
     public ImageButton btnWifiDetails;
-    @BindView(R.id.overview_cell_details_button)
+    @ViewById(R.id.overview_cell_details_button)
     public ImageButton btnCellDetails;
 
     private LineGraphSeries mMeasurements;
@@ -145,7 +145,57 @@ public class OverviewFragment extends Fragment {
 
     private double graph2LastXValue;
 
-    private Unbinder mUnbinder;
+    @Override
+    public void onCreate(final Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        mFadeIgnoreTask = new Runnable() {
+            @Override
+            public void run() {
+                tvIgnored.setVisibility(View.INVISIBLE);
+                ivAlert.setVisibility(View.INVISIBLE);
+            }
+        };
+
+        mFadeFreeTask = new Runnable() {
+            @Override
+            public void run() {
+                tvFree.setVisibility(View.INVISIBLE);
+                ivFree.setVisibility(View.INVISIBLE);
+            }
+        };
+
+        mRefreshTask = new Runnable() {
+            @SuppressLint("DefaultLocale")
+            @Override
+            public void run() {
+                updateTimeSinceUpdate();
+                updateGraph();
+                mRefreshHandler.postDelayed(mRefreshTask, REFRESH_INTERVAL);
+            }
+        };
+
+        // setup broadcast filters
+        registerReceiver();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        registerReceiver();
+
+        startRepeatingTask();
+    }
+
+    @Override
+    public void onPause() {
+        unregisterReceiver();
+
+        stopRepeatingTask();
+
+        super.onPause();
+    }
 
     /**
      * Receives cell / wifi news
@@ -283,112 +333,19 @@ public class OverviewFragment extends Fragment {
         }
     }
 
-    @Override
-    public final void onCreate(final Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        mFadeIgnoreTask = new Runnable() {
-            @Override
-            public void run() {
-                tvIgnored.setVisibility(View.INVISIBLE);
-                ivAlert.setVisibility(View.INVISIBLE);
-            }
-        };
-
-        mFadeFreeTask = new Runnable() {
-            @Override
-            public void run() {
-                tvFree.setVisibility(View.INVISIBLE);
-                ivFree.setVisibility(View.INVISIBLE);
-            }
-        };
-
-        mRefreshTask = new Runnable() {
-            @SuppressLint("DefaultLocale")
-            @Override
-            public void run() {
-                updateTimeSinceUpdate();
-                updateGraph();
-                mRefreshHandler.postDelayed(mRefreshTask, REFRESH_INTERVAL);
-            }
-        };
-
-        // setup broadcast filters
-        registerReceiver();
-    }
-
-    @Override
-    public final void onResume() {
-        super.onResume();
-
-        registerReceiver();
-
-        startRepeatingTask();
-    }
-
-    void startRepeatingTask() {
+    private void startRepeatingTask() {
         mRefreshTask.run();
     }
 
-    void stopRepeatingTask() {
+    private void stopRepeatingTask() {
         mRefreshHandler.removeCallbacks(mRefreshTask);
     }
 
-    @Override
-    public final void onPause() {
-        unregisterReceiver();
-
-        stopRepeatingTask();
-
-        super.onPause();
-    }
-
-    @Override
-    public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.overview, container, false);
-        mUnbinder = ButterKnife.bind(this, view);
-
-        btnCellDetails.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v)
-            {
-
-            }
-        });
-
-        btnWifiDetails.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mLastBssid != null) {
-                    DataHelper helper = new DataHelper(getActivity().getApplicationContext());
-                    int session = helper.getCurrentSessionID();
-                    final Intent intent = new Intent();
-                    intent.setClass(getActivity(), WifiDetailsActivity.class);
-                    intent.putExtra(Schema.COL_BSSID, mLastBssid);
-                    intent.putExtra(Schema.COL_SESSION_ID, session);
-                    startActivity(intent);
-                } else {
-                    Toast.makeText(getActivity(), getString(R.string.no_wifi_details_available), Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-
-        // setup UI controls
-        initGraph();
-        return view;
-    }
-
-    @Override
-    public void onDestroyView() {
-        if (this.mUnbinder != null) {
-            this.mUnbinder.unbind();
-        }
-        super.onDestroyView();
-    }
     /**
      * Init UI contols
      */
-    private void initGraph() {
+    @AfterViews
+    public void initUI() {
         gvGraph.getViewport().setXAxisBoundsManual(true);
         gvGraph.getViewport().setYAxisBoundsManual(true);
         gvGraph.getViewport().setMinY(-100);
@@ -401,6 +358,26 @@ public class OverviewFragment extends Fragment {
         gvGraph.getGridLabelRenderer().setNumVerticalLabels(3);
         gvGraph.getViewport().setMinX(0);
         gvGraph.getViewport().setMaxX(60);
+    }
+
+    @Click(R.id.overview_wifi_details_button)
+    void wifiDetailsClicked() {
+        if (mLastBssid != null) {
+            DataHelper helper = new DataHelper(getActivity().getApplicationContext());
+            int session = helper.getCurrentSessionID();
+            final Intent intent = new Intent();
+            intent.setClass(getActivity(), WifiDetailsActivity_.class);
+            intent.putExtra(Schema.COL_BSSID, mLastBssid);
+            intent.putExtra(Schema.COL_SESSION_ID, session);
+            startActivity(intent);
+        } else {
+            Toast.makeText(getActivity(), getString(R.string.no_wifi_details_available), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Click(R.id.overview_cell_details_button)
+    void cellDetailsClicked() {
+
     }
 
     /**

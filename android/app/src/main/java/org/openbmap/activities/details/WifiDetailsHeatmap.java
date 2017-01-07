@@ -23,11 +23,11 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EFragment;
 import org.mapsforge.core.model.BoundingBox;
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.core.model.Point;
@@ -44,11 +44,11 @@ import org.openbmap.heatmap.HeatmapBuilder.HeatmapBuilderListener;
 
 import java.util.ArrayList;
 
-import butterknife.ButterKnife;
 
 /**
  * Fragment for displaying cell detail information
  */
+@EFragment(R.layout.wifidetailsmap)
 public class WifiDetailsHeatmap extends BaseMapFragment implements HeatmapBuilderListener {
 
 	private static final String TAG = WifiDetailsHeatmap.class.getSimpleName();
@@ -102,11 +102,8 @@ public class WifiDetailsHeatmap extends BaseMapFragment implements HeatmapBuilde
         });
     }
 
-    @Override
-	public final View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
-		final View view = inflater.inflate(R.layout.wifidetailsmap, container, false);
-        this.mUnbinder = ButterKnife.bind(this, view);
-
+    @AfterViews
+	public final void init() {
         initBaseMap();
         mHeatmapLayer = new Marker(null, null, 0, 0);
         mMapView.getLayerManager().getLayers().add(mHeatmapLayer);
@@ -139,8 +136,6 @@ public class WifiDetailsHeatmap extends BaseMapFragment implements HeatmapBuilde
             }
         };
         this.mMapView.getModel().mapViewPosition.addObserver(mMapObserver);
-
-		return view;
 	}
 
     @Override

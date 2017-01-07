@@ -88,7 +88,7 @@ public class CatalogUpdater extends AsyncTask<Void, Void, Void> {
 			// Open catalog database
 			final String file = prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
 					mContext.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.CATALOG_SUBDIR)
-					+ File.separator + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_FILE);
+					+ File.separator + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.DEFAULT_CATALOG_FILE);
 
 			SQLiteDatabase catalogDb = null;
 			try {

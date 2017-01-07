@@ -23,12 +23,13 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.ProgressBar;
 
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.ViewById;
 import org.mapsforge.core.model.BoundingBox;
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.core.model.Point;
@@ -45,17 +46,15 @@ import org.openbmap.heatmap.HeatmapBuilder.HeatmapBuilderListener;
 
 import java.util.ArrayList;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
 /**
  * Fragment for displaying cell detail information
  */
+@EFragment(R.layout.celldetailsmap)
 public class CellDetailsHeatmap extends BaseMapFragment implements HeatmapBuilderListener {
 
 	private static final String TAG = CellDetailsHeatmap.class.getSimpleName();
 
-    @BindView(R.id.celldetails_map_progress)
+    @ViewById(R.id.celldetails_map_progress)
     ProgressBar loading;
 
 	/**
@@ -94,7 +93,7 @@ public class CellDetailsHeatmap extends BaseMapFragment implements HeatmapBuilde
 
         mCell = ((CellDetailsActivity) getActivity()).getCell();
         mMeasurements = ((CellDetailsActivity) getActivity()).getMeasurements();
-        mPoints = measurementsToHeatPoints(this.mMeasurements);
+        mPoints = measurementsToHeatPoints(mMeasurements);
 
         if (mPoints.size() > 0) {
             mMapView.getModel().mapViewPosition.setCenter(mPoints.get(mPoints.size()-1));
@@ -112,12 +111,9 @@ public class CellDetailsHeatmap extends BaseMapFragment implements HeatmapBuilde
         });
     }
 
-    @Override
-	public final View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
-		final View view = inflater.inflate(R.layout.celldetailsmap, container, false);
-		this.mUnbinder = ButterKnife.bind(this, view);
-
-		initBaseMap();
+    @AfterViews
+	public final void init() {
+        initBaseMap();
         mHeatmapLayer = new Marker(null, null, 0, 0);
         mMapView.getLayerManager().getLayers().add(mHeatmapLayer);
 
@@ -149,12 +145,11 @@ public class CellDetailsHeatmap extends BaseMapFragment implements HeatmapBuilde
         };
         this.mMapView.getModel().mapViewPosition.addObserver(mMapObserver);
 
-		// zoom to moderate zoom level on startup
-		if (mMapView.getModel().mapViewPosition.getZoomLevel() < (byte) 10 || mMapView.getModel().mapViewPosition.getZoomLevel() > (byte) 18) {
-			Log.i(TAG, "Reseting zoom level");
-			mMapView.getModel().mapViewPosition.setZoomLevel((byte) 16);
-		}
-		return view;
+        // zoom to moderate zoom level on startup
+        if (mMapView.getModel().mapViewPosition.getZoomLevel() < (byte) 10 || mMapView.getModel().mapViewPosition.getZoomLevel() > (byte) 18) {
+            Log.i(TAG, "Reseting zoom level");
+            mMapView.getModel().mapViewPosition.setZoomLevel((byte) 16);
+        }
 	}
 
 	@Override

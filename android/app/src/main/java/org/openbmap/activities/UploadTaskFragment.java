@@ -156,10 +156,10 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
         }
 
         final String targetPath = getActivity().getExternalFilesDir(null).getAbsolutePath() + File.separator;
-        final boolean skipUpload = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_SKIP_UPLOAD, Preferences.VAL_SKIP_UPLOAD);
-        final boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_KEEP_XML, Preferences.VAL_KEEP_XML);
-        final boolean anonymiseSsid = prefs.getBoolean(Preferences.KEY_ANONYMISE_SSID, Preferences.VAL_ANONYMISE_SSID);
-        final boolean saveGpx = prefs.getBoolean(Preferences.KEY_SAVE_GPX, Preferences.VAL_SAVE_GPX);
+        final boolean skipUpload = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_SKIP_UPLOAD, Preferences.DEFAULT_SKIP_UPLOAD);
+        final boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_KEEP_XML, Preferences.DEFAULT_KEEP_XML);
+        final boolean anonymiseSsid = prefs.getBoolean(Preferences.KEY_ANONYMISE_SSID, Preferences.DEFAULT_ANONYMISE_SSID);
+        final boolean saveGpx = prefs.getBoolean(Preferences.KEY_SAVE_GPX, Preferences.DEFAULT_SAVE_GPX);
 
         mExportDataTask = new ExportSessionTask(getActivity(), this, session, targetPath, user, password, anonymousUpload);
 

@@ -18,7 +18,6 @@
 
 package org.openbmap.activities.settings;
 
-import android.annotation.SuppressLint;
 import android.app.DownloadManager;
 import android.app.DownloadManager.Query;
 import android.content.BroadcastReceiver;
@@ -48,9 +47,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static android.os.Build.VERSION.SDK_INT;
-import static android.os.Build.VERSION_CODES.GINGERBREAD;
-
 /**
  * Preferences activity.
  */
@@ -72,21 +68,19 @@ public class SettingsActivity extends PreferenceActivity {
 
     private BroadcastReceiver mReceiver = null;
 
-    @SuppressLint("NewApi")
     @Override
     protected final void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         addPreferencesFromResource(R.xml.preferences);
 
-        // with versions >= GINGERBREAD use download manager
-        if (SDK_INT >= GINGERBREAD) {
-            initDownloadManager();
-        }
+        initDownloadManager();
+
+        initAlternativeMapDownloadButton();
 
         initActiveCatalogControl();
 
-        initActiveMapControl();
+        refreshMapList();
 
         initGpsLogIntervalControl();
 
@@ -99,11 +93,10 @@ public class SettingsActivity extends PreferenceActivity {
     /**
      * Initialises download manager for GINGERBREAD and newer
      */
-    private void initDownloadManager() {
+    public void initDownloadManager() {
         mDownloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
 
         mReceiver = new BroadcastReceiver() {
-            @SuppressLint("NewApi")
             @Override
             public void onReceive(final Context context, final Intent intent) {
                 final String action = intent.getAction();
@@ -132,6 +125,11 @@ public class SettingsActivity extends PreferenceActivity {
     }
 
     @Override
+    protected final void onResume() {
+        super.onResume();
+        refreshMapList();
+    }
+    @Override
     protected final void onDestroy() {
         try {
             if (mReceiver != null) {
@@ -145,6 +143,17 @@ public class SettingsActivity extends PreferenceActivity {
         }
 
         super.onDestroy();
+    }
+
+    private void initAlternativeMapDownloadButton() {
+        Preference pref = (Preference)findPreference("data.alternative_download");
+        pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                startActivity(new Intent(pref.getContext(), MapDownloadActivity.class));
+                return true;
+            }
+        });
     }
 
     /**
@@ -165,10 +174,9 @@ public class SettingsActivity extends PreferenceActivity {
      * Initializes gps logging interval.
      */
     private void initGpsLogIntervalControl() {
-        // Update GPS logging interval summary to the current value
         final Preference pref = findPreference(org.openbmap.Preferences.KEY_GPS_LOGGING_INTERVAL);
         pref.setSummary(
-                PreferenceManager.getDefaultSharedPreferences(this).getString(org.openbmap.Preferences.KEY_GPS_LOGGING_INTERVAL, org.openbmap.Preferences.VAL_GPS_LOGGING_INTERVAL)
+                PreferenceManager.getDefaultSharedPreferences(this).getString(org.openbmap.Preferences.KEY_GPS_LOGGING_INTERVAL, org.openbmap.Preferences.DEFAULT_GPS_LOGGING_INTERVAL)
                         + " " + getResources().getString(R.string.prefs_gps_logging_interval_seconds)
                         + ". " + getResources().getString(R.string.prefs_gps_logging_interval_summary));
         pref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
@@ -186,7 +194,7 @@ public class SettingsActivity extends PreferenceActivity {
     /**
      * Populates the active map list preference by scanning available map files.
      */
-    private void initActiveMapControl() {
+    public void refreshMapList() {
         List<String> entries = new ArrayList<>();
         List<String> values = new ArrayList<>();
 
@@ -232,14 +240,6 @@ public class SettingsActivity extends PreferenceActivity {
         return new File(PreferenceManager.getDefaultSharedPreferences(SettingsActivity.this).getString(
                 Preferences.KEY_WIFI_CATALOG_FOLDER,
                 SettingsActivity.this.getExternalFilesDir(null) + File.separator + Preferences.CATALOG_SUBDIR));
-    }
-
-    /**
-     * Checks the local wifi catalog version
-     * @return version number
-     */
-    private String getLocalCatalogVersion() {
-        return PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_CATALOG_VERSION, Preferences.CATALOG_VERSION_NONE);
     }
 
     /**

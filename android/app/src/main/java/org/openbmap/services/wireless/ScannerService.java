@@ -255,10 +255,10 @@ public class ScannerService extends AbstractService {
         // get shared preferences
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-        if (!prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_FILE).equals(Preferences.VAL_CATALOG_NONE)) {
+        if (!prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.DEFAULT_CATALOG_FILE).equals(Preferences.VAL_CATALOG_NONE)) {
             final String catalogPath = prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
                     getApplicationContext().getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.CATALOG_SUBDIR)
-                    + File.separator + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_FILE);
+                    + File.separator + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.DEFAULT_CATALOG_FILE);
 
             if (!(new File(catalogPath)).exists()) {
                 Log.w(TAG, "Selected catalog doesn't exist");
@@ -443,10 +443,10 @@ public class ScannerService extends AbstractService {
 
             int mode = WifiManager.WIFI_MODE_SCAN_ONLY;
 
-            if (Integer.parseInt(prefs.getString(Preferences.KEY_WIFI_SCAN_MODE, Preferences.VAL_WIFI_SCAN_MODE)) == 2) {
+            if (Integer.parseInt(prefs.getString(Preferences.KEY_WIFI_SCAN_MODE, Preferences.DEFAULT_WIFI_SCAN_MODE)) == 2) {
                 Log.i(TAG, "Scanning in full power mode");
                 mode = WifiManager.WIFI_MODE_FULL;
-            } else if (Integer.parseInt(prefs.getString(Preferences.KEY_WIFI_SCAN_MODE, Preferences.VAL_WIFI_SCAN_MODE)) == 3) {
+            } else if (Integer.parseInt(prefs.getString(Preferences.KEY_WIFI_SCAN_MODE, Preferences.DEFAULT_WIFI_SCAN_MODE)) == 3) {
                 Log.i(TAG, "Scanning in full high perf mode");
                 /**
                  * WARNING POSSIBLE HIGH POWER DRAIN!!!!
@@ -533,7 +533,7 @@ public class ScannerService extends AbstractService {
                         Log.d(TAG, "Wifi results are available now.");
 
                         // Is wifi tracking disabled?
-                        if (!prefs.getBoolean(Preferences.KEY_LOG_WIFIS, Preferences.VAL_SAVE_WIFIS)) {
+                        if (!prefs.getBoolean(Preferences.KEY_LOG_WIFIS, Preferences.DEFAULT_SAVE_WIFIS)) {
                             Log.i(TAG, "Didn't save wifi: wifi tracking is disabled.");
                             return;
                         }
@@ -653,7 +653,7 @@ public class ScannerService extends AbstractService {
      */
     private boolean updateCells(final Location here, final String providerName) {
         // Is cell tracking disabled?
-        if (!prefs.getBoolean(Preferences.KEY_LOG_CELLS, Preferences.VAL_SAVE_CELLS)) {
+        if (!prefs.getBoolean(Preferences.KEY_LOG_CELLS, Preferences.DEFAULT_SAVE_CELLS)) {
             Log.i(TAG, "Didn't save cells: cells tracking is disabled.");
             return false;
         }
@@ -1345,7 +1345,7 @@ public class ScannerService extends AbstractService {
      */
     private boolean acceptableAccuracy(final Location location) {
         return location.hasAccuracy() && (location.getAccuracy() <= Float.parseFloat(
-                prefs.getString(Preferences.KEY_REQ_GPS_ACCURACY, Preferences.VAL_REQ_GPS_ACCURACY)));
+                prefs.getString(Preferences.KEY_REQ_GPS_ACCURACY, Preferences.DEFAULT_REQ_GPS_ACCURACY)));
     }
 
     /**
@@ -1358,7 +1358,7 @@ public class ScannerService extends AbstractService {
      */
     private boolean acceptableCellDistance(final Location current, final Location last) {
         return (current.distanceTo(last) > Float.parseFloat(
-                prefs.getString(Preferences.KEY_MIN_CELL_DISTANCE, Preferences.VAL_MIN_CELL_DISTANCE))
+                prefs.getString(Preferences.KEY_MIN_CELL_DISTANCE, Preferences.DEFAULT_MIN_CELL_DISTANCE))
                 && (current.getTime() - last.getTime() > MIN_CELL_TIME_INTERVAL) || DEMO_MODE);
     }
 
@@ -1372,7 +1372,7 @@ public class ScannerService extends AbstractService {
      */
     private boolean acceptableWifiDistance(final Location current, final Location last) {
         return (current.distanceTo(last) > Float.parseFloat(
-                prefs.getString(Preferences.KEY_MIN_WIFI_DISTANCE, Preferences.VAL_MIN_WIFI_DISTANCE))
+                prefs.getString(Preferences.KEY_MIN_WIFI_DISTANCE, Preferences.DEFAULT_MIN_WIFI_DISTANCE))
                 || DEMO_MODE);
     }
 }

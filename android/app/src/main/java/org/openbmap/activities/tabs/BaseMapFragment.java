@@ -8,6 +8,9 @@ import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.ViewById;
 import org.mapsforge.core.graphics.Filter;
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.core.model.Point;
@@ -23,9 +26,6 @@ import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.utils.MapUtils;
 
-import butterknife.BindView;
-import butterknife.Unbinder;
-
 /**
  * Base class for fragment with a mapsforge map. Class takes care of cache initialization,
  * map setup and cleanup.
@@ -35,12 +35,11 @@ import butterknife.Unbinder;
  * - Derived classes must all register themselves to Butterknife using {@code this.mUnbinder = ButterKnife.bind(this, view)}
  * in their onCreateView() method
  */
+@EFragment(R.layout.mapview)
 public abstract class BaseMapFragment extends Fragment implements MapUtils.onLongPressHandler {
     private static final String TAG = BaseMapFragment.class.getSimpleName();
 
     private boolean NIGHT_MODE = true;
-
-    protected Unbinder mUnbinder;
 
     /**
      * Baselayer cache
@@ -60,18 +59,17 @@ public abstract class BaseMapFragment extends Fragment implements MapUtils.onLon
     /**
      * MapView
      */
-    @BindView(R.id.map)
+    @ViewById(R.id.map)
     public MapView mMapView;
+
+    @AfterViews
+    public void initUi() {
+        initBaseMap();
+    }
 
     @Override
     public void onDestroyView() {
-
         releaseMap();
-
-        if (this.mUnbinder != null) {
-            this.mUnbinder.unbind();
-        }
-
         super.onDestroyView();
     }
 

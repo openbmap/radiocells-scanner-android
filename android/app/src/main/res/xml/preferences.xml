@@ -76,6 +76,9 @@
             android:summary="@string/prefs_get_maps_summary"
             android:key="maps_dialog">
         </org.openbmap.activities.settings.DialogPreferenceMaps>
+        <Preference android:title="Acts like a button"
+            android:key="data.alternative_download"
+            android:summary="This is a cool button"/>
         <ListPreference
             android:defaultValue="none"
             android:key="data.map"

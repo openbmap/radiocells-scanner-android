@@ -38,22 +38,22 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.ViewById;
 import org.openbmap.R;
-import org.openbmap.activities.details.CellDetailsActivity;
+import org.openbmap.activities.details.CellDetailsActivity_;
 import org.openbmap.db.ContentProvider;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.Schema;
 import org.openbmap.db.models.CellRecord;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.Unbinder;
 
 /**
  * Cell list fragment
  * lists current sessions wifis
  * logic according to https://github.com/googlesamples/android-RecyclerView/blob/master/Application/src/main/java/com/example/android/recyclerview/RecyclerViewFragment.java
  */
+@EFragment(R.layout.cells_list)
 public class CellListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = CellListFragment.class.getSimpleName();
 
@@ -96,10 +96,10 @@ public class CellListFragment extends Fragment implements LoaderManager.LoaderCa
      */
     private String mSortOrder = DEFAULT_SORT_ORDER;
 
-    @BindView(R.id.wifi_list) RecyclerView mRecyclerView;
+    @ViewById(R.id.wifi_list)
+    RecyclerView mRecyclerView;
     private LinearLayoutManager mLayoutManager;
 
-    private Unbinder unbinder;
     private int mSession;
     private CellAdapter adapter;
 
@@ -118,19 +118,14 @@ public class CellListFragment extends Fragment implements LoaderManager.LoaderCa
         setHasOptionsMenu(true);
         final DataHelper dataHelper = new DataHelper(getActivity());
         mSession = dataHelper.getCurrentSessionID();
-    }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
         TextView dummy = new TextView(getActivity());
         defaultColor = dummy.getTextColors();
         dummy = null;
+    }
 
-        View rootView = inflater.inflate(R.layout.cells, container, false);
-        unbinder = ButterKnife.bind(this,rootView);
-        rootView.setTag(TAG);
-
+    @AfterViews
+    public void initUi() {
         mRecyclerView.addOnItemTouchListener(
                 new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {
                     @Override public void onItemClick(View view, int position) {
@@ -139,7 +134,7 @@ public class CellListFragment extends Fragment implements LoaderManager.LoaderCa
                             long id = adapter.dataCursor.getLong(adapter.dataCursor.getColumnIndex(Schema.COL_ID));
 
                             final Intent intent = new Intent();
-                            intent.setClass(getActivity(), CellDetailsActivity.class);
+                            intent.setClass(getActivity(), CellDetailsActivity_.class);
                             intent.putExtra(Schema.COL_ID, (int) id);
                             intent.putExtra(Schema.COL_SESSION_ID, mSession);
                             startActivity(intent);
@@ -150,26 +145,12 @@ public class CellListFragment extends Fragment implements LoaderManager.LoaderCa
 
         mLayoutManager = new LinearLayoutManager(getActivity());
         mCurrentLayoutManagerType = LayoutManagerType.LINEAR_LAYOUT_MANAGER;
-
-        if (savedInstanceState != null) {
-            // Restore saved layout manager type.
-            mCurrentLayoutManagerType = (LayoutManagerType) savedInstanceState
-                    .getSerializable(KEY_LAYOUT_MANAGER);
-        }
         setRecyclerViewLayoutManager(mCurrentLayoutManagerType);
 
         adapter = new CellAdapter(getActivity(), null);
         mRecyclerView.setAdapter(adapter);
         mRecyclerView.setHasFixedSize(true);
         getLoaderManager().initLoader(CELL_LOADER_ID, null, this);
-
-        return rootView;
-    }
-
-    @Override
-    public void onDestroyView() {
-        unbinder.unbind();
-        super.onDestroyView();
     }
 
     /*

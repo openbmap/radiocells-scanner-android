@@ -177,7 +177,7 @@ public class DataHelper {
 		return wifis;
 	}
 
-	public ArrayList<CellRecord> getAllMeasurementsForCell(CellRecord cell, final Integer session) {
+	public ArrayList<CellRecord> getAllMeasurementsForCell(CellRecord cell, final Integer session, final int limit) {
         final ArrayList<CellRecord> cells = new ArrayList<>();
 
         String selectSql = "";
@@ -216,7 +216,14 @@ public class DataHelper {
                 "begin_" + Schema.COL_LATITUDE,
                 "begin_" + Schema.COL_LONGITUDE};
         */
-        final Cursor cursor = contentResolver.query(ContentProvider.CONTENT_URI_CELL, null, selectSql, null, null);
+
+
+		String sort = null;
+		if (limit > -1) {
+			sort = Schema.COL_TIMESTAMP + " ASC LIMIT " + limit;
+		}
+
+        final Cursor cursor = contentResolver.query(ContentProvider.CONTENT_URI_CELL, null, selectSql, null, sort);
 
         // query data from content provider
         //return new CursorLoader(getActivity().getBaseContext(),

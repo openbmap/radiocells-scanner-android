@@ -18,6 +18,7 @@
 
 package org.openbmap.activities;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -37,14 +38,16 @@ import android.view.MenuItem;
 import android.widget.TabHost;
 import android.widget.Toast;
 
-import com.fastaccess.permission.base.PermissionHelper;
+import com.gun0912.tedpermission.PermissionListener;
+import com.gun0912.tedpermission.TedPermission;
 
+import org.androidannotations.annotations.EActivity;
 import org.greenrobot.eventbus.EventBus;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.activities.settings.SettingsActivity;
-import org.openbmap.activities.tabs.TabHostActivity;
+import org.openbmap.activities.tabs.TabHostActivity_;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.Session;
 import org.openbmap.events.onStartTracking;
@@ -59,119 +62,135 @@ import org.openbmap.utils.TempFileUtils;
 
 import java.util.ArrayList;
 
-import butterknife.ButterKnife;
-
 /**
  * Parent screen for hosting main screen
  */
+
+@EActivity(R.layout.startscreen)
 public class StartscreenActivity extends AppCompatActivity
 implements SessionListFragment.SessionFragementListener,
         OnAlertClickInterface,
         UploadTaskListener,
-        SaveGpxTaskListener
-        {
+        SaveGpxTaskListener {
 
-	private static final String TAG = StartscreenActivity.class.getSimpleName();
+    private static final String TAG = StartscreenActivity.class.getSimpleName();
 
     /**
-	 *
-	 */
-	private static final String UPLOAD_TASK = "upload_task";
-	private static final String SAVE_GPX_TASK = "export_gpx_task";
+     *
+     */
+    private static final String UPLOAD_TASK = "upload_task";
+    private static final String SAVE_GPX_TASK = "export_gpx_task";
 
-	private static final String	WIFILOCK_NAME = "UploadLock";
+    private static final String WIFILOCK_NAME = "UploadLock";
 
-	// alert builder ids
-	private static final int ID_REPAIR_WIFI	= 2;
-	private static final int ID_MISSING_CREDENTIALS	= 3;
-	private static final int ID_EXPORT_FAILED = 4;
+    // alert builder ids
+    private static final int ID_REPAIR_WIFI = 2;
+    private static final int ID_MISSING_CREDENTIALS = 3;
+    private static final int ID_EXPORT_FAILED = 4;
 
-	private static final int ID_DELETE_SESSION	= 5;
-	private static final int ID_DELETE_PROCESSED = 6;
-	private static final int ID_DELETE_ALL = 7;
+    private static final int ID_DELETE_SESSION = 5;
+    private static final int ID_DELETE_PROCESSED = 6;
+    private static final int ID_DELETE_ALL = 7;
     private static final int ID_IGNORE_DOZE_MODE = 20;
 
     /**
-	 * Tab host control
-	 */
-	private TabHost mTabHost;
+     * Tab host control
+     */
+    private TabHost mTabHost;
 
-	/**
-	 * Tab host helper class
-	 */
-	private TabManager mTabManager;
+    /**
+     * Tab host helper class
+     */
+    private TabManager mTabManager;
 
-	/**
-	 * Data helper
-	 */
-	private DataHelper mDataHelper;
+    /**
+     * Data helper
+     */
+    private DataHelper mDataHelper;
 
-	/**
-	 * WifisRadiocells lock, used while exporting
-	 */
-	private WifiLock mWifiLock;
+    /**
+     * WifisRadiocells lock, used while exporting
+     */
+    private WifiLock mWifiLock;
 
-	/**
-	 * Persistent fragment saving upload task across activity re-creation
-	 */
-	private UploadTaskFragment mUploadTaskFragment;
+    /**
+     * Persistent fragment saving upload task across activity re-creation
+     */
+    private UploadTaskFragment mUploadTaskFragment;
 
-	/**
-	 * Persistent fragment saving export gpx task across activity re-creation
-	 */
-	private SaveGpxTaskFragment mSaveGpxTaskFragment;
+    /**
+     * Persistent fragment saving export gpx task across activity re-creation
+     */
+    private SaveGpxTaskFragment mSaveGpxTaskFragment;
 
-	private FragmentManager	fm;
+    private FragmentManager fm;
 
-	/**
-	 * Dialog indicating upload progress
-	 */
-	private ProgressDialog mUploadProgress;
+    /**
+     * Dialog indicating upload progress
+     */
+    private ProgressDialog mUploadProgress;
 
-	/**
-	 * Dialog indicating export gpx progress
-	 */
-	private ProgressDialog mSaveGpxProgress;
+    /**
+     * Dialog indicating export gpx progress
+     */
+    private ProgressDialog mSaveGpxProgress;
 
-	/**
-	 * List of all pending exports
-	 */
-	private final ArrayList<Integer> pendingExports = new ArrayList<>();
+    /**
+     * List of all pending exports
+     */
+    private final ArrayList<Integer> pendingExports = new ArrayList<>();
 
-	/**
-	 * Counts successfully exported sessions
-	 */
-	private int	completedExports;
+    /**
+     * Counts successfully exported sessions
+     */
+    private int completedExports;
 
-	/**
-	 * Counts failed exports
-	 */
-	private int failedExports;
-
-    private PermissionHelper permissionHelper;
+    /**
+     * Counts failed exports
+     */
+    private int failedExports;
 
     @Override
-	public final void onCreate(final Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-
-		ButterKnife.bind(this);
+    public void onCreate(final Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
         initPersistantFragments();
 
-        // setup data connections
-		mDataHelper = new DataHelper(this);
+        PermissionListener permissionlistener = new PermissionListener() {
+            @Override
+            public void onPermissionGranted() {
+                //Toast.makeText(StartscreenActivity.this, "Permission Granted", Toast.LENGTH_SHORT).show();
+            }
 
-		final Bundle b = getIntent().getExtras();
-		if (b != null) {
-			if (b.getString("command") != null && b.getString("command").equals("upload_all")) {
-				uploadAllCommand();
+            @Override
+            public void onPermissionDenied(ArrayList<String> deniedPermissions) {
+                Toast.makeText(StartscreenActivity.this, "Permission Denied\n" + deniedPermissions.toString(), Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        };
+
+        new TedPermission(this)
+                .setPermissionListener(permissionlistener)
+                .setDeniedMessage(R.string.permission_denied)
+                .setPermissions(Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_PHONE_STATE)
+                .check();
+
+        // setup data connections
+        mDataHelper = new DataHelper(this);
+
+        final Bundle b = getIntent().getExtras();
+        if (b != null) {
+            if (b.getString("command") != null && b.getString("command").equals("upload_all")) {
+                uploadAllCommand();
             }
         }
 
         initUi(savedInstanceState);
 
 
-         // Display special hints for new users / following upgrades
+        // Display special hints for new users / following upgrades
         appFirstRunTasks();
 
         /**
@@ -190,110 +209,110 @@ implements SessionListFragment.SessionFragementListener,
                 Log.w(TAG, "Warning: Radiobeacon may be negatively affected from Android DOZE mode - consider whitelisting Radiobeacon");
             }
         }
-	}
+    }
 
-	/**
-	 * Creates a persistent fragment for keeping export status.
-	 * If fragment has been created before, no new fragment is created
-	 * i.e. the Fragment is non-null, then it is currently being
-	 * retained across a configuration change.
-	 */
-	private void initPersistantFragments() {
-		fm = getSupportFragmentManager();
-		mUploadTaskFragment = (UploadTaskFragment) fm.findFragmentByTag(UPLOAD_TASK);
-		mSaveGpxTaskFragment = (SaveGpxTaskFragment) fm.findFragmentByTag(SAVE_GPX_TASK);
+    /**
+     * Creates a persistent fragment for keeping export status.
+     * If fragment has been created before, no new fragment is created
+     * i.e. the Fragment is non-null, then it is currently being
+     * retained across a configuration change.
+     */
+    private void initPersistantFragments() {
+        fm = getSupportFragmentManager();
+        mUploadTaskFragment = (UploadTaskFragment) fm.findFragmentByTag(UPLOAD_TASK);
+        mSaveGpxTaskFragment = (SaveGpxTaskFragment) fm.findFragmentByTag(SAVE_GPX_TASK);
 
-		if (mUploadTaskFragment == null) {
-			Log.d(TAG, "Task fragment not found. Creating..");
-			mUploadTaskFragment = new UploadTaskFragment();
+        if (mUploadTaskFragment == null) {
+            Log.d(TAG, "Task fragment not found. Creating..");
+            mUploadTaskFragment = new UploadTaskFragment();
             // was commitAllowingStateLoss()
-			fm.beginTransaction().add(mUploadTaskFragment, UPLOAD_TASK).commit();
+            fm.beginTransaction().add(mUploadTaskFragment, UPLOAD_TASK).commit();
             // https://stackoverflow.com/questions/7469082/getting-exception-illegalstateexception-can-not-perform-this-action-after-onsa
             fm.executePendingTransactions();
 
-			initUploadTaskDialog(true);
-		} else {
-			Log.d(TAG, "Showing existing upload task fragment");
-			initUploadTaskDialog(false);
-			showUploadTaskDialog();
-		}
+            initUploadTaskDialog(true);
+        } else {
+            Log.d(TAG, "Showing existing upload task fragment");
+            initUploadTaskDialog(false);
+            showUploadTaskDialog();
+        }
 
 
-		if (mSaveGpxTaskFragment == null) {
-			Log.d(TAG, "Task fragment not found. Creating..");
-			mSaveGpxTaskFragment = new SaveGpxTaskFragment();
+        if (mSaveGpxTaskFragment == null) {
+            Log.d(TAG, "Task fragment not found. Creating..");
+            mSaveGpxTaskFragment = new SaveGpxTaskFragment();
             // was commitAllowingStateLoss()
             fm.beginTransaction().add(mSaveGpxTaskFragment, SAVE_GPX_TASK).commit();
             // https://stackoverflow.com/questions/7469082/getting-exception-illegalstateexception-can-not-perform-this-action-after-onsa
-			fm.executePendingTransactions();
+            fm.executePendingTransactions();
 
-			initSaveGpxTaskDialog(true);
-		} else {
-			Log.d(TAG, "Showing existings export gpx task fragment");
-			initSaveGpxTaskDialog(false);
-			showSaveGpxTaskDialog();
-		}
-	}
+            initSaveGpxTaskDialog(true);
+        } else {
+            Log.d(TAG, "Showing existings export gpx task fragment");
+            initSaveGpxTaskDialog(false);
+            showSaveGpxTaskDialog();
+        }
+    }
 
-	@Override
-	protected void onSaveInstanceState(final Bundle outState) {
+    @Override
+    protected void onSaveInstanceState(final Bundle outState) {
         outState.putString("tab", mTabHost.getCurrentTabTag());
-		super.onSaveInstanceState(outState);
-	}
+        super.onSaveInstanceState(outState);
+    }
 
-	@Override
-	public final void onResume() {
-		super.onResume();
+    @Override
+    public void onResume() {
+        super.onResume();
 
-		// force an fragment refresh
-		reloadListFragment();
-	}
+        // force an fragment refresh
+        reloadListFragment();
+    }
 
-	@Override
-	public final void onPause() {
-		releaseWifiLock();
-		super.onPause();
-	}
+    @Override
+    public void onPause() {
+        releaseWifiLock();
+        super.onPause();
+    }
 
-	@Override
-	public final void onDestroy() {
-		releaseWifiLock();
-		super.onDestroy();
-	}
+    @Override
+    public void onDestroy() {
+        releaseWifiLock();
+        super.onDestroy();
+    }
 
-	/*
+    /*
 	 * Creates a new session record and starts HostActivity ("tracking" mode)
 	 */
-	@Override
-	public final void startCommand() {
+    @Override
+    public void startCommand() {
         EventBus.getDefault().post(new onStartTracking());
 
         // bring up UI
-		final Intent hostActivity = new Intent(this, TabHostActivity.class);
-		hostActivity.putExtra("new_session", true);
-		startActivity(hostActivity);
-	}
+        final Intent hostActivity = new Intent(this, TabHostActivity_.class);
+        hostActivity.putExtra("new_session", true);
+        startActivity(hostActivity);
+    }
 
-	/*
+    /*
 	 * Resumes existing session
 	 * @param id session id to resume
 	 */
-	@Override
-	public final void resumeCommand(final int id) {
-		EventBus.getDefault().post(new onStartTracking(id));
+    @Override
+    public void resumeCommand(final int id) {
+        EventBus.getDefault().post(new onStartTracking(id));
 
-		final Intent activity = new Intent(this, TabHostActivity.class);
-		activity.putExtra("_id", id);
-		startActivity(activity);
-	}
+        final Intent activity = new Intent(this, TabHostActivity_.class);
+        activity.putExtra("_id", id);
+        startActivity(activity);
+    }
 
 	/**
 	 * Uploads session
-	 * Once exported, {@link onExportCompleted()} is called
+	 * Once exported, onExportCompleted() is called
 	 * @param session
 	 * 		session id
 	 */
-	public final void uploadCommand(final int session) {
+    public void uploadCommand(final int session) {
 		acquireWifiLock();
 		pendingExports.clear();
 		completedExports = 0;
@@ -311,7 +330,7 @@ implements SessionListFragment.SessionFragementListener,
 	/*
 	 * Exports all sessions, which haven't been uploaded yet
 	 */
-	@Override
+    @Override
 	public void uploadAllCommand() {
 		acquireWifiLock();
 		pendingExports.clear();
@@ -334,7 +353,7 @@ implements SessionListFragment.SessionFragementListener,
 	/* (non-Javadoc)
 	 * @see org.openbmap.activities.SessionListFragment.SessionFragementListener#saveGpxCommand(int)
 	 */
-	@Override
+    @Override
 	public void saveGpxCommand(final int id) {
 		Log.i(TAG, "Exporting gpx");
 
@@ -346,12 +365,11 @@ implements SessionListFragment.SessionFragementListener,
 		mSaveGpxTaskFragment.execute(id, path, filename);
 	}
 
-
     /*
      * Stops all active session
      */
 	@Override
-	public final void stopCommand(final int id) {
+	public void stopCommand(final int id) {
 		mDataHelper.invalidateCurrentSessions();
 		// Signalling host activity to stop services
         EventBus.getDefault().post(new onStopTracking());
@@ -364,7 +382,7 @@ implements SessionListFragment.SessionFragementListener,
 	 * @param id
 	 * 		session id
 	 */
-	public final void deleteCommand(final int id) {
+	public void deleteCommand(final int id) {
         try {
             AlertDialogUtils.newInstance(ID_DELETE_SESSION,
                     getResources().getString(R.string.delete), getResources().getString(R.string.do_you_want_to_delete_this_session),
@@ -380,7 +398,7 @@ implements SessionListFragment.SessionFragementListener,
 	 *
 	 * @param ids the ids
 	 */
-	public final void deleteBatchCommand(final ArrayList<Integer> ids) {
+	public void deleteBatchCommand(final ArrayList<Integer> ids) {
 		for (final int id : ids) {
 			deleteConfirmed(id);
 		}
@@ -391,7 +409,7 @@ implements SessionListFragment.SessionFragementListener,
 	 *
 	 * @param id the id
 	 */
-	public final void deleteConfirmed(final int id) {
+	public void deleteConfirmed(final int id) {
 		if (id == RadioBeacon.SESSION_NOT_TRACKING) {
 			return;
 		}
@@ -403,7 +421,7 @@ implements SessionListFragment.SessionFragementListener,
 
 		mDataHelper.deleteSession(id);
 
-		final boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_KEEP_XML, Preferences.VAL_KEEP_XML);
+		final boolean skipDelete = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_KEEP_XML, Preferences.DEFAULT_KEEP_XML);
 
 		if (!skipDelete) {
 			// delete all temp files (.xml)
@@ -419,7 +437,7 @@ implements SessionListFragment.SessionFragementListener,
 	 * @see org.openbmap.activities.SessionListFragment.SessionFragementListener#deleteAllSessions(long)
 	 */
 	@Override
-	public final void deleteAllCommand() {
+	public void deleteAllCommand() {
 		AlertDialogUtils.newInstance(ID_DELETE_ALL,
                 getResources().getString(R.string.dialog_delete_all_sessions_title), getResources().getString(R.string.dialog_delete_all_sessions_message),
                 null, false).show(getSupportFragmentManager(), "delete_all");
@@ -428,7 +446,7 @@ implements SessionListFragment.SessionFragementListener,
 	/**
 	 * Delete all confirmed.
 	 */
-	public final void deleteAllConfirmed() {
+	public void deleteAllConfirmed() {
 		// Signalling service stop request
         EventBus.getDefault().post(new onStopTracking());
 		mDataHelper.deleteAllSessions();
@@ -450,14 +468,14 @@ implements SessionListFragment.SessionFragementListener,
 	 * @return always true
 	 */
 	@Override
-	public final boolean onCreateOptionsMenu(final Menu menu) {
+	public boolean onCreateOptionsMenu(final Menu menu) {
 		final MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.main_menu, menu);
 		return true;
 	}
 
 	@Override
-	public final boolean onOptionsItemSelected(final MenuItem item) {
+	public boolean onOptionsItemSelected(final MenuItem item) {
 		//Log.d(TAG, "OptionItemSelected, handled by StartscreenActivity");
 		switch (item.getItemId()) {
 			case R.id.menu_create_new_session:
@@ -485,7 +503,7 @@ implements SessionListFragment.SessionFragementListener,
 	 * @see org.openbmap.activities.SessionListFragment.SessionFragementListener#reload()
 	 */
 	@Override
-	public final void reloadListFragment() {
+	public void reloadListFragment() {
 		Log.i(TAG, "Refreshing session list fragment");
 		final SessionListFragment sessionFrag = (SessionListFragment) getSupportFragmentManager().findFragmentByTag("session");
 
@@ -630,7 +648,7 @@ implements SessionListFragment.SessionFragementListener,
 			hideUploadTaskDialog();
 			releaseWifiLock();
 
-            if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_DELETE_SESSIONS, Preferences.VAL_DELETE_SESSIONS)) {
+            if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_DELETE_SESSIONS, Preferences.DEFAULT_DELETE_SESSIONS)) {
                 deleteConfirmed(id);
             } else {
                 deleteCommand(id);
@@ -649,7 +667,7 @@ implements SessionListFragment.SessionFragementListener,
                 }
 			} else {
 				// if everything is ok, offer to delete
-                if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_DELETE_SESSIONS, Preferences.VAL_DELETE_SESSIONS)) {
+                if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Preferences.KEY_DELETE_SESSIONS, Preferences.DEFAULT_DELETE_SESSIONS)) {
                     deleteBatchCommand(pendingExports);
                 } else {
                     String candidates = "";
