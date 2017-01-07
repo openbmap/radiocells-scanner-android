@@ -74,7 +74,7 @@ public class GpsProvider extends LocationProviderImpl implements Listener, Locat
 		// Register ourselves for location updates
 		lmgr = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
 
-		// To request updates only once, disable any previous updates before starting 
+		// To request updates only once, disable any previous updates before starting
 		disableUpdates();
 		enableUpdates();
 	}
@@ -122,6 +122,7 @@ public class GpsProvider extends LocationProviderImpl implements Listener, Locat
 	@Override
 	public final void onProviderDisabled(final String provider) {
 		isGpsEnabled = false;
+		disableUpdates();
 	}
 
 	/* (non-Javadoc)
@@ -130,6 +131,7 @@ public class GpsProvider extends LocationProviderImpl implements Listener, Locat
 	@Override
 	public final void onProviderEnabled(final String provider) {
 		isGpsEnabled = true;
+		enableUpdates();
 	}
 
 	/* (non-Javadoc)
@@ -146,13 +148,13 @@ public class GpsProvider extends LocationProviderImpl implements Listener, Locat
 	 * @see android.location.LocationListener#onLocationChanged(android.location.Location)
 	 */
 	@Override
-	public final void onLocationChanged(final Location location) {		
+	public final void onLocationChanged(final Location location) {
 		// We're receiving location, so GPS is enabled
 		isGpsEnabled = true;
 
 		// first of all we check if the time from the last used fix to the current fix is greater than the logging interval
 		if ((mLastGPSTimestamp + gpsLoggingInterval) < System.currentTimeMillis()) {
-			mLastGPSTimestamp = System.currentTimeMillis(); // save the time of this fix			
+			mLastGPSTimestamp = System.currentTimeMillis(); // save the time of this fix
 			mLastLocation = location;
 
 			locationService.updateLocation(location);
