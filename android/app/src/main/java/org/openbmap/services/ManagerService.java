@@ -44,7 +44,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.RadioBeacon;
-import org.openbmap.activities.tabs.TabHostActivity;
+import org.openbmap.activities.tabs.TabHostActivity_;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.Session;
 import org.openbmap.events.onServiceShutdown;
@@ -468,7 +468,7 @@ public class ManagerService extends Service {
      * Shows Android notification while this service is running.
      */
     private void showNotification() {
-        PendingIntent intent = PendingIntent.getActivity(this, 0, new Intent(this, TabHostActivity.class), 0);
+        PendingIntent intent = PendingIntent.getActivity(this, 0, new Intent(this, TabHostActivity_.class), 0);
         Notification.Builder builder = new Notification.Builder(this.getApplicationContext());
         builder.setAutoCancel(false);
         builder.setContentTitle(getString(R.string.app_name));
