@@ -30,14 +30,12 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
+import android.os.BatteryManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Messenger;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -82,7 +80,6 @@ public class ManagerService extends Service {
     /** Keeps track of all current registered clients. */
     ArrayList<Messenger> clients = new ArrayList<>();
 
-
     /**
      * Selected navigation provider, default GPS
      */
@@ -104,6 +101,7 @@ public class ManagerService extends Service {
     private ScannerService wirelessService;
     private GpxLoggerService gpxTrackerService;
     private CatalogService catalogService;
+
     private boolean positioningBound;
     private boolean wirelessBound;
     private boolean gpxBound;
@@ -129,12 +127,13 @@ public class ManagerService extends Service {
             AbstractService.LocalBinder binder = (AbstractService.LocalBinder) service;
             positioningService = (PositioningService) binder.getService();
             positioningBound = true;
-            Log.d(TAG, "REQ StartPositioningEvent");
+            Log.i(TAG, "PositioningService bound");
             EventBus.getDefault().post(new onStartLocation());
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
+            Log.i(TAG, "PositioningService disconnected");
             positioningBound = false;
         }
     };
@@ -145,13 +144,14 @@ public class ManagerService extends Service {
             AbstractService.LocalBinder binder = (AbstractService.LocalBinder) service;
             wirelessService = (ScannerService) binder.getService();
             wirelessBound = true;
-            Log.d(TAG, "REQ StartWirelessEvent");
+            Log.i(TAG, "WirelessService bound");
             EventBus.getDefault().post(new onStartWireless(currentSession));
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             wirelessBound = false;
+            Log.i(TAG, "WirelessService disconnected");
         }
     };
 
@@ -161,29 +161,31 @@ public class ManagerService extends Service {
             AbstractService.LocalBinder binder = (AbstractService.LocalBinder) service;
             gpxTrackerService = (GpxLoggerService) binder.getService();
             gpxBound = true;
-            Log.d(TAG, "REQ StartGpxEvent");
+            Log.i(TAG, "GpxService bound");
             EventBus.getDefault().post(new onStartGpx(currentSession));
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             gpxBound = false;
+            Log.i(TAG, "GpxService disconnected");
         }
     };
 
-    private ServiceConnection poiConnection = new ServiceConnection() {
+    private ServiceConnection catalogConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             AbstractService.LocalBinder binder = (AbstractService.LocalBinder) service;
             catalogService = (CatalogService) binder.getService();
             poiBound = true;
-            Log.d(TAG, "REQ StartPoiEvent");
+            Log.i(TAG, "CatalogService bound");
             //EventBus.getDefault().post(new onStartPoi(currentSession));
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            gpxBound = false;
+            poiBound = false;
+            Log.i(TAG, "CatalogService disconnected");
         }
     };
 
@@ -204,7 +206,6 @@ public class ManagerService extends Service {
 
         dataHelper = new DataHelper(this);
 
-        // get shared preferences
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
     }
@@ -219,11 +220,10 @@ public class ManagerService extends Service {
     @Override
     public void onDestroy() {
         unregisterReceiver();
-        hideNotification();
+        cancelNotification();
         if (EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().unregister(this);
         }
-
         unbindAll();
     }
 
@@ -268,14 +268,12 @@ public class ManagerService extends Service {
         Log.i(TAG, "=============================================================================");
         Log.i(TAG, "Configuration");
         Log.i(TAG, "Ignore low battery: " + prefs.getBoolean(Preferences.KEY_IGNORE_BATTERY, Preferences.DEFAULT_IGNORE_BATTERY));
+        Log.i(TAG, "External power source avail.: " + isExternalPowerAvailable(this));
         Log.i(TAG, "Min GPS accuracy: " + prefs.getString(Preferences.KEY_REQ_GPS_ACCURACY, Preferences.DEFAULT_REQ_GPS_ACCURACY));
         Log.i(TAG, "Scan mode: " + prefs.getString(Preferences.KEY_WIFI_SCAN_MODE, Preferences.DEFAULT_WIFI_SCAN_MODE));
         Log.i(TAG, "Map: " + prefs.getString(Preferences.KEY_MAP_FILE, Preferences.DEFAULT_MAP_FILE));
         Log.i(TAG, "Catalog: " + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.DEFAULT_CATALOG_FILE));
         Log.i(TAG, "=============================================================================");
-
-        currentSession = event.session;
-        requirePowerLock();
         startTracking(currentSession);
     }
 
@@ -287,8 +285,6 @@ public class ManagerService extends Service {
     public void onEvent(onStopTracking event){
         Log.d(TAG, "Received StopTrackingEvent event");
         stopTracking(RadioBeacon.SHUTDOWN_REASON_NORMAL);
-        currentSession = RadioBeacon.SESSION_NOT_TRACKING;
-        releasePowerLock();
     }
 
     /**
@@ -320,9 +316,6 @@ public class ManagerService extends Service {
      * Receiver for system's low battery events
      */
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        /**
-         * Handles start and stop service requests.
-         */
         @Override
         public void onReceive(final Context context, final Intent intent) {
             if (Intent.ACTION_BATTERY_LOW.equals(intent.getAction())) {
@@ -345,6 +338,9 @@ public class ManagerService extends Service {
      * @param session
      */
     private void startTracking(final int session) {
+        currentSession = session;
+        requirePowerLock();
+
         if (session != RadioBeacon.SESSION_NOT_TRACKING) {
             Log.d(TAG, "Preparing session " + session);
             currentSession = session;
@@ -362,13 +358,16 @@ public class ManagerService extends Service {
      * @param reason
      */
     private void stopTracking(int reason) {
-        unbindAll();
-
         closeSession();
+        currentSession = RadioBeacon.SESSION_NOT_TRACKING;
 
+        unbindAll();
         EventBus.getDefault().post(new onServiceShutdown(reason));
 
-        hideNotification();
+        releasePowerLock();
+        cancelNotification();
+
+        stopSelf();
     }
 
     /**
@@ -386,7 +385,7 @@ public class ManagerService extends Service {
         bindService(i3, gpxConnection, Context.BIND_AUTO_CREATE);
 
         Intent i4 = new Intent(this, CatalogService.class);
-        bindService(i4, poiConnection, Context.BIND_AUTO_CREATE);
+        bindService(i4, catalogConnection, Context.BIND_AUTO_CREATE);
     }
 
     /**
@@ -394,7 +393,7 @@ public class ManagerService extends Service {
      */
     private void unbindAll() {
         Log.d(TAG, "Unbinding services");
-        // Unbind from the service
+
         if (positioningBound) {
             unbindService(positioningConnection);
             positioningBound = false;
@@ -411,25 +410,23 @@ public class ManagerService extends Service {
         }
 
         if (poiBound) {
-            unbindService(poiConnection);
+            unbindService(catalogConnection);
             poiBound = false;
         }
     }
 
     /**
      * Creates a new sessions and adds session record to the database
+     * Invalidates any other active sessions
      */
     private int newSession() {
-        // invalidate all active session
         dataHelper.invalidateCurrentSessions();
-        // Create a new session and activate it
-        // Then start HostActivity. HostActivity onStart() and onResume() check active session
-        // and starts services for active session
         final Session active = new Session();
         active.setCreatedAt(System.currentTimeMillis());
         active.setLastUpdated(System.currentTimeMillis());
         active.setDescription("No description yet");
         active.isActive(true);
+
         // id can only be set after session has been stored to database.
         final Uri result = dataHelper.insertSession(active);
         final int id = Integer.valueOf(result.getLastPathSegment());
@@ -472,41 +469,31 @@ public class ManagerService extends Service {
      */
     private void showNotification() {
         PendingIntent intent = PendingIntent.getActivity(this, 0, new Intent(this, TabHostActivity.class), 0);
-
-        // Set the icon, scrolling text and timestamp
-        //final Notification notification = new Notification(R.drawable.icon_greyed_25x25, getString(R.string.notification_caption),
-        //        System.currentTimeMillis());
-        //notification.setLatestEventInfo(this, getString(R.string.app_name), getString(R.string.notification_caption), contentIntent);
-
-        // Set the info for the views that show in the notification panel.
-
-
-        if (VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN) {
-            Notification.Builder builder = new Notification.Builder(this.getApplicationContext());
-            builder.setAutoCancel(false);
-            builder.setContentTitle(getString(R.string.app_name));
-            builder.setContentText(getString(R.string.notification_caption));
-            builder.setSmallIcon(R.drawable.icon_greyed_25x25);
-            builder.setContentIntent(intent);
-            builder.setOngoing(true);
-            notificationManager.notify(NOTIFICATION_ID, builder.build());
-        } else if (VERSION.SDK_INT < VERSION_CODES.JELLY_BEAN) {
-            NotificationCompat.Builder compat = new NotificationCompat.Builder(getApplicationContext());
-            compat.setAutoCancel(false);
-            compat.setContentTitle(getString(R.string.app_name));
-            compat.setContentText(getString(R.string.notification_caption));
-            compat.setSmallIcon(R.drawable.icon_greyed_25x25);
-            compat.setContentIntent(intent);
-            compat.setOngoing(true);
-            notificationManager.notify(NOTIFICATION_ID, compat.build());
-        }
+        Notification.Builder builder = new Notification.Builder(this.getApplicationContext());
+        builder.setAutoCancel(false);
+        builder.setContentTitle(getString(R.string.app_name));
+        builder.setContentText(getString(R.string.notification_caption));
+        builder.setSmallIcon(R.drawable.icon_greyed_25x25);
+        builder.setContentIntent(intent);
+        builder.setOngoing(true);
+        notificationManager.notify(NOTIFICATION_ID, builder.build());
     }
 
     /**
      * Hides Android notification
      */
-    private void hideNotification() {
+    private void cancelNotification() {
         notificationManager.cancel(NOTIFICATION_ID);
     }
 
+    /**
+     * Checks if device is connected to AC or external battery
+     * @param context
+     * @return true if external power source available
+     */
+    public static boolean isExternalPowerAvailable(Context context) {
+        Intent intent = context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        int plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
+        return plugged == BatteryManager.BATTERY_PLUGGED_AC || plugged == BatteryManager.BATTERY_PLUGGED_USB;
+    }
 }
