@@ -22,6 +22,7 @@ package org.openbmap.activities.settings;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -131,6 +132,12 @@ public class MapDownloadActivity extends AppCompatActivity implements RemoteDirL
     public void onRemoteDirListReady(RemoteDirListTask task, RemoteFile[] rfiles) {
         downloadProgress.setVisibility(View.GONE);
         builder.clear();
+
+        if (rfiles == null) {
+            Log.w(TAG, "No files to list");
+            return;
+        }
+
         for (RemoteFile rf : rfiles)
             builder.sequentiallyAddNextNode(rf, 0);
     }
