@@ -69,16 +69,9 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/prefs_maps">
-        <org.openbmap.activities.settings.DialogPreferenceMaps
-            android:selectable="true"
-            android:enabled="true"
-            android:title="@string/prefs_get_maps_title"
-            android:summary="@string/prefs_get_maps_summary"
-            android:key="maps_dialog">
-        </org.openbmap.activities.settings.DialogPreferenceMaps>
-        <Preference android:title="Acts like a button"
+        <Preference android:title="@string/prefs_get_maps_title"
             android:key="data.alternative_download"
-            android:summary="This is a cool button"/>
+            android:summary="@string/prefs_get_maps_summary"/>
         <ListPreference
             android:defaultValue="none"
             android:key="data.map"
