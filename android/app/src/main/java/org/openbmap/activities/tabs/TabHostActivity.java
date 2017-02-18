@@ -20,10 +20,12 @@ package org.openbmap.activities.tabs;
 
 import android.app.AlertDialog;
 import android.app.FragmentManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.LocationManager;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Messenger;
 import android.preference.PreferenceManager;
@@ -119,8 +121,8 @@ public class TabHostActivity extends AppCompatActivity {
 		mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
 		// service related stuff
-		isGpsAvailable();
-		// TODO: show warning if wifi is not enabled
+		verifyGpsEnabled();
+        verifyWifiEnabled();
 		// TODO: show warning if GSM is not enabled
 	}
 
@@ -179,33 +181,66 @@ public class TabHostActivity extends AppCompatActivity {
 	 * Checks whether GPS is enabled.
 	 * If not, user is asked whether to activate GPS.
 	 */
-	private void isGpsAvailable() {
-		final LocationManager lm = (LocationManager) getSystemService(LOCATION_SERVICE);
-		if (!lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-			// GPS isn't enabled. Offer user to go enable it
-			new AlertDialog.Builder(this)
-			.setTitle(R.string.no_gps)
-			.setIcon(android.R.drawable.ic_dialog_alert)
-			.setMessage(
-					R.string.turn_on_gps_question)
-					.setCancelable(true)
-					.setPositiveButton(android.R.string.yes,
-							new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(final DialogInterface dialog,
-								final int which) {
-							startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-						}
-					})
-					.setNegativeButton(android.R.string.no,
-							new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(final DialogInterface dialog,
-								final int which) {
-							dialog.cancel();
-						}
-					}).create().show();
-		}
+	private void verifyGpsEnabled() {
+        final LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            Log.i(TAG, "GPS is disabled - warning");
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.no_gps)
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setMessage(
+                            R.string.turn_on_gps_question)
+                    .setCancelable(true)
+                    .setPositiveButton(android.R.string.yes,
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(final DialogInterface dialog,
+                                                    final int which) {
+                                    startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                                }
+                            })
+                    .setNegativeButton(android.R.string.no,
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(final DialogInterface dialog,
+                                                    final int which) {
+                                    dialog.cancel();
+                                }
+                            }).create().show();
+        } else {
+            Log.i(TAG, "GPS is enabled - good");
+        }
+    }
+
+	private void verifyWifiEnabled() {
+		WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+		if (!wifi.isWifiEnabled()){
+            Log.i(TAG, "Wifi is disabled - warning");
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.no_wifi)
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setMessage(
+                            R.string.turn_on_wifi_question)
+                    .setCancelable(true)
+                    .setPositiveButton(android.R.string.yes,
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(final DialogInterface dialog,
+                                                    final int which) {
+                                    startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                                }
+                            })
+                    .setNegativeButton(android.R.string.no,
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(final DialogInterface dialog,
+                                                    final int which) {
+                                    dialog.cancel();
+                                }
+                            }).create().show();
+		} else {
+            Log.i(TAG, "Wifi is enabled - good");
+        }
 	}
 
 	/**
