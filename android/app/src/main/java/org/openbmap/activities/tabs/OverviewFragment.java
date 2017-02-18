@@ -152,16 +152,20 @@ public class OverviewFragment extends Fragment {
         mFadeIgnoreTask = new Runnable() {
             @Override
             public void run() {
-                tvIgnored.setVisibility(View.INVISIBLE);
-                ivAlert.setVisibility(View.INVISIBLE);
+                if (tvIgnored != null) {
+                    tvIgnored.setVisibility(View.INVISIBLE);
+                    ivAlert.setVisibility(View.INVISIBLE);
+                }
             }
         };
 
         mFadeFreeTask = new Runnable() {
             @Override
             public void run() {
-                tvFree.setVisibility(View.INVISIBLE);
-                ivFree.setVisibility(View.INVISIBLE);
+                if (tvFree != null) {
+                    tvFree.setVisibility(View.INVISIBLE);
+                    ivFree.setVisibility(View.INVISIBLE);
+                }
             }
         };
 
@@ -418,8 +422,8 @@ public class OverviewFragment extends Fragment {
         final String deltaCellString = "Last cell update " + getTimeSinceLastUpdate(mCellUpdateTime) + " ago";
         final String deltaWifiString = "Last cell update " + getTimeSinceLastUpdate(mLastWifiUpdate) + " ago";
 
-        Log.d(TAG, deltaCellString);
-        Log.d(TAG, deltaWifiString);
+        // Log.d(TAG, deltaCellString);
+        // Log.d(TAG, deltaWifiString);
     }
 
     /**

@@ -196,9 +196,10 @@ public class ManagerService extends Service {
 
     @Override
     public void onCreate() {
-        Log.d(TAG, "ManagerService created");
+        Log.d(TAG, "Creating ManagerService");
 
         if (!EventBus.getDefault().isRegistered(this)) {
+            Log.v(TAG, "Registering eventbus receiver for ManagerService");
             EventBus.getDefault().register(this);}
         else {
             Log.w(TAG, "Event bus receiver already registered");
@@ -212,6 +213,7 @@ public class ManagerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.v(TAG, "ManagerService received startCommand");
         registerReceiver();
         // We want this service to continue running until it is explicitly stopped, so return sticky.
         return START_STICKY;
@@ -219,6 +221,7 @@ public class ManagerService extends Service {
 
     @Override
     public void onDestroy() {
+        Log.v(TAG, "Destroying ManagerService");
         unregisterReceiver();
         cancelNotification();
         if (EventBus.getDefault().isRegistered(this)) {
@@ -241,8 +244,8 @@ public class ManagerService extends Service {
      * Unregisters broadcast receiver
      */
     private void unregisterReceiver() {
+        Log.v(TAG, "Unregistering broadcast receivers");
         try {
-            Log.i(TAG, "Unregistering broadcast receivers");
             unregisterReceiver(mReceiver);
         } catch (final IllegalArgumentException e) {
             // do nothing here {@see http://stackoverflow.com/questions/2682043/how-to-check-if-receiver-is-registered-in-android}
@@ -264,7 +267,7 @@ public class ManagerService extends Service {
      */
     @Subscribe
     public void onEvent(onStartTracking event){
-        Log.d(TAG, "Received StartTracking event");
+        Log.d(TAG, "StartTracking event received");
         Log.i(TAG, "=============================================================================");
         Log.i(TAG, "Configuration");
         Log.i(TAG, "Ignore low battery: " + prefs.getBoolean(Preferences.KEY_IGNORE_BATTERY, Preferences.DEFAULT_IGNORE_BATTERY));
@@ -283,7 +286,7 @@ public class ManagerService extends Service {
      */
     @Subscribe
     public void onEvent(onStopTracking event){
-        Log.d(TAG, "Received StopTrackingEvent event");
+        Log.d(TAG, "StopTrackingEvent event received");
         stopTracking(RadioBeacon.SHUTDOWN_REASON_NORMAL);
     }
 
@@ -291,9 +294,9 @@ public class ManagerService extends Service {
      * Acquires wakelock to prevent CPU falling asleep
      */
     private void requirePowerLock() {
+        Log.v(TAG, "Acquiring wakelock " + WAKELOCK_NAME);
         final PowerManager mgr = (PowerManager) getSystemService(Context.POWER_SERVICE);
         try {
-            Log.i(TAG, "Acquiring wakelock " + WAKELOCK_NAME);
             mWakeLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKELOCK_NAME);
             mWakeLock.setReferenceCounted(true);
         } catch (final Exception e) {
@@ -305,8 +308,8 @@ public class ManagerService extends Service {
      * Releases wakelock, if held
      */
     private void releasePowerLock() {
+        Log.i(TAG, "Releasing wakelock " + WAKELOCK_NAME);
         if (mWakeLock != null && mWakeLock.isHeld()) {
-            Log.i(TAG, "Releasing wakelock " + WAKELOCK_NAME);
             mWakeLock.release();
         }
         mWakeLock = null;
@@ -347,7 +350,7 @@ public class ManagerService extends Service {
             resumeSession(session);
         } else {
             Log.d(TAG, "Preparing new session");
-            currentSession = newSession();
+            currentSession = saveNewSession();
         }
         bindAll();
         showNotification();
@@ -358,6 +361,7 @@ public class ManagerService extends Service {
      * @param reason
      */
     private void stopTracking(int reason) {
+        Log.v(TAG, "Unbinding child services and stopping ManagerService itself");
         closeSession();
         currentSession = RadioBeacon.SESSION_NOT_TRACKING;
 
@@ -367,14 +371,15 @@ public class ManagerService extends Service {
         releasePowerLock();
         cancelNotification();
 
-        stopSelf();
+        //don't do this (otherwise resume track will fail):
+        // stopSelf();
     }
 
     /**
      * Binds all sub-services
      */
     private void bindAll() {
-        Log.d(TAG, "Binding services");
+        Log.v(TAG, "Binding services");
         Intent i1 = new Intent(this, PositioningService.class);
         bindService(i1, positioningConnection, Context.BIND_AUTO_CREATE);
 
@@ -392,7 +397,7 @@ public class ManagerService extends Service {
      * Unbinds all sub-services
      */
     private void unbindAll() {
-        Log.d(TAG, "Unbinding services");
+        Log.v(TAG, "Unbinding services");
 
         if (positioningBound) {
             unbindService(positioningConnection);
@@ -419,7 +424,7 @@ public class ManagerService extends Service {
      * Creates a new sessions and adds session record to the database
      * Invalidates any other active sessions
      */
-    private int newSession() {
+    private int saveNewSession() {
         dataHelper.invalidateCurrentSessions();
         final Session active = new Session();
         active.setCreatedAt(System.currentTimeMillis());
@@ -473,7 +478,7 @@ public class ManagerService extends Service {
         builder.setAutoCancel(false);
         builder.setContentTitle(getString(R.string.app_name));
         builder.setContentText(getString(R.string.notification_caption));
-        builder.setSmallIcon(R.drawable.icon_greyed_25x25);
+        builder.setSmallIcon(R.drawable.ic_icon);
         builder.setContentIntent(intent);
         builder.setOngoing(true);
         notificationManager.notify(NOTIFICATION_ID, builder.build());

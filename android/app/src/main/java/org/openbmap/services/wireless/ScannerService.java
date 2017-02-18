@@ -18,6 +18,7 @@
 
 package org.openbmap.services.wireless;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -34,6 +35,9 @@ import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.WifiLock;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.telephony.CellIdentityCdma;
 import android.telephony.CellIdentityGsm;
 import android.telephony.CellIdentityLte;
@@ -92,7 +96,7 @@ import static org.openbmap.utils.CellUtils.isValidCell;
  * 1) gps signal (@see BroadcastReceiver.onReceive)
  * 2) message bus (@see AbstractService.onReceiveMessage), which takes care of starting and stopping service
  */
-public class ScannerService extends AbstractService {
+public class ScannerService extends AbstractService implements ActivityCompat.OnRequestPermissionsResultCallback  {
 
     public static final String TAG = ScannerService.class.getSimpleName();
 
@@ -194,7 +198,7 @@ public class ScannerService extends AbstractService {
     private CellInfo currentCell;
 
     /**
-     * WifisRadiocells scan result callback
+     * Wifis scan result callback
      */
     private WifiScanCallback wifiScanResults;
 
@@ -282,13 +286,33 @@ public class ScannerService extends AbstractService {
 
         registerWakeLocks();
 
-        registerPhoneStateManager();
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            registerPhoneStateManager();
+        } else {
+            Log.w(TAG, "PhoneStateManager requires ACCESS_COARSE_LOCATION permission - can't register");
+            return;
+        }
+
 
         wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
 
         initBlacklists();
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        boolean isGranted = false;
+        for (int i = 0; i < grantResults.length; i++)
+            if (permissions[i].equals(Manifest.permission.ACCESS_FINE_LOCATION) && (grantResults[i] == PackageManager.PERMISSION_GRANTED))
+                isGranted = true;
+        if (isGranted) {
+            registerPhoneStateManager();
+        }
+        else {
+            Log.w(TAG, "ACCESS_COARSE_LOCATION permission denied - Can't start scanning");
+        }
+    }
     /**
      * Setup SSID / location blacklists
      */

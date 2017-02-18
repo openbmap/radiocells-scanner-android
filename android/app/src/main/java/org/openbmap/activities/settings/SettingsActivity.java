@@ -86,7 +86,6 @@ public class SettingsActivity extends PreferenceActivity {
 
         initAdvancedSettingsButton();
 
-        DialogPreferenceMaps maps = (DialogPreferenceMaps) findPreference(Preferences.KEY_MAPS_DIALOG);
         DialogPreferenceCatalogs catalogs = (DialogPreferenceCatalogs) findPreference(Preferences.KEY_CATALOGS_DIALOG);
     }
 

@@ -62,7 +62,7 @@
     <string name="dbm" translatable="false">dBm</string>
     <string name="ssid" translatable="false">SSID</string>
     <string name="turn_on_gps_question">GPS is switched off! Would you like to activate GPS now?</string>
-
+    <string name="turn_on_wifi_question">Wifi is switched off! Would you like to activate wifi now?</string>
     <string name="networkTypeCaption">Technology</string>
     <string name="cellIdCaption">Cell ID</string>
     <string name="baseIdCaption">Base ID</string>
@@ -148,6 +148,7 @@
     <string name="wifis">WiFis</string>
     <string name="cells">Cells</string>
     <string name="no_gps">GPS switched off!</string>
+    <string name="no_wifi">Wifi switched off!</string>
     <string name="waiting_for_gps_fix">Waiting for GPS fix</string>
     <string name="lac" translatable="false">LAC</string>
     <string name="free_wifi">Free WiFi found:</string>
@@ -224,6 +225,7 @@
     <string name="pref_gpx_settings">GPX settings</string>
     <string name="no_wifi_details_available">Wait a second! We haven\'t received wifi scan results yet!</string>
     <string name="permission_setup_title">Permission setup</string>
-    <string name="permission_needed">Sorry, Radiobeacon won\'t work without permission</string>
+    <string name="permission_setup_location_explanation">Radiobeacon need\'s location permission to work properly!</string>
     <string name="download_completed">Download completed</string>
+    <string name="activity_map_downloads_activity">Map downloads</string>
 </resources>

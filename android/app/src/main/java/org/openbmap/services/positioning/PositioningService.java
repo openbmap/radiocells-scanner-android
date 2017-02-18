@@ -18,13 +18,19 @@
 
 package org.openbmap.services.positioning;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.openbmap.R;
 import org.openbmap.RadioBeacon;
 import org.openbmap.events.onLocationUpdate;
 import org.openbmap.events.onStartLocation;
@@ -32,11 +38,12 @@ import org.openbmap.events.onStopTracking;
 import org.openbmap.services.AbstractService;
 import org.openbmap.services.positioning.providers.GpsProvider;
 import org.openbmap.services.positioning.providers.LocationChangeListener;
+import org.openbmap.utils.PermissionHelper;
 
 /**
  * GPS position service.
  */
-public class PositioningService extends AbstractService implements LocationChangeListener {
+public class PositioningService extends AbstractService implements LocationChangeListener, ActivityCompat.OnRequestPermissionsResultCallback {
 
 	private static final String TAG = PositioningService.class.getSimpleName();
 
@@ -77,9 +84,35 @@ public class PositioningService extends AbstractService implements LocationChang
 
 	@Override
 	public final void onCreate() {
-		super.onCreate();
-		providerProviderType = ProviderType.OFF;
-	}
+        super.onCreate();
+        providerProviderType = ProviderType.OFF;
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            PermissionHelper.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    RadioBeacon.PERM_REQUEST_LOCATION_NOTIFICATION,
+                    this.getApplicationContext().getString(R.string.permission_setup_title),
+                    this.getApplicationContext().getString(R.string.permission_setup_location_explanation),
+                    R.drawable.ic_security);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        for (int i = 0; i < grantResults.length; i++)
+            if (permissions[i].equals(Manifest.permission.ACCESS_FINE_LOCATION) && (grantResults[i] == PackageManager.PERMISSION_GRANTED)) {
+                Log.i(TAG, "Location permission was granted");
+                if (mIsTracking) {
+                    // tracking request was sent previously, but failed due to missing permissions
+                    // restart now..
+                    try {
+                        startTracking(ProviderType.GPS);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error starting tracking");
+                    }
+                }
+            }
+    }
 
 	@Override
 	public final boolean onUnbind(final Intent intent) {
@@ -143,22 +176,6 @@ public class PositioningService extends AbstractService implements LocationChang
 		}
 
 		providerProviderType = ProviderType.OFF;
-	}
-
-	/**
-	 * Setter for mIsTracking.
-	 * @return true if we're currently tracking, otherwise false.
-	 */
-	public final boolean isTracking() {
-		return mIsTracking;
-	}
-
-	/**
-	 * Getter for gpsEnabled.
-	 * @return true if GPS is enabled, otherwise false.
-	 */
-	public final boolean isGpsEnabled() {
-		return isGpsEnabled;
 	}
 
 	@Subscribe

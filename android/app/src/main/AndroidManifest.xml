@@ -48,11 +48,19 @@
             android:name=".activities.settings.SettingsActivity"
             android:label="@string/activity_settings_activity"></activity>
         <activity
+            android:name=".activities.settings.MapDownloadActivity"
+            android:label="@string/activity_map_downloads_activity"></activity>
+        <activity
             android:name=".activities.settings.AdvancedSettingsActivity"
             android:label="@string/activity_advanced_settings_activity"></activity>
         <activity
             android:name=".activities.CreditsActivity"
             android:label="@string/activity_credits_activity"></activity>
+
+        <!-- Permission Helper -->
+        <activity
+            android:name=".utils.PermissionHelper$PermissionRequestActivity" >
+        </activity>
 
         <!-- Exported activities, which can be used to automate Radiobeacon -->
         <activity android:name=".commands.StartTracking">
@@ -69,10 +77,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
             </intent-filter>
-        </activity>
-
-        <activity android:name=".activities.settings.MapDownloadActivity">
-
         </activity>
 
         <!-- Master service controlling all other services -->

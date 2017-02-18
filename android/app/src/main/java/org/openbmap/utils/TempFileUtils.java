@@ -38,7 +38,6 @@ public final class TempFileUtils {
 	 * @param context
 	 */
 	public static void cleanTempFiles(final Context context) {
-		// List each map file
 		final File logDir = new File(context.getExternalFilesDir(null).getAbsolutePath());
 
 		if (logDir.exists() && logDir.canWrite()) {

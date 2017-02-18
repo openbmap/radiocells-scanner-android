@@ -158,6 +158,8 @@ public final class RadioBeacon {
      */
 	public static final String SERVER_BASE = "https://radiocells.org";
 
+	public static final int PERM_REQUEST_LOCATION_NOTIFICATION = 555;
+
 	/**
 	 * Private dummy constructor
 	 */

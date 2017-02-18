@@ -18,15 +18,18 @@
 
 package org.openbmap.services.positioning.providers;
 
+
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
-import android.location.GpsStatus.Listener;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import org.openbmap.Preferences;
@@ -34,7 +37,7 @@ import org.openbmap.services.positioning.LocationService;
 import org.openbmap.services.positioning.LocationServiceFactory;
 import org.openbmap.services.positioning.PositioningService;
 
-public class GpsProvider extends LocationProviderImpl implements Listener, LocationListener {
+public class GpsProvider extends LocationProviderImpl implements GpsStatus.Listener, LocationListener {
 
 	@SuppressWarnings("unused")
 	private static final String TAG = GpsProvider.class.getSimpleName();
@@ -44,7 +47,7 @@ public class GpsProvider extends LocationProviderImpl implements Listener, Locat
 	/**
 	 * LocationManager
 	 */
-	private LocationManager lmgr;
+	private LocationManager locationManager;
 
 	private boolean isGpsEnabled;
 
@@ -60,35 +63,39 @@ public class GpsProvider extends LocationProviderImpl implements Listener, Locat
 
 	public GpsProvider(final Context ctx, final LocationService locationService) {
 		super(ctx, locationService);
-		mContext = ctx.getApplicationContext();
+		mContext = ctx;
 	}
 
 	@Override
 	public final void start(final PositioningService positioningService) {
 		super.start(positioningService);
 
-		//read the logging interval from preferences
-		gpsLoggingInterval = Long.parseLong(PreferenceManager.getDefaultSharedPreferences(mContext.getApplicationContext()).getString(
-				Preferences.KEY_GPS_LOGGING_INTERVAL, Preferences.DEFAULT_GPS_LOGGING_INTERVAL)) * 1000;
+		gpsLoggingInterval = Long.parseLong(PreferenceManager.getDefaultSharedPreferences(mContext).getString(
+				Preferences.KEY_GPS_LOGGING_INTERVAL,
+                Preferences.DEFAULT_GPS_LOGGING_INTERVAL)) * 1000;
 
-		// Register ourselves for location updates
-		lmgr = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
-
-		// To request updates only once, disable any previous updates before starting
-		disableUpdates();
-		enableUpdates();
+        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
+            // To request updates only once, disable any previous updates before starting
+            disableUpdates();
+            enableUpdates();
+        } else {
+            Log.w(TAG, "Location permission denied - won't receive GPS updates");
+            return;
+        }
 	}
 
 	/**
 	 * Request GPS update notification
 	 */
 	private void enableUpdates() {
-		if (lmgr != null) {
+		if (locationManager != null) {
 			try {
-				lmgr.addGpsStatusListener(this);
-				lmgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, gpsLoggingInterval, 0, this);
+				locationManager.addGpsStatusListener(this);
+				locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                        gpsLoggingInterval, 0, this);
 			} catch (SecurityException e) {
-				Log.e(TAG, "You denied GPS permission, so this app won't work");
+				Log.w(TAG, "Location permission denied - won't receive locations");
 			}
 		}
 	}
@@ -97,13 +104,13 @@ public class GpsProvider extends LocationProviderImpl implements Listener, Locat
 	 * Cancels GPS update notification
 	 */
 	private void disableUpdates() {
-		if (lmgr != null) {
-            try {
-                lmgr.removeGpsStatusListener(this);
-                lmgr.removeUpdates(this);
-            } catch (SecurityException e) {
-                Log.i(TAG, "You denied GPS permission, so we don't need a perform a proper cleanup here");
-            }
+		if (locationManager != null) {
+			try {
+				locationManager.removeGpsStatusListener(this);
+				locationManager.removeUpdates(this);
+			} catch (SecurityException e) {
+				Log.i(TAG, "Location permission denied - no need for cleanup");
+			}
 
 		}
 	}
@@ -188,13 +195,16 @@ public class GpsProvider extends LocationProviderImpl implements Listener, Locat
 						|| (mLastGPSTimestamp + gpsLoggingInterval) < System.currentTimeMillis()) {
 					mLastGPSTimestamp = System.currentTimeMillis(); // save the time of this fix
 
-					final GpsStatus status = lmgr.getGpsStatus(null);
-
-					// Count active satellites
-					satCount = 0;
-					for (@SuppressWarnings("unused") final GpsSatellite sat:status.getSatellites()) {
-						satCount++;
-					}
+                    if (ContextCompat.checkSelfPermission(mContext.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                        final GpsStatus status = locationManager.getGpsStatus(null);
+                        // Count active satellites
+                        satCount = 0;
+                        for (@SuppressWarnings("unused") final GpsSatellite sat: status.getSatellites()) {
+                            satCount++;
+                        }
+                    } else {
+                        Log.w(TAG, "Location permission denied - can't access GPS status");
+                    }
 				}
 				break;
 			default:
@@ -206,5 +216,4 @@ public class GpsProvider extends LocationProviderImpl implements Listener, Locat
 		}
 
 	}
-
 }
