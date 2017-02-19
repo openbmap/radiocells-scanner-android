@@ -260,6 +260,7 @@ implements SessionListFragment.SessionFragementListener,
 	 */
     @Override
     public void startCommand() {
+		Log.i(TAG, "Starting new session");
         EventBus.getDefault().post(new onStartTracking());
 
         // bring up UI
@@ -274,8 +275,9 @@ implements SessionListFragment.SessionFragementListener,
 	 */
     @Override
     public void resumeCommand(final int id) {
-        EventBus.getDefault().post(new onStartTracking(id));
+		Log.i(TAG, "Resuming session " + id);
 
+		EventBus.getDefault().post(new onStartTracking(id));
         final Intent activity = new Intent(this, TabHostActivity_.class);
         activity.putExtra("_id", id);
         startActivity(activity);
@@ -284,22 +286,24 @@ implements SessionListFragment.SessionFragementListener,
 	/**
 	 * Uploads session
 	 * Once exported, onExportCompleted() is called
-	 * @param session
+	 * @param id
 	 * 		session id
 	 */
-    public void uploadCommand(final int session) {
+    public void uploadCommand(final int id) {
+        Log.i(TAG, "Uploading " + id);
+
 		acquireWifiLock();
 		pendingExports.clear();
 		completedExports = 0;
 		failedExports = 0;
 
-		pendingExports.add(session);
-		mUploadTaskFragment.add(session);
+		pendingExports.add(id);
+		mUploadTaskFragment.add(id);
 		mUploadTaskFragment.execute();
 
 		showUploadTaskDialog();
 
-		updateUI();
+        reloadListFragment();
 	}
 
 	/*
@@ -333,7 +337,6 @@ implements SessionListFragment.SessionFragementListener,
 		Log.i(TAG, "Exporting gpx");
 
 		final String path = this.getExternalFilesDir(null).getAbsolutePath();
-
         final String filename = GpxSerializer.suggestGpxFilename(id);
 
 		showSaveGpxTaskDialog();
@@ -349,7 +352,7 @@ implements SessionListFragment.SessionFragementListener,
 		// Signalling host activity to stop services
         EventBus.getDefault().post(new onStopTracking());
 
-		updateUI();
+        reloadListFragment();
 	}
 
 	/**
@@ -403,8 +406,7 @@ implements SessionListFragment.SessionFragementListener,
 			TempFileUtils.cleanTempFiles(this);
 		}
 
-		// force UI list update
-		updateUI();
+        reloadListFragment();
 		Toast.makeText(getBaseContext(), R.string.deleted, Toast.LENGTH_SHORT).show();
 	}
 
@@ -426,15 +428,7 @@ implements SessionListFragment.SessionFragementListener,
         EventBus.getDefault().post(new onStopTracking());
 		mDataHelper.deleteAllSessions();
 
-		updateUI();
-	}
-
-	/**
-	 * Updates session list fragment and informs
-	 * Sends broadcast to update UI.
-	 */
-	private void updateUI() {
-		reloadListFragment();
+        reloadListFragment();
 	}
 
 	/**

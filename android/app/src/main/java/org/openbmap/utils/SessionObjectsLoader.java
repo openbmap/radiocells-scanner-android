@@ -79,7 +79,7 @@ public class SessionObjectsLoader extends AsyncTask<Object, Void, List<SessionLa
      * Queries reference database for all wifis within specified range around map centre.
      *
      * @param args
-     *         Args is an object array containing
+     *         args is an object array containing
      *         MIN_LAT_COL, MAX_LAT_COL, MIN_LON_COL, MIN_MAX_COL
      */
     @Override

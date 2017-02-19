@@ -42,9 +42,7 @@ import android.widget.Toast;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.openbmap.Preferences;
-import org.openbmap.R;
 import org.openbmap.RadioBeacon;
-import org.openbmap.activities.tabs.TabHostActivity_;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.Session;
 import org.openbmap.events.onServiceShutdown;
@@ -277,6 +275,7 @@ public class ManagerService extends Service {
         Log.i(TAG, "Map: " + prefs.getString(Preferences.KEY_MAP_FILE, Preferences.DEFAULT_MAP_FILE));
         Log.i(TAG, "Catalog: " + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.DEFAULT_CATALOG_FILE));
         Log.i(TAG, "=============================================================================");
+        currentSession = event.session;
         startTracking(currentSession);
     }
 

@@ -89,13 +89,12 @@ public class MapFragment extends BaseMapFragment implements
         ActionBar.OnNavigationListener, onLongPressHandler {
 
     private static final String TAG = MapFragment.class.getSimpleName();
-
     private static final boolean DEBUG_IGNORE_CATALOG = false;
     private static final boolean DEBUG_IGNORE_GPX = false;
     private boolean DEBUG_IGNORE_SESSION = false;
 
     /**
-     * The Direction symbol.
+     * Direction indicator symbol.
      */
     @ViewById(R.id.direction)
     ImageView directionSymbol;
@@ -126,12 +125,12 @@ public class MapFragment extends BaseMapFragment implements
 
     private static final Paint ALL_POI_PAINT = MapUtils.createPaint(
             AndroidGraphicFactory.INSTANCE.createColor(ALPHA_WIFI_CATALOG_FILL,
-                    120, 150, 120), 2, Style.FILL);
+                    120, 150, 120), 2,
+            Style.FILL);
 
     private static final Paint OWN_POI_PAINT = MapUtils.createPaint(
             AndroidGraphicFactory.INSTANCE.createColor(ALPHA_WIFI_CATALOG_FILL, 255, 150, 120), 2,
             Style.FILL);
-
 
     /**
      * Paint style for active sessions objects
@@ -151,13 +150,15 @@ public class MapFragment extends BaseMapFragment implements
      * Paint style accuracy circle
      */
     private static final Paint POSITION_FILL = MapUtils.createPaint(
-            AndroidGraphicFactory.INSTANCE.createColor(96, 0, 0, 255), 0, Style.FILL);
+            AndroidGraphicFactory.INSTANCE.createColor(96, 0, 0, 255), 0,
+            Style.FILL);
 
     /**
      * Paint style accuracy circle
      */
     private static final Paint ACCURACY_FILL = MapUtils.createPaint(
-            AndroidGraphicFactory.INSTANCE.createColor(48, 0, 0, 255), 0, Style.FILL);
+            AndroidGraphicFactory.INSTANCE.createColor(48, 0, 0, 255), 0,
+            Style.FILL);
 
     /**
      * Minimum time (in millis) between automatic layer refresh
@@ -168,7 +169,6 @@ public class MapFragment extends BaseMapFragment implements
      * Minimum distance (in meter) between automatic session layer refresh
      */
     protected static final float SESSION_REFRESH_DISTANCE = 10;
-
 
     /**
      * Minimum distance (in meter) between automatic catalog layer refresh
@@ -187,14 +187,18 @@ public class MapFragment extends BaseMapFragment implements
      */
     protected static final float GPX_REFRESH_INTERVAL = 1000;
 
+    /**
+     * In SessionLoadMode.BOOTSTRAP  new wifis are continously added to session layer (without
+     * reloading from database). Therefore the onWifisAdded event is fired, when new wifis were found
+     * In SessionLoadMode.BBOX onWifisAdded event is ignored
+     */
     private enum SessionLoadMode {BOOTSTRAP, BBOX};
-
     private static final SessionLoadMode LOAD_MODE = SessionLoadMode.BOOTSTRAP;
+
     /**
      * Load more than currently visible objects?
      */
     private static final boolean PREFETCH_MAP_OBJECTS = false;
-
 
     /**
      * Session currently displayed
@@ -214,21 +218,14 @@ public class MapFragment extends BaseMapFragment implements
      * System time of last gpx refresh (in millis)
      */
     private long mGpxRefreshedMillis;
-
     private byte mLastZoom;
 
     /**
-     * Layer with radiocells wifis
+     * Layer objects
      */
     private GroupLayer mWifisLayer;
-
-    /**
-     * Openstreetmap towers layer
-     */
     private GroupLayer mTowersLayer;
-
     private Collection<Layer> mSessionObjects;
-
     private Polyline mGpxObjects;
 
     private boolean followLocation = true;
@@ -242,11 +239,6 @@ public class MapFragment extends BaseMapFragment implements
      * Checks whether tower layer is active
      */
     private Boolean isTowersLayerEnabled = true;
-
-    /**
-     * Observes zoom and map movements (for triggering layer updates)
-     */
-    private Observer mMapObserver;
 
     /**
      * Session layer is currently refreshing
@@ -289,36 +281,6 @@ public class MapFragment extends BaseMapFragment implements
     private Location mCatalogRefreshLocation = new Location("DUMMY");
 
     @Override
-    public void initUi() {
-        super.initUi();
-
-        addMapActions();
-
-        final Drawable posIcon = ResourcesCompat.getDrawable(getResources(), R.drawable.position, null);
-        Bitmap bitmap = AndroidGraphicFactory.convertToBitmap(posIcon);
-        bitmap.incrementRefCount();
-        mPositionMarker = new Marker(null, bitmap, 0, 0 /*-bitmap.getHeight() / 2*/);
-        //add later on demand: mMapView.getLayerManager().getLayers().add(marker);
-
-        mAccuracyMarker = new Circle(null, 0, ACCURACY_FILL, null);
-        mMapView.getLayerManager().getLayers().add(mAccuracyMarker);
-
-        // Register our gps broadcast mReceiver
-        registerReceiver();
-
-        if (LOAD_MODE == SessionLoadMode.BOOTSTRAP) {
-            // in bootstrap mode session objects are loaded in memory on start
-            requestSessionUpdate(null);
-        }
-    }
-
-    @Override
-    public void onDestroyView() {
-        unregisterReceiver();
-        super.onDestroyView();
-    }
-
-    @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
@@ -333,6 +295,10 @@ public class MapFragment extends BaseMapFragment implements
 
         getSession();
         registerReceiver();
+        if (LOAD_MODE == SessionLoadMode.BOOTSTRAP) {
+            // in bootstrap mode session objects are loaded in memory on start
+            requestSessionUpdate(null);
+        }
     }
 
     @Override
@@ -345,28 +311,10 @@ public class MapFragment extends BaseMapFragment implements
         super.onPause();
     }
 
-    /**
-     * Clean up layers and disable GPX events
-     * Should be called before leaving
-     *
-     * @param isVisibleToUser
-     */
     @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        if (isVisibleToUser) {
-            registerReceiver();
-            // TODO: currently no possible due to https://github.com/mapsforge/mapsforge/issues/659
-            //initBaseMap();
-        } else {
-            Log.d(TAG, "Map not visible, releasing");
-            clearSession();
-            clearGpx();
-            // TODO: currently no possible due to https://github.com/mapsforge/mapsforge/issues/659
-            //releaseMap();
-
-            unregisterReceiver();
-        }
+    public void onDestroyView() {
+        unregisterReceiver();
+        super.onDestroyView();
     }
 
     @Override
@@ -375,14 +323,26 @@ public class MapFragment extends BaseMapFragment implements
         super.onDestroy();
     }
 
-    private void getSession() {
-        final DataHelper dbHelper = new DataHelper(getActivity().getApplicationContext());
-        mSession = dbHelper.getCurrentSessionID();
+    @Override
+    public void initUi() {
+        super.initUi();
 
-        if (mSession != RadioBeacon.SESSION_NOT_TRACKING) {
-            Log.i(TAG, "Displaying session " + mSession);
-        } else {
-            Log.w(TAG, "No active session?");
+        addMapActions();
+
+        final Drawable posIcon = ResourcesCompat.getDrawable(getResources(), R.drawable.position, null);
+        Bitmap bitmap = AndroidGraphicFactory.convertToBitmap(posIcon);
+        bitmap.incrementRefCount();
+        mPositionMarker = new Marker(null, bitmap, 0, 0 /*-bitmap.getHeight() / 2*/);
+        //add later on demand: mMapView.getLayerManager().getLayers().add(marker);
+
+        mAccuracyMarker = new Circle(null, 0, ACCURACY_FILL, null);
+        mMapView.getLayerManager().getLayers().add(mAccuracyMarker);
+
+        registerReceiver();
+
+        if (LOAD_MODE == SessionLoadMode.BOOTSTRAP) {
+            // in bootstrap mode session objects are loaded in memory on start
+            requestSessionUpdate(null);
         }
     }
 
@@ -392,7 +352,7 @@ public class MapFragment extends BaseMapFragment implements
             return;
         }
 
-        mMapObserver = new Observer() {
+        final Observer observer = new Observer() {
             @Override
             public void onChange() {
                 final byte zoom = mMapView.getModel().mapViewPosition.getZoomLevel();
@@ -435,20 +395,7 @@ public class MapFragment extends BaseMapFragment implements
             }
         };
 
-        mMapView.getModel().mapViewPosition.addObserver(mMapObserver);
-    }
-
-    @UiThread
-    private void displayDirections(boolean show) {
-        if (directionSymbol == null) {
-            return;
-        }
-
-        if (!show) {
-            directionSymbol.setVisibility(View.INVISIBLE);
-        } else {
-            directionSymbol.setVisibility(View.VISIBLE);
-        }
+        mMapView.getModel().mapViewPosition.addObserver(observer);
     }
 
     @Override
@@ -505,11 +452,59 @@ public class MapFragment extends BaseMapFragment implements
     }
 
     /**
-     * Unregisters receivers for GPS.
+     * Unregisters receivers
      */
     private void unregisterReceiver() {
         if (EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().unregister(this);
+        }
+    }
+
+    /**
+     * Clean up layers and disable GPX events, when map is currently not used/visible
+     * Should be called before leaving
+     *
+     * @param isVisibleToUser
+     */
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser) {
+            registerReceiver();
+            // TODO: currently no possible due to https://github.com/mapsforge/mapsforge/issues/659
+            //initBaseMap();
+        } else {
+            Log.d(TAG, "Map not visible, releasing");
+            clearSession();
+            clearGpx();
+            // TODO: currently no possible due to https://github.com/mapsforge/mapsforge/issues/659
+            //releaseMap();
+
+            unregisterReceiver();
+        }
+    }
+
+    private void getSession() {
+        final DataHelper dbHelper = new DataHelper(getActivity().getApplicationContext());
+        mSession = dbHelper.getCurrentSessionID();
+
+        if (mSession != RadioBeacon.SESSION_NOT_TRACKING) {
+            Log.i(TAG, "Displaying session " + mSession);
+        } else {
+            Log.w(TAG, "No active session?");
+        }
+    }
+
+    @UiThread
+    private void displayDirections(boolean show) {
+        if (directionSymbol == null) {
+            return;
+        }
+
+        if (!show) {
+            directionSymbol.setVisibility(View.INVISIBLE);
+        } else {
+            directionSymbol.setVisibility(View.VISIBLE);
         }
     }
 
@@ -595,18 +590,6 @@ public class MapFragment extends BaseMapFragment implements
         requestCatalogUpdate();
     }
 
-    private void requestCatalogUpdate() {
-        if (DEBUG_IGNORE_CATALOG) {
-            return;
-        }
-
-        if (!isUpdatingCatalog) {
-            isUpdatingCatalog = true;
-            EventBus.getDefault().post(new onCatalogUpdateRequested(this.mMapView.getBoundingBox()));
-            mCatalogLayerRefreshMillis = System.currentTimeMillis();
-        }
-    }
-
     /**
      * Clears database overlays
      */
@@ -678,22 +661,6 @@ public class MapFragment extends BaseMapFragment implements
     }
 
     /**
-     * Checks whether layer is too old or too far away from previous position
-     * @param current new location
-     * @return true if wifis layer needs a refresh
-     */
-    private boolean catalogLayerNeedsUpdate(final Location current) {
-        if (current == null) {
-            // fail safe: draw if something went wrong
-            return true;
-        }
-
-        boolean status = (mCatalogRefreshLocation.distanceTo(current) > CATALOG_REFRESH_DISTANCE)
-                && ((System.currentTimeMillis() - mCatalogLayerRefreshMillis) > CATALOG_REFRESH_INTERVAL);
-        return status;
-    }
-
-    /**
      * Updates session layer.
      * If another refresh is in progress, update is skipped.
      *
@@ -705,7 +672,7 @@ public class MapFragment extends BaseMapFragment implements
         }
         if (!isUpdatingSession && isVisible()) {
             isUpdatingSession = true;
-            startSessionDatabaseTask(null);
+            triggerAsyncSessionUpdate(null);
             mSessionRefreshTime = System.currentTimeMillis();
             mSessionRefreshLocation = location;
         } else if (!isVisible()) {
@@ -715,8 +682,21 @@ public class MapFragment extends BaseMapFragment implements
         }
     }
 
+    private void requestCatalogUpdate() {
+        if (DEBUG_IGNORE_CATALOG) {
+            return;
+        }
+
+        if (!isUpdatingCatalog) {
+            isUpdatingCatalog = true;
+            EventBus.getDefault().post(new onCatalogUpdateRequested(this.mMapView.getBoundingBox()));
+            mCatalogLayerRefreshMillis = System.currentTimeMillis();
+        }
+    }
+
     /**
-     * Is new location far enough from last refresh location and is last refresh to old?
+     * Checks if layer needs update, i.e new location is too far (SESSION_REFRESH_DISTANCE) away
+     * from last refresh location or last refresh is to old (SESSION_REFRESH_INTERVAL)
      * @return true if session layer needs refresh
      */
     private boolean sessionLayerNeedsUpdate(final Location current) {
@@ -730,64 +710,19 @@ public class MapFragment extends BaseMapFragment implements
     }
 
     /**
-     * Loads session wifis in visible range.
-     * Will call onSessionLoaded callback upon completion
-     *
-     * @param highlight If highlight is specified only this wifi is displayed
+     * Checks if layer needs update, i.e new location is too far (CATALOG_REFRESH_DISTANCE) away
+     * from last refresh location or last refresh is to old (CATALOG_REFRESH_INTERVAL)
+     * @param current new location
+     * @return true if wifis layer needs a refresh
      */
-    private void startSessionDatabaseTask(final WifiRecord highlight) {
-        if (mMapView == null) {
-            Log.e(TAG, "MapView is null");
-            return;
+    private boolean catalogLayerNeedsUpdate(final Location current) {
+        if (current == null) {
+            // fail safe: draw if something went wrong
+            return true;
         }
 
-        final BoundingBox bbox = MapPositionUtil.getBoundingBox(
-                mMapView.getModel().mapViewPosition.getMapPosition(),
-                mMapView.getDimension(), mMapView.getModel().displayModel.getTileSize());
-
-        if (highlight == null) {
-
-            final List<Integer> sessions = new ArrayList<>();
-            /*if (allLayerSelected()) {
-                // load all session wifis
-                sessions = new DataHelper(this).getSessionIDs();
-            } else {*/
-            sessions.add(mSession);
-            //}
-
-            double minLatitude = -90;
-            double maxLatitude = 90;
-            double minLongitude = -180;
-            double maxLongitude = 180;
-
-            // restrict area on SessionLoadMode.BBOX
-            if (LOAD_MODE == SessionLoadMode.BBOX) {
-                minLatitude = bbox.minLatitude;
-                maxLatitude = bbox.maxLatitude;
-                minLongitude = bbox.minLongitude;
-                maxLongitude = bbox.maxLongitude;
-
-                // query more than visible objects for smoother data scrolling / less database queries
-                if (PREFETCH_MAP_OBJECTS) {
-                    final double latSpan = maxLatitude - minLatitude;
-                    final double lonSpan = maxLongitude - minLongitude;
-                    minLatitude -= latSpan * 0.5;
-                    maxLatitude += latSpan * 0.5;
-                    minLongitude -= lonSpan * 0.5;
-                    maxLongitude += lonSpan * 0.5;
-                }
-            }
-
-            final SessionObjectsLoader task = new SessionObjectsLoader(getActivity().getApplicationContext(), sessions);
-            task.execute(minLatitude, maxLatitude, minLongitude, maxLongitude, null);
-        } else {
-            // draw specific wifi
-            final List<Integer> sessions = new ArrayList<>();
-            sessions.add(mSession);
-
-            final SessionObjectsLoader task = new SessionObjectsLoader(getActivity().getApplicationContext(), sessions);
-            task.execute(bbox.minLatitude, bbox.maxLatitude, bbox.minLongitude, bbox.maxLatitude, highlight.getBssid());
-        }
+        return (mCatalogRefreshLocation.distanceTo(current) > CATALOG_REFRESH_DISTANCE)
+                && ((System.currentTimeMillis() - mCatalogLayerRefreshMillis) > CATALOG_REFRESH_INTERVAL);
     }
 
     /**
@@ -904,6 +839,10 @@ public class MapFragment extends BaseMapFragment implements
         }
     }
 
+    /**
+     * Called when new gpx info is available
+     * @param event
+     */
     @Subscribe
     public void onEvent(onGpxUpdateAvailable event){
         Log.v(TAG, "Loading " + event.items.size() + " gpx objects");
@@ -939,7 +878,7 @@ public class MapFragment extends BaseMapFragment implements
 
         if (!isUpdatingGpx && isVisible()) {
             isUpdatingGpx = true;
-            startGpxDatabaseTask();
+            triggerAsyncGpxUpdate();
             mGpxRefreshedMillis = System.currentTimeMillis();
         } else if (!isVisible()) {
             Log.v(TAG, "Not visible, skipping refresh");
@@ -962,7 +901,7 @@ public class MapFragment extends BaseMapFragment implements
     /*
      * Loads gpx points in visible range.
      */
-    private void startGpxDatabaseTask() {
+    private void triggerAsyncGpxUpdate() {
         if (mMapView == null) {
             Log.e(TAG, "MapView is null");
             return;
@@ -980,6 +919,66 @@ public class MapFragment extends BaseMapFragment implements
                 bbox.maxLatitude + 0.01,
                 bbox.minLongitude - 0.15,
                 bbox.maxLatitude + 0.15);
+    }
+
+    /**
+     * Loads session wifis in visible range.
+     * Will call onSessionLoaded callback upon completion
+     *
+     * @param highlight If highlight is specified only this wifi is displayed
+     */
+    private void triggerAsyncSessionUpdate(final WifiRecord highlight) {
+        if (mMapView == null) {
+            Log.e(TAG, "MapView is null");
+            return;
+        }
+
+        final BoundingBox bbox = MapPositionUtil.getBoundingBox(
+                mMapView.getModel().mapViewPosition.getMapPosition(),
+                mMapView.getDimension(), mMapView.getModel().displayModel.getTileSize());
+
+        if (highlight == null) {
+            final List<Integer> sessions = new ArrayList<>();
+            /*if (allLayerSelected()) {
+                // load all session wifis
+                sessions = new DataHelper(this).getSessionIDs();
+            } else {*/
+            sessions.add(mSession);
+            //}
+
+            double minLatitude = -90;
+            double maxLatitude = 90;
+            double minLongitude = -180;
+            double maxLongitude = 180;
+
+            // restrict area on SessionLoadMode.BBOX
+            if (LOAD_MODE == SessionLoadMode.BBOX) {
+                minLatitude = bbox.minLatitude;
+                maxLatitude = bbox.maxLatitude;
+                minLongitude = bbox.minLongitude;
+                maxLongitude = bbox.maxLongitude;
+
+                // query more than visible objects for smoother data scrolling / less database queries
+                if (PREFETCH_MAP_OBJECTS) {
+                    final double latSpan = maxLatitude - minLatitude;
+                    final double lonSpan = maxLongitude - minLongitude;
+                    minLatitude -= latSpan * 0.5;
+                    maxLatitude += latSpan * 0.5;
+                    minLongitude -= lonSpan * 0.5;
+                    maxLongitude += lonSpan * 0.5;
+                }
+            }
+
+            final SessionObjectsLoader task = new SessionObjectsLoader(getActivity().getApplicationContext(), sessions);
+            task.execute(minLatitude, maxLatitude, minLongitude, maxLongitude, null);
+        } else {
+            // draw specific wifi
+            final List<Integer> sessions = new ArrayList<>();
+            sessions.add(mSession);
+
+            final SessionObjectsLoader task = new SessionObjectsLoader(getActivity().getApplicationContext(), sessions);
+            task.execute(bbox.minLatitude, bbox.maxLatitude, bbox.minLongitude, bbox.maxLatitude, highlight.getBssid());
+        }
     }
 
     /**
@@ -1032,15 +1031,6 @@ public class MapFragment extends BaseMapFragment implements
         iv.setImageMatrix(matrix);
     }
 
-    /**
-     * Gets persistable id.
-     *
-     * @return the id that is used to save this mapview
-     */
-    protected final String getPersistableId() {
-        return this.getClass().getSimpleName();
-    }
-
     /* (non-Javadoc)
      * @see com.actionbarsherlock.app.ActionBar.OnNavigationListener#onNavigationItemSelected(int, long)
      */
@@ -1051,7 +1041,7 @@ public class MapFragment extends BaseMapFragment implements
     }
 
     /**
-     * Saves a user defined waypoint in GPX
+     * On long press on map a user defined waypoint at clicked position is added to the GPX track
      */
     @Override
     public void onLongPress(final LatLong tapLatLong, final Point thisXY, final Point tapXY) {
@@ -1070,6 +1060,14 @@ public class MapFragment extends BaseMapFragment implements
         toneG.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 200);
     }
 
+    /**
+     * Gets persistable id.
+     *
+     * @return the id that is used to save this mapview
+     */
+    protected final String getPersistableId() {
+        return this.getClass().getSimpleName();
+    }
 
 }
 
