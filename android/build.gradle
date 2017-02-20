@@ -52,7 +52,7 @@ configure(filterProjects(project.androidprojects)) {
 
     android {
         compileSdkVersion 25
-        buildToolsVersion '25'
+        buildToolsVersion '25.0.2'
         defaultConfig {
             minSdkVersion 22
             targetSdkVersion 23
