@@ -20,6 +20,7 @@ package org.openbmap.commands;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.util.Log;
 
 import org.openbmap.activities.tabs.TabHostActivity;
 
@@ -31,12 +32,14 @@ import org.openbmap.activities.tabs.TabHostActivity;
  */
 public class StartTracking extends Activity {
 
+    private static final String TAG = StartTracking.class.getSimpleName();
+
+	@Deprecated
 	@Override
 	protected final void onResume() {
 		super.onResume();
-		
+        Log.w(TAG, "Calling StartTracking deprecated, uses intent org.openbmap.intent.action.START_COMMAND instead");
 		final Intent intent = new Intent(this, TabHostActivity.class);
-		
 		startActivity(intent);
 		this.finish();
 	}

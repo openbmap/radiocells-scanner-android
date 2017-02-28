@@ -49,14 +49,17 @@ import org.openbmap.RadioBeacon;
 import org.openbmap.activities.SelectiveScrollViewPager;
 import org.openbmap.activities.StartscreenActivity_;
 import org.openbmap.events.onServiceShutdown;
+import org.openbmap.events.onStopRequested;
 import org.openbmap.events.onStopTracking;
 import org.openbmap.services.ManagerService;
 import org.openbmap.utils.ActivityUtils;
 
 /**
- * TabHostActivity for "tracking" mode. It hosts the tabs "Stats", "WifisRadiocells Overview", "Cell Overview" and "Map".
+ * Invisible host activity for "tracking" mode.
+ * It hosts the tabs "Stats", "Wifis", "Cells" and "Map".
  * TabHostActivity is also in charge of service communication.
  */
+
 @EActivity(R.layout.tabhost_activity)
 public class TabHostActivity extends AppCompatActivity {
 	private static final String	TAG	= TabHostActivity.class.getSimpleName();
@@ -124,6 +127,13 @@ public class TabHostActivity extends AppCompatActivity {
 		verifyGpsEnabled();
         verifyWifiEnabled();
 		// TODO: show warning if GSM is not enabled
+
+        if (!EventBus.getDefault().isRegistered(this)) {
+            Log.v(TAG, "Registering eventbus receiver for ManagerService");
+            EventBus.getDefault().register(this);}
+        else {
+            Log.w(TAG, "Event bus receiver already registered");
+        }
 	}
 
 	@Override
@@ -132,10 +142,15 @@ public class TabHostActivity extends AppCompatActivity {
         startManagerService();
     }
 
+    @Subscribe
+    public void onEvent(onStopRequested event){
+        stopTracking();
+    }
+
 	@Override
 	protected void onDestroy() {
         Log.d(TAG, "Destroying TabHost");
-    //    EventBus.getDefault().unregister(this);
+        EventBus.getDefault().unregister(this);
         // ?? stopTracking();
 		super.onDestroy();
 	}

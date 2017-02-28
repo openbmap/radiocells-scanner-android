@@ -19,6 +19,7 @@
 package org.openbmap.commands;
 
 import android.app.Activity;
+import android.util.Log;
 import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
@@ -31,12 +32,14 @@ import org.openbmap.events.onStopTracking;
  *
  * Don't use internally within Radiobeacon!
  */
-public class StopTracking  extends Activity {
+public class StopTracking extends Activity {
+	private static final String TAG = StopTracking.class.getSimpleName();
 
+	@Deprecated
 	@Override
 	protected final void onResume() {
 		super.onResume();
-
+		Log.w(TAG, "Calling StopTracking deprecated, uses intent org.openbmap.intent.action.STOP_COMMAND instead");
         EventBus.getDefault().post(new onStopTracking());
 		Toast.makeText(this, R.string.stopped_tracking, Toast.LENGTH_SHORT).show();
 		this.finish();

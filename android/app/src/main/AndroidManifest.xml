@@ -82,6 +82,14 @@
             </intent-filter>
         </activity>
 
+        <receiver android:name=".commands.CommandReceiver" android:enabled="true">
+            <intent-filter>
+                <action android:name="org.openbmap.intent.action.START_COMMAND"></action>
+                <action android:name="org.openbmap.intent.action.STOP_COMMAND" ></action>
+                <action android:name="org.openbmap.intent.action.UPLOAD_COMMAND" ></action>
+            </intent-filter>
+        </receiver>
+
         <!-- Master service controlling all other services -->
         <service android:name=".services.ManagerService">
             <intent-filter>

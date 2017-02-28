@@ -18,6 +18,6 @@
 
 package org.openbmap.events;
 
-public class onStopTracking {
-        public onStopTracking() {}
+public class onStopRequested {
+        public onStopRequested() {}
     }

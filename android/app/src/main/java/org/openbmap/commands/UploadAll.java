@@ -21,6 +21,7 @@ package org.openbmap.commands;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import org.openbmap.activities.StartscreenActivity;
 
@@ -31,11 +32,13 @@ import org.openbmap.activities.StartscreenActivity;
  * Don't use internally within Radiobeacon!
  */
 public class UploadAll extends Activity {
+	private static final String TAG = UploadAll.class.getSimpleName();
 
+	@Deprecated
 	@Override
 	protected final void onResume() {
 		super.onResume();
-
+		Log.w(TAG, "Calling UploadAll deprecated, uses intent org.openbmap.intent.action.UPLOAD_COMMAND instead");
 		final Intent intent = new Intent(this, StartscreenActivity.class);
 		final Bundle b = new Bundle();
 		b.putString("command", "upload_all");
