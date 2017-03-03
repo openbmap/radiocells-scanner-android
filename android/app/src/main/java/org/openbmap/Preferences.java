@@ -155,7 +155,9 @@ public final class Preferences {
      */
 	public static final String KEY_GPX_VERBOSITY = "gpx.verbosity";
 
-	/*
+    public static final String KEY_ALLOW_AUTOMATION = "allow_automation";
+    public static final boolean VAL_ALLOW_AUTOMATION = false;
+    /*
 	 * Default values following ..
 	 */
 
@@ -188,23 +190,23 @@ public final class Preferences {
      */
     public static final String DEFAULT_GPX_VERBOSITY = "1";
 
-    /**
-	 * No map set
-	 */
-	public static final String VAL_MAP_NONE = "none";
-
 	/**
 	 * No map set
 	 */
 	public static final String VAL_MAP_ONLINE = "online";
 
-	/**
-	 * Default map file name
-	 */
-	public static final String DEFAULT_MAP_FILE = VAL_MAP_NONE;
+    /**
+     * No map set
+     */
+    public static final String VAL_MAP_NONE = "none";
 
-	/**
-	 * Default reference database filename
+    /**
+     * Default map file name
+     */
+    public static final String DEFAULT_MAP_FILE = VAL_MAP_NONE;
+
+    /**
+     * Default reference database filename
 	 */
 	public static final String DEFAULT_CATALOG_FILE = "openbmap.sqlite";
 
@@ -316,7 +318,7 @@ public final class Preferences {
 	public static final String PASSWORD_VALIDATION_URL = RadioBeacon.SERVER_BASE + "/uploads/check_login";
 
     /**
-	 * Private dummy constructor
+     * Private dummy constructor
 	 */
 	private Preferences() {
 

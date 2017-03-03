@@ -21,11 +21,14 @@ package org.openbmap.commands;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
+import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.activities.StartscreenActivity_;
 import org.openbmap.activities.tabs.TabHostActivity_;
@@ -40,6 +43,14 @@ public class CommandReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals("org.openbmap.intent.action.START_COMMAND")) {
             Log.i(TAG, "Received start command");
+
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+            if (!prefs.getBoolean(Preferences.KEY_ALLOW_AUTOMATION, Preferences.VAL_ALLOW_AUTOMATION)) {
+                Log.w(TAG, "Missing Automation permission, ignore intent");
+                Toast.makeText(context, "Please enable Tasker automation in Advanced Settings", Toast.LENGTH_LONG).show();
+                return;
+            }
+
             //final Intent activity = new Intent(context, TabHostActivity_.class);
             // TODO: do we really need this flag?
             // see discussion at http://stackoverflow.com/questions/3918517/calling-startactivity-from-outside-of-an-activity-context
@@ -56,12 +67,28 @@ public class CommandReceiver extends BroadcastReceiver {
             context.startActivity(hostActivity);
         } else if (intent.getAction().equals("org.openbmap.intent.action.STOP_COMMAND")) {
             Log.i(TAG, "Received stop command");
+
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+            if (!prefs.getBoolean(Preferences.KEY_ALLOW_AUTOMATION, Preferences.VAL_ALLOW_AUTOMATION)) {
+                Log.w(TAG, "Missing Automation permission, ignore intent");
+                Toast.makeText(context, "Please enable Tasker automation in Advanced Settings", Toast.LENGTH_LONG).show();
+                return;
+            }
+
             // let TabHostActivity handle shutdown so don't use EventBus.getDefault().post(new onStopTracking());
             EventBus.getDefault().post(new onStopRequested());
             Toast.makeText(context, R.string.stopped_tracking, Toast.LENGTH_SHORT).show();
 
         } else if (intent.getAction().equals("org.openbmap.intent.action.UPLOAD_COMMAND")) {
             Log.i(TAG, "Received upload command");
+
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+            if (!prefs.getBoolean(Preferences.KEY_ALLOW_AUTOMATION, Preferences.VAL_ALLOW_AUTOMATION)) {
+                Log.w(TAG, "Missing Automation permission, ignore intent");
+                Toast.makeText(context, "Please enable Tasker automation in Advanced Settings", Toast.LENGTH_LONG).show();
+                return;
+            }
+
             final Intent activity = new Intent(context, StartscreenActivity_.class);
             final Bundle b = new Bundle();
             b.putString("command", "upload_all");

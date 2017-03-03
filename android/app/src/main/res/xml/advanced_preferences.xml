@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:tools="http://schemas.android.com/tools"
-    xmlns:android="http://schemas.android.com/apk/res/android" >
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="@string/prefs_folder_various"
         android:icon="@drawable/direction">
         <CheckBoxPreference
             android:key="ignore_battery"
             android:summary="@string/prefs_ignore_battery_summary"
             android:title="@string/prefs_ignore_battery_title"
+            android:defaultValue="false"
         />
         <CheckBoxPreference
             android:key="delete_tracks"
             android:summary="@string/prefs_auto_delete_tracks_summary"
             android:title="@string/prefs_auto_delete_sessions_title"
+            android:defaultValue="false"
             />
         <ListPreference android:title="@string/prefs_scan_mode"
             android:summary="@string/prefs_scan_mode_summary"
@@ -19,6 +20,11 @@
             android:defaultValue="1"
             android:entries="@array/scan_mode_entries"
             android:entryValues="@array/scan_mode_values" />
+        <CheckBoxPreference
+            android:key="allow_automation"
+            android:summary="@string/prefs_allow_automation_summary"
+            android:title="@string/prefs_allow_automation"
+            android:defaultValue="false" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/pref_gpx_settings" >
         <CheckBoxPreference

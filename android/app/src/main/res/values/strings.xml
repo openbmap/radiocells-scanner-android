@@ -228,4 +228,6 @@
     <string name="permission_setup_location_explanation">Radiobeacon need\'s location permission to work properly!</string>
     <string name="download_completed">Download completed</string>
     <string name="activity_map_downloads_activity">Map downloads</string>
+    <string name="prefs_allow_automation">Allow Tasker automation</string>
+    <string name="prefs_allow_automation_summary">Exposes intents to automate Radiobeacon with Tasker (see https://radiocells.org/default/wiki/auto-logging)</string>
 </resources>
