@@ -41,13 +41,13 @@ public class CommandReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (intent.getAction().equals("org.openbmap.intent.action.START_COMMAND")) {
+        if (intent.getAction().equals("org.openbmap.action.START")) {
             Log.i(TAG, "Received start command");
 
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             if (!prefs.getBoolean(Preferences.KEY_ALLOW_AUTOMATION, Preferences.VAL_ALLOW_AUTOMATION)) {
                 Log.w(TAG, "Missing Automation permission, ignore intent");
-                Toast.makeText(context, "Please enable Tasker automation in Advanced Settings", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, R.string.warning_automation_disabled, Toast.LENGTH_LONG).show();
                 return;
             }
 
@@ -65,13 +65,13 @@ public class CommandReceiver extends BroadcastReceiver {
 
             hostActivity.putExtra("new_session", true);
             context.startActivity(hostActivity);
-        } else if (intent.getAction().equals("org.openbmap.intent.action.STOP_COMMAND")) {
+        } else if (intent.getAction().equals("org.openbmap.action.STOP")) {
             Log.i(TAG, "Received stop command");
 
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             if (!prefs.getBoolean(Preferences.KEY_ALLOW_AUTOMATION, Preferences.VAL_ALLOW_AUTOMATION)) {
                 Log.w(TAG, "Missing Automation permission, ignore intent");
-                Toast.makeText(context, "Please enable Tasker automation in Advanced Settings", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, R.string.warning_automation_disabled, Toast.LENGTH_LONG).show();
                 return;
             }
 
@@ -79,13 +79,13 @@ public class CommandReceiver extends BroadcastReceiver {
             EventBus.getDefault().post(new onStopRequested());
             Toast.makeText(context, R.string.stopped_tracking, Toast.LENGTH_SHORT).show();
 
-        } else if (intent.getAction().equals("org.openbmap.intent.action.UPLOAD_COMMAND")) {
+        } else if (intent.getAction().equals("org.openbmap.action.UPLOAD")) {
             Log.i(TAG, "Received upload command");
 
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             if (!prefs.getBoolean(Preferences.KEY_ALLOW_AUTOMATION, Preferences.VAL_ALLOW_AUTOMATION)) {
                 Log.w(TAG, "Missing Automation permission, ignore intent");
-                Toast.makeText(context, "Please enable Tasker automation in Advanced Settings", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, R.string.warning_automation_disabled, Toast.LENGTH_LONG).show();
                 return;
             }
 
