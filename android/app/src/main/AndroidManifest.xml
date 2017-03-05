@@ -64,9 +64,9 @@
 
         <receiver android:name=".commands.CommandReceiver" android:enabled="true">
             <intent-filter>
-                <action android:name="org.openbmap.action.START" />
-                <action android:name="org.openbmap.action.STOP" />
-                <action android:name="org.openbmap.action.UPLOAD" />
+                <action android:name="org.openbmap.command.START" />
+                <action android:name="org.openbmap.command.STOP" />
+                <action android:name="org.openbmap.command.UPLOAD" />
             </intent-filter>
         </receiver>
 

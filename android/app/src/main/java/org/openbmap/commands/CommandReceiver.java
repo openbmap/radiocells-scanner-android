@@ -41,7 +41,7 @@ public class CommandReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (intent.getAction().equals("org.openbmap.action.START")) {
+        if (intent.getAction().equals("org.openbmap.command.START")) {
             Log.i(TAG, "Received start command");
 
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -65,7 +65,7 @@ public class CommandReceiver extends BroadcastReceiver {
 
             hostActivity.putExtra("new_session", true);
             context.startActivity(hostActivity);
-        } else if (intent.getAction().equals("org.openbmap.action.STOP")) {
+        } else if (intent.getAction().equals("org.openbmap.command.STOP")) {
             Log.i(TAG, "Received stop command");
 
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -79,7 +79,7 @@ public class CommandReceiver extends BroadcastReceiver {
             EventBus.getDefault().post(new onStopRequested());
             Toast.makeText(context, R.string.stopped_tracking, Toast.LENGTH_SHORT).show();
 
-        } else if (intent.getAction().equals("org.openbmap.action.UPLOAD")) {
+        } else if (intent.getAction().equals("org.openbmap.command.UPLOAD")) {
             Log.i(TAG, "Received upload command");
 
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
