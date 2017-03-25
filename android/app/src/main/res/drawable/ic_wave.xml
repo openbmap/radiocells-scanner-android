@@ -2,6 +2,7 @@
     android:viewportWidth="85.67865" android:width="24dp" xmlns:android="http://schemas.android.com/apk/res/android">
     <path android:fillColor="#00000000"
         android:pathData="m3.61,35.57c2.07,-2.02 4.64,-4.93 7.87,-3.95 4.44,1.6 6.44,6.98 11.15,8.06 3.38,0.32 4.13,-2.79 6.35,-4.84 1.92,-1.97 4.72,-32.68 7.65,-31.31 4.05,1.84 4.55,50.38 8.97,51.54 3.36,0.47 8.71,-18.03 10.9,-20.07 1.94,-1.97 4.66,-4.49 7.65,-3.24 4.17,1.78 6.18,6.8 10.71,7.92 3.03,0.41 5.24,-2.24 7.21,-4.1"
-        android:strokeAlpha="1" android:strokeColor="#000000"
+        android:strokeAlpha="1"
+        android:strokeColor="#FFFFFFFF"
         android:strokeLineCap="round" android:strokeWidth="7.14900017"/>
 </vector>
