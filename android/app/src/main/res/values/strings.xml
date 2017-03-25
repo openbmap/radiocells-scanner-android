@@ -231,4 +231,7 @@
     <string name="prefs_allow_automation">Allow Tasker automation</string>
     <string name="prefs_allow_automation_summary">Exposes intents to automate Radiobeacon with Tasker (see https://radiocells.org/default/wiki/auto-logging)</string>
     <string name="warning_automation_disabled">Please enable Tasker automation in Advanced Settings</string>
+    <string name="understood">Understood</string>
+    <string name="airplane_mode_on_title">In Airplane mode</string>
+    <string name="airplane_mode_on_message">Please disable airplane mode!</string>
 </resources>

@@ -61,8 +61,8 @@ import org.openbmap.services.wireless.ScannerService;
 import java.util.ArrayList;
 
 /**
- * ManagerService is the service coordinator, starting other sub-services as required
- * It's started as soon as Radiobeacon app starts and runs in the application context
+ * ManagerService is the permanently running service coordinator, starting other sub-services as required
+ * It's created as soon as Radiobeacon app starts (@see org.openbmap.RadiobeaconApplication#onCreate()) and runs in the application context
  * It listens to StartTrackingEvent and StopTrackingEvent on the message bus as well as system's
  * low battery events
  */
@@ -196,7 +196,7 @@ public class ManagerService extends Service {
 
     @Override
     public void onCreate() {
-        Log.d(TAG, "Creating ManagerService");
+        Log.d(TAG, "ManagerService#onCreate");
 
         if (!EventBus.getDefault().isRegistered(this)) {
             Log.v(TAG, "Registering eventbus receiver for ManagerService");
@@ -213,16 +213,16 @@ public class ManagerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.v(TAG, "ManagerService received startCommand");
-        registerReceiver();
+        Log.v(TAG, "ManagerService#onStartCommand");
+        registerBatteryReceiver();
         // We want this service to continue running until it is explicitly stopped, so return sticky.
         return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
-        Log.v(TAG, "Destroying ManagerService");
-        unregisterReceiver();
+        Log.v(TAG, "ManagerService#onDestroy");
+        unregisterBatteryReceiver();
         cancelNotification();
         if (EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().unregister(this);
@@ -233,8 +233,8 @@ public class ManagerService extends Service {
     /**
      * Registers broadcast receiver
      */
-    private void registerReceiver() {
-        Log.i(TAG, "Registering broadcast receivers");
+    private void registerBatteryReceiver() {
+        Log.i(TAG, "Registering receiver for battery events");
         final IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_BATTERY_LOW);
         registerReceiver(mReceiver, filter);
@@ -243,8 +243,8 @@ public class ManagerService extends Service {
     /**
      * Unregisters broadcast receiver
      */
-    private void unregisterReceiver() {
-        Log.v(TAG, "Unregistering broadcast receivers");
+    private void unregisterBatteryReceiver() {
+        Log.v(TAG, "Unregistering receivers for battery events");
         try {
             unregisterReceiver(mReceiver);
         } catch (final IllegalArgumentException e) {
@@ -267,7 +267,7 @@ public class ManagerService extends Service {
      */
     @Subscribe
     public void onEvent(onStartTracking event){
-        Log.d(TAG, "StartTracking event received");
+        Log.d(TAG, "ManagerService#onStartTracking: onStartTracking received");
         Log.i(TAG, "=============================================================================");
         Log.i(TAG, "Configuration");
         Log.i(TAG, "Ignore low battery: " + prefs.getBoolean(Preferences.KEY_IGNORE_BATTERY, Preferences.DEFAULT_IGNORE_BATTERY));
@@ -278,7 +278,7 @@ public class ManagerService extends Service {
         Log.i(TAG, "Catalog: " + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.DEFAULT_CATALOG_FILE));
         Log.i(TAG, "=============================================================================");
         currentSession = event.session;
-        startTracking(currentSession);
+        executeStartActions(currentSession);
     }
 
     /**
@@ -287,8 +287,8 @@ public class ManagerService extends Service {
      */
     @Subscribe
     public void onEvent(onStopTracking event){
-        Log.d(TAG, "StopTrackingEvent event received");
-        stopTracking(RadioBeacon.SHUTDOWN_REASON_NORMAL);
+        Log.d(TAG, "ManagerService#onStopTracking");
+        executeStopTasks(RadioBeacon.SHUTDOWN_REASON_NORMAL);
     }
 
     /**
@@ -309,7 +309,7 @@ public class ManagerService extends Service {
      * Releases wakelock, if held
      */
     private void releasePowerLock() {
-        Log.i(TAG, "Releasing wakelock " + WAKELOCK_NAME);
+        Log.i(TAG, "Releasing " + WAKELOCK_NAME);
         if (mWakeLock != null && mWakeLock.isHeld()) {
             mWakeLock.release();
         }
@@ -323,11 +323,11 @@ public class ManagerService extends Service {
         @Override
         public void onReceive(final Context context, final Intent intent) {
             if (Intent.ACTION_BATTERY_LOW.equals(intent.getAction())) {
-                Log.d(TAG, "ACTION_BATTERY_LOW received");
+                Log.i(TAG, "ACTION_BATTERY_LOW received");
                 final boolean ignoreBattery = prefs.getBoolean(Preferences.KEY_IGNORE_BATTERY, Preferences.DEFAULT_IGNORE_BATTERY);
                 if (!ignoreBattery) {
                     Toast.makeText(context, getString(R.string.battery_warning), Toast.LENGTH_LONG).show();
-                    stopTracking(RadioBeacon.SHUTDOWN_REASON_LOW_POWER);
+                    executeStopTasks(RadioBeacon.SHUTDOWN_REASON_LOW_POWER);
                 } else {
                   Log.i(TAG, "Battery low but ignoring due to settings");
                 }
@@ -341,7 +341,8 @@ public class ManagerService extends Service {
      * Prepares database and sub-services to start tracking
      * @param session
      */
-    private void startTracking(final int session) {
+    private void executeStartActions(final int session) {
+        Log.v(TAG, "Execute start actions:");
         currentSession = session;
         requirePowerLock();
 
@@ -354,26 +355,32 @@ public class ManagerService extends Service {
             currentSession = saveNewSession();
         }
         bindAll();
-        showNotification();
+        addNotificationIcon();
     }
 
     /**
      * Updates database and stops sub-services after stop request
      * @param reason
      */
-    private void stopTracking(int reason) {
-        Log.v(TAG, "Unbinding child services and stopping ManagerService itself");
+    private void executeStopTasks(int reason) {
+        Log.v(TAG, "Execute stop actions:");
+        Log.v(TAG, "Finishing session");
         closeSession();
         currentSession = RadioBeacon.SESSION_NOT_TRACKING;
 
-        unbindAll();
+        Log.v(TAG, "Unbinding sub-services");
         EventBus.getDefault().post(new onServiceShutdown(reason));
+        unbindAll();
 
+        Log.v(TAG, "Releasing power locks");
         releasePowerLock();
+
         cancelNotification();
 
         //don't do this (otherwise resume track will fail):
         // stopSelf();
+        //Log.v(TAG, "Stopping ManagerService");
+        //stopSelf();
     }
 
     /**
@@ -473,7 +480,7 @@ public class ManagerService extends Service {
     /**
      * Shows Android notification while this service is running.
      */
-    private void showNotification() {
+    private void addNotificationIcon() {
         PendingIntent intent = PendingIntent.getActivity(this, 0, new Intent(this, TabHostActivity_.class), 0);
         Notification.Builder builder = new Notification.Builder(this.getApplicationContext());
         builder.setAutoCancel(false);

@@ -473,7 +473,7 @@ implements SessionListFragment.SessionFragementListener,
 	 */
 	@Override
 	public void reloadListFragment() {
-		Log.i(TAG, "Refreshing session list fragment");
+		// Log.i(TAG, "Refreshing session list fragment");
 		final SessionListFragment sessionFrag = (SessionListFragment) getSupportFragmentManager().findFragmentByTag("session");
 
 		if (sessionFrag != null) {
