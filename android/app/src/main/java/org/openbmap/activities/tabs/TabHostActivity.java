@@ -36,7 +36,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
@@ -45,7 +44,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.openbmap.Preferences;
 import org.openbmap.R;
-import org.openbmap.RadioBeacon;
 import org.openbmap.activities.SelectiveScrollViewPager;
 import org.openbmap.activities.StartscreenActivity_;
 import org.openbmap.events.onServiceShutdown;
@@ -85,20 +83,25 @@ public class TabHostActivity extends AppCompatActivity {
 
     @Subscribe
     public void onEvent(onServiceShutdown event) {
+        /*
+        Since ManagerService runs permanently, following lines shouldn't be needed.
+        Additionally power events are handled by the service itself
+
         if (event.reason == RadioBeacon.SHUTDOWN_REASON_LOW_POWER) {
             Toast.makeText(TabHostActivity.this, getString(R.string.battery_warning), Toast.LENGTH_LONG).show();
         }
 
         stopManagerService();
+        */
+
         TabHostActivity.this.finish();
     }
 
     /**
-     * Establish a connection with the service.  We use an explicit
-     * class name because there is no reason to be able to let other
-     * applications replace our component.
+     * Establish a connection with the service.
      */
     void startManagerService() {
+        Log.i(TAG, "Starting ManagerService");
         Intent intent = new Intent(this, ManagerService.class);
         startService(intent);
 
@@ -107,6 +110,7 @@ public class TabHostActivity extends AppCompatActivity {
 
     void stopManagerService() {
         if (mIsBound) {
+            Log.i(TAG, "Stopping ManagerService");
             Intent intent = new Intent(this, ManagerService.class);
             stopService(intent);
             mIsBound = false;
@@ -118,15 +122,13 @@ public class TabHostActivity extends AppCompatActivity {
 	public void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		//mPager = (SelectiveScrollViewPager) findViewById(R.id.pager);
-
-		// get shared preferences
 		mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
 		// service related stuff
 		verifyGpsEnabled();
         verifyWifiEnabled();
-		// TODO: show warning if GSM is not enabled
+        verifyNotAirplaneMode();
+        // TODO: show warning if GSM is not enabled
 
         if (!EventBus.getDefault().isRegistered(this)) {
             Log.v(TAG, "Registering eventbus receiver for ManagerService");
@@ -136,8 +138,8 @@ public class TabHostActivity extends AppCompatActivity {
         }
 	}
 
-	@Override
-	public void onResume() {
+    @Override
+    public void onResume() {
         super.onResume();
         startManagerService();
     }
@@ -149,7 +151,7 @@ public class TabHostActivity extends AppCompatActivity {
 
 	@Override
 	protected void onDestroy() {
-        Log.d(TAG, "Destroying TabHost");
+        Log.d(TAG, "TabHostActivity#onDestroy");
         EventBus.getDefault().unregister(this);
         // ?? stopTracking();
 		super.onDestroy();
@@ -227,7 +229,10 @@ public class TabHostActivity extends AppCompatActivity {
         }
     }
 
-	private void verifyWifiEnabled() {
+    /**
+     * Checks whether wifi is enabled. If not dialog shown to enable
+     */
+    private void verifyWifiEnabled() {
 		WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 		if (!wifi.isWifiEnabled()){
             Log.i(TAG, "Wifi is disabled - warning");
@@ -258,8 +263,32 @@ public class TabHostActivity extends AppCompatActivity {
         }
 	}
 
-	/**
-	 * Configures UI elements.
+    private void verifyNotAirplaneMode() {
+        boolean airplane_on = Settings.Global.getInt(this.getContentResolver(),
+                Settings.Global.AIRPLANE_MODE_ON, 0) != 0;
+        if (airplane_on) {
+            Log.i(TAG, "In Airplane mode - warning");
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.airplane_mode_on_title)
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setMessage(R.string.airplane_mode_on_message)
+                    .setCancelable(true)
+                    .setNeutralButton(R.string.understood,
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(final DialogInterface dialog,
+                                                    final int which) {
+                                    Log.i(TAG, "User must disable airplane mode manually..");
+                                }
+                            }
+                    ).create().show();
+        } else {
+            Log.i(TAG, "Not in airplane mode - good");
+        }
+    }
+
+    /**
+     * Configures UI elements.
 	 */
     @AfterViews
 	public void initUi() {
