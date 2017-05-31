@@ -39,7 +39,6 @@ import org.mapsforge.map.layer.renderer.TileRendererLayer;
 import org.mapsforge.map.model.MapViewPosition;
 import org.mapsforge.map.reader.MapFile;
 import org.mapsforge.map.reader.header.MapFileException;
-import org.mapsforge.map.rendertheme.InternalRenderTheme;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 
@@ -121,7 +120,6 @@ public final class MapUtils {
 			}
 		};
 
-        tileRendererLayer.setXmlRenderTheme(InternalRenderTheme.OSMARENDER);
         tileRendererLayer.setTextScale(1.5f);
         return tileRendererLayer;
 	}
