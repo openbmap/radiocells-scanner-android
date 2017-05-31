@@ -287,51 +287,51 @@ public class DownloadTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile>
 
     @Override
     public void handleItemClick(final View view, final Object id) {
-        final RemoteFile rfile = (RemoteFile) id;
-        if (rfile.isDirectory) {
-            if (rfile.children != null) {
+        final RemoteFile remoteFile = (RemoteFile) id;
+        if (remoteFile.isDirectory) {
+            if (remoteFile.children != null) {
                 // Show directory contents (warn if directory is empty)
-                if (rfile.children.length > 0)
+                if (remoteFile.children.length > 0)
                     super.handleItemClick(view, id);
                 else {
                     String message = "Folder empty";
                     Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
                 }
             } else {
-                String urlStr = rfile.getUriString();
+                String urlStr = remoteFile.getUriString();
                 // Retrieve directory contents from server
-                RemoteDirListTask task = new RemoteDirListTask(this, rfile);
-                listTasks.put(task, rfile);
+                RemoteDirListTask task = new RemoteDirListTask(this, remoteFile);
+                listTasks.put(task, remoteFile);
                 task.execute(urlStr);
                 ProgressBar downloadDirProgress = (ProgressBar) view.findViewById(R.id.downloadDirProgress);
                 downloadDirProgress.setVisibility(View.VISIBLE);
             }
         } else {
             // check if a download is already in progress
-            if (!downloadsByUri.containsValue(rfile.getUri())) {
+            if (!downloadsByUri.containsValue(remoteFile.getUri())) {
                 // Download file
                 final File mapFile = new File(
                         sharedPreferences.getString(
                                 Preferences.KEY_MAP_FOLDER,
                                 getActivity().getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.MAPS_SUBDIR),
-                        rfile.name);
+                        remoteFile.name);
 
                 if (downloadsByFile.containsKey(mapFile)) {
                     // prevent multiple downloads with same map file name
-                    Toast.makeText(getActivity(), "Already downloading", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(), R.string.already_downloading, Toast.LENGTH_LONG).show();
                     return;
                 }
 
                 // check if we have a current version
                 // TODO recheck this condition (granularity of timestamps, botched timezones)
-                if (mapFile.exists() && (mapFile.lastModified() >= rfile.timestamp)) {
+                if (mapFile.exists() && (mapFile.lastModified() >= remoteFile.timestamp)) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-
-                    builder.setMessage("Confirm download");
-
+                    builder.setTitle(R.string.overwrite_map_title);
+                    builder.setMessage(R.string.overwrite_map_message);
                     builder.setPositiveButton(getActivity().getString(R.string.yes), new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
-                            startDownload(rfile, mapFile, view);
+                            mapFile.delete();
+                            startDownload(remoteFile, mapFile, view);
                         }
                     });
 
@@ -343,7 +343,7 @@ public class DownloadTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile>
 
                     builder.show();
                 } else
-                    startDownload(rfile, mapFile, view);
+                    startDownload(remoteFile, mapFile, view);
             }
         }
     }

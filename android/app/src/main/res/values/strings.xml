@@ -234,4 +234,7 @@
     <string name="understood">Understood</string>
     <string name="airplane_mode_on_title">In Airplane mode</string>
     <string name="airplane_mode_on_message">Please disable airplane mode!</string>
+    <string name="already_downloading">You\'re already downloading this file!</string>
+    <string name="overwrite_map_title">Map already downloaded</string>
+    <string name="overwrite_map_message">Overwriting existing map?</string>
 </resources>
