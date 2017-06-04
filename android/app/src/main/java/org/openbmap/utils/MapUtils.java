@@ -17,13 +17,10 @@ package org.openbmap.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import org.mapsforge.core.graphics.Bitmap;
 import org.mapsforge.core.graphics.Paint;
 import org.mapsforge.core.graphics.Style;
 import org.mapsforge.core.model.LatLong;
@@ -34,11 +31,11 @@ import org.mapsforge.map.android.util.AndroidUtil;
 import org.mapsforge.map.layer.Layer;
 import org.mapsforge.map.layer.cache.TileCache;
 import org.mapsforge.map.layer.download.tilesource.OnlineTileSource;
-import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.layer.renderer.TileRendererLayer;
 import org.mapsforge.map.model.MapViewPosition;
 import org.mapsforge.map.reader.MapFile;
 import org.mapsforge.map.reader.header.MapFileException;
+import org.mapsforge.map.rendertheme.InternalRenderTheme;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 
@@ -50,7 +47,6 @@ import java.io.File;
 
 public final class MapUtils {
 	private static final String TAG = MapUtils.class.getSimpleName();
-
 
     /**
      * Clears Android ressources
@@ -72,26 +68,6 @@ public final class MapUtils {
 		return paint;
 	}
 
-    public static Marker createTappableMarker(final Context c, int resourceIdentifier,
-                                       LatLong latLong) {
-        Drawable drawable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ? c.getDrawable(resourceIdentifier) : c.getResources().getDrawable(resourceIdentifier);
-        Bitmap bitmap = AndroidGraphicFactory.convertToBitmap(drawable);
-        bitmap.incrementRefCount();
-        return new Marker(latLong, bitmap, 0, -bitmap.getHeight() / 2) {
-            @Override
-            public boolean onTap(LatLong geoPoint, Point viewPosition,
-                                 Point tapPoint) {
-                if (contains(viewPosition, tapPoint)) {
-                    Toast.makeText(c,
-                            "The Marker was tapped " + geoPoint.toString(),
-                            Toast.LENGTH_SHORT).show();
-                    return true;
-                }
-                return false;
-            }
-        };
-    }
-
 	/**
 	 * Creates a tile layer, which optionally supports long press actions and custom render themes
 	 * @param tileCache
@@ -103,35 +79,15 @@ public final class MapUtils {
 												final MapViewPosition mapViewPosition,
 												final MapFile mapFile,
 												final onLongPressHandler handler) {
-
 		if (mapFile == null) {
-			return null;
+            Log.w(TAG, "Map file null - aborting");
+            return null;
 		}
 
-		final TileRendererLayer tileRendererLayer = new TileRendererLayer(tileCache, mapFile, mapViewPosition, AndroidGraphicFactory.INSTANCE) {
-			@Override
-			public boolean onLongPress(LatLong tapLatLong, Point thisXY, Point tapXY) {
-                if (handler != null) {
-                    handler.onLongPress(tapLatLong, thisXY, tapXY);
-                    return true;
-                } else {
-                    return false;
-                }
-			}
-		};
-
-        tileRendererLayer.setTextScale(1.5f);
+        TileRendererLayer tileRendererLayer = AndroidUtil.createTileRendererLayer(tileCache,
+                mapViewPosition, mapFile, InternalRenderTheme.OSMARENDER, false, true, false);
         return tileRendererLayer;
 	}
-
-    /**
-     * Creates a separate map tile cache
-     * @return
-     */
-    public static final TileCache createTileCache(final Context ctx, int tileSize, double overdrawFactor) {
-        return AndroidUtil.createTileCache(ctx.getApplicationContext(), "mapcache", tileSize, 1f, overdrawFactor);
-    }
-
 
 	/**
 	 * Checks whether a valid map file has been selected
@@ -171,8 +127,8 @@ public final class MapUtils {
 				return new MapFile(file);
 			} catch (MapFileException mfe) {
 				Toast.makeText(context,
-							   context.getString(R.string.failed_to_load_map_file_can_be_damaged),
-							   Toast.LENGTH_SHORT).show();
+                        context.getString(R.string.map_file_corrupt),
+                        Toast.LENGTH_SHORT).show();
 				Log.e(TAG, "Failed to load map, file may be damaged " + mfe.getMessage(), mfe);
 				return null;
 			}

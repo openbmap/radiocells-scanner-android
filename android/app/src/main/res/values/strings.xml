@@ -206,7 +206,7 @@
     <string name="prefs_scan_mode_summary">Warning: Selecting high performance mode will massively drain battery!</string>
     <string name="saved_at">Saved at </string>
     <string name="prefs_map_online">Online mode</string>
-    <string name="failed_to_load_map_file_can_be_damaged">Failed to load map. File can be damaged.</string>
+    <string name="map_file_corrupt">Failed to load map. File may be corrupted?</string>
     <string name="dialog_ignore_doze_title">Ignore DOZE mode?</string>
     <string name="dialog_ignore_doze_message">Android 6 DOZE mode may prevent app from working properly.\nWhitelist app from aggressive power-safe optimizations?</string>
     <string name="follow_position">Follow position</string>
