@@ -29,7 +29,7 @@ import android.telephony.gsm.GsmCellLocation;
 /**
  * Various helper methods for dealing with cell ids
  */
-public class CellUtils {
+public class CellValidator {
     /**
      * A valid gsm cell must have cell id != -1
      * Note: cells with cid > max value 0xffff are accepted (typically UMTS cells. We handle them separately)

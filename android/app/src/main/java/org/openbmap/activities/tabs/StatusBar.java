@@ -100,7 +100,7 @@ public class StatusBar extends LinearLayout {
     private Bitmap mIcon;
 
 
-    public StatusBar(final Context context, final AttributeSet attrs) {
+	public StatusBar(final Context context, final AttributeSet attrs) {
 		super(context, attrs);
 		LayoutInflater.from(context).inflate(R.layout.statusbar, this, true);
 

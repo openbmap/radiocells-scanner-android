@@ -78,7 +78,7 @@ import org.openbmap.services.AbstractService;
 import org.openbmap.services.wireless.blacklists.BlacklistReasonType;
 import org.openbmap.services.wireless.blacklists.LocationBlackList;
 import org.openbmap.services.wireless.blacklists.SsidBlackList;
-import org.openbmap.utils.CellUtils;
+import org.openbmap.utils.CellValidator;
 import org.openbmap.utils.GeometryUtils;
 
 import java.io.File;
@@ -88,7 +88,7 @@ import java.util.Date;
 import java.util.List;
 
 import static android.os.Build.VERSION.SDK_INT;
-import static org.openbmap.utils.CellUtils.isValidCell;
+import static org.openbmap.utils.CellValidator.isValidCell;
 
 /**
  * ScannerService takes care of wireless logging, i.e. cell & wifi logging
@@ -1089,7 +1089,7 @@ public class ScannerService extends AbstractService implements ActivityCompat.On
 
         // TODO: neighbor cell information in 3G mode is unreliable: lots of n/a in data.. Skip neighbor cell logging when in 3G mode or try to autocomplete missing data
         for (final NeighboringCellInfo ci : neighboringCellInfos) {
-            final boolean skip = !CellUtils.isValidNeigbor(ci);
+            final boolean skip = !CellValidator.isValidNeigbor(ci);
             if (!skip) {
                 // add neigboring cells
                 final CellRecord neighbor = new CellRecord(sessionId);
