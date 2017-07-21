@@ -172,7 +172,7 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 	}
 
 
-	public final int getSessionId() {
+	public final long getSessionId() {
 		return mSessionID;
 	}
 
