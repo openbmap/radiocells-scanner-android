@@ -21,7 +21,7 @@ package org.openbmap.db.models;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import org.openbmap.RadioBeacon;
+import org.openbmap.Constants;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -50,7 +50,7 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 
 	private PositionRecord mBeginPosition;
 	private PositionRecord mEndPosition;
-	private int mSessionID;
+	private long mSessionID;
 
 	private CatalogStatus mCatalogStatus;
 
@@ -93,7 +93,7 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
                       PositionRecord request,
                       PositionRecord last,
                       CatalogStatus catalogStatus) {
-		this(bssid, bssidLong, ssid, capabilities, frequency, level, timestamp, request, last, RadioBeacon.SESSION_NOT_TRACKING, catalogStatus);
+		this(bssid, bssidLong, ssid, capabilities, frequency, level, timestamp, request, last, Constants.SESSION_NOT_TRACKING, catalogStatus);
 	}
 
     /**
@@ -125,31 +125,30 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 
     /**
      * Creates new wifi record - full constructor, i.e. all fields can be set explicitly
-     *
-     * @param bssid
-     * @param bssidLong
-     * @param ssid
-     * @param capabilities
-     * @param frequency
-     * @param level
-     * @param timestamp
-     * @param request
-     * @param last
-     * @param session
-     * @param catalogStatus
-     */
-    public WifiRecord(String bssid,
-                      long bssidLong,
-                      String ssid,
-                      String capabilities,
-                      int frequency,
-                      int level,
-                      long timestamp,
-                      PositionRecord request,
-                      PositionRecord last,
-                      int session,
-                      CatalogStatus catalogStatus) {
-        setBssid(bssid);
+	 *  @param bssid
+	 * @param bssidLong
+	 * @param ssid
+	 * @param capabilities
+	 * @param frequency
+	 * @param level
+	 * @param timestamp
+	 * @param request
+	 * @param last
+	 * @param session
+	 * @param catalogStatus
+	 */
+	public WifiRecord(String bssid,
+					  long bssidLong,
+					  String ssid,
+					  String capabilities,
+					  int frequency,
+					  int level,
+					  long timestamp,
+					  PositionRecord request,
+					  PositionRecord last,
+					  long session,
+					  CatalogStatus catalogStatus) {
+		setBssid(bssid);
         setBssidLong(bssidLong);
         setSsid(ssid);
         setCapabilities(capabilities);
@@ -178,7 +177,7 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
 	}
 
 
-	public final void setSessionId(final int session) {
+	public final void setSessionId(final long session) {
 		this.mSessionID = session;
 	}
 
