@@ -38,7 +38,7 @@ public class SaveGpxTask extends AsyncTask<Void, Object, Boolean> {
     /**
      * Session Id to export
      */
-    private final int mSession;
+    private final long session;
 
     /**
      * Message in case of an error
@@ -70,7 +70,7 @@ public class SaveGpxTask extends AsyncTask<Void, Object, Boolean> {
 
         void onSaveGpxCompleted(final String filename);
 
-        void onSaveGpxFailed(final int id, final String error);
+        void onSaveGpxFailed(final long id, final String error);
     }
 
     //http://stackoverflow.com/questions/9573855/second-instance-of-activity-after-orientation-change
@@ -83,10 +83,10 @@ public class SaveGpxTask extends AsyncTask<Void, Object, Boolean> {
      * @param filename
      * @param verbosity
      */
-    public SaveGpxTask(final Context context, final SaveGpxTaskListener listener, final int session,
+    public SaveGpxTask(final Context context, final SaveGpxTaskListener listener, final long session,
                        final String path, final String filename, int verbosity) {
         mAppContext = context.getApplicationContext();
-        mSession = session;
+        this.session = session;
         mPath = path;
         mFilename = filename;
         mListener = listener;
@@ -102,7 +102,7 @@ public class SaveGpxTask extends AsyncTask<Void, Object, Boolean> {
 
         publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient),
                         mAppContext.getResources().getString(R.string.exporting_gpx), 0);
-        final GpxSerializer gpxSerializer = new GpxSerializer(mAppContext, mSession);
+        final GpxSerializer gpxSerializer = new GpxSerializer(mAppContext, session);
         final File target = new File(mPath, mFilename);
         try {
             gpxSerializer.doExport(mFilename, target, mVerbosity);
@@ -143,7 +143,7 @@ public class SaveGpxTask extends AsyncTask<Void, Object, Boolean> {
         if(success && mListener != null) {
             mListener.onSaveGpxCompleted(mPath + "/" + mFilename);
         } else if(mListener != null) {
-            mListener.onSaveGpxFailed(mSession, errorMsg);
+            mListener.onSaveGpxFailed(session, errorMsg);
         }
     }
 

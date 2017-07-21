@@ -91,8 +91,6 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
 
     public static final String TAG = CellScannerService.class.getSimpleName();
 
-    public static final String LOCATION_PARCEL = "android.location.Location";
-
     /**
      * Keeps the SharedPreferences
      */
@@ -999,6 +997,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
 
     @Subscribe
     public void onEvent(onCellScannerStart event) {
+        Log.d(TAG, "ACK onCellScannerStart event");
         session = event.session;
         session = event.session;
         savedAt = new Location("DUMMY");
@@ -1008,6 +1007,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
 
     @Subscribe
     public void onEvent(onCellScannerStop event) {
+        Log.d(TAG, "ACK onCellScannerStop event");
         stopTracking();
     }
 
@@ -1018,6 +1018,10 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
         }
 
         final Location location = event.location;
+        if (location == null) {
+            return;
+        }
+
         final String source = location.getProvider();
 
         // do nothing, if required minimum gps accuracy is not given

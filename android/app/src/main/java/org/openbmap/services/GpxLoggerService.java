@@ -59,7 +59,7 @@ public class GpxLoggerService extends Service {
 	/**
 	 * Current session id
 	 */
-    private int session = Constants.SESSION_NOT_TRACKING;
+    private long session = Constants.SESSION_NOT_TRACKING;
 
 	/*
 	 * DataHelper for persisting recorded information in database
@@ -142,7 +142,7 @@ public class GpxLoggerService extends Service {
 	 * Starts gps logging .
 	 * @param sessionId
 	 */
-	private void startTracking(final int sessionId) {
+	private void startTracking(final long sessionId) {
 		Log.d(TAG, "Start tracking on session " + sessionId);
         isTracking = true;
         session = sessionId;
@@ -174,6 +174,9 @@ public class GpxLoggerService extends Service {
         }
 
         final Location location = event.location;
+        if (location == null) {
+            return;
+        }
 
         if (location.distanceTo(lastLocation) > MIN_TRACKPOINT_DISTANCE) {
             savePosition(location, "trackpoint");

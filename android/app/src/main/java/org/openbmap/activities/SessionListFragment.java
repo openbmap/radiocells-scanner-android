@@ -81,7 +81,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	 */
 	public interface SessionFragementListener {
 
-		void deleteCommand(int id);
+		void deleteCommand(long id);
 		/**
 		 * Creates a new session.
 		 */
@@ -89,13 +89,13 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		/**
 		 * Stops session
 		 */
-		void stopCommand(int id);
+		void stopCommand(long id);
 		/**
 		 * Resumes session.
 		 * @param id
 		 *		Session to resume
 		 */
-		void resumeCommand(int id);
+		void resumeCommand(long id);
 		/**
 		 * Deletes all sessions.
 		 */
@@ -106,7 +106,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		 * @param id
 		 *		Session to upload
 		 */
-		void uploadCommand(int id);
+		void uploadCommand(long id);
 		/**
 		 * Uploads all sessions not yet uploaded
 		 */
@@ -116,7 +116,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		 * Saves GPX track of selected session
 		 * @param id
 		 */
-		void saveGpxCommand(int id);
+		void saveGpxCommand(long id);
 
 		void reloadListFragment();
 	}
@@ -207,14 +207,14 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	/**
 	 * Stops session (and services)
 	 */
-	private void stop(final int id) {
+	private void stop(final long id) {
 		((SessionFragementListener) getActivity()).stopCommand(id);
 	}
 
 	/**
 	 * Resumes session, if session hasn't been uploaded yet.
 	 */
-	private void resume(final int id) {
+	private void resume(final long id) {
 		final DataHelper datahelper = new DataHelper(this.getActivity());
 		final Session session = datahelper.getSessionById(id);
 		if (session != null && !session.hasBeenExported()) {
@@ -231,7 +231,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	public final void onListItemClick(final ListView lv, final View iv, final int position, final long id) {
 		// ignore clicks on list header (position 0)
 		if (position != 0) {
-			resume((int) id);
+			resume(id);
 		}
 	}
 
@@ -319,7 +319,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 	 * @see org.openbmap.utils.ActionModeHelper.ItemLongClickCallback#performAction(int, int)
 	 */
 	@Override
-	public boolean onItemLongClick(final int item, final int position, final int id) {
+	public boolean onItemLongClick(final int item, final int position, final long id) {
 		// cancel if underlying item has gone..
 		if (id == -1) {
 			Log.i(TAG, "Skipping item click - nothing selected");
@@ -374,7 +374,9 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
 		 * @param neutralOnly show only neutral button
 		 * @return
 		 */
-		public static AlertDialogHelper newInstance(final Fragment container, final int id, final int title, final int message, final String args, final boolean neutralOnly) {
+		public static AlertDialogHelper newInstance(
+				final Fragment container, final int id, final int title, final int message,
+				final String args, final boolean neutralOnly) {
 			final AlertDialogHelper frag = new AlertDialogHelper();
 			frag.setTargetFragment(container, id);
 			// Caution: Don't set setRetainInstance(true) explicitly. This will cause the dialog to disappear

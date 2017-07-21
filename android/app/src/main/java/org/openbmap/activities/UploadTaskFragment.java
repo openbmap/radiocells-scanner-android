@@ -51,7 +51,7 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
     private CheckResult sdCardWritable = CheckResult.UNKNOWN;
     private CheckResult serverReply = CheckResult.UNKNOWN;
 
-    private final Vector<Integer> toExport = new Vector<>();
+    private final Vector<Long> toExport = new Vector<>();
     private ExportSessionTask mExportDataTask;
 
     private String mTitle;
@@ -105,10 +105,10 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
 
     /**
      * Adds a sessions to the upload queue
-     * @param id session id
+     * @param session session id
      */
-    public void add(final int id) {
-        toExport.add(id);
+    public void add(final long session) {
+        toExport.add(session);
     }
 
     /**
@@ -143,7 +143,7 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
      * @param session
      */
 
-    private void process(final int session) {
+    private void process(final long session) {
 
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         final boolean anonymousUpload = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(Preferences.KEY_ANONYMOUS_UPLOAD, false);
@@ -214,24 +214,23 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
         } else if (serverReply == CheckResult.FAILED) {
             // version is outdated or wrong credentials
             if (mBadPasswordFlag) {
-                final int id = toExport.size() > 0 ? toExport.get(0) : Constants.SESSION_NOT_TRACKING;
-                onUploadFailed(id, getResources().getString(R.string.warning_bad_password));
+                final long session = toExport.size() > 0 ? toExport.get(0) : Constants.SESSION_NOT_TRACKING;
+                onUploadFailed(session, getResources().getString(R.string.warning_bad_password));
             } else {
-                final int id = toExport.size() > 0 ? toExport.get(0) : Constants.SESSION_NOT_TRACKING;
-                onUploadFailed(id, getResources().getString(R.string.warning_outdated_client));
+                final long session = toExport.size() > 0 ? toExport.get(0) : Constants.SESSION_NOT_TRACKING;
+                onUploadFailed(session, getResources().getString(R.string.warning_outdated_client));
             }
         } else if (serverReply == CheckResult.UNKNOWN) {
             // couldn't verify online version
-            final int id = toExport.size() > 0 ? toExport.get(0) : Constants.SESSION_NOT_TRACKING;
-            onUploadFailed(id, getResources().getString(R.string.warning_client_version_not_checked));
+            final long session = toExport.size() > 0 ? toExport.get(0) : Constants.SESSION_NOT_TRACKING;
+            onUploadFailed(session, getResources().getString(R.string.warning_client_version_not_checked));
         } else if (sdCardWritable == CheckResult.FAILED) {
-            final int id = toExport.size() > 0 ? toExport.get(0) : Constants.SESSION_NOT_TRACKING;
-            onUploadFailed(id, getResources().getString(R.string.warning_sd_not_writable));
+            final long session = toExport.size() > 0 ? toExport.get(0) : Constants.SESSION_NOT_TRACKING;
+            onUploadFailed(session, getResources().getString(R.string.warning_sd_not_writable));
         } else {
-            final int id = toExport.size() > 0 ? toExport.get(0) : Constants.SESSION_NOT_TRACKING;
-            onUploadFailed(id, "Unknown error");
+            final long session = toExport.size() > 0 ? toExport.get(0) : Constants.SESSION_NOT_TRACKING;
+            onUploadFailed(session, "Unknown error");
         }
-
     }
 
     /* (non-Javadoc)
@@ -271,22 +270,22 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
      * @see org.openbmap.soapclient.ExportSessionTask.ExportTaskListener#onExportCompleted(int)
      */
     @Override
-    public void onUploadCompleted(final int id) {
+    public void onUploadCompleted(final long session) {
         // forward to activity
-        ((UploadTaskListener) getActivity()).onUploadCompleted(id);
+        ((UploadTaskListener) getActivity()).onUploadCompleted(session);
 
         Log.i(TAG, "Export completed. Processing next");
-        toExport.remove(Integer.valueOf(id));
+        toExport.remove(Long.valueOf(session));
         looper();
     }
 
     @Override
-    public void onDryRunCompleted(final int id) {
+    public void onDryRunCompleted(final long session) {
         // forward to activity
-        ((UploadTaskListener) getActivity()).onDryRunCompleted(id);
+        ((UploadTaskListener) getActivity()).onDryRunCompleted(session);
 
         Log.i(TAG, "Export simulated. Processing next");
-        toExport.remove(Integer.valueOf(id));
+        toExport.remove(Long.valueOf(session));
         looper();
     }
 
@@ -294,12 +293,12 @@ public class UploadTaskFragment extends Fragment implements UploadTaskListener, 
      * @see org.openbmap.soapclient.ExportSessionTask.ExportTaskListener#onExportFailed(java.lang.String)
      */
     @Override
-    public void onUploadFailed(final int id, final String error) {
+    public void onUploadFailed(final long session, final String error) {
         // forward to activity
-        ((UploadTaskListener) getActivity()).onUploadFailed(id, error);
+        ((UploadTaskListener) getActivity()).onUploadFailed(session, error);
 
-        Log.e(TAG, "Error exporting session " + id + ": " + error);
-        toExport.remove(Integer.valueOf(id));
+        Log.e(TAG, "Error exporting session " + session + ": " + error);
+        toExport.remove(Long.valueOf(session));
         looper();
     }
 

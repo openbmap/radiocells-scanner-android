@@ -38,7 +38,7 @@ package org.openbmap.events;
 import org.openbmap.Constants;
 
 public class onGpxStart {
-    public final int session;
+    public final long session;
 
     /**
      * Default constructor: no session id provided, database will auto-assign session id
@@ -51,7 +51,7 @@ public class onGpxStart {
      * Constructor to resume an existing session
      * @param session session id to resume
      */
-    public onGpxStart(int session) {
+    public onGpxStart(long session) {
         this.session = session;
     }
 

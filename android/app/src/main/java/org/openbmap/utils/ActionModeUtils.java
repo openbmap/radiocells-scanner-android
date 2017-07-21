@@ -27,7 +27,7 @@ import android.widget.ListView;
 public class ActionModeUtils implements Callback, AdapterView.OnItemLongClickListener {
 
 	public interface LongClickCallback {
-		 boolean onItemLongClick(int item, int position, int id);
+		 boolean onItemLongClick(int item, int position, long id);
 	}
 	
 	private final AppCompatActivity host;

@@ -58,7 +58,7 @@ public class SaveGpxTaskFragment extends Fragment implements SaveGpxTaskListener
      * @param path     the path
      * @param filename the filename
      */
-    public void execute(final int session, final String path, final String filename) {
+    public void execute(final long session, final String path, final String filename) {
 
 		if (path == null || filename == null) {
 			throw new IllegalArgumentException("Path and file must not be null");
@@ -108,7 +108,7 @@ public class SaveGpxTaskFragment extends Fragment implements SaveGpxTaskListener
 	}
 
 	@Override
-	public void onSaveGpxFailed(final int id, final String error) {
+	public void onSaveGpxFailed(final long id, final String error) {
 		((SaveGpxTaskListener) getActivity()).onSaveGpxFailed(id, error);
 	}
 

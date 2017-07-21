@@ -134,7 +134,7 @@ implements SessionListFragment.SessionFragementListener,
     /**
      * List of all pending exports
      */
-    private final ArrayList<Integer> pendingExports = new ArrayList<>();
+    private final ArrayList<Long> pendingExports = new ArrayList<>();
 
     /**
      * Counts successfully exported sessions
@@ -274,31 +274,31 @@ implements SessionListFragment.SessionFragementListener,
 	 * @param id session id to resume
 	 */
     @Override
-    public void resumeCommand(final int id) {
+    public void resumeCommand(final long id) {
 		Log.i(TAG, "Resuming session " + id);
 
 		EventBus.getDefault().post(new onSessionStart(id));
-		final Intent activity = new Intent(this, TabHostActivity_.class);
-        activity.putExtra("_id", id);
-        startActivity(activity);
+		final Intent intent = new Intent(this, TabHostActivity_.class);
+        intent.putExtra("_id", id);
+        startActivity(intent);
     }
 
 	/**
 	 * Uploads session
 	 * Once exported, onExportCompleted() is called
-	 * @param id
+	 * @param session
 	 * 		session id
 	 */
-    public void uploadCommand(final int id) {
-        Log.i(TAG, "Uploading " + id);
+    public void uploadCommand(final long session) {
+        Log.i(TAG, "Uploading " + session);
 
 		acquireWifiLock();
 		pendingExports.clear();
 		completedExports = 0;
 		failedExports = 0;
 
-		pendingExports.add(id);
-		mUploadTaskFragment.add(id);
+		pendingExports.add(session);
+		mUploadTaskFragment.add(session);
 		mUploadTaskFragment.execute();
 
 		showUploadTaskDialog();
@@ -317,7 +317,7 @@ implements SessionListFragment.SessionFragementListener,
 		failedExports = 0;
 
 		final ArrayList<Integer> sessions = mDataHelper.getSessionIDs();
-		for (final int id : sessions) {
+		for (final long id : sessions) {
 			if (!hasBeenUploaded(id)) {
 				Log.i(TAG, "Adding " + id + " to export task list");
 				mUploadTaskFragment.add(id);
@@ -333,21 +333,21 @@ implements SessionListFragment.SessionFragementListener,
 	 * @see org.openbmap.activities.SessionListFragment.SessionFragementListener#saveGpxCommand(int)
 	 */
     @Override
-	public void saveGpxCommand(final int id) {
+	public void saveGpxCommand(final long session) {
 		Log.i(TAG, "Exporting gpx");
 
 		final String path = this.getExternalFilesDir(null).getAbsolutePath();
-        final String filename = GpxSerializer.suggestGpxFilename(id);
+        final String filename = GpxSerializer.suggestGpxFilename(session);
 
 		showSaveGpxTaskDialog();
-		mSaveGpxTaskFragment.execute(id, path, filename);
+		mSaveGpxTaskFragment.execute(session, path, filename);
 	}
 
     /*
      * Stops all active session
      */
 	@Override
-	public void stopCommand(final int id) {
+	public void stopCommand(final long id) {
 		mDataHelper.invalidateCurrentSessions();
 		// Signalling host activity to stop services
 		EventBus.getDefault().post(new onSessionStop());
@@ -360,7 +360,7 @@ implements SessionListFragment.SessionFragementListener,
 	 * @param id
 	 * 		session id
 	 */
-	public void deleteCommand(final int id) {
+	public void deleteCommand(final long id) {
         try {
             AlertDialogUtils.newInstance(ID_DELETE_SESSION,
                     getResources().getString(R.string.delete), getResources().getString(R.string.do_you_want_to_delete_this_session),
@@ -376,8 +376,8 @@ implements SessionListFragment.SessionFragementListener,
 	 *
 	 * @param ids the ids
 	 */
-	public void deleteBatchCommand(final ArrayList<Integer> ids) {
-		for (final int id : ids) {
+	public void deleteBatchCommand(final ArrayList<Long> ids) {
+		for (final long id : ids) {
 			deleteConfirmed(id);
 		}
 	}
@@ -387,7 +387,7 @@ implements SessionListFragment.SessionFragementListener,
 	 *
 	 * @param id the id
 	 */
-	public void deleteConfirmed(final int id) {
+	public void deleteConfirmed(final long id) {
 		if (id == Constants.SESSION_NOT_TRACKING) {
 			return;
 		}
@@ -487,7 +487,7 @@ implements SessionListFragment.SessionFragementListener,
 	 * @param id Session id
 	 * @return true if session has been uploaded or doesn't exist
 	 */
-	private boolean hasBeenUploaded(final int id) {
+	private boolean hasBeenUploaded(final long id) {
 		final DataHelper dataHelper = new DataHelper(this);
 		final Session session = dataHelper.getSessionById(id);
 
@@ -503,7 +503,7 @@ implements SessionListFragment.SessionFragementListener,
 	 */
 	private void repairWifiConnection() {
 		Log.i(TAG, "Repairing wifi connection");
-		final WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+		final WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 		wifiManager.setWifiEnabled(false);
 		wifiManager.setWifiEnabled(true);
 	}
@@ -550,9 +550,9 @@ implements SessionListFragment.SessionFragementListener,
 		} else if (alertId == ID_DELETE_PROCESSED) {
 			final String candidates = (args != null ? String.valueOf(args) : "");
 
-			final ArrayList<Integer> list = new ArrayList<>();
+			final ArrayList<Long> list = new ArrayList<>();
 			for (final String s : candidates.split("\\s*;\\s*")) {
-				list.add(Integer.valueOf(s));
+				list.add(Long.valueOf(s));
 			}
 
 			deleteBatchCommand(list);
@@ -597,7 +597,7 @@ implements SessionListFragment.SessionFragementListener,
 	 * @see org.openbmap.soapclient.ExportSessionTask.ExportTaskListener#onExportCompleted(int)
 	 */
 	@Override
-	public void onUploadCompleted(final int id) {
+	public void onUploadCompleted(final long id) {
 		// mark as exported
 		final Session session = mDataHelper.getSessionById(id);
 		session.hasBeenExported(true);
@@ -640,7 +640,7 @@ implements SessionListFragment.SessionFragementListener,
                     deleteBatchCommand(pendingExports);
                 } else {
                     String candidates = "";
-                    for (final int one : pendingExports){
+                    for (final long one : pendingExports){
                         candidates += one + ";";
                     }
                     try {
@@ -672,7 +672,7 @@ implements SessionListFragment.SessionFragementListener,
 	 *   Called when upload is only simulated
 	 **/
 	@Override
-	public void onDryRunCompleted(final int id) {
+	public void onDryRunCompleted(final long id) {
 
 		completedExports += 1;
 		Log.i(TAG, "Session " + id + " exported");
@@ -720,7 +720,7 @@ implements SessionListFragment.SessionFragementListener,
 	 * @see org.openbmap.soapclient.ExportSessionTask.ExportTaskListener#onExportFailed(java.lang.String)
 	 */
 	@Override
-	public void onUploadFailed(final int id, final String error) {
+	public void onUploadFailed(final long id, final String error) {
 		Log.e(TAG, "Export session " + id + " failed");
 
 		failedExports += 1;
@@ -847,7 +847,7 @@ implements SessionListFragment.SessionFragementListener,
 	 */
 	private void acquireWifiLock() {
 		if (mWifiLock == null) {
-			final WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+			final WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 			if (wifiManager != null) {
 				mWifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL, WIFILOCK_NAME);
 			} else {
@@ -890,7 +890,7 @@ implements SessionListFragment.SessionFragementListener,
 	 * Fired once gpx export task has failed
 	 */
 	@Override
-	public void onSaveGpxFailed(final int id, final String error) {
+	public void onSaveGpxFailed(final long id, final String error) {
 		Log.e(TAG, "GPX export failed: " + error);
         hideGpxTaskDialog();
 		Toast.makeText(this, R.string.gpx_export_failed, Toast.LENGTH_LONG).show();

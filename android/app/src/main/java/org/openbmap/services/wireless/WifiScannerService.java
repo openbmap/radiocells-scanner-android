@@ -49,8 +49,6 @@ import org.openbmap.db.models.PositionRecord;
 import org.openbmap.db.models.WifiRecord;
 import org.openbmap.db.models.WifiRecord.CatalogStatus;
 import org.openbmap.events.onBlacklisted;
-import org.openbmap.events.onCellScannerStart;
-import org.openbmap.events.onCellScannerStop;
 import org.openbmap.events.onFreeWifi;
 import org.openbmap.events.onLocationUpdated;
 import org.openbmap.events.onWifiScannerStart;
@@ -265,15 +263,16 @@ public class WifiScannerService extends Service {
     }
 
     @Subscribe
-    public void onEvent(onCellScannerStart event) {
+    public void onEvent(onWifiScannerStart event) {
+        Log.d(TAG, "ACK onWifiScannerStart event");
         session = event.session;
         savedAt = new Location("DUMMY");
         startTracking(session);
     }
 
-
     @Subscribe
-    public void onEvent(onCellScannerStop event) {
+    public void onEvent(onWifiScannerStop event) {
+        Log.d(TAG, "ACK onWifiScannerStop event");
         stopTracking();
         // before manager stopped the service
         //this.stopSelf();
@@ -550,17 +549,6 @@ public class WifiScannerService extends Service {
         wifiScanResults = null;
     }
 
-    @Subscribe
-    public void onEvent(onWifiScannerStart event) {
-        session = event.session;
-        startTracking(session);
-    }
-
-    @Subscribe
-    public void onEvent(onWifiScannerStop event) {
-        stopTracking();
-    }
-
 
     @Subscribe
     public void onEvent(onLocationUpdated event) {
@@ -569,6 +557,10 @@ public class WifiScannerService extends Service {
         }
 
         final Location location = event.location;
+        if (location == null) {
+            return;
+        }
+
         final String source = location.getProvider();
 
         // do nothing, if required minimum gps accuracy is not given

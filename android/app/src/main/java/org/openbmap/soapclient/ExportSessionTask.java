@@ -87,7 +87,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	/**
 	 * Session Id to export
 	 */
-	private final int mSession;
+	private final long session;
 
 	/**
 	 * Message in case of an error
@@ -171,9 +171,9 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 
     public interface UploadTaskListener {
 		void onUploadProgressUpdate(Object... values);
-		void onUploadCompleted(final int id);
-		void onDryRunCompleted(final int id);
-		void onUploadFailed(final int id, final String error);
+		void onUploadCompleted(final long id);
+		void onDryRunCompleted(final long id);
+		void onUploadFailed(final long id, final String error);
 	}
 
 	//http://stackoverflow.com/questions/9573855/second-instance-of-activity-after-orientation-change
@@ -186,10 +186,11 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	 * @param user
 	 * @param password
 	 */
-	public ExportSessionTask(final Context context, final UploadTaskListener listener, final int session,
-							 final String tempPath, final String user, final String password, final boolean anonymous_upload) {
+	public ExportSessionTask(final Context context, final UploadTaskListener listener, final long session,
+							 final String tempPath, final String user, final String password,
+							 final boolean anonymous_upload) {
 		mAppContext = context.getApplicationContext();
-		mSession = session;
+		this.session = session;
 		mTempPath = tempPath;
 		mUser = user;
 		mPassword = password;
@@ -218,7 +219,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 			Log.i(TAG, "Exporting cells");
 			// export cells
 			publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.exporting_cells), 0);
-			cellFiles = new CellSerializer(mAppContext, mSession, mTempPath, Constants.SW_VERSION).export();
+			cellFiles = new CellSerializer(mAppContext, session, mTempPath, Constants.SW_VERSION).export();
 
 			// upload
 			if (!mSkipUpload) {
@@ -232,7 +233,8 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 			Log.i(TAG, "Exporting wifis");
 			// export wifis
 			publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.exporting_wifis), 50);
-			wifiFiles = new WifiSerializer(mAppContext, mSession, mTempPath, Constants.SW_VERSION, mAnonymiseSsid).export();
+			wifiFiles = new WifiSerializer(mAppContext, session, mTempPath,
+                    Constants.SW_VERSION, mAnonymiseSsid).export();
 
 			// upload
 			if (!mSkipUpload) {
@@ -280,11 +282,11 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
             Log.i(TAG, "Exporting gpx");
             publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.exporting_gpx), 75);
 
-            final String filename = GpxSerializer.suggestGpxFilename(mSession);
+            final String filename = GpxSerializer.suggestGpxFilename(session);
             final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mAppContext);
             final int verbosity = Integer.parseInt(prefs.getString(Preferences.KEY_GPX_VERBOSITY, Preferences.DEFAULT_GPX_VERBOSITY));
 
-            final SaveGpxTask task = new SaveGpxTask(mAppContext, null, mSession, mTempPath, filename, verbosity);
+            final SaveGpxTask task = new SaveGpxTask(mAppContext, null, session, mTempPath, filename, verbosity);
             task.execute();
         } else {
             Log.i(TAG, "GPX export skipped");
@@ -406,18 +408,18 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 			// upload simulated only
 			Toast.makeText(mAppContext, R.string.upload_skipped, Toast.LENGTH_LONG).show();
 			if (mListener != null) {
-				mListener.onDryRunCompleted(mSession);
+				mListener.onDryRunCompleted(session);
 			}
 			return;
 		}
 
 		if (success && !mSkipUpload) {
 			if (mListener != null) {
-				mListener.onUploadCompleted(mSession);
+				mListener.onUploadCompleted(session);
 			}
 		} else {
 			if (mListener != null) {
-				mListener.onUploadFailed(mSession, errorMsg);
+				mListener.onUploadFailed(session, errorMsg);
 			}
 		}
 	}

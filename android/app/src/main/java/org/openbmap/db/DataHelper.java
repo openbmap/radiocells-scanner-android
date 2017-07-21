@@ -242,7 +242,7 @@ public class DataHelper {
 	 * @param id Session to load
 	 * @return On success session is returned, otherwise null.
 	 */
-	public final Session getSessionById(final int id) {
+	public final Session getSessionById(final long id) {
 		Session session = null;
 		final Cursor cursor = contentResolver.query(ContentUris.withAppendedId(ContentProvider.CONTENT_URI_SESSION, id), null, null, null, null);
 		if (cursor.moveToNext()) {

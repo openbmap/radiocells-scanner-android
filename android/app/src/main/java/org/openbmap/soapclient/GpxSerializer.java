@@ -151,15 +151,15 @@ public class GpxSerializer {
     private static final int VERBOSITY_WAYPOINTS_ONLY = 2;
     private static final int VERBOSITY_ALL = 3;
 
-    private final int mSession;
+    private final long session;
 
-    private final Context mContext;
+    private final Context context;
 
     private DatabaseHelper mDbHelper;
 
-    public GpxSerializer(final Context context, final int session) {
-        mSession = session;
-        mContext = context;
+    public GpxSerializer(final Context context, final long session) {
+        this.session = session;
+        this.context = context;
     }
 
     /**
@@ -174,7 +174,7 @@ public class GpxSerializer {
      */
     public final void doExport(final String trackName, final File target, int verbosity) throws IOException {
         Log.i(TAG, "Exporting gpx file" + target.getAbsolutePath());
-        mDbHelper = new DatabaseHelper(mContext.getApplicationContext());
+        mDbHelper = new DatabaseHelper(context.getApplicationContext());
 
         final BufferedWriter bw = new BufferedWriter(new FileWriter(target));
 
@@ -217,7 +217,7 @@ public class GpxSerializer {
         //@formatter:off
         Cursor c = mDbHelper.getReadableDatabase().rawQuery(WAYPOINT_SQL_QUERY,
                                                             new String[] {
-                                                                    String.valueOf(mSession),
+                                                                    String.valueOf(session),
                                                                     String.valueOf(0)
                                                             });
         //@formatter:on
@@ -259,7 +259,7 @@ public class GpxSerializer {
             //@formatter:off
             c = mDbHelper.getReadableDatabase().rawQuery(WAYPOINT_SQL_QUERY,
                                                          new String[] {
-                                                                 String.valueOf(mSession),
+                                                                 String.valueOf(session),
                                                                  String.valueOf(outer)
                                                          });
             //@formatter:on
@@ -282,7 +282,7 @@ public class GpxSerializer {
         //@formatter:off
         Cursor c = mDbHelper.getReadableDatabase().rawQuery(TRACKPOINT_SQL_QUERY1,
                                                             new String[] {
-                                                                    String.valueOf(mSession),
+                                                                    String.valueOf(session),
                                                                     String.valueOf(0)
                                                             });
         //@formatter:on
@@ -329,7 +329,7 @@ public class GpxSerializer {
             //@formatter:off
             c = mDbHelper.getReadableDatabase().rawQuery(TRACKPOINT_SQL_QUERY1,
                                                          new String[] {
-                                                                 String.valueOf(mSession),
+                                                                 String.valueOf(session),
                                                                  String.valueOf(outer)
                                                          });
             //@formatter:on
@@ -353,7 +353,7 @@ public class GpxSerializer {
         //@formatter:off
         Cursor c = mDbHelper.getReadableDatabase().rawQuery(WIFI_POINTS_SQL_QUERY,
                                                             new String[] {
-                                                                    String.valueOf(mSession),
+                                                                    String.valueOf(session),
                                                                     String.valueOf(0)
                                                             });
         //@formatter:on
@@ -396,7 +396,7 @@ public class GpxSerializer {
             //@formatter:off
             c = mDbHelper.getReadableDatabase().rawQuery(WIFI_POINTS_SQL_QUERY,
                                                          new String[] {
-                                                                 String.valueOf(mSession),
+                                                                 String.valueOf(session),
                                                                  String.valueOf(outer)
                                                          });
             //@formatter:on
@@ -415,7 +415,7 @@ public class GpxSerializer {
         //@formatter:off
         Cursor c = mDbHelper.getReadableDatabase().rawQuery(CELL_POINTS_SQL_QUERY,
                                                             new String[] {
-                                                                    String.valueOf(mSession),
+                                                                    String.valueOf(session),
                                                                     String.valueOf(0)
                                                             });
         //@formatter:on
@@ -462,7 +462,7 @@ public class GpxSerializer {
             //@formatter:off
             c = mDbHelper.getReadableDatabase().rawQuery(CELL_POINTS_SQL_QUERY,
                                                          new String[] {
-                                                                 String.valueOf(mSession),
+                                                                 String.valueOf(session),
                                                                  String.valueOf(outer)
                                                          });
             //@formatter:on
@@ -493,7 +493,7 @@ public class GpxSerializer {
     }
 
     @NonNull
-    public static final String suggestGpxFilename(int id) {
+    public static final String suggestGpxFilename(long id) {
         final SimpleDateFormat date = new SimpleDateFormat("yyyyMMddhhmmss", Locale.US);
         return date.format(new Date(System.currentTimeMillis())) + "(" + String.valueOf(
                 id) + ")" + ".gpx";

@@ -150,7 +150,7 @@ public class WifiDetailsActivity extends FragmentActivity {
             final SQLiteDatabase mCatalog = SQLiteDatabase.openDatabase(file, null, SQLiteDatabase.OPEN_READONLY);
             Cursor cursor = null;
             cursor = mCatalog.rawQuery("SELECT _id, manufactor FROM manufactors WHERE "
-                            + "(mBssid = ?) LIMIT 1",
+                            + "(bssid = ?) LIMIT 1",
                     new String[]{search});
 
             if (cursor.moveToFirst()) {

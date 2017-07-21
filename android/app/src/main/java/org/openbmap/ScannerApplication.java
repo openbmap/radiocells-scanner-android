@@ -67,7 +67,7 @@ public class ScannerApplication extends Application {
         Intent cellScanIntent = new Intent(getApplicationContext(), CellScannerService.class);
         startService(cellScanIntent);
         Intent wifiScanIntent = new Intent(getApplicationContext(), WifiScannerService.class);
-        startService(cellScanIntent);
+        startService(wifiScanIntent);
 
 		AndroidGraphicFactory.createInstance(this);
 		final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);

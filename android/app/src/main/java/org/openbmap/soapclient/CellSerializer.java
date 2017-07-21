@@ -80,12 +80,12 @@ public class CellSerializer {
 	private static final int CELLS_PER_FILE	= 1000;
 
 
-	private final Context mContext;
+	private final Context context;
 
 	/**
 	 * Session Id to export
 	 */
-	private final int mSession;
+	private final long session;
 
 	/**
 	 * Message in case of an error
@@ -100,7 +100,7 @@ public class CellSerializer {
 	/**
 	 * Directory where xmls files are stored
 	 */
-	private final String mTempPath;
+	private final String tempPath;
 
 	private int mColNetworkType;
 	private int mColIsCdma;
@@ -170,9 +170,9 @@ public class CellSerializer {
 	 * Two version numbers are tracked:
 	 * 	- Radiobeacon version used for tracking (available from session record)
 	 *  - Radiobeacon version used for exporting (available at runtime)
-	 * mExportVersion describes the later
+	 * exportVersion describes the later
 	 */
-	private final String	mExportVersion;
+	private final String exportVersion;
 
 	private static final String CELL_SQL_QUERY = " SELECT " + Schema.TBL_CELLS + "." + Schema.COL_ID + ", "
 			+ Schema.COL_NETWORKTYPE + ", "
@@ -225,17 +225,18 @@ public class CellSerializer {
 	 * @param exportVersion current Radiobeacon version (can differ from Radiobeacon version used for tracking)
 
 	 */
-	public CellSerializer(final Context context, final int session, String tempPath, final String exportVersion) {
-		this.mContext = context;
-		this.mSession = session;
+	public CellSerializer(final Context context, final long session,
+						  String tempPath, final String exportVersion) {
+		this.context = context;
+		this.session = session;
 		if (tempPath != null && !tempPath.endsWith(File.separator)) {
 			tempPath = tempPath + File.separator;
 		}
-		this.mTempPath = tempPath;
-		this.mExportVersion = exportVersion;
+		this.tempPath = tempPath;
+		this.exportVersion = exportVersion;
 		//this.mTimestamp = Calendar.getInstance();
 
-		ensureTempPath(mTempPath);
+		ensureTempPath(this.tempPath);
 
 		mDataHelper = new DataHelper(context);
 	}
@@ -265,15 +266,15 @@ public class CellSerializer {
 	protected final ArrayList<String> export() {
 		Log.d(TAG, "Start cell export. Data source: " + CELL_SQL_QUERY);
 
-		final MetaData headerRecord = mDataHelper.getMetaDataForSession(mSession);
+		final MetaData headerRecord = mDataHelper.getMetaDataForSession(session);
 
-		final DatabaseHelper mDbHelper = new DatabaseHelper(mContext.getApplicationContext());
+		final DatabaseHelper mDbHelper = new DatabaseHelper(context.getApplicationContext());
 
 		final ArrayList<String> generatedFiles = new ArrayList<>();
 
 		// get first CHUNK_SIZE records
 		Cursor cursorCells = mDbHelper.getReadableDatabase().rawQuery(CELL_SQL_QUERY,
-				new String[]{String.valueOf(mSession), String.valueOf(0)});
+				new String[]{String.valueOf(session), String.valueOf(0)});
 
 		// [start] init columns
 		mColNetworkType = cursorCells.getColumnIndex(Schema.COL_NETWORKTYPE);
@@ -324,7 +325,7 @@ public class CellSerializer {
 				Log.i(TAG, "Cycle " + i);
 
 				final long fileTimeStamp = determineFileTimestamp(cursorCells);
-				final String fileName  = mTempPath + generateFilename(mActiveMcc, fileTimeStamp);
+				final String fileName  = tempPath + generateFilename(mActiveMcc, fileTimeStamp);
 				saveAndMoveCursor(fileName, headerRecord, cursorCells);
 
 				i += CELLS_PER_FILE;
@@ -335,7 +336,7 @@ public class CellSerializer {
 			outer += CURSOR_SIZE;
 			cursorCells.close();
 			cursorCells = mDbHelper.getReadableDatabase().rawQuery(CELL_SQL_QUERY,
-					new String[]{String.valueOf(mSession),
+					new String[]{String.valueOf(session),
 					String.valueOf(outer)});
 		}
 
@@ -402,7 +403,7 @@ public class CellSerializer {
 
 			// Write header
 			bw.write(XML_HEADER);
-			bw.write(logToXml(headerRecord.getManufacturer(), headerRecord.getModel(), headerRecord.getRevision(), headerRecord.getSwid(), headerRecord.getSwVersion(), mExportVersion));
+			bw.write(logToXml(headerRecord.getManufacturer(), headerRecord.getModel(), headerRecord.getRevision(), headerRecord.getSwid(), headerRecord.getSwVersion(), exportVersion));
 
 			long previousBeginId = 0;
 			String previousEnd = "";

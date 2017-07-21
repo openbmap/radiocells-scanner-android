@@ -102,7 +102,7 @@ public class ManagerService extends Service {
     /**
      * Current session
      */
-    private int session = Constants.SESSION_NOT_TRACKING;
+    private long session = Constants.SESSION_NOT_TRACKING;
 
     /**
      * Handler of incoming messages from clients.
@@ -217,7 +217,7 @@ public class ManagerService extends Service {
         Log.i(TAG, "=============================================================================");
 
         requirePowerLock();
-        if (session != Constants.SESSION_NOT_TRACKING) {
+        if (event.session != Constants.SESSION_NOT_TRACKING) {
             Log.d(TAG, "Preparing session " + session);
             session = event.session;
             resumeSession(session);
@@ -348,7 +348,7 @@ public class ManagerService extends Service {
      * Resumes specific session and updates database session record
      * @param id
      */
-    private void resumeSession(final int id) {
+    private void resumeSession(final long id) {
         final Session resume = dataHelper.getSessionById(id);
 
         if (resume == null) {

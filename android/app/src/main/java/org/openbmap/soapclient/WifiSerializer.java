@@ -84,7 +84,7 @@ public class WifiSerializer {
 	/**
 	 * Session Id to export
 	 */
-	private final int mSession;
+	private final long mSession;
 
 	/**
 	 * Message in case of an error
@@ -207,7 +207,8 @@ public class WifiSerializer {
 	 * @param tempPath (full) path where temp files are saved. Will be created, if not existing.
 	 * @param exportVersion current Radiobeacon version (can differ from Radiobeacon version used for tracking)
 	 */
-	public WifiSerializer(final Context context, final int session, String tempPath, final String exportVersion, final boolean anonymise) {
+	public WifiSerializer(final Context context, final long session, String tempPath,
+						  final String exportVersion, final boolean anonymise) {
 		this.mContext = context;
 		this.mSession = session;
 		if (tempPath != null && !tempPath.endsWith(File.separator)) {

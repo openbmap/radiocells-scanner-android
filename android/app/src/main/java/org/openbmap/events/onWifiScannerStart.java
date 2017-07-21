@@ -38,7 +38,7 @@ package org.openbmap.events;
 import org.openbmap.Constants;
 
 public class onWifiScannerStart {
-    public final int session;
+    public final long session;
 
     /**
      * Default constructor: no session id provided, database will auto-assign session id
@@ -51,7 +51,7 @@ public class onWifiScannerStart {
      * Constructor to resume an existing session
      * @param session session id to resume
      */
-    public onWifiScannerStart(int session) {
+    public onWifiScannerStart(long session) {
         this.session = session;
     }
 
