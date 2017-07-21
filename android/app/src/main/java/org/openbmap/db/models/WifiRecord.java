@@ -110,15 +110,15 @@ public class WifiRecord extends AbstractLogEntry<WifiRecord> {
      * @param catalogStatus
      */
     public WifiRecord(String bssid,
-                      String ssid,
-                      String capabilities,
-                      int frequency,
-                      int level,
-                      long timestamp,
-                      PositionRecord request,
-                      PositionRecord last,
-                      int session,
-                      CatalogStatus catalogStatus) {
+					  String ssid,
+					  String capabilities,
+					  int frequency,
+					  int level,
+					  long timestamp,
+					  PositionRecord request,
+					  PositionRecord last,
+					  long session,
+					  CatalogStatus catalogStatus) {
         this(bssid, -1, ssid, capabilities, frequency, level, timestamp, request, last, session, catalogStatus);
         setBssidLong(bssid);
     }
