@@ -20,7 +20,7 @@ package org.openbmap.db.models;
 
 import android.location.Location;
 
-import org.openbmap.RadioBeacon;
+import org.openbmap.Constants;
 import org.openbmap.utils.GeometryUtils;
 
 import java.text.ParseException;
@@ -50,14 +50,14 @@ public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 
 	private double mBearing = 0.0;
 	private double mSpeed = 0.0;
-	private int	mSession = RadioBeacon.SESSION_NOT_TRACKING;
-	private String mSource = RadioBeacon.PROVIDER_NONE;
+	private long mSession = Constants.SESSION_NOT_TRACKING;
+	private String mSource = Constants.PROVIDER_NONE;
 	private boolean mIsWaypoint = false;
 
 	/**
 	 * Creates position record from Android Location.
 	 */
-	public PositionRecord(final Location location, final int session, final String source) {
+	public PositionRecord(final Location location, final long session, final String source) {
 		if (!GeometryUtils.isValidLocation(location)) {
 			throw new IllegalArgumentException("Invalid location " + location.toString());
 		}
@@ -193,11 +193,11 @@ public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 		this.mSpeed = speed;
 	}
 
-	public final int getSession() {
+	public final long getSession() {
 		return mSession;
 	}
 
-	public final void setSession(final int session) {
+	public final void setSession(final long session) {
 		this.mSession = session;
 	}
 
@@ -232,22 +232,6 @@ public class PositionRecord extends AbstractLogEntry<PositionRecord> {
 				&& (getAccuracy() == aCell.getAccuracy())
 				&& (getOpenBmapTimestamp() == aCell.getOpenBmapTimestamp())
 				&& (getSession() == aCell.getSession());
-	}
-
-	/**
-	 * taken from http://stackoverflow.com/questions/113511/hash-code-implementation
-	 */
-	public final int hashCode() {
-		final int PRIME = 37;
-		final int SEED = 5;
-		int result = SEED;
-		result += result * PRIME + Double.doubleToLongBits(getLatitude());
-		result += result * PRIME + Double.doubleToLongBits(getLongitude());
-		result += result * PRIME + Double.doubleToLongBits(getAltitude());
-		result += result * PRIME + Double.doubleToLongBits(getAccuracy());
-		result += result * PRIME + (int) (getOpenBmapTimestamp() ^ (getOpenBmapTimestamp() >>> 32));
-		result += result * PRIME + getSession();
-		return result;
 	}
 
 	@Override
