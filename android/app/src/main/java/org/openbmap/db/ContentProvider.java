@@ -27,7 +27,7 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.util.Log;
 
-import org.openbmap.RadioBeacon;
+import org.openbmap.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +43,7 @@ public class ContentProvider extends android.content.ContentProvider {
     /**
      * Authority for Uris
      */
-    public static final String AUTHORITY = RadioBeacon.class.getPackage().getName() + ".provider";
+    public static final String AUTHORITY = Constants.class.getPackage().getName() + ".provider";
 
     /**
      * Uri for wifi measurements
@@ -547,7 +547,7 @@ public class ContentProvider extends android.content.ContentProvider {
                         Schema.TBL_POSITIONS,
                         projection,
                         extendWhereBy(Schema.COL_SOURCE, column),
-                        extendCriteriaBy(RadioBeacon.PROVIDER_USER_DEFINED, args),
+                        extendCriteriaBy(Constants.PROVIDER_USER_DEFINED, args),
                         sortOrder,
                         null,
                         null);

@@ -31,9 +31,9 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
+import org.openbmap.Constants;
 import org.openbmap.Preferences;
 import org.openbmap.R;
-import org.openbmap.RadioBeacon;
 import org.openbmap.soapclient.AsyncUploader.FileUploadListener;
 import org.openbmap.utils.CatalogUpdater;
 import org.openbmap.utils.MediaScanner;
@@ -65,22 +65,22 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 	/**
 	 * OpenBmap cell upload address
 	 */
-	private static final String CELL_WEBSERVICE = RadioBeacon.SERVER_BASE + "/uploads/cells";
+	private static final String CELL_WEBSERVICE = Constants.SERVER_BASE + "/uploads/cells";
 
     /**
      * OpenBmap cell anonymous upload address
      */
-    private static final String CELL_ANONYMOUS_WEBSERVICE = RadioBeacon.SERVER_BASE + "/uploads/share_cells";
+	private static final String CELL_ANONYMOUS_WEBSERVICE = Constants.SERVER_BASE + "/uploads/share_cells";
 
 	/**
 	 * OpenBmap wifi upload address
 	 */
-	private static final String WIFI_WEBSERVICE = RadioBeacon.SERVER_BASE + "/uploads/wifis";
+	private static final String WIFI_WEBSERVICE = Constants.SERVER_BASE + "/uploads/wifis";
 
     /**
      * OpenBmap cell anonymous upload address
      */
-    private static final String WIFI_ANONYMOUS_WEBSERVICE = RadioBeacon.SERVER_BASE + "/uploads/share_wifis";
+	private static final String WIFI_ANONYMOUS_WEBSERVICE = Constants.SERVER_BASE + "/uploads/share_wifis";
 
     private Context mAppContext;
 
@@ -218,7 +218,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 			Log.i(TAG, "Exporting cells");
 			// export cells
 			publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.exporting_cells), 0);
-			cellFiles = new CellSerializer(mAppContext, mSession, mTempPath, RadioBeacon.SW_VERSION).export();
+			cellFiles = new CellSerializer(mAppContext, mSession, mTempPath, Constants.SW_VERSION).export();
 
 			// upload
 			if (!mSkipUpload) {
@@ -232,7 +232,7 @@ public class ExportSessionTask extends AsyncTask<Void, Object, Boolean> implemen
 			Log.i(TAG, "Exporting wifis");
 			// export wifis
 			publishProgress(mAppContext.getResources().getString(R.string.please_stay_patient), mAppContext.getResources().getString(R.string.exporting_wifis), 50);
-			wifiFiles = new WifiSerializer(mAppContext, mSession, mTempPath, RadioBeacon.SW_VERSION, mAnonymiseSsid).export();
+			wifiFiles = new WifiSerializer(mAppContext, mSession, mTempPath, Constants.SW_VERSION, mAnonymiseSsid).export();
 
 			// upload
 			if (!mSkipUpload) {

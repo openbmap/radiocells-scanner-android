@@ -56,8 +56,8 @@ import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.layer.overlay.Polyline;
 import org.mapsforge.map.model.common.Observer;
 import org.mapsforge.map.util.MapPositionUtil;
+import org.openbmap.Constants;
 import org.openbmap.R;
-import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.PositionRecord;
 import org.openbmap.db.models.WifiRecord;
@@ -488,7 +488,7 @@ public class MapFragment extends BaseMapFragment implements
         final DataHelper dbHelper = new DataHelper(getActivity().getApplicationContext());
         mSession = dbHelper.getCurrentSessionID();
 
-        if (mSession != RadioBeacon.SESSION_NOT_TRACKING) {
+        if (mSession != Constants.SESSION_NOT_TRACKING) {
             Log.i(TAG, "Displaying session " + mSession);
         } else {
             Log.w(TAG, "No active session?");

@@ -45,9 +45,9 @@ import org.apache.http.params.BasicHttpParams;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.openbmap.Constants;
 import org.openbmap.Preferences;
 import org.openbmap.R;
-import org.openbmap.RadioBeacon;
 import org.openbmap.utils.CatalogDownload;
 import org.openbmap.utils.FileUtils;
 
@@ -64,7 +64,7 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
 
     private static String TAG = DialogPreferenceCatalogs.class.getSimpleName();
 
-    public static final String LIST_DOWNLOADS_URL = RadioBeacon.SERVER_BASE + "/downloads/catalog_downloads.json";
+    public static final String LIST_DOWNLOADS_URL = Constants.SERVER_BASE + "/downloads/catalog_downloads.json";
 
     private DialogPreferenceCatalogsListAdapter mAdapter;
     private final Context mContext;

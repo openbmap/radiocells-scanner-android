@@ -12,7 +12,7 @@ import android.net.Uri;
 import android.os.RemoteException;
 import android.util.Log;
 
-import org.openbmap.RadioBeacon;
+import org.openbmap.Constants;
 import org.openbmap.db.models.CellRecord;
 import org.openbmap.db.models.MetaData;
 import org.openbmap.db.models.PositionRecord;
@@ -393,7 +393,7 @@ public class DataHelper {
 	/**
 	 * Returns Id of active session. Faster than {@link DataHelper#getCurrentSession()}
 	 *
-	 * @return session id if any active session, RadioBeacon.SESSION_NOT_TRACKING else
+	 * @return session id if any active session, Constants.SESSION_NOT_TRACKING else
 	 */
 	public final int getCurrentSessionID() {
         // Log.d(TAG, "getCurrentSessionID called");
@@ -404,7 +404,7 @@ public class DataHelper {
 			return session;
 		}
         cursor.close();
-		return RadioBeacon.SESSION_NOT_TRACKING;
+		return Constants.SESSION_NOT_TRACKING;
 	}
 
 	/**

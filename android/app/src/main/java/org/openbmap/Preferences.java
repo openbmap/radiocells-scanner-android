@@ -310,12 +310,12 @@ public final class Preferences {
 	/**
 	 * URL, which is called to check whether this client version is up-to-date
 	 */
-	public static final String VERSION_CHECK_URL = RadioBeacon.SERVER_BASE + "/uploads/version.xml";
+    public static final String VERSION_CHECK_URL = Constants.SERVER_BASE + "/uploads/version.xml";
 
     /**
      * URL, which is called to validate user credentials
      */
-	public static final String PASSWORD_VALIDATION_URL = RadioBeacon.SERVER_BASE + "/uploads/check_login";
+    public static final String PASSWORD_VALIDATION_URL = Constants.SERVER_BASE + "/uploads/check_login";
 
     /**
      * Private dummy constructor

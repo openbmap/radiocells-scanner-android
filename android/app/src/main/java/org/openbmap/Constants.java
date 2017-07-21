@@ -24,28 +24,28 @@ package org.openbmap;
 /**
  * Constants & app-wide variables.
  */
-public final class RadioBeacon {
+public final class Constants {
 
 	/**
-	 * The full Package name of RadioBeacon returned by calling
-	 * RadioBeacon.class.getPackage().getName()
-	 */
-	public static final String PACKAGE_NAME = RadioBeacon.class.getPackage().getName();
+     * The full Package name of Constants returned by calling
+     * Constants.class.getPackage().getName()
+     */
+    public static final String PACKAGE_NAME = Constants.class.getPackage().getName();
 
 	/**
 	 * Intent to update GPS status
 	 */
-	public static final String INTENT_POSITION_SAT_INFO = RadioBeacon.PACKAGE_NAME + ".intent.POSITION_SAT_INFO";
+    public static final String INTENT_POSITION_SAT_INFO = Constants.PACKAGE_NAME + ".intent.POSITION_SAT_INFO";
 
 	/**
 	 * Intent signaling new session has been saved
 	 */
-	public static final String INTENT_NEW_SESSION = RadioBeacon.PACKAGE_NAME + ".intent.SESSION_SAVED";
+    public static final String INTENT_NEW_SESSION = Constants.PACKAGE_NAME + ".intent.SESSION_SAVED";
 
 	/**
 	 * Intent signalling sessions have been changed (e.g. deletes)
 	 */
-	public static final String	INTENT_SESSION_UPDATE = RadioBeacon.PACKAGE_NAME + ".intent.SESSION_UPDATE";
+    public static final String INTENT_SESSION_UPDATE = Constants.PACKAGE_NAME + ".intent.SESSION_UPDATE";
 
 	/**
 	 * Key for extra data "location" in Intent
@@ -163,7 +163,7 @@ public final class RadioBeacon {
 	/**
 	 * Private dummy constructor
 	 */
-	private RadioBeacon() {
+    private Constants() {
 
 	}
 }

@@ -48,8 +48,8 @@ import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.ViewById;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.openbmap.Constants;
 import org.openbmap.R;
-import org.openbmap.RadioBeacon;
 import org.openbmap.activities.details.WifiDetailsActivity_;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.Schema;
@@ -229,8 +229,8 @@ public class OverviewFragment extends Fragment {
             Log.d(TAG, "Received intent " + intent.getAction());
 
             // handling cell and wifi broadcasts
-            if (RadioBeacon.INTENT_NEW_SESSION.equals(intent.getAction())) {
-                final String id = intent.getStringExtra(RadioBeacon.MSG_KEY);
+            if (Constants.INTENT_NEW_SESSION.equals(intent.getAction())) {
+                final String id = intent.getStringExtra(Constants.MSG_KEY);
                 // tbd
             }
         }
@@ -389,7 +389,7 @@ public class OverviewFragment extends Fragment {
      */
     private void registerReceiver() {
         final IntentFilter filter = new IntentFilter();
-        filter.addAction(RadioBeacon.INTENT_SESSION_UPDATE);
+        filter.addAction(Constants.INTENT_SESSION_UPDATE);
         getActivity().registerReceiver(mReceiver, filter);
 
         if (!EventBus.getDefault().isRegistered(this)) {
