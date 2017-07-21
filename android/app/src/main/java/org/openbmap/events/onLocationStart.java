@@ -14,31 +14,28 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/**
- *  Inspirations from Paul Woelfel, Email: frig@frig.at
  */
 
-package org.openbmap.services.positioning;
+package org.openbmap.events;
 
-public final class LocationServiceFactory {
-	
-	protected static LocationService ls = null;
-	
-	static void setLocationService(final LocationService ls){
-		LocationServiceFactory.ls = ls;
-	}
-	
-	public static LocationService getLocationService() {
-		if (ls == null) {
-//			throw new LocationServiceException("no location service defined!");
-			ls = new LocationServiceImpl();
-		}
-		return ls;
-	}
-	
-	private LocationServiceFactory() {
-	}
-	
+import org.openbmap.RadioBeacon;
+
+public class onLocationStart {
+    public final int session;
+
+    /**
+     * Default constructor: no session id provided, database will auto-assign session id
+     */
+    public onLocationStart() {
+        this.session = RadioBeacon.SESSION_NOT_TRACKING;
+     }
+
+    /**
+     * Constructor to resume an existing session
+     * @param session session id to resume
+     */
+    public onLocationStart(int session) {
+        this.session = session;
+    }
+
 }

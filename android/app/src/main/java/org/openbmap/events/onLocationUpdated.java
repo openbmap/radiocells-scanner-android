@@ -18,24 +18,16 @@
 
 package org.openbmap.events;
 
-import org.openbmap.RadioBeacon;
+import android.location.Location;
 
-public class onStartLocation {
-    public final int session;
+public class onLocationUpdated {
+    public final Location location;
+    public String satStatus = "--";
+    public int satCount = -1;
 
-    /**
-     * Default constructor: no session id provided, database will auto-assign session id
-     */
-     public onStartLocation() {
-        this.session = RadioBeacon.SESSION_NOT_TRACKING;
-     }
-
-    /**
-     * Constructor to resume an existing session
-     * @param session session id to resume
-     */
-    public onStartLocation(int session) {
-        this.session = session;
+    public onLocationUpdated(final Location location, String satStatus, int satCount) {
+        this.location = location;
+        this.satStatus = satStatus;
+        this.satCount = satCount;
     }
-
 }

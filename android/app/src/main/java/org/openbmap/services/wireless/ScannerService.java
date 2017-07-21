@@ -70,7 +70,7 @@ import org.openbmap.events.onBlacklisted;
 import org.openbmap.events.onCellChanged;
 import org.openbmap.events.onCellSaved;
 import org.openbmap.events.onFreeWifi;
-import org.openbmap.events.onLocationUpdate;
+import org.openbmap.events.onLocationUpdated;
 import org.openbmap.events.onStartWireless;
 import org.openbmap.events.onStopTracking;
 import org.openbmap.events.onWifisAdded;
@@ -1269,7 +1269,7 @@ public class ScannerService extends AbstractService implements ActivityCompat.On
     }
 
     @Subscribe
-    public void onEvent(onLocationUpdate event) {
+    public void onEvent(onLocationUpdated event) {
         if (!isTracking) {
             return;
         }

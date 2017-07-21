@@ -64,7 +64,7 @@ import org.openbmap.db.models.WifiRecord;
 import org.openbmap.events.onCatalogUpdateAvailable;
 import org.openbmap.events.onCatalogUpdateRequested;
 import org.openbmap.events.onGpxUpdateAvailable;
-import org.openbmap.events.onLocationUpdate;
+import org.openbmap.events.onLocationUpdated;
 import org.openbmap.events.onSessionUpdateAvailable;
 import org.openbmap.events.onWifisAdded;
 import org.openbmap.utils.CatalogObject;
@@ -514,7 +514,7 @@ public class MapFragment extends BaseMapFragment implements
      * @param event the event
      */
     @Subscribe
-    public void onEvent(onLocationUpdate event) {
+    public void onEvent(onLocationUpdated event) {
         // handling GPS broadcasts
         Location location = event.location;
 
@@ -1051,7 +1051,7 @@ public class MapFragment extends BaseMapFragment implements
 
         final PositionRecord pos = new PositionRecord(GeometryUtils.toLocation(tapLatLong),
                 mSession,
-                RadioBeacon.PROVIDER_USER_DEFINED,
+                "waypoint",
                 true);
         dbHelper.savePosition(pos);
 

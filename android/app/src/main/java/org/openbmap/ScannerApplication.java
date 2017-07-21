@@ -25,11 +25,13 @@ import android.preference.PreferenceManager;
 import org.greenrobot.eventbus.EventBus;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
 import org.mapsforge.map.model.DisplayModel;
+import org.openbmap.services.GpxLoggerService;
+import org.openbmap.services.LocationService;
 import org.openbmap.services.ManagerService;
 
-public class RadiobeaconApplication extends Application {
+public class ScannerApplication extends Application {
 
-	public static final String TAG = RadiobeaconApplication.class.getSimpleName();
+    public static final String TAG = ScannerApplication.class.getSimpleName();
 
 	public static final String SETTING_SCALE = "scale";
 	public static final String SETTING_SCALEBAR = "scalebar";
@@ -55,6 +57,13 @@ public class RadiobeaconApplication extends Application {
 
 		Intent serviceIntent = new Intent(getApplicationContext(), ManagerService.class);
 		startService(serviceIntent);
+
+        Intent locationIntent = new Intent(getApplicationContext(), LocationService.class);
+        startService(locationIntent);
+        Intent gpxIntent = new Intent(getApplicationContext(), GpxLoggerService.class);
+        startService(gpxIntent);
+        //scannerIntent = new Intent(getApplicationContext(), CellScannerService.class);
+        //startService(scannerIntent);
 
 		AndroidGraphicFactory.createInstance(this);
 		final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);

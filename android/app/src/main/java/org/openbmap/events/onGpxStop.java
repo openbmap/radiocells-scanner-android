@@ -14,15 +14,11 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
-package org.openbmap.services.positioning.providers;
+package org.openbmap.events;
 
-import android.location.Location;
-import android.os.Bundle;
-
-public interface LocationChangeListener {
-	void onLocationChanged(Location loc);
-	void onStatusChanged(String provider, int status, Bundle extras);
-	void onSatInfo(int satCount);
+public class onGpxStop {
+    public onGpxStop() {
+    }
 }

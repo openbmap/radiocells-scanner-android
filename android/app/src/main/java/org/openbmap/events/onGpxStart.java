@@ -37,13 +37,13 @@ package org.openbmap.events;
 
 import org.openbmap.RadioBeacon;
 
-public class onStartGpx {
+public class onGpxStart {
     public final int session;
 
     /**
      * Default constructor: no session id provided, database will auto-assign session id
      */
-     public onStartGpx() {
+    public onGpxStart() {
         this.session = RadioBeacon.SESSION_NOT_TRACKING;
      }
 
@@ -51,7 +51,7 @@ public class onStartGpx {
      * Constructor to resume an existing session
      * @param session session id to resume
      */
-    public onStartGpx(int session) {
+    public onGpxStart(int session) {
         this.session = session;
     }
 

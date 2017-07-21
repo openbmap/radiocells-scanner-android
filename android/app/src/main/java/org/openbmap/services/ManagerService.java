@@ -47,22 +47,21 @@ import org.openbmap.RadioBeacon;
 import org.openbmap.activities.tabs.TabHostActivity_;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.Session;
+import org.openbmap.events.onGpxStart;
+import org.openbmap.events.onGpxStop;
+import org.openbmap.events.onLocationStart;
+import org.openbmap.events.onLocationStop;
 import org.openbmap.events.onServiceShutdown;
-import org.openbmap.events.onStartGpx;
-import org.openbmap.events.onStartLocation;
 import org.openbmap.events.onStartTracking;
 import org.openbmap.events.onStartWireless;
 import org.openbmap.events.onStopTracking;
-import org.openbmap.services.positioning.GpxLoggerService;
-import org.openbmap.services.positioning.PositioningService;
-import org.openbmap.services.positioning.PositioningService.ProviderType;
 import org.openbmap.services.wireless.ScannerService;
 
 import java.util.ArrayList;
 
 /**
  * ManagerService is the permanently running service coordinator, starting other sub-services as required
- * It's created as soon as Radiobeacon app starts (@see org.openbmap.RadiobeaconApplication#onCreate()) and runs in the application context
+ * It's created as soon as Radiobeacon app starts (@see org.openbmap.ScannerApplication#onCreate()) and runs in the application context
  * It listens to StartTrackingEvent and StopTrackingEvent on the message bus as well as system's
  * low battery events
  */
@@ -81,11 +80,6 @@ public class ManagerService extends Service {
     ArrayList<Messenger> clients = new ArrayList<>();
 
     /**
-     * Selected navigation provider, default GPS
-     */
-    private ProviderType mSelectedProvider = ProviderType.GPS;
-
-    /**
      * Unique powerlock id
      */
     private static final String WAKELOCK_NAME = "org.openbmap.wakelock";
@@ -97,7 +91,7 @@ public class ManagerService extends Service {
 
     private DataHelper dataHelper;
 
-    private PositioningService positioningService;
+    private LocationService positioningService;
     private ScannerService wirelessService;
     private GpxLoggerService gpxTrackerService;
     private CatalogService catalogService;
@@ -121,23 +115,6 @@ public class ManagerService extends Service {
     static class UpstreamHandler extends Handler {
     }
 
-    private ServiceConnection positioningConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            AbstractService.LocalBinder binder = (AbstractService.LocalBinder) service;
-            positioningService = (PositioningService) binder.getService();
-            positioningBound = true;
-            Log.i(TAG, "PositioningService bound");
-            EventBus.getDefault().post(new onStartLocation());
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            Log.i(TAG, "PositioningService disconnected");
-            positioningBound = false;
-        }
-    };
-
     private ServiceConnection wirelessConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
@@ -152,23 +129,6 @@ public class ManagerService extends Service {
         public void onServiceDisconnected(ComponentName arg0) {
             wirelessBound = false;
             Log.i(TAG, "WirelessService disconnected");
-        }
-    };
-
-    private ServiceConnection gpxConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            AbstractService.LocalBinder binder = (AbstractService.LocalBinder) service;
-            gpxTrackerService = (GpxLoggerService) binder.getService();
-            gpxBound = true;
-            Log.i(TAG, "GpxService bound");
-            EventBus.getDefault().post(new onStartGpx(currentSession));
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            gpxBound = false;
-            Log.i(TAG, "GpxService disconnected");
         }
     };
 
@@ -289,6 +249,8 @@ public class ManagerService extends Service {
     public void onEvent(onStopTracking event){
         Log.d(TAG, "ManagerService#onStopTracking");
         executeStopTasks(RadioBeacon.SHUTDOWN_REASON_NORMAL);
+        EventBus.getDefault().post(new onLocationStop());
+        EventBus.getDefault().post(new onGpxStop());
     }
 
     /**
@@ -355,6 +317,9 @@ public class ManagerService extends Service {
             currentSession = saveNewSession();
         }
         bindAll();
+        EventBus.getDefault().post(new onLocationStart());
+        EventBus.getDefault().post(new onGpxStart(session));
+
         addNotificationIcon();
     }
 
@@ -388,14 +353,9 @@ public class ManagerService extends Service {
      */
     private void bindAll() {
         Log.v(TAG, "Binding services");
-        Intent i1 = new Intent(this, PositioningService.class);
-        bindService(i1, positioningConnection, Context.BIND_AUTO_CREATE);
 
         Intent i2 = new Intent(this, ScannerService.class);
         bindService(i2, wirelessConnection, Context.BIND_AUTO_CREATE);
-
-        Intent i3 = new Intent(this, GpxLoggerService.class);
-        bindService(i3, gpxConnection, Context.BIND_AUTO_CREATE);
 
         Intent i4 = new Intent(this, CatalogService.class);
         bindService(i4, catalogConnection, Context.BIND_AUTO_CREATE);
@@ -407,19 +367,9 @@ public class ManagerService extends Service {
     private void unbindAll() {
         Log.v(TAG, "Unbinding services");
 
-        if (positioningBound) {
-            unbindService(positioningConnection);
-            positioningBound = false;
-        }
-
         if (wirelessBound) {
             unbindService(wirelessConnection);
             wirelessBound = false;
-        }
-
-        if (gpxBound) {
-            unbindService(gpxConnection);
-            gpxBound = false;
         }
 
         if (poiBound) {

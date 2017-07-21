@@ -18,13 +18,7 @@
 
 package org.openbmap.events;
 
-import android.location.Location;
-
-public class onLocationUpdate {
-    public final Location location;
-    public final String source = "GPS";
-
-        public onLocationUpdate(final Location location) {
-            this.location = location;
-        }
+public class onLocationStop {
+    public onLocationStop() {
     }
+}

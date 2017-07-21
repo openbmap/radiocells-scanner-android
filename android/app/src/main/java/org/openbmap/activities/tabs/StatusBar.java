@@ -40,7 +40,7 @@ import org.openbmap.RadioBeacon;
 import org.openbmap.db.DataHelper;
 import org.openbmap.events.onCellChanged;
 import org.openbmap.events.onCellSaved;
-import org.openbmap.events.onLocationUpdate;
+import org.openbmap.events.onLocationUpdated;
 import org.openbmap.events.onWifisAdded;
 
 import java.text.DecimalFormat;
@@ -170,7 +170,7 @@ public class StatusBar extends LinearLayout {
 	};
 
 	@Subscribe
-    public void onEvent(onLocationUpdate event) {
+    public void onEvent(onLocationUpdated event) {
             if (event.location == null) {
                 return;
             }
