@@ -39,15 +39,15 @@ import android.widget.Toast;
 
 import org.androidannotations.annotations.EActivity;
 import org.greenrobot.eventbus.EventBus;
+import org.openbmap.Constants;
 import org.openbmap.Preferences;
 import org.openbmap.R;
-import org.openbmap.RadioBeacon;
 import org.openbmap.activities.settings.SettingsActivity;
 import org.openbmap.activities.tabs.TabHostActivity_;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.Session;
-import org.openbmap.events.onStartTracking;
-import org.openbmap.events.onStopTracking;
+import org.openbmap.events.onSessionStart;
+import org.openbmap.events.onSessionStop;
 import org.openbmap.soapclient.ExportSessionTask.UploadTaskListener;
 import org.openbmap.soapclient.GpxSerializer;
 import org.openbmap.soapclient.SaveGpxTask.SaveGpxTaskListener;
@@ -261,7 +261,7 @@ implements SessionListFragment.SessionFragementListener,
     @Override
     public void startCommand() {
 		Log.i(TAG, "Starting new session");
-        EventBus.getDefault().post(new onStartTracking());
+		EventBus.getDefault().post(new onSessionStart());
 
         // bring up UI
         final Intent hostActivity = new Intent(this, TabHostActivity_.class);
@@ -277,8 +277,8 @@ implements SessionListFragment.SessionFragementListener,
     public void resumeCommand(final int id) {
 		Log.i(TAG, "Resuming session " + id);
 
-		EventBus.getDefault().post(new onStartTracking(id));
-        final Intent activity = new Intent(this, TabHostActivity_.class);
+		EventBus.getDefault().post(new onSessionStart(id));
+		final Intent activity = new Intent(this, TabHostActivity_.class);
         activity.putExtra("_id", id);
         startActivity(activity);
     }
@@ -350,7 +350,7 @@ implements SessionListFragment.SessionFragementListener,
 	public void stopCommand(final int id) {
 		mDataHelper.invalidateCurrentSessions();
 		// Signalling host activity to stop services
-        EventBus.getDefault().post(new onStopTracking());
+		EventBus.getDefault().post(new onSessionStop());
 
         reloadListFragment();
 	}
@@ -388,14 +388,14 @@ implements SessionListFragment.SessionFragementListener,
 	 * @param id the id
 	 */
 	public void deleteConfirmed(final int id) {
-		if (id == RadioBeacon.SESSION_NOT_TRACKING) {
+		if (id == Constants.SESSION_NOT_TRACKING) {
 			return;
 		}
 
 		Log.i(TAG, "Deleting session " + id);
 
 		// Signalling service stop request
-        EventBus.getDefault().post(new onStopTracking());
+		EventBus.getDefault().post(new onSessionStop());
 
 		mDataHelper.deleteSession(id);
 
@@ -425,7 +425,7 @@ implements SessionListFragment.SessionFragementListener,
 	 */
 	public void deleteAllConfirmed() {
 		// Signalling service stop request
-        EventBus.getDefault().post(new onStopTracking());
+		EventBus.getDefault().post(new onSessionStop());
 		mDataHelper.deleteAllSessions();
 
         reloadListFragment();
@@ -540,11 +540,11 @@ implements SessionListFragment.SessionFragementListener,
 	@Override
 	public void onAlertPositiveClick(final int alertId, final String args) {
 		if (alertId == ID_DELETE_ALL) {
-			final int id = (args != null ? Integer.valueOf(args) : RadioBeacon.SESSION_NOT_TRACKING);
+			final int id = (args != null ? Integer.valueOf(args) : Constants.SESSION_NOT_TRACKING);
 			stopCommand(id);
 			deleteAllConfirmed();
 		} else if (alertId == ID_DELETE_SESSION) {
-			final int id = (args != null ? Integer.valueOf(args) : RadioBeacon.SESSION_NOT_TRACKING);
+			final int id = (args != null ? Integer.valueOf(args) : Constants.SESSION_NOT_TRACKING);
 			stopCommand(id);
 			deleteConfirmed(id);
 		} else if (alertId == ID_DELETE_PROCESSED) {

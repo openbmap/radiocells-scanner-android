@@ -41,21 +41,23 @@ import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.openbmap.Constants;
 import org.openbmap.Preferences;
 import org.openbmap.R;
-import org.openbmap.RadioBeacon;
 import org.openbmap.activities.tabs.TabHostActivity_;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.Session;
+import org.openbmap.events.onCellScannerStart;
+import org.openbmap.events.onCellScannerStop;
 import org.openbmap.events.onGpxStart;
 import org.openbmap.events.onGpxStop;
 import org.openbmap.events.onLocationStart;
 import org.openbmap.events.onLocationStop;
 import org.openbmap.events.onServiceShutdown;
-import org.openbmap.events.onStartTracking;
-import org.openbmap.events.onStartWireless;
-import org.openbmap.events.onStopTracking;
-import org.openbmap.services.wireless.ScannerService;
+import org.openbmap.events.onSessionStart;
+import org.openbmap.events.onSessionStop;
+import org.openbmap.events.onWifiScannerStart;
+import org.openbmap.events.onWifiScannerStop;
 
 import java.util.ArrayList;
 
@@ -91,14 +93,8 @@ public class ManagerService extends Service {
 
     private DataHelper dataHelper;
 
-    private LocationService positioningService;
-    private ScannerService wirelessService;
-    private GpxLoggerService gpxTrackerService;
     private CatalogService catalogService;
 
-    private boolean positioningBound;
-    private boolean wirelessBound;
-    private boolean gpxBound;
     private boolean poiBound;
 
     private PowerManager.WakeLock mWakeLock;
@@ -106,31 +102,13 @@ public class ManagerService extends Service {
     /**
      * Current session
      */
-    private int currentSession = RadioBeacon.SESSION_NOT_TRACKING;
-    private int mShutdownReason;
+    private int session = Constants.SESSION_NOT_TRACKING;
 
     /**
      * Handler of incoming messages from clients.
      */
-    static class UpstreamHandler extends Handler {
+    public static class UpstreamHandler extends Handler {
     }
-
-    private ServiceConnection wirelessConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            AbstractService.LocalBinder binder = (AbstractService.LocalBinder) service;
-            wirelessService = (ScannerService) binder.getService();
-            wirelessBound = true;
-            Log.i(TAG, "WirelessService bound");
-            EventBus.getDefault().post(new onStartWireless(currentSession));
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            wirelessBound = false;
-            Log.i(TAG, "WirelessService disconnected");
-        }
-    };
 
     private ServiceConnection catalogConnection = new ServiceConnection() {
         @Override
@@ -139,7 +117,7 @@ public class ManagerService extends Service {
             catalogService = (CatalogService) binder.getService();
             poiBound = true;
             Log.i(TAG, "CatalogService bound");
-            //EventBus.getDefault().post(new onStartPoi(currentSession));
+            //EventBus.getDefault().post(new onStartPoi(session));
         }
 
         @Override
@@ -226,8 +204,8 @@ public class ManagerService extends Service {
      * @param event
      */
     @Subscribe
-    public void onEvent(onStartTracking event){
-        Log.d(TAG, "ManagerService#onStartTracking: onStartTracking received");
+    public void onEvent(onSessionStart event) {
+        Log.d(TAG, "ACK onSessionStart");
         Log.i(TAG, "=============================================================================");
         Log.i(TAG, "Configuration");
         Log.i(TAG, "Ignore low battery: " + prefs.getBoolean(Preferences.KEY_IGNORE_BATTERY, Preferences.DEFAULT_IGNORE_BATTERY));
@@ -237,8 +215,23 @@ public class ManagerService extends Service {
         Log.i(TAG, "Map: " + prefs.getString(Preferences.KEY_MAP_FILE, Preferences.DEFAULT_MAP_FILE));
         Log.i(TAG, "Catalog: " + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.DEFAULT_CATALOG_FILE));
         Log.i(TAG, "=============================================================================");
-        currentSession = event.session;
-        executeStartActions(currentSession);
+
+        requirePowerLock();
+        if (session != Constants.SESSION_NOT_TRACKING) {
+            Log.d(TAG, "Preparing session " + session);
+            session = event.session;
+            resumeSession(session);
+        } else {
+            Log.d(TAG, "Preparing new session");
+            this.session = saveNewSession();
+        }
+
+        bindAll();
+        EventBus.getDefault().post(new onLocationStart());
+        EventBus.getDefault().post(new onGpxStart(session));
+        EventBus.getDefault().post(new onCellScannerStart(session));
+        EventBus.getDefault().post(new onWifiScannerStart(session));
+        addNotificationIcon();
     }
 
     /**
@@ -246,11 +239,22 @@ public class ManagerService extends Service {
      * @param event
      */
     @Subscribe
-    public void onEvent(onStopTracking event){
-        Log.d(TAG, "ManagerService#onStopTracking");
-        executeStopTasks(RadioBeacon.SHUTDOWN_REASON_NORMAL);
+    public void onEvent(onSessionStop event) {
+        Log.d(TAG, "ACK onSessionStop");
+
+        closeSession();
+        session = Constants.SESSION_NOT_TRACKING;
+
+        unbindAll();
+
         EventBus.getDefault().post(new onLocationStop());
         EventBus.getDefault().post(new onGpxStop());
+        EventBus.getDefault().post(new onCellScannerStop());
+        EventBus.getDefault().post(new onWifiScannerStop());
+
+        releasePowerLock();
+        cancelNotification();
+        EventBus.getDefault().post(new onServiceShutdown(0));
     }
 
     /**
@@ -289,7 +293,7 @@ public class ManagerService extends Service {
                 final boolean ignoreBattery = prefs.getBoolean(Preferences.KEY_IGNORE_BATTERY, Preferences.DEFAULT_IGNORE_BATTERY);
                 if (!ignoreBattery) {
                     Toast.makeText(context, getString(R.string.battery_warning), Toast.LENGTH_LONG).show();
-                    executeStopTasks(RadioBeacon.SHUTDOWN_REASON_LOW_POWER);
+                    EventBus.getDefault().post(new onSessionStop());
                 } else {
                   Log.i(TAG, "Battery low but ignoring due to settings");
                 }
@@ -300,62 +304,10 @@ public class ManagerService extends Service {
     };
 
     /**
-     * Prepares database and sub-services to start tracking
-     * @param session
-     */
-    private void executeStartActions(final int session) {
-        Log.v(TAG, "Execute start actions:");
-        currentSession = session;
-        requirePowerLock();
-
-        if (session != RadioBeacon.SESSION_NOT_TRACKING) {
-            Log.d(TAG, "Preparing session " + session);
-            currentSession = session;
-            resumeSession(session);
-        } else {
-            Log.d(TAG, "Preparing new session");
-            currentSession = saveNewSession();
-        }
-        bindAll();
-        EventBus.getDefault().post(new onLocationStart());
-        EventBus.getDefault().post(new onGpxStart(session));
-
-        addNotificationIcon();
-    }
-
-    /**
-     * Updates database and stops sub-services after stop request
-     * @param reason
-     */
-    private void executeStopTasks(int reason) {
-        Log.v(TAG, "Execute stop actions:");
-        Log.v(TAG, "Finishing session");
-        closeSession();
-        currentSession = RadioBeacon.SESSION_NOT_TRACKING;
-
-        Log.v(TAG, "Unbinding sub-services");
-        EventBus.getDefault().post(new onServiceShutdown(reason));
-        unbindAll();
-
-        Log.v(TAG, "Releasing power locks");
-        releasePowerLock();
-
-        cancelNotification();
-
-        //don't do this (otherwise resume track will fail):
-        // stopSelf();
-        //Log.v(TAG, "Stopping ManagerService");
-        //stopSelf();
-    }
-
-    /**
      * Binds all sub-services
      */
     private void bindAll() {
         Log.v(TAG, "Binding services");
-
-        Intent i2 = new Intent(this, ScannerService.class);
-        bindService(i2, wirelessConnection, Context.BIND_AUTO_CREATE);
 
         Intent i4 = new Intent(this, CatalogService.class);
         bindService(i4, catalogConnection, Context.BIND_AUTO_CREATE);
@@ -366,11 +318,6 @@ public class ManagerService extends Service {
      */
     private void unbindAll() {
         Log.v(TAG, "Unbinding services");
-
-        if (wirelessBound) {
-            unbindService(wirelessConnection);
-            wirelessBound = false;
-        }
 
         if (poiBound) {
             unbindService(catalogConnection);
@@ -456,7 +403,12 @@ public class ManagerService extends Service {
      */
     public static boolean isExternalPowerAvailable(Context context) {
         Intent intent = context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-        int plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
-        return plugged == BatteryManager.BATTERY_PLUGGED_AC || plugged == BatteryManager.BATTERY_PLUGGED_USB;
+        int plugged = 0;
+        if (intent != null) {
+            plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
+            return plugged == BatteryManager.BATTERY_PLUGGED_AC || plugged == BatteryManager.BATTERY_PLUGGED_USB;
+        } else {
+            return false;
+        }
     }
 }

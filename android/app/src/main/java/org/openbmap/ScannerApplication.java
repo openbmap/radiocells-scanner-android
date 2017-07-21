@@ -28,6 +28,8 @@ import org.mapsforge.map.model.DisplayModel;
 import org.openbmap.services.GpxLoggerService;
 import org.openbmap.services.LocationService;
 import org.openbmap.services.ManagerService;
+import org.openbmap.services.wireless.CellScannerService;
+import org.openbmap.services.wireless.WifiScannerService;
 
 public class ScannerApplication extends Application {
 
@@ -62,8 +64,10 @@ public class ScannerApplication extends Application {
         startService(locationIntent);
         Intent gpxIntent = new Intent(getApplicationContext(), GpxLoggerService.class);
         startService(gpxIntent);
-        //scannerIntent = new Intent(getApplicationContext(), CellScannerService.class);
-        //startService(scannerIntent);
+        Intent cellScanIntent = new Intent(getApplicationContext(), CellScannerService.class);
+        startService(cellScanIntent);
+        Intent wifiScanIntent = new Intent(getApplicationContext(), WifiScannerService.class);
+        startService(cellScanIntent);
 
 		AndroidGraphicFactory.createInstance(this);
 		final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);

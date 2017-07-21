@@ -92,8 +92,10 @@
             android:name=".services.CatalogService"
             android:exported="false" />
 
-        <!-- Wireless (cell, wifi) logger service -->
-        <service android:name=".services.wireless.ScannerService" />
+        <!-- Cell logger service -->
+        <service android:name=".services.wireless.CellScannerService" />
+        <!-- Wifi logger service -->
+        <service android:name=".services.wireless.WifiScannerService" />
 
         <!-- GPX logger service -->
         <service android:name=".services.GpxLoggerService" />

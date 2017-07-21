@@ -37,9 +37,9 @@ import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.openbmap.Constants;
 import org.openbmap.Preferences;
 import org.openbmap.R;
-import org.openbmap.RadioBeacon;
 import org.openbmap.events.onLocationStart;
 import org.openbmap.events.onLocationStop;
 import org.openbmap.events.onLocationUpdated;
@@ -97,7 +97,7 @@ public class LocationService extends Service implements GpsStatus.Listener, Loca
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             PermissionHelper.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    RadioBeacon.PERM_REQUEST_LOCATION_NOTIFICATION,
+                    Constants.PERM_REQUEST_LOCATION_NOTIFICATION,
                     this.getApplicationContext().getString(R.string.permission_setup_title),
                     this.getApplicationContext().getString(R.string.permission_setup_location_explanation),
                     R.drawable.ic_security);

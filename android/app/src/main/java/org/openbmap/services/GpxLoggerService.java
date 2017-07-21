@@ -27,7 +27,7 @@ import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
-import org.openbmap.RadioBeacon;
+import org.openbmap.Constants;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.PositionRecord;
 import org.openbmap.events.onGpxStart;
@@ -59,7 +59,7 @@ public class GpxLoggerService extends Service {
 	/**
 	 * Current session id
 	 */
-	private int session = RadioBeacon.SESSION_NOT_TRACKING;
+    private int session = Constants.SESSION_NOT_TRACKING;
 
 	/*
 	 * DataHelper for persisting recorded information in database
@@ -155,8 +155,8 @@ public class GpxLoggerService extends Service {
 	private void stopTracking() {
 		Log.d(TAG, "Stop tracking on session " + session);
         isTracking = false;
-        session = RadioBeacon.SESSION_NOT_TRACKING;
-	}
+        session = Constants.SESSION_NOT_TRACKING;
+    }
 
 	/**
      * Setter for isTracking

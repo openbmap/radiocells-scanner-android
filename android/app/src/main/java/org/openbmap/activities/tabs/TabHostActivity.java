@@ -47,8 +47,8 @@ import org.openbmap.R;
 import org.openbmap.activities.SelectiveScrollViewPager;
 import org.openbmap.activities.StartscreenActivity_;
 import org.openbmap.events.onServiceShutdown;
+import org.openbmap.events.onSessionStop;
 import org.openbmap.events.onStopRequested;
-import org.openbmap.events.onStopTracking;
 import org.openbmap.services.ManagerService;
 import org.openbmap.utils.ActivityUtils;
 
@@ -87,7 +87,7 @@ public class TabHostActivity extends AppCompatActivity {
         Since ManagerService runs permanently, following lines shouldn't be needed.
         Additionally power events are handled by the service itself
 
-        if (event.reason == RadioBeacon.SHUTDOWN_REASON_LOW_POWER) {
+        if (event.reason == Constants.SHUTDOWN_REASON_LOW_POWER) {
             Toast.makeText(TabHostActivity.this, getString(R.string.battery_warning), Toast.LENGTH_LONG).show();
         }
 
@@ -186,7 +186,7 @@ public class TabHostActivity extends AppCompatActivity {
 
     private void stopTracking() {
         Log.d(TAG, "REQ StopTrackingEvent");
-                EventBus.getDefault().post(new onStopTracking());
+        EventBus.getDefault().post(new onSessionStop());
 
         final Intent intent = new Intent(this, StartscreenActivity_.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

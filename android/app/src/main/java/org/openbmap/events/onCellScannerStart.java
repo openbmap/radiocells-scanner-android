@@ -18,7 +18,7 @@
 
 package org.openbmap.events;
 /*
-	Radiobeacon - Openbmap wifi and cell logger
+    Radiobeacon - Openbmap wifi and cell logger
     Copyright (C) 2013  wish7
 
     This program is free software: you can redistribute it and/or modify
@@ -35,23 +35,25 @@ package org.openbmap.events;
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import org.openbmap.RadioBeacon;
 
-public class onStartWireless {
-    public final int session;
+import static org.openbmap.Constants.SESSION_NOT_TRACKING;
+
+public class onCellScannerStart {
+    public final long session;
 
     /**
      * Default constructor: no session id provided, database will auto-assign session id
      */
-     public onStartWireless() {
-        this.session = RadioBeacon.SESSION_NOT_TRACKING;
-     }
+    public onCellScannerStart() {
+        this.session = SESSION_NOT_TRACKING;
+    }
 
     /**
      * Constructor to resume an existing session
+     *
      * @param session session id to resume
      */
-    public onStartWireless(int session) {
+    public onCellScannerStart(long session) {
         this.session = session;
     }
 

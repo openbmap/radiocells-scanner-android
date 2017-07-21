@@ -32,7 +32,7 @@ import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.activities.StartscreenActivity_;
 import org.openbmap.activities.tabs.TabHostActivity_;
-import org.openbmap.events.onStartTracking;
+import org.openbmap.events.onSessionStart;
 import org.openbmap.events.onStopRequested;
 
 public class CommandReceiver extends BroadcastReceiver {
@@ -57,7 +57,7 @@ public class CommandReceiver extends BroadcastReceiver {
             //activity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             //context.startActivity(activity);
 
-            EventBus.getDefault().post(new onStartTracking());
+            EventBus.getDefault().post(new onSessionStart());
             // bring up UI
             final Intent hostActivity = new Intent(context, TabHostActivity_.class);
             // TODO: do we really need this flag? see discussion at http://stackoverflow.com/questions/3918517/calling-startactivity-from-outside-of-an-activity-context
@@ -75,7 +75,7 @@ public class CommandReceiver extends BroadcastReceiver {
                 return;
             }
 
-            // let TabHostActivity handle shutdown so don't use EventBus.getDefault().post(new onStopTracking());
+            // let TabHostActivity handle shutdown so don't use EventBus.getDefault().post(new onSessionStop());
             EventBus.getDefault().post(new onStopRequested());
             Toast.makeText(context, R.string.stopped_tracking, Toast.LENGTH_SHORT).show();
 
