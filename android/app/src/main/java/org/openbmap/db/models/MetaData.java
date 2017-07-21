@@ -18,7 +18,7 @@
 
 package org.openbmap.db.models;
 
-import org.openbmap.RadioBeacon;
+import org.openbmap.Constants;
 
 import java.util.ArrayList;
 
@@ -35,17 +35,18 @@ public class MetaData implements Comparable<MetaData> {
 	private String mRevision;
 	private String mSwId;
 	private String mSwVersion;
-	private int mSessionId;
+    private long mSessionId;
 
 	private ArrayList<AbstractLogEntry<WifiRecord>> wifis;
 	private ArrayList<AbstractLogEntry<CellRecord>> cells;
 
 	public MetaData(final String manufacturer, final String model, final String revision, final String swId, final String swVer) {
-		this(manufacturer, model, revision, swId, swVer, RadioBeacon.SESSION_NOT_TRACKING);
-	}
+        this(manufacturer, model, revision, swId, swVer, Constants.SESSION_NOT_TRACKING);
+    }
 
-	public MetaData(final String manufacturer, final String model, final String revision, final String swId, final String swVer, final int session) {
-		setManufacturer(manufacturer);
+    public MetaData(final String manufacturer, final String model, final String revision,
+                    final String swId, final String swVer, final long session) {
+        setManufacturer(manufacturer);
 		setModel(model);
 		setRevision(revision);
 		setSwId(swId);
@@ -85,12 +86,12 @@ public class MetaData implements Comparable<MetaData> {
 		cells.add(cell);
 	}
 
-	public final int getSessionId() {
-		return mSessionId;
+    public final long getSessionId() {
+        return mSessionId;
 	}
 
-	public final void setSessionId(final int sessionId) {
-		this.mSessionId = sessionId;
+    public final void setSessionId(final long sessionId) {
+        this.mSessionId = sessionId;
 	}
 
 	@Override
