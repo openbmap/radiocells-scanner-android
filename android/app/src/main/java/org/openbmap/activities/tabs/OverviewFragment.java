@@ -20,10 +20,7 @@ package org.openbmap.activities.tabs;
 
 import android.annotation.SuppressLint;
 import android.app.Fragment;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -48,7 +45,6 @@ import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.ViewById;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
-import org.openbmap.Constants;
 import org.openbmap.R;
 import org.openbmap.activities.details.WifiDetailsActivity_;
 import org.openbmap.db.DataHelper;
@@ -63,7 +59,7 @@ import org.openbmap.events.onWifisAdded;
 /**
  * Activity for displaying basic session infos (# of cells, wifis, etc.)
  */
-@EFragment(R.layout.overview)
+@EFragment(R.layout.overview_fragment)
 public class OverviewFragment extends Fragment {
 
     private static final String TAG = OverviewFragment.class.getSimpleName();
@@ -194,47 +190,11 @@ public class OverviewFragment extends Fragment {
 
     @Override
     public void onPause() {
-        unregisterReceiver();
-
         stopRepeatingTask();
 
         super.onPause();
     }
 
-    /**
-     * Receives cell / wifi news
-     */
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-
-        @SuppressLint("DefaultLocale")
-        @Override
-        public void onReceive(final Context context, final Intent intent) {
-
-            // handle strange null values on some 4.4 devices
-            if (intent == null) {
-                Log.wtf(TAG, "Intent is null");
-                return;
-            }
-
-            if (tvCellDescription == null) {
-                Log.wtf(TAG, "tvLastCell is null");
-                return;
-            }
-
-            if (tvIgnored == null || ivAlert == null || tvFree == null || ivFree == null) {
-                Log.wtf(TAG, "Some controls are null");
-                return;
-            }
-
-            Log.d(TAG, "Received intent " + intent.getAction());
-
-            // handling cell and wifi broadcasts
-            if (Constants.INTENT_NEW_SESSION.equals(intent.getAction())) {
-                final String id = intent.getStringExtra(Constants.MSG_KEY);
-                // tbd
-            }
-        }
-    };
 
     @Subscribe
     public void onEvent(onWifisAdded event) {
@@ -388,10 +348,6 @@ public class OverviewFragment extends Fragment {
      * Registers broadcast receivers.
      */
     private void registerReceiver() {
-        final IntentFilter filter = new IntentFilter();
-        filter.addAction(Constants.INTENT_SESSION_UPDATE);
-        getActivity().registerReceiver(mReceiver, filter);
-
         if (!EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().register(this);}
         else {
@@ -399,21 +355,6 @@ public class OverviewFragment extends Fragment {
         }
     }
 
-    /**
-     * Unregisters receivers for GPS and wifi scan results.
-     */
-    private void unregisterReceiver() {
-        try {
-            getActivity().unregisterReceiver(mReceiver);
-        } catch (final IllegalArgumentException e) {
-            // do nothing here {@see
-            // http://stackoverflow.com/questions/2682043/how-to-check-if-receiver-is-registered-in-android}
-        }
-
-        if (EventBus.getDefault().isRegistered(this)) {
-            EventBus.getDefault().unregister(this);
-        }
-    }
 
     /**
      * Displays time since last cell/wifi update
