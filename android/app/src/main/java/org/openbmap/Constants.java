@@ -33,11 +33,6 @@ public final class Constants {
     public static final String PACKAGE_NAME = Constants.class.getPackage().getName();
 
 	/**
-	 * Intent to update GPS status
-	 */
-    public static final String INTENT_POSITION_SAT_INFO = Constants.PACKAGE_NAME + ".intent.POSITION_SAT_INFO";
-
-	/**
 	 * Intent signaling new session has been saved
 	 */
     public static final String INTENT_NEW_SESSION = Constants.PACKAGE_NAME + ".intent.SESSION_SAVED";
@@ -46,51 +41,6 @@ public final class Constants {
 	 * Intent signalling sessions have been changed (e.g. deletes)
 	 */
     public static final String INTENT_SESSION_UPDATE = Constants.PACKAGE_NAME + ".intent.SESSION_UPDATE";
-
-	/**
-	 * Key for extra data "location" in Intent
-	 */
-	public static final String INTENT_KEY_LOCATION = "location";
-
-	/**
-	 * Key for extra data "uuid" in Intent
-	 */
-	public static final String INTENT_KEY_UUID = "uuid";
-
-	// Messages
-
-	public static final int MSG_SERVICE_READY = 5;
-
-    //public static final int MSG_SERVICE_SHUTDOWN = 999;
-
-    public static final int SHUTDOWN_REASON_NORMAL = 1;
-
-    public static final int SHUTDOWN_REASON_LOW_POWER = 2;
-
-    /**
-	 * Extra data key: Generic key
-	 */
-	public static final String MSG_KEY = "msg";
-
-	/**
-	 * Extra data key: Operator name
-	 */
-	public static final String MSG_OPERATOR = "operator";
-
-	/**
-	 * Extra data key: ssid
-	 */
-	public static final String MSG_SSID = "ssid";
-
-	/**
-	 * Extra data key: bssid
-	 */
-	public static final String MSG_BSSID = "bssid";
-
-	/**
-	 * Extra data key: location
-	 */
-	public static final String MSG_LOCATION = "location";
 
 	/**
 	 * Session Id, when not currently tracking
