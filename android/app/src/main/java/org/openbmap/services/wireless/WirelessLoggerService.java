@@ -355,7 +355,7 @@ public class WirelessLoggerService extends AbstractService {
                 // TODO we need a timestamp for signal strength
                 try {
                     mCdmaStrengthDbm = signalStrength.getCdmaDbm();
-                    mCdmaEcIo = signalStrength.getmCdmaEcIo();
+                    mCdmaEcIo = signalStrength.getCdmaEcio();
                 } catch (final Exception e) {
                     Log.e(TAG, e.toString(), e);
                 }
@@ -368,7 +368,7 @@ public class WirelessLoggerService extends AbstractService {
                 }
 
                 try {
-                    mGsmBitErrorRate = signalStrength.getmGsmBitErrorRate();
+                    mGsmBitErrorRate = signalStrength.getGsmBitErrorRate();
                     mGsmStrengthAsu = signalStrength.getGsmSignalStrength();
                     mGsmStrengthDbm = -113 + 2 * mGsmStrengthAsu; // conversion ASU in dBm
                 } catch (final Exception e) {
@@ -737,8 +737,8 @@ public class WirelessLoggerService extends AbstractService {
                 cells.addAll(neigbors);
 
                 broadcastCellInfo(serving);
+                }
             }
-        }
 
         // now persist list of cell records in database
         // Caution: So far we set end position = begin position
@@ -755,7 +755,7 @@ public class WirelessLoggerService extends AbstractService {
     @SuppressLint("NewApi")
     private boolean isNewApiSupported() {
         if (SDK_INT >= JELLY_BEAN_MR1) {
-            return mTelephonyManager.getAllCellInfo() != null;
+            return (mTelephonyManager.getAllCellInfo() != null) && (mTelephonyManager.getAllCellInfo().size() > 0);
         } else {
             return false;
         }
