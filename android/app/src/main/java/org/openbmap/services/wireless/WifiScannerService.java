@@ -208,6 +208,10 @@ public class WifiScannerService extends Service {
         return upstreamMessenger.getBinder();
     }
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_STICKY;
+    }
 
     @Override
     public final void onCreate() {

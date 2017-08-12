@@ -18,12 +18,16 @@
 
 package org.openbmap.services;
 
+import android.app.Service;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
+import android.os.IBinder;
+import android.os.Messenger;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -40,8 +44,10 @@ import org.openbmap.Preferences;
 import org.openbmap.db.ContentProvider;
 import org.openbmap.db.DatabaseHelper;
 import org.openbmap.db.Schema;
-import org.openbmap.events.onCatalogUpdateAvailable;
-import org.openbmap.events.onCatalogUpdateRequested;
+import org.openbmap.events.onCatalogQuery;
+import org.openbmap.events.onCatalogResults;
+import org.openbmap.events.onCatalogStart;
+import org.openbmap.events.onCatalogStop;
 import org.openbmap.utils.CatalogObject;
 import org.openbmap.utils.LayerHelpers.LayerFilter;
 
@@ -56,9 +62,9 @@ import jsqlite.Stmt;
 
 import static org.openbmap.utils.LayerHelpers.filterToCriteria;
 
-public class CatalogService extends AbstractService {
+public class PoiCatalogService extends Service {
 
-    private static final String TAG = CatalogService.class.getSimpleName();
+    private static final String TAG = PoiCatalogService.class.getSimpleName();
     private static final int MAX_OBJECTS = 5000;
 
     private String mCatalogLocation;
@@ -93,7 +99,12 @@ public class CatalogService extends AbstractService {
     @Override
     public final void onCreate() {
         super.onCreate();
-        Log.d(TAG, "CatalogService created");
+        Log.d(TAG, "PoiCatalogService created");
+
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);
+        }
+
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         if (!prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_NONE).equals(Preferences.VAL_CATALOG_NONE)) {
             // Open catalog database
@@ -104,6 +115,14 @@ public class CatalogService extends AbstractService {
             mCatalogLocation = folder + File.separator + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.DEFAULT_CATALOG_FILE);
             Log.i(TAG, "Selected catalog file: " + mCatalogLocation);
         }
+
+        openDatabase();
+
+        /*
+        SyncPOITask task = new SyncPOITask();
+        task.execute();
+        */
+        inSync = true;
     }
 
     /*
@@ -117,6 +136,21 @@ public class CatalogService extends AbstractService {
         }
         return parts;
     }*/
+
+    /**
+     * Target we publish for clients to send messages to IncomingHandler.
+     */
+    final Messenger upstreamMessenger = new Messenger(new ManagerService.UpstreamHandler());
+
+    /**
+     * When binding to the service, we return an interface to our messenger
+     * for sending messages to the service.
+     */
+    @Override
+    public IBinder onBind(Intent intent) {
+        return upstreamMessenger.getBinder();
+    }
+
 
     private class SyncPOITask extends AsyncTask<Void, Void, Void> {
         private PoiPersistenceManager writableManager = null;
@@ -204,7 +238,7 @@ public class CatalogService extends AbstractService {
         private ArrayList<ContentValues> getNotInCatalog() {
             boolean REBUILD = false;
             final ArrayList<ContentValues> data = new ArrayList<>();
-            final DatabaseHelper dbHelper = new DatabaseHelper(CatalogService.this);
+            final DatabaseHelper dbHelper = new DatabaseHelper(PoiCatalogService.this);
             final SQLiteDatabase db = dbHelper.getReadableDatabase();
             final Cursor cursor = db.rawQuery(
                     "SELECT w." + Schema.COL_BSSID +
@@ -252,22 +286,6 @@ public class CatalogService extends AbstractService {
         }
     }
 
-    @Override
-    public final void onStartService() {
-
-        openDatabase();
-
-        if (!EventBus.getDefault().isRegistered(this)) {
-            EventBus.getDefault().register(this);
-        }
-
-        /*
-        SyncPOITask task = new SyncPOITask();
-        task.execute();
-        */
-        inSync = true;
-    }
-
 
     @Override
     public void onDestroy() {
@@ -278,16 +296,6 @@ public class CatalogService extends AbstractService {
         closeDatabase();
 
         super.onDestroy();
-    }
-
-    @Override
-    public final void onStopService() {
-        Log.d(TAG, "OnStopService called");
-        if (EventBus.getDefault().isRegistered(this)) {
-            EventBus.getDefault().unregister(this);
-        }
-
-        closeDatabase();
     }
 
     private void openDatabase() {
@@ -367,6 +375,32 @@ public class CatalogService extends AbstractService {
         return pois;
     }
 
+    @Subscribe
+    public void onEvent(onCatalogStart event) {
+        Log.d(TAG, "ACK onCatalogStart");
+    }
+
+    @Subscribe
+    public void onEvent(onCatalogStop event) {
+        Log.d(TAG, "ACK onCatalogStop");
+        closeDatabase();
+    }
+
+
+    @Subscribe
+    public void onEvent(onCatalogQuery event) {
+        if (inSync) {
+            if (dbSpatialite == null) {
+                openDatabase();
+            }
+            LoadPoiTask task = new LoadPoiTask();
+            task.execute(event.bbox);
+        } else {
+            Log.w(TAG, "POI database not yet ready");
+        }
+    }
+
+
     private void closeDatabase() {
         if (dbSpatialite != null) {
             try {
@@ -378,19 +412,6 @@ public class CatalogService extends AbstractService {
         }
     }
 
-    @Subscribe
-    public void onEvent(onCatalogUpdateRequested event) {
-        if (inSync) {
-            Log.i(TAG, "Loading POI data");
-            if (dbSpatialite == null) {
-                openDatabase();
-            }
-            LoadPoiTask task = new LoadPoiTask();
-            task.execute(event.bbox);
-        } else {
-            Log.w(TAG, "POI database not yet ready");
-        }
-    }
 
     private class LoadPoiTask extends AsyncTask<BoundingBox, Void, Collection<CatalogObject>> {
 
@@ -429,7 +450,7 @@ public class CatalogService extends AbstractService {
 
         @Override
         protected void onPostExecute(Collection<CatalogObject> pois) {
-            EventBus.getDefault().post(new onCatalogUpdateAvailable(pois));
+            EventBus.getDefault().post(new onCatalogResults(pois));
         }
 
     }

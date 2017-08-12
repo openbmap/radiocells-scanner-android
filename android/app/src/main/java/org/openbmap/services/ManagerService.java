@@ -23,11 +23,9 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.BatteryManager;
@@ -47,6 +45,8 @@ import org.openbmap.R;
 import org.openbmap.activities.tabs.TabHostActivity_;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.Session;
+import org.openbmap.events.onCatalogStart;
+import org.openbmap.events.onCatalogStop;
 import org.openbmap.events.onCellScannerStart;
 import org.openbmap.events.onCellScannerStop;
 import org.openbmap.events.onGpxStart;
@@ -93,7 +93,7 @@ public class ManagerService extends Service {
 
     private DataHelper dataHelper;
 
-    private CatalogService catalogService;
+    private PoiCatalogService catalogService;
 
     private boolean poiBound;
 
@@ -109,23 +109,6 @@ public class ManagerService extends Service {
      */
     public static class UpstreamHandler extends Handler {
     }
-
-    private ServiceConnection catalogConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            AbstractService.LocalBinder binder = (AbstractService.LocalBinder) service;
-            catalogService = (CatalogService) binder.getService();
-            poiBound = true;
-            Log.i(TAG, "CatalogService bound");
-            //EventBus.getDefault().post(new onStartPoi(session));
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            poiBound = false;
-            Log.i(TAG, "CatalogService disconnected");
-        }
-    };
 
     /**
      * Target we publish for clients to send messages to IncomingHandler.
@@ -162,10 +145,10 @@ public class ManagerService extends Service {
         Log.v(TAG, "ManagerService#onDestroy");
         unregisterBatteryReceiver();
         cancelNotification();
+
         if (EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().unregister(this);
         }
-        unbindAll();
     }
 
     /**
@@ -226,11 +209,11 @@ public class ManagerService extends Service {
             this.session = saveNewSession();
         }
 
-        bindAll();
         EventBus.getDefault().post(new onLocationStart());
         EventBus.getDefault().post(new onGpxStart(session));
         EventBus.getDefault().post(new onCellScannerStart(session));
         EventBus.getDefault().post(new onWifiScannerStart(session));
+        EventBus.getDefault().post(new onCatalogStart());
         addNotificationIcon();
     }
 
@@ -245,8 +228,7 @@ public class ManagerService extends Service {
         closeSession();
         session = Constants.SESSION_NOT_TRACKING;
 
-        unbindAll();
-
+        EventBus.getDefault().post(new onCatalogStop());
         EventBus.getDefault().post(new onLocationStop());
         EventBus.getDefault().post(new onGpxStop());
         EventBus.getDefault().post(new onCellScannerStop());
@@ -302,28 +284,6 @@ public class ManagerService extends Service {
             }
         }
     };
-
-    /**
-     * Binds all sub-services
-     */
-    private void bindAll() {
-        Log.v(TAG, "Binding services");
-
-        Intent i4 = new Intent(this, CatalogService.class);
-        bindService(i4, catalogConnection, Context.BIND_AUTO_CREATE);
-    }
-
-    /**
-     * Unbinds all sub-services
-     */
-    private void unbindAll() {
-        Log.v(TAG, "Unbinding services");
-
-        if (poiBound) {
-            unbindService(catalogConnection);
-            poiBound = false;
-        }
-    }
 
     /**
      * Creates a new sessions and adds session record to the database

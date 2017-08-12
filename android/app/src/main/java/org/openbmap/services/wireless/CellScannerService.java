@@ -184,6 +184,10 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
      */
     private SQLiteDatabase wifiCatalog;
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_STICKY;
+    }
 
     @Override
     public final void onCreate() {

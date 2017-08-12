@@ -66,6 +66,11 @@ public class GpxLoggerService extends Service {
 	 */
 	private DataHelper dataHelper;
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_STICKY;
+    }
+
 	@Override
 	public final void onCreate() {
 		super.onCreate();

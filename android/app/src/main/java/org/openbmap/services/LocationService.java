@@ -43,6 +43,7 @@ import org.openbmap.R;
 import org.openbmap.events.onLocationStart;
 import org.openbmap.events.onLocationStop;
 import org.openbmap.events.onLocationUpdated;
+import org.openbmap.events.onSatInfo;
 import org.openbmap.utils.PermissionHelper;
 
 /**
@@ -112,7 +113,8 @@ public class LocationService extends Service implements GpsStatus.Listener, Loca
     public final void onLocationChanged(final Location location) {
         if (isTracking) {
             if ((lastTimestamp + minTimeBetweenUpdates) < System.currentTimeMillis()) {
-                EventBus.getDefault().post(new onLocationUpdated(location, "UPDATE", lastSatCount));
+                EventBus.getDefault().post(new onLocationUpdated(location));
+                EventBus.getDefault().post(new onSatInfo(location, "UPDATE", lastSatCount));
                 lastTimestamp = System.currentTimeMillis();
                 lastLocation = location;
             }
@@ -161,7 +163,7 @@ public class LocationService extends Service implements GpsStatus.Listener, Loca
                         if (lm != null) {
                             lastLocation = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
                             if (lastLocation != null) {
-                                EventBus.getDefault().post(new onLocationUpdated(lastLocation, "OUT_OF_SERVICE", -1));
+                                EventBus.getDefault().post(new onSatInfo(lastLocation, "OUT_OF_SERVICE", -1));
                             }
                         }
                     } catch (SecurityException e) {
@@ -217,10 +219,10 @@ public class LocationService extends Service implements GpsStatus.Listener, Loca
             // Don't do anything for status AVAILABLE, as this event occurs frequently,
             // changing the graphics cause flickering .
             case android.location.LocationProvider.OUT_OF_SERVICE:
-                EventBus.getDefault().post(new onLocationUpdated(null, "OUT_OF_SERVICE", -1));
+                EventBus.getDefault().post(new onSatInfo(null, "OUT_OF_SERVICE", -1));
                 break;
             case android.location.LocationProvider.TEMPORARILY_UNAVAILABLE:
-                EventBus.getDefault().post(new onLocationUpdated(null, "TEMPORARILY_UNAVAILABLE", -1));
+                EventBus.getDefault().post(new onSatInfo(null, "TEMPORARILY_UNAVAILABLE", -1));
                 break;
             default:
                 break;
