@@ -33,11 +33,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.GridLabelRenderer;
-import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.LineGraphSeries;
-import com.jjoe64.graphview.series.PointsGraphSeries;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.github.mikephil.charting.utils.ColorTemplate;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
@@ -96,14 +100,14 @@ public class OverviewFragment extends Fragment {
     @ViewById(R.id.overview_alert_icon)
     public ImageView ivAlert;
     @ViewById(R.id.overview_graph)
-    public GraphView gvGraph;
+    public LineChart gvGraph;
     @ViewById(R.id.overview_wifi_details_button)
     public ImageButton btnWifiDetails;
     @ViewById(R.id.overview_cell_details_button)
     public ImageButton btnCellDetails;
 
-    private LineGraphSeries mMeasurements;
-    private PointsGraphSeries highlight;
+    //private LineGraphSeries mMeasurements;
+    //private PointsGraphSeries highlight;
 
     /**
      * Last wifi as displayed
@@ -310,6 +314,7 @@ public class OverviewFragment extends Fragment {
      */
     @AfterViews
     public void initUI() {
+        /*
         gvGraph.getViewport().setXAxisBoundsManual(true);
         gvGraph.getViewport().setYAxisBoundsManual(true);
         gvGraph.getViewport().setMinY(-100);
@@ -321,7 +326,51 @@ public class OverviewFragment extends Fragment {
         gvGraph.getGridLabelRenderer().setGridStyle(GridLabelRenderer.GridStyle.HORIZONTAL);
         gvGraph.getGridLabelRenderer().setNumVerticalLabels(3);
         gvGraph.getViewport().setMinX(0);
-        gvGraph.getViewport().setMaxX(60);
+        gvGraph.getViewport().setMaxX(60);*/
+        //gvGraph.setOnChartValueSelectedListener(this);
+
+        // enable description text
+        //gvGraph.getDescription().setEnabled(true);
+
+        // enable touch gestures
+        gvGraph.setTouchEnabled(true);
+
+        // enable scaling and dragging
+        gvGraph.setDragEnabled(true);
+        gvGraph.setScaleEnabled(true);
+        gvGraph.setDrawGridBackground(false);
+
+        // if disabled, scaling can be done on x- and y-axis separately
+        gvGraph.setPinchZoom(true);
+
+        // set an alternative background color
+        gvGraph.setBackgroundColor(Color.LTGRAY);
+
+        LineData data = new LineData();
+        data.setValueTextColor(Color.WHITE);
+
+        // add empty data
+        gvGraph.setData(data);
+
+        // get the legend (only possible after setting data)
+        Legend l = gvGraph.getLegend();
+        l.setForm(Legend.LegendForm.LINE);
+        l.setTextColor(Color.WHITE);
+
+        XAxis xl = gvGraph.getXAxis();
+        xl.setTextColor(Color.WHITE);
+        xl.setDrawGridLines(false);
+        xl.setAvoidFirstLastClipping(true);
+        xl.setEnabled(false);
+
+        YAxis leftAxis = gvGraph.getAxisLeft();
+        leftAxis.setTextColor(Color.WHITE);
+        leftAxis.setAxisMaximum(-50f);
+        leftAxis.setAxisMinimum(-120f);
+        leftAxis.setDrawGridLines(true);
+
+        YAxis rightAxis = gvGraph.getAxisRight();
+        rightAxis.setEnabled(false);
     }
 
     @Click(R.id.overview_wifi_details_button)
@@ -371,8 +420,7 @@ public class OverviewFragment extends Fragment {
      * Redraws cell strength graph
      */
     private void updateGraph() {
-        //Log.d(TAG, "Updating graph, current level " + mCurrentLevel);
-        if (mMeasurements == null) {
+        /*if (mMeasurements == null) {
             //Log.i(TAG, "Adding new data series to chart");
             mMeasurements = new LineGraphSeries<>();
             gvGraph.addSeries(mMeasurements);
@@ -396,7 +444,66 @@ public class OverviewFragment extends Fragment {
             highlight.appendData(new DataPoint(graph2LastXValue, -105d), true, 60);
         }
         graph2LastXValue += 1d;
-        mCurrentLevel = -1;
+        mCurrentLevel = -1;*/
+
+        LineData data = gvGraph.getData();
+
+        if (data != null) {
+
+            ILineDataSet set = data.getDataSetByIndex(0);
+            // set.addEntry(...); // can be called as well
+
+            if (set == null) {
+                set = createSet();
+                data.addDataSet(set);
+            }
+
+            if (mCurrentLevel != -1) {
+                //mMeasurements.appendData(new DataPoint(graph2LastXValue, mCurrentLevel), true, 60);
+                data.addEntry(new Entry(set.getEntryCount(), (float) mCurrentLevel), 0);
+            } else {
+                //mMeasurements.appendData(new DataPoint(graph2LastXValue, -100d), true, 60);
+                data.addEntry(new Entry(set.getEntryCount(), (float) -100f), 0);
+            }
+            data.notifyDataChanged();
+            mCurrentLevel = -1;
+
+            // let the chart know it's data has changed
+            gvGraph.notifyDataSetChanged();
+
+            // limit the number of visible entries
+            gvGraph.setVisibleXRangeMaximum(100);
+            // mChart.setVisibleYRange(30, AxisDependency.LEFT);
+
+            // move to the latest entry
+            gvGraph.moveViewToX(data.getEntryCount());
+
+            // this automatically refreshes the chart (calls invalidate())
+            // mChart.moveViewTo(data.getXValCount()-7, 55f,
+            // AxisDependency.LEFT);
+        }
+    }
+
+    private LineDataSet createSet() {
+
+        LineDataSet set = new LineDataSet(null, this.getString(R.string.graph_title));
+        set.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+        set.setAxisDependency(YAxis.AxisDependency.LEFT);
+
+        set.setColor(ColorTemplate.getHoloBlue());
+        set.setCircleColor(Color.WHITE);
+        set.setLineWidth(2f);
+
+        set.setCircleRadius(4f);
+        set.setCircleHoleRadius(2.5f);
+
+        set.setFillAlpha(65);
+        set.setFillColor(ColorTemplate.getHoloBlue());
+        set.setHighLightColor(Color.rgb(244, 117, 117));
+        set.setValueTextColor(Color.WHITE);
+        set.setValueTextSize(9f);
+        set.setDrawValues(false);
+        return set;
     }
 
     /**
