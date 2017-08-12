@@ -134,7 +134,7 @@
         android:layout_height="fill_parent"
         android:orientation="horizontal">
 
-        <com.jjoe64.graphview.GraphView
+        <com.github.mikephil.charting.charts.LineChart
             android:id="@+id/overview_graph"
             android:layout_gravity="top"
             android:layout_width="match_parent"
