@@ -18,7 +18,6 @@
 
 package org.openbmap.activities.tabs;
 
-import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.content.Intent;
 import android.graphics.Color;
@@ -143,40 +142,28 @@ public class OverviewFragment extends Fragment {
 
     private String mCurrentTechnology;
 
-    private double graph2LastXValue;
-
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mFadeIgnoreTask = new Runnable() {
-            @Override
-            public void run() {
-                if (tvIgnored != null) {
-                    tvIgnored.setVisibility(View.INVISIBLE);
-                    ivAlert.setVisibility(View.INVISIBLE);
-                }
+        mFadeIgnoreTask = () -> {
+            if (tvIgnored != null) {
+                tvIgnored.setVisibility(View.INVISIBLE);
+                ivAlert.setVisibility(View.INVISIBLE);
             }
         };
 
-        mFadeFreeTask = new Runnable() {
-            @Override
-            public void run() {
-                if (tvFree != null) {
-                    tvFree.setVisibility(View.INVISIBLE);
-                    ivFree.setVisibility(View.INVISIBLE);
-                }
+        mFadeFreeTask = () -> {
+            if (tvFree != null) {
+                tvFree.setVisibility(View.INVISIBLE);
+                ivFree.setVisibility(View.INVISIBLE);
             }
         };
 
-        mRefreshTask = new Runnable() {
-            @SuppressLint("DefaultLocale")
-            @Override
-            public void run() {
-                updateTimeSinceUpdate();
-                updateGraph();
-                mRefreshHandler.postDelayed(mRefreshTask, REFRESH_INTERVAL);
-            }
+        mRefreshTask = () -> {
+            updateTimeSinceUpdate();
+            updateGraph();
+            mRefreshHandler.postDelayed(mRefreshTask, REFRESH_INTERVAL);
         };
 
         // setup broadcast filters
@@ -202,7 +189,7 @@ public class OverviewFragment extends Fragment {
 
     @Subscribe
     public void onEvent(onWifisAdded event) {
-        if (event.items.size()>0) {
+        if (event.items.size() > 0) {
             tvWifiDescription.setText(event.items.get(0).getSsid());
             tvWifiStrength.setText(String.format("%d dBm", event.items.get(0).getLevel()));
             mLastBssid = event.items.get(0).getBssid();
@@ -228,6 +215,7 @@ public class OverviewFragment extends Fragment {
 
     /**
      * Displays explanation for blacklisting
+     *
      * @param event
      */
     @Subscribe
@@ -255,7 +243,6 @@ public class OverviewFragment extends Fragment {
 
         Log.d(TAG, "Cell update received, level" + event.level);
 
-        mCurrentTechnology = event.technology;
         mCurrentLevel = event.level;
         mCellUpdateTime = System.currentTimeMillis();
 
@@ -278,6 +265,7 @@ public class OverviewFragment extends Fragment {
         tvCellStrength.setText(String.format("%d dBm", mCurrentLevel));
 
         if (!event.technology.equals(mCurrentTechnology)) {
+            mCurrentTechnology = event.technology;
             final Animation in = new AlphaAnimation(0.0f, 1.0f);
             in.setDuration(2000);
             final Animation out = new AlphaAnimation(1.0f, 0.0f);
@@ -314,24 +302,6 @@ public class OverviewFragment extends Fragment {
      */
     @AfterViews
     public void initUI() {
-        /*
-        gvGraph.getViewport().setXAxisBoundsManual(true);
-        gvGraph.getViewport().setYAxisBoundsManual(true);
-        gvGraph.getViewport().setMinY(-100);
-        gvGraph.getViewport().setMaxY(-50);
-        gvGraph.setTitle(this.getString(R.string.graph_title));
-        gvGraph.getGridLabelRenderer().setVerticalAxisTitle(this.getString(R.string.dbm));
-        gvGraph.getGridLabelRenderer().setHorizontalLabelsVisible(false);
-        gvGraph.getGridLabelRenderer().setHighlightZeroLines(false);
-        gvGraph.getGridLabelRenderer().setGridStyle(GridLabelRenderer.GridStyle.HORIZONTAL);
-        gvGraph.getGridLabelRenderer().setNumVerticalLabels(3);
-        gvGraph.getViewport().setMinX(0);
-        gvGraph.getViewport().setMaxX(60);*/
-        //gvGraph.setOnChartValueSelectedListener(this);
-
-        // enable description text
-        //gvGraph.getDescription().setEnabled(true);
-
         // enable touch gestures
         gvGraph.setTouchEnabled(true);
 
@@ -343,13 +313,10 @@ public class OverviewFragment extends Fragment {
         // if disabled, scaling can be done on x- and y-axis separately
         gvGraph.setPinchZoom(true);
 
-        // set an alternative background color
-        gvGraph.setBackgroundColor(Color.LTGRAY);
-
-        LineData data = new LineData();
-        data.setValueTextColor(Color.WHITE);
+        //gvGraph.setBackgroundColor(Color.LTGRAY);
 
         // add empty data
+        LineData data = new LineData();
         gvGraph.setData(data);
 
         // get the legend (only possible after setting data)
@@ -398,8 +365,8 @@ public class OverviewFragment extends Fragment {
      */
     private void registerReceiver() {
         if (!EventBus.getDefault().isRegistered(this)) {
-            EventBus.getDefault().register(this);}
-        else {
+            EventBus.getDefault().register(this);
+        } else {
             Log.i(TAG, "Event bus receiver already registered");
         }
     }
@@ -451,11 +418,15 @@ public class OverviewFragment extends Fragment {
         if (data != null) {
 
             ILineDataSet set = data.getDataSetByIndex(0);
-            // set.addEntry(...); // can be called as well
-
             if (set == null) {
-                set = createSet();
+                set = createDefaultSet();
                 data.addDataSet(set);
+            }
+
+            ILineDataSet highlightSet = data.getDataSetByIndex(0);
+            if (highlightSet == null) {
+                highlightSet = createHighlightedSet();
+                data.addDataSet(highlightSet);
             }
 
             if (mCurrentLevel != -1) {
@@ -465,14 +436,19 @@ public class OverviewFragment extends Fragment {
                 //mMeasurements.appendData(new DataPoint(graph2LastXValue, -100d), true, 60);
                 data.addEntry(new Entry(set.getEntryCount(), (float) -100f), 0);
             }
+
+            if (mCurrentLevel > -65 && mCurrentLevel < -1) {
+                data.addEntry(new Entry(highlightSet.getEntryCount(), (float) mCurrentLevel), 0);
+            }
+
             data.notifyDataChanged();
-            mCurrentLevel = -1;
+            //mCurrentLevel = -1;
 
             // let the chart know it's data has changed
             gvGraph.notifyDataSetChanged();
 
             // limit the number of visible entries
-            gvGraph.setVisibleXRangeMaximum(100);
+            gvGraph.setVisibleXRangeMaximum(50);
             // mChart.setVisibleYRange(30, AxisDependency.LEFT);
 
             // move to the latest entry
@@ -484,28 +460,30 @@ public class OverviewFragment extends Fragment {
         }
     }
 
-    private LineDataSet createSet() {
-
+    private LineDataSet createDefaultSet() {
         LineDataSet set = new LineDataSet(null, this.getString(R.string.graph_title));
         set.setMode(LineDataSet.Mode.CUBIC_BEZIER);
         set.setAxisDependency(YAxis.AxisDependency.LEFT);
 
         set.setColor(ColorTemplate.getHoloBlue());
+        set.setLineWidth(1.75f);
+
         set.setCircleColor(Color.WHITE);
-        set.setLineWidth(2f);
+        set.setCircleRadius(5f);
+        set.setCircleHoleRadius(4f);
 
-        set.setCircleRadius(4f);
-        set.setCircleHoleRadius(2.5f);
-
-        set.setFillAlpha(65);
-        set.setFillColor(ColorTemplate.getHoloBlue());
-        set.setHighLightColor(Color.rgb(244, 117, 117));
-        set.setValueTextColor(Color.WHITE);
-        set.setValueTextSize(9f);
+        //set.setHighLightColor(Color.rgb(244, 117, 117));
         set.setDrawValues(false);
         return set;
     }
 
+    private LineDataSet createHighlightedSet() {
+        LineDataSet highlight = createDefaultSet();
+        highlight.setCircleColor(Color.YELLOW);
+        highlight.setCircleRadius(6f);
+        highlight.setFillAlpha(65);
+        return highlight;
+    }
     /**
      * Returns time since base value as human-readable string
      *
