@@ -62,7 +62,7 @@
             android:defaultValue="35"
             android:dialogMessage="@string/prefs_req_gps_accuracy_hint"
             android:inputType="numberDecimal"
-            android:key="logging_gps_accuracy"
+            android:key="logging.gps_accuracy"
             android:summary="@string/prefs_req_gps_accuracy_hint"
             android:title="@string/prefs_req_gps_accuracy" />
 
