@@ -22,7 +22,6 @@ import android.telephony.CellIdentityGsm;
 import android.telephony.CellIdentityLte;
 import android.telephony.CellIdentityWcdma;
 import android.telephony.CellInfoCdma;
-import android.telephony.CellInfoLte;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.gsm.GsmCellLocation;
 
@@ -128,9 +127,9 @@ public class CellValidator {
             return isValidGsmCell((CellIdentityGsm) cell);
         } else if (cell instanceof CellIdentityWcdma) {
             return isValidWcdmaCell((CellIdentityWcdma) cell);
-        } else if (cell instanceof CellInfoCdma) {
+        } else if (cell instanceof CellIdentityCdma) {
             return isValidCdmaCell((CellIdentityCdma) cell);
-        } else if (cell instanceof CellInfoLte) {
+        } else if (cell instanceof CellIdentityLte) {
             return isValidLteCell((CellIdentityLte) cell);
         } else if (cell instanceof GsmCellLocation) {
             return isValidGsmCell((GsmCellLocation) cell);
