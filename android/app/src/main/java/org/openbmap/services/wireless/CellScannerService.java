@@ -24,10 +24,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteCantOpenDatabaseException;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
 import android.location.Location;
 import android.os.Build;
 import android.os.IBinder;
@@ -62,15 +58,12 @@ import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.CellRecord;
 import org.openbmap.db.models.MetaData;
 import org.openbmap.db.models.PositionRecord;
-import org.openbmap.db.models.WifiRecord.CatalogStatus;
-import org.openbmap.events.onBlacklisted;
 import org.openbmap.events.onCellChanged;
 import org.openbmap.events.onCellSaved;
 import org.openbmap.events.onCellScannerStart;
 import org.openbmap.events.onCellScannerStop;
 import org.openbmap.events.onLocationUpdated;
 import org.openbmap.services.ManagerService;
-import org.openbmap.services.wireless.blacklists.BlacklistReasonType;
 import org.openbmap.services.wireless.blacklists.LocationBlackList;
 import org.openbmap.utils.CellValidator;
 import org.openbmap.utils.GeometryUtils;
@@ -82,10 +75,11 @@ import java.util.Date;
 import java.util.List;
 
 import static android.os.Build.VERSION.SDK_INT;
-import static org.openbmap.utils.CellValidator.isValidCell;
+import static org.openbmap.utils.CellValidator.isValidCellIdentity;
 
 /**
- * CellScannerService takes care of cell logging
+ * CellScannerService takes care of cell logging. It listens to cell updates permanently,
+ * but database updates only take place, when receiving location updates from LocationService
  */
 public class CellScannerService extends Service implements ActivityCompat.OnRequestPermissionsResultCallback {
 
@@ -95,7 +89,6 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
      * Keeps the SharedPreferences
      */
     private SharedPreferences prefs = null;
-
 
     /**
      * Current session id
@@ -117,7 +110,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
     /**
      * Phone state listeners to receive cell updates
      */
-    private TelephonyManager telephonyManager;
+    private TelephonyManager tm;
 
     private PhoneStateListener phoneStateListener;
 
@@ -180,19 +173,116 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
     private LocationBlackList locationBlacklist;
 
     /**
-     * Radiocells catalog database (used for checking if new wifi)
+     * Target we publish for clients to send messages to IncomingHandler.
      */
-    private SQLiteDatabase wifiCatalog;
+    final Messenger upstreamMessenger = new Messenger(new ManagerService.UpstreamHandler());
+
+    /**
+     * When binding to the service, we return an interface to our messenger
+     * for sending messages to the service.
+     */
+    @Override
+    public IBinder onBind(Intent intent) {
+        return upstreamMessenger.getBinder();
+    }
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         return START_STICKY;
     }
 
+
+    @Subscribe
+    public void onEvent(onCellScannerStart event) {
+        Log.d(TAG, "ACK onCellScannerStart event");
+        session = event.session;
+        session = event.session;
+        savedAt = new Location("DUMMY");
+        startTracking(session);
+    }
+
+
+    @Subscribe
+    public void onEvent(onCellScannerStop event) {
+        Log.d(TAG, "ACK onCellScannerStop event");
+        stopTracking();
+    }
+
+    @Subscribe
+    public void onEvent(onLocationUpdated event) {
+        if (!isTracking) {
+            return;
+        }
+
+        final Location location = event.location;
+        if (location == null) {
+            return;
+        }
+
+        final String source = location.getProvider();
+
+        // do nothing, if required minimum gps accuracy is not given
+        if (!acceptableAccuracy(location)) {
+            Log.i(TAG, "GPS accuracy to bad (" + location.getAccuracy() + "m). Ignoring");
+            return;
+        }
+
+        /*
+         * two criteria are required for cells updates
+         * 		distance > MIN_CELL_DISTANCE
+         * 		elapsed time (in milli seconds) > MIN_CELL_TIME_INTERVAL
+         */
+        if (acceptableDistance(location, savedAt)) {
+            Log.d(TAG, "Cell update. Distance " + location.distanceTo(savedAt));
+            final boolean resultOk = updateCells(location, source);
+
+            if (resultOk) {
+                //Log.i(TAG, "Successfully saved cell");
+                savedAt = location;
+            }
+        } else {
+            Log.i(TAG, "Cell update skipped: either to close to last location or interval < " + MIN_CELL_TIME_INTERVAL / 2000 + " seconds");
+        }
+
+        lastLocation = location;
+        lastLocationProvider = source;
+    }
+
+    /**
+     * Starts wireless tracking
+     *
+     * @param sessionId
+     */
+    private void startTracking(final long sessionId) {
+        Log.d(TAG, "Start tracking on session " + sessionId);
+        isTracking = true;
+        this.session = sessionId;
+
+        dataHelper.saveMetaData(new MetaData(
+                Build.MANUFACTURER,
+                Build.MODEL,
+                Build.VERSION.RELEASE,
+                Constants.SWID,
+                Constants.SW_VERSION,
+                sessionId));
+    }
+
+    /**
+     * Stops wireless Logging
+     */
+    private void stopTracking() {
+        Log.d(TAG, "Stop tracking on session " + session);
+        isTracking = false;
+        session = Constants.SESSION_NOT_TRACKING;
+    }
+
+
     @Override
     public final void onCreate() {
-        Log.d(TAG, "CellScannerService created");
         super.onCreate();
+
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         if (!EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().register(this);
@@ -203,29 +293,6 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
         // Set savedAt and mWifiSavedAt to default values (Lat 0, Lon 0)
         // Thus MIN_CELL_DISTANCE filters are always fired on startup
         savedAt = new Location("DUMMY");
-
-        // get shared preferences
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        if (!prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.DEFAULT_CATALOG_FILE).equals(Preferences.VAL_CATALOG_NONE)) {
-            final String catalogPath = prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
-                    getApplicationContext().getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.CATALOG_SUBDIR)
-                    + File.separator + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.DEFAULT_CATALOG_FILE);
-
-            if (!(new File(catalogPath)).exists()) {
-                Log.w(TAG, "Selected catalog doesn't exist");
-                wifiCatalog = null;
-            } else {
-                try {
-                    wifiCatalog = SQLiteDatabase.openDatabase(catalogPath, null, SQLiteDatabase.OPEN_READONLY);
-                } catch (final SQLiteCantOpenDatabaseException ex) {
-                    Log.e(TAG, "Can't open wifi catalog database @ " + catalogPath);
-                    wifiCatalog = null;
-                }
-            }
-        } else {
-            Log.w(TAG, "No wifi catalog selected. Can't compare scan results with openbmap dataset.");
-        }
 
 		/*
          * Setting up database connection
@@ -238,7 +305,6 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
             Log.w(TAG, "PhoneStateManager requires ACCESS_COARSE_LOCATION permission - can't register");
             return;
         }
-
 
         initBlacklists();
     }
@@ -276,18 +342,28 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
      */
     private void registerPhoneStateManager() {
         Log.i(TAG, "Booting telephony manager");
-        telephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
+        tm = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
 
         printDebugInfos();
 
         phoneStateListener = new PhoneStateListener() {
             /**
              * Save signal strength changes in real-time
+             * Please note: readings are only used with legacy API, in most cases
+             * CellSignalStrength is used (getCellSignalStrength() style)
              * @param signalStrength
              */
+            @Deprecated
             @Override
             public void onSignalStrengthsChanged(final SignalStrength signalStrength) {
                 // TODO we need a timestamp for signal strength
+                try {
+                    gsmBitErrorRate = signalStrength.getGsmBitErrorRate();
+                    gsmStrengthAsu = signalStrength.getGsmSignalStrength();
+                    gsmStrengthDbm = -113 + 2 * gsmStrengthAsu; // conversion ASU in dBm
+                } catch (final Exception e) {
+                    Log.e(TAG, e.toString(), e);
+                }
                 try {
                     cdmaStrengthDbm = signalStrength.getCdmaDbm();
                     cdmaEcIo = signalStrength.getCdmaEcio();
@@ -298,14 +374,6 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
                     signalStrengthEvdodBm = signalStrength.getEvdoDbm();
                     signalStrengthEvdoEcio = signalStrength.getEvdoEcio();
                     signalStrengthSnr = signalStrength.getEvdoSnr();
-                } catch (final Exception e) {
-                    Log.e(TAG, e.toString(), e);
-                }
-
-                try {
-                    gsmBitErrorRate = signalStrength.getGsmBitErrorRate();
-                    gsmStrengthAsu = signalStrength.getGsmSignalStrength();
-                    gsmStrengthDbm = -113 + 2 * gsmStrengthAsu; // conversion ASU in dBm
                 } catch (final Exception e) {
                     Log.e(TAG, e.toString(), e);
                 }
@@ -363,11 +431,20 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
         /**
          *	Register TelephonyManager updates
          */
-        telephonyManager.listen(phoneStateListener,
+        tm.listen(phoneStateListener,
                 PhoneStateListener.LISTEN_SERVICE_STATE
                         | PhoneStateListener.LISTEN_SIGNAL_STRENGTHS
                         | PhoneStateListener.LISTEN_CELL_LOCATION);
     }
+
+
+    /**
+     * Unregisters PhoneStateListener
+     */
+    private void unregisterPhoneStateManager() {
+        tm.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
+    }
+
 
     /**
      * Outputs some debug infos to catlog
@@ -375,26 +452,21 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
     private void printDebugInfos() {
         if (SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             final PackageManager pm = getApplicationContext().getPackageManager();
-            //Log.i(TAG, telephonyManager.getPhoneCount() == 1 ? "Single SIM mode" : "Dual SIM mode");
+            //Log.i(TAG, tm.getPhoneCount() == 1 ? "Single SIM mode" : "Dual SIM mode");
             Log.wtf(TAG, "------------ YOU MAY WANT TO REDACT INFO BELOW BEFORE POSTING THIS TO THE INTERNET ------------ ");
             Log.i(TAG, "GPS support: " + pm.hasSystemFeature("android.hardware.location.gps"));
             Log.i(TAG, "GSM support: " + pm.hasSystemFeature("android.hardware.telephony.gsm"));
             Log.i(TAG, "Wifi support: " + pm.hasSystemFeature("android.hardware.wifi"));
 
-            Log.i(TAG, "SIM operator: " + telephonyManager.getSimOperator());
-            Log.i(TAG, telephonyManager.getSimOperatorName());
-            Log.i(TAG, "Network operator: " + telephonyManager.getNetworkOperator());
-            Log.i(TAG, telephonyManager.getNetworkOperatorName());
-            Log.i(TAG, "Roaming: " + telephonyManager.isNetworkRoaming());
+            Log.i(TAG, "SIM operator: " + tm.getSimOperator());
+            Log.i(TAG, tm.getSimOperatorName());
+            Log.i(TAG, "Network operator: " + tm.getNetworkOperator());
+            Log.i(TAG, tm.getNetworkOperatorName());
+            Log.i(TAG, "Roaming: " + tm.isNetworkRoaming());
+            Log.i(TAG, "Device Manufactorer:" + Build.MANUFACTURER);
+            Log.i(TAG, "Android version:" + Build.VERSION.RELEASE);
             Log.wtf(TAG, "------------ YOU MAY WANT TO REDACT INFO BELOW ABOVE POSTING THIS TO THE INTERNET ------------ ");
         }
-    }
-
-    /**
-     * Unregisters PhoneStateListener
-     */
-    private void unregisterPhoneStateManager() {
-        telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
     }
 
 
@@ -406,43 +478,12 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
             unregisterPhoneStateManager();
         }
 
-        if (wifiCatalog != null && wifiCatalog.isOpen()) {
-            wifiCatalog.close();
-        }
-
         if (EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().unregister(this);
         }
 
         super.onDestroy();
     }
-
-    /**
-     * Target we publish for clients to send messages to IncomingHandler.
-     */
-    final Messenger upstreamMessenger = new Messenger(new ManagerService.UpstreamHandler());
-
-    /**
-     * When binding to the service, we return an interface to our messenger
-     * for sending messages to the service.
-     */
-    @Override
-    public IBinder onBind(Intent intent) {
-        return upstreamMessenger.getBinder();
-    }
-
-
-    /**
-     * Broadcasts ignore message
-     *
-     * @param because reason (location / bssid / ssid
-     * @param message additional info
-     */
-    private void broadcastBlacklisted(final BlacklistReasonType because,
-                                      final String message) {
-        EventBus.getDefault().post(new onBlacklisted(because, message));
-    }
-
 
     /**
      * Processes cell related information and saves them to database
@@ -477,12 +518,14 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
         // 		All cells share same position
         // 		Neighbor cells share mnc, mcc and operator with serving cell
         final PositionRecord pos = new PositionRecord(here, session, providerName);
-        final List<CellInfo> cellInfoList = telephonyManager.getAllCellInfo();
 
-        if (cellInfoList != null && cellInfoList.size() > 0) {
+        if (isNewApiAvailable()) {
+            final List<CellInfo> cellInfoList = tm.getAllCellInfo();
+            // per default new cell info API is used. Only when new API doesn't return anything,
+            // fallback to legacy API
             Log.v(TAG, "Found " + cellInfoList.size() + " cells");
             for (final CellInfo info : cellInfoList) {
-                final CellRecord cell = serializeCell(info, pos);
+                final CellRecord cell = parseCell(info, pos);
                 if (cell != null) {
                     cells.add(cell);
                 }
@@ -498,17 +541,17 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
 
             return (cells.size() > 0);
         } else {
-            // crappy SAMSUNG devices don't implement getAllCellInfo(), so try alternative solution
-            Log.v(TAG, "Collecting cell infos (API <= 17)");
-            final CellLocation fallback = telephonyManager.getCellLocation();
-            if (fallback instanceof GsmCellLocation) {
-                final CellRecord serving = serializeCellLegacy(fallback, pos);
+            // fallback mode:
+            // some SAMSUNG modems don't implement getAllCellInfo(), so try old legacy API
+            Log.v(TAG, "Using old style cell location API (Samsung/API <= 17)");
+            final CellLocation c = tm.getCellLocation();
+            if (c instanceof GsmCellLocation) {
+                final CellRecord serving = parseCellLegacy(c, pos);
                 if (serving != null) {
                     cells.add(serving);
                 }
-
-                final ArrayList<CellRecord> neigbors = processNeighbors(serving, pos);
-                cells.addAll(neigbors);
+                final ArrayList<NeighboringCellInfo> n = (ArrayList<NeighboringCellInfo>) tm.getNeighboringCellInfo();
+                cells.addAll(parseNeighbors(n, serving, pos));
                 dataHelper.saveCellsScanResults(cells, pos, pos);
 
                 if (serving != null) {
@@ -518,7 +561,15 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
             }
             return false;
         }
+    }
 
+    /**
+     * Checks if new cell api (getAllCellInfo) returns valid results
+     *
+     * @return true if API returns results
+     */
+    private boolean isNewApiAvailable() {
+        return tm.getAllCellInfo() != null && tm.getAllCellInfo().size() > 0;
     }
 
     /**
@@ -528,44 +579,29 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
      * @param position {@linkplain PositionRecord Current position}
      * @return {@link CellRecord}
      */
-    private CellRecord serializeCell(final CellInfo cell, final PositionRecord position) {
+    private CellRecord parseCell(final CellInfo cell, final PositionRecord position) {
         if (cell instanceof CellInfoGsm) {
             /*
 			 * In case of GSM network set GSM specific values
 			 */
             final CellIdentityGsm gsmIdentity = ((CellInfoGsm) cell).getCellIdentity();
 
-            if (isValidCell(gsmIdentity)) {
+            if (isValidCellIdentity(gsmIdentity)) {
                 Log.i(TAG, "Processing gsm cell " + gsmIdentity.getCid());
                 final CellRecord result = new CellRecord(session);
-                result.setIsCdma(false);
+                result.fromGsmIdentiy(gsmIdentity);
 
                 // generic cell info
-                result.setNetworkType(telephonyManager.getNetworkType());
+                result.setNetworkType(tm.getNetworkType());
                 // TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
                 result.setOpenBmapTimestamp(position.getOpenBmapTimestamp());
                 result.setBeginPosition(position);
                 // so far we set end position = begin position
                 result.setEndPosition(position);
                 result.setIsServing(true);
-
                 result.setIsNeighbor(!cell.isRegistered());
 
-                // GSM specific
-                result.setLogicalCellId(gsmIdentity.getCid());
-
-                // add UTRAN ids, if needed
-                if (gsmIdentity.getCid() > 0xFFFFFF) {
-                    result.setUtranRnc(gsmIdentity.getCid() >> 16);
-                    result.setActualCid(gsmIdentity.getCid() & 0xFFFF);
-                } else {
-                    result.setActualCid(gsmIdentity.getCid());
-                }
-
-                // at least for Nexus 4, even HSDPA networks broadcast psc
-                result.setPsc(gsmIdentity.getPsc());
-
-                final String operator = telephonyManager.getNetworkOperator();
+                final String operator = tm.getNetworkOperator();
                 // getNetworkOperator() may return empty string, probably due to dropped connection
                 if (operator.length() > 3) {
                     result.setOperator(operator);
@@ -576,15 +612,14 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
                     return null;
                 }
 
-                final String networkOperatorName = telephonyManager.getNetworkOperatorName();
+                final String networkOperatorName = tm.getNetworkOperatorName();
                 if (networkOperatorName != null) {
-                    result.setOperatorName(telephonyManager.getNetworkOperatorName());
+                    result.setOperatorName(tm.getNetworkOperatorName());
                 } else {
                     Log.e(TAG, "Error retrieving network operator's name, skipping cell");
                     return null;
                 }
 
-                result.setArea(gsmIdentity.getLac());
                 result.setStrengthdBm(((CellInfoGsm) cell).getCellSignalStrength().getDbm());
                 result.setStrengthAsu(((CellInfoGsm) cell).getCellSignalStrength().getAsuLevel());
 
@@ -592,38 +627,23 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
             }
         } else if (cell instanceof CellInfoWcdma) {
             final CellIdentityWcdma wcdmaIdentity = ((CellInfoWcdma) cell).getCellIdentity();
-            if (isValidCell(wcdmaIdentity)) {
+            if (isValidCellIdentity(wcdmaIdentity)) {
                 Log.i(TAG, "Processing wcdma cell " + wcdmaIdentity.getCid());
                 final CellRecord result = new CellRecord(session);
-                result.setIsCdma(false);
+                result.fromWcdmaIdentity(wcdmaIdentity);
 
                 // generic cell info
-                result.setNetworkType(telephonyManager.getNetworkType());
+                result.setNetworkType(tm.getNetworkType());
                 // TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
                 result.setOpenBmapTimestamp(position.getOpenBmapTimestamp());
                 result.setBeginPosition(position);
                 // so far we set end position = begin position
                 result.setEndPosition(position);
-                result.setIsServing(true);
 
+                result.setIsServing(true);
                 result.setIsNeighbor(!cell.isRegistered());
 
-                result.setLogicalCellId(wcdmaIdentity.getCid());
-
-                // add UTRAN ids, if needed
-                if (wcdmaIdentity.getCid() > 0xFFFFFF) {
-                    result.setUtranRnc(wcdmaIdentity.getCid() >> 16);
-                    result.setActualCid(wcdmaIdentity.getCid() & 0xFFFF);
-                } else {
-                    result.setActualCid(wcdmaIdentity.getCid());
-                }
-
-                if (SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-                    // at least for Nexus 4, even HSDPA networks broadcast psc
-                    result.setPsc(wcdmaIdentity.getPsc());
-                }
-
-                final String operator = telephonyManager.getNetworkOperator();
+                final String operator = tm.getNetworkOperator();
                 // getNetworkOperator() may return empty string, probably due to dropped connection
                 if (operator.length() > 3) {
                     result.setOperator(operator);
@@ -634,15 +654,14 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
                     return null;
                 }
 
-                final String networkOperatorName = telephonyManager.getNetworkOperatorName();
+                final String networkOperatorName = tm.getNetworkOperatorName();
                 if (networkOperatorName != null) {
-                    result.setOperatorName(telephonyManager.getNetworkOperatorName());
+                    result.setOperatorName(tm.getNetworkOperatorName());
                 } else {
                     Log.e(TAG, "Error retrieving network operator's name, skipping cell");
                     return null;
                 }
 
-                result.setArea(wcdmaIdentity.getLac());
                 result.setStrengthdBm(((CellInfoWcdma) cell).getCellSignalStrength().getDbm());
                 result.setStrengthAsu(((CellInfoWcdma) cell).getCellSignalStrength().getAsuLevel());
 
@@ -650,17 +669,17 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
             }
         } else if (cell instanceof CellInfoCdma) {
             final CellIdentityCdma cdmaIdentity = ((CellInfoCdma) cell).getCellIdentity();
-            if (isValidCell(cdmaIdentity)) {
-				/*
+            if (isValidCellIdentity(cdmaIdentity)) {
+                /*
 				 * In case of CDMA network set CDMA specific values
 				 * Assume CDMA network, if cdma location and basestation, network and system id are available
 				 */
                 Log.i(TAG, "Processing cdma cell " + cdmaIdentity.getBasestationId());
                 final CellRecord result = new CellRecord(session);
-                result.setIsCdma(true);
+                result.fromCdmaIdentity(cdmaIdentity);
 
                 // generic cell info
-                result.setNetworkType(telephonyManager.getNetworkType());
+                result.setNetworkType(tm.getNetworkType());
                 // TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
                 result.setOpenBmapTimestamp(position.getOpenBmapTimestamp());
                 result.setBeginPosition(position);
@@ -671,7 +690,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
 
                 // getNetworkOperator can be unreliable in CDMA networks, thus be careful
                 // {@link http://developer.android.com/reference/android/telephony/TelephonyManager.html#getNetworkOperator()}
-                final String operator = telephonyManager.getNetworkOperator();
+                final String operator = tm.getNetworkOperator();
                 if (operator.length() > 3) {
                     result.setOperator(operator);
                     result.setMcc(operator.substring(0, 3));
@@ -682,18 +701,13 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
                     result.setMnc("");
                 }
 
-                final String networkOperatorName = telephonyManager.getNetworkOperatorName();
+                final String networkOperatorName = tm.getNetworkOperatorName();
                 if (networkOperatorName != null) {
-                    result.setOperatorName(telephonyManager.getNetworkOperatorName());
+                    result.setOperatorName(tm.getNetworkOperatorName());
                 } else {
                     Log.i(TAG, "Error retrieving network operator's name, this might happen in CDMA network");
                     result.setOperatorName("");
                 }
-
-                // CDMA specific
-                result.setBaseId(String.valueOf(cdmaIdentity.getBasestationId()));
-                result.setNetworkId(String.valueOf(cdmaIdentity.getNetworkId()));
-                result.setSystemId(String.valueOf(cdmaIdentity.getSystemId()));
 
                 result.setStrengthdBm(((CellInfoCdma) cell).getCellSignalStrength().getCdmaDbm());
                 result.setStrengthAsu(((CellInfoCdma) cell).getCellSignalStrength().getAsuLevel());
@@ -701,27 +715,25 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
             }
         } else if (cell instanceof CellInfoLte) {
             final CellIdentityLte lteIdentity = ((CellInfoLte) cell).getCellIdentity();
-            if (isValidCell(lteIdentity)) {
+            if (isValidCellIdentity(lteIdentity)) {
                 Log.i(TAG, "Processing LTE cell " + lteIdentity.getCi());
                 final CellRecord result = new CellRecord(session);
+                result.fromLteIdentity(lteIdentity);
+
                 result.setIsCdma(false);
 
                 // generic cell info
-                result.setNetworkType(telephonyManager.getNetworkType());
+                result.setNetworkType(tm.getNetworkType());
                 // TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
                 result.setOpenBmapTimestamp(position.getOpenBmapTimestamp());
                 result.setBeginPosition(position);
                 // so far we set end position = begin position
                 result.setEndPosition(position);
+
                 result.setIsServing(true);
-
                 result.setIsNeighbor(!cell.isRegistered());
-                result.setLogicalCellId(lteIdentity.getCi());
 
-                // set Actual Cid = Logical Cid (as we don't know better at the moment)
-                result.setActualCid(result.getLogicalCellId());
-
-                final String operator = telephonyManager.getNetworkOperator();
+                final String operator = tm.getNetworkOperator();
                 // getNetworkOperator() may return empty string, probably due to dropped connection
                 if (operator.length() > 3) {
                     result.setOperator(operator);
@@ -732,17 +744,13 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
                     return null;
                 }
 
-                final String networkOperatorName = telephonyManager.getNetworkOperatorName();
+                final String networkOperatorName = tm.getNetworkOperatorName();
                 if (networkOperatorName != null) {
-                    result.setOperatorName(telephonyManager.getNetworkOperatorName());
+                    result.setOperatorName(tm.getNetworkOperatorName());
                 } else {
                     Log.e(TAG, "Error retrieving network operator's name, skipping cell");
                     return null;
                 }
-
-                // LTE specific
-                result.setArea(lteIdentity.getTac());
-                result.setPsc(lteIdentity.getPci());
 
                 result.setStrengthdBm(((CellInfoLte) cell).getCellSignalStrength().getDbm());
                 result.setStrengthAsu(((CellInfoLte) cell).getCellSignalStrength().getAsuLevel());
@@ -753,21 +761,22 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
     }
 
     /**
-     * Legacy mode: use only if you can't get cell infos via telephonyManager.getAllCellInfo()
+     * Converts CellLocation object into openbmap cell object
+     * Legacy mode: use only if you can't get cell infos via tm.getAllCellInfo()
      *
      * @param cell
      * @param position
      * @return
      */
     @Deprecated
-    private CellRecord serializeCellLegacy(final CellLocation cell, final PositionRecord position) {
+    private CellRecord parseCellLegacy(final CellLocation cell, final PositionRecord position) {
         if (cell instanceof GsmCellLocation) {
             /*
 			 * In case of GSM network set GSM specific values
 			 */
             final GsmCellLocation gsmLocation = (GsmCellLocation) cell;
 
-            if (isValidCell(gsmLocation)) {
+            if (isValidCellIdentity(gsmLocation)) {
                 Log.i(TAG, "Assuming gsm (assumption based on cell-id" + gsmLocation.getCid() + ")");
                 final CellRecord serving = processGsm(position, gsmLocation);
 
@@ -786,7 +795,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
         serving.setIsCdma(false);
 
         // generic cell info
-        serving.setNetworkType(telephonyManager.getNetworkType());
+        serving.setNetworkType(tm.getNetworkType());
         // TODO: unelegant: implicit conversion from UTC to YYYYMMDDHHMMSS in begin.setTimestamp
         serving.setOpenBmapTimestamp(position.getOpenBmapTimestamp());
         serving.setBeginPosition(position);
@@ -811,7 +820,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
             serving.setPsc(gsmLocation.getPsc());
         }
 
-        final String operator = telephonyManager.getNetworkOperator();
+        final String operator = tm.getNetworkOperator();
         // getNetworkOperator() may return empty string, probably due to dropped connection
         if (operator != null && operator.length() > 3) {
             serving.setOperator(operator);
@@ -822,7 +831,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
             return null;
         }
 
-        final String networkOperatorName = telephonyManager.getNetworkOperatorName();
+        final String networkOperatorName = tm.getNetworkOperatorName();
         if (networkOperatorName != null) {
             serving.setOperatorName(networkOperatorName);
         } else {
@@ -848,10 +857,8 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
      *                Current position
      * @return list of neigboring cell records
      */
-    private ArrayList<CellRecord> processNeighbors(final CellRecord serving, final PositionRecord cellPos) {
+    private ArrayList<CellRecord> parseNeighbors(final ArrayList<NeighboringCellInfo> neighboringCellInfos, final CellRecord serving, final PositionRecord cellPos) {
         final ArrayList<CellRecord> neighbors = new ArrayList<>();
-
-        final ArrayList<NeighboringCellInfo> neighboringCellInfos = (ArrayList<NeighboringCellInfo>) telephonyManager.getNeighboringCellInfo();
 
         if (serving == null) {
             Log.e(TAG, "Can't process neighbor cells: we need a serving cell first");
@@ -971,137 +978,8 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
 
 
     /**
-     * Starts wireless tracking
-     *
-     * @param sessionId
-     */
-    private void startTracking(final long sessionId) {
-        Log.d(TAG, "Start tracking on session " + sessionId);
-        isTracking = true;
-        this.session = sessionId;
-
-
-        dataHelper.saveMetaData(new MetaData(
-                Build.MANUFACTURER,
-                Build.MODEL,
-                Build.VERSION.RELEASE,
-                Constants.SWID,
-                Constants.SW_VERSION,
-                sessionId));
-    }
-
-    /**
-     * Stops wireless Logging
-     */
-    private void stopTracking() {
-        Log.d(TAG, "Stop tracking on session " + session);
-        isTracking = false;
-        session = Constants.SESSION_NOT_TRACKING;
-    }
-
-    @Subscribe
-    public void onEvent(onCellScannerStart event) {
-        Log.d(TAG, "ACK onCellScannerStart event");
-        session = event.session;
-        session = event.session;
-        savedAt = new Location("DUMMY");
-        startTracking(session);
-    }
-
-
-    @Subscribe
-    public void onEvent(onCellScannerStop event) {
-        Log.d(TAG, "ACK onCellScannerStop event");
-        stopTracking();
-    }
-
-    @Subscribe
-    public void onEvent(onLocationUpdated event) {
-        if (!isTracking) {
-            return;
-        }
-
-        final Location location = event.location;
-        if (location == null) {
-            return;
-        }
-
-        final String source = location.getProvider();
-
-        // do nothing, if required minimum gps accuracy is not given
-        if (!acceptableAccuracy(location)) {
-            Log.i(TAG, "GPS accuracy to bad (" + location.getAccuracy() + "m). Ignoring");
-            return;
-        }
-
-        /*
-         * two criteria are required for cells updates
-         * 		distance > MIN_CELL_DISTANCE
-         * 		elapsed time (in milli seconds) > MIN_CELL_TIME_INTERVAL
-         */
-        if (acceptableDistance(location, savedAt)) {
-            Log.d(TAG, "Cell update. Distance " + location.distanceTo(savedAt));
-            final boolean resultOk = updateCells(location, source);
-
-            if (resultOk) {
-                //Log.i(TAG, "Successfully saved cell");
-                savedAt = location;
-            }
-        } else {
-            Log.i(TAG, "Cell update skipped: either to close to last location or interval < " + MIN_CELL_TIME_INTERVAL / 2000 + " seconds");
-        }
-
-
-        lastLocation = location;
-        lastLocationProvider = source;
-    }
-
-    /**
-     * Checks, whether bssid exists in wifi catalog.
-     *
-     * @param bssid
-     * @return Returns
-     */
-    private CatalogStatus checkCatalogStatus(final String bssid) {
-        if (wifiCatalog == null) {
-            Log.w(TAG, "Catalog not available");
-            return CatalogStatus.NEW;
-        }
-
-        try {
-			/*
-			 * Caution:
-			 * 		Requires wifi catalog's bssid in LOWER CASE. Otherwise no records are returned
-			 *
-			 *		If wifi catalog's bssid aren't in LOWER case, consider SELECT bssid FROM wifi_zone WHERE LOWER(bssid) = ?
-			 *		Drawback: can't use indices then
-			 */
-            final Cursor exists = wifiCatalog.rawQuery("SELECT bssid, source FROM wifi_zone WHERE bssid = ?", new String[]{bssid.replace(":", "").toUpperCase()});
-            if (exists.moveToFirst()) {
-                final int source = exists.getInt(1);
-                exists.close();
-                if (source == CatalogStatus.OPENBMAP.ordinal()) {
-                    Log.i(TAG, bssid + " is in openbmap reference database");
-                    return CatalogStatus.OPENBMAP;
-                } else {
-                    Log.i(TAG, bssid + " is in local reference database");
-                    return CatalogStatus.LOCAL;
-                }
-            } else {
-                Log.i(TAG, bssid + " is NOT in reference database");
-                exists.close();
-                //mRefdb.close();
-                return CatalogStatus.NEW;
-            }
-        } catch (final SQLiteException e) {
-            Log.e(TAG, "Couldn't open catalog");
-            return CatalogStatus.NEW;
-        }
-    }
-
-
-    /**
-     * Checks whether accuracy is good enough by testing whether accuracy is available and below settings threshold
+     * Checks whether accuracy is good enough by testing whether accuracy is available and
+     * below settings threshold
      *
      * @param location
      * @return true if location has accuracy that is acceptable
