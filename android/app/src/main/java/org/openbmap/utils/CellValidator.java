@@ -122,7 +122,7 @@ public class CellValidator {
                         (cell.getLac() != NeighboringCellInfo.UNKNOWN_CID && cell.getLac() < 0xffff));
     }
 
-    public static boolean isValidCell(Object cell) {
+    public static boolean isValidCellIdentity(Object cell) {
         if (cell instanceof CellIdentityGsm) {
             return isValidGsmCell((CellIdentityGsm) cell);
         } else if (cell instanceof CellIdentityWcdma) {

@@ -35,7 +35,7 @@ import org.openbmap.utils.MapUtils;
  * - Derived classes must all register themselves to Butterknife using {@code this.mUnbinder = ButterKnife.bind(this, view)}
  * in their onCreateView() method
  */
-@EFragment(R.layout.mapview)
+@EFragment(R.layout.mapview_fragment)
 public abstract class BaseMapFragment extends Fragment implements MapUtils.onLongPressHandler {
     private static final String TAG = BaseMapFragment.class.getSimpleName();
 

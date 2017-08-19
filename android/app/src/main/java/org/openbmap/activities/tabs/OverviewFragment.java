@@ -34,6 +34,7 @@ import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
@@ -54,6 +55,7 @@ import org.openbmap.db.DataHelper;
 import org.openbmap.db.Schema;
 import org.openbmap.db.models.CellRecord;
 import org.openbmap.events.onBlacklisted;
+import org.openbmap.events.onCellChanged;
 import org.openbmap.events.onCellSaved;
 import org.openbmap.events.onFreeWifi;
 import org.openbmap.events.onWifisAdded;
@@ -175,7 +177,6 @@ public class OverviewFragment extends Fragment {
         super.onResume();
 
         registerReceiver();
-
         startRepeatingTask();
     }
 
@@ -295,6 +296,28 @@ public class OverviewFragment extends Fragment {
 
     private void stopRepeatingTask() {
         mRefreshHandler.removeCallbacks(mRefreshTask);
+    }
+
+
+    /**
+     * Fired when serving cell has changed
+     * @param event
+     */
+    @Subscribe
+    public void onEvent(onCellChanged event) {
+        LineData data = gvGraph.getData();
+        ILineDataSet set = data.getDataSetByIndex(0);
+        if (set != null) {
+            LimitLine verticalLine = new LimitLine((float) set.getEntryCount(),
+                    event.cellId != null ? getString(R.string.handover) + " " + event.cellId :
+                    getString(R.string.handover));
+            verticalLine.setLineWidth(4f);
+            verticalLine.enableDashedLine(10f, 10f, 0f);
+            verticalLine.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
+            verticalLine.setTextSize(10f);
+            XAxis xAxis = gvGraph.getXAxis();
+            xAxis.addLimitLine(verticalLine);
+        }
     }
 
     /**

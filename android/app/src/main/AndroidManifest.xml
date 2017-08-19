@@ -87,11 +87,6 @@
             </intent-filter>
         </service>
 
-        <!-- POI manager service -->
-        <service
-            android:name=".services.CatalogService"
-            android:exported="false" />
-
         <!-- Cell logger service -->
         <service android:name=".services.wireless.CellScannerService" />
         <!-- Wifi logger service -->
@@ -99,6 +94,11 @@
 
         <!-- GPX logger service -->
         <service android:name=".services.GpxLoggerService" />
+
+        <!-- POI manager service -->
+        <service
+            android:name=".services.PoiCatalogService"
+            android:exported="false" />
 
         <provider
             android:name=".db.ContentProvider"

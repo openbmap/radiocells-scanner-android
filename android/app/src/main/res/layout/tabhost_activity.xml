@@ -9,14 +9,15 @@
         android:layout_height="match_parent"
         android:orientation="vertical" >
 
-        <org.openbmap.activities.tabs.StatusBar
+        <fragment android:name="org.openbmap.activities.tabs.HeaderFragment_"
+            android:id="@+id/status_bar_fragment"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content" />
 
         <org.openbmap.activities.SelectiveScrollViewPager
             android:id="@+id/pager"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="fill_parent" >
         </org.openbmap.activities.SelectiveScrollViewPager>
     </LinearLayout>
 

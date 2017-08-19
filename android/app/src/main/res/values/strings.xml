@@ -237,4 +237,5 @@
     <string name="already_downloading">You\'re already downloading this file!</string>
     <string name="overwrite_map_title">Map already downloaded</string>
     <string name="overwrite_map_message">Overwriting existing map?</string>
+    <string name="handover">Handover</string>
 </resources>

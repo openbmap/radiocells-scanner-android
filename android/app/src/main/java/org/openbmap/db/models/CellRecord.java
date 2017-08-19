@@ -19,6 +19,10 @@
 package org.openbmap.db.models;
 
 import android.os.Build;
+import android.telephony.CellIdentityCdma;
+import android.telephony.CellIdentityGsm;
+import android.telephony.CellIdentityLte;
+import android.telephony.CellIdentityWcdma;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
 
@@ -185,7 +189,7 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 	public final String toString() {
         return "Cell " + mLogicalCellId + " / Operator " + mOperatorName + ", " + mOperator + " / MCC " + mMcc + " / MNC " + mMnc
                 + " / SID " + mSystemId + " / NID " + mNetworkId + " / BID " + mBaseId
-                + " / Type " + mNetworkType + " / LAC " + mArea + " / PSC " + mPsc + " / dbm " + mStrengthdBm + " / Session Id " + mSessionId;
+                + " / Type " + TECHNOLOGY_MAP().get(mNetworkType ) + " / LAC " + mArea + " / PSC " + mPsc + " / dbm " + mStrengthdBm + " / Session Id " + mSessionId;
     }
 
 	@Override
@@ -565,4 +569,71 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 		this.mSystemId = systemId;
 	}
 
+    /**
+     * Populates logical cell id, actual cell id, UTRAN id, psc and area from CellIdentityGsm
+     * @param identity
+     */
+    public void fromGsmIdentiy(CellIdentityGsm identity) {
+        setIsCdma(false);
+
+		setLogicalCellId(identity.getCid());
+		// add UTRAN ids, if needed
+		if (identity.getCid() > 0xFFFFFF) {
+			setUtranRnc(identity.getCid() >> 16);
+			setActualCid(identity.getCid() & 0xFFFF);
+		} else {
+			setActualCid(identity.getCid());
+		}
+
+		// at least for Nexus 4, even HSDPA networks broadcast psc
+		setPsc(identity.getPsc());
+		setArea(identity.getLac());
+    }
+
+    /**
+     * Populates logical cell id, actual cell id, UTRAN id, psc and area from CellIdentityWcdma
+     * @param identity
+     */
+    public void fromWcdmaIdentity(CellIdentityWcdma identity) {
+        setIsCdma(false);
+
+        setLogicalCellId(identity.getCid());
+        // add UTRAN ids, if needed
+        if (identity.getCid() > 0xFFFFFF) {
+            setUtranRnc(identity.getCid() >> 16);
+            setActualCid(identity.getCid() & 0xFFFF);
+        } else {
+            setActualCid(identity.getCid());
+        }
+
+        // at least for Nexus 4, even HSDPA networks broadcast psc
+        setPsc(identity.getPsc());
+        setArea(identity.getLac());
+    }
+
+    /**
+     * Populates base station id, network id and system id from CellIdentityCdma
+     * @param identity
+     */
+    public void fromCdmaIdentity(CellIdentityCdma identity) {
+        setIsCdma(true);
+
+        setBaseId(String.valueOf(identity.getBasestationId()));
+        setNetworkId(String.valueOf(identity.getNetworkId()));
+        setSystemId(String.valueOf(identity.getSystemId()));
+    }
+
+    /**
+     * Populates logical cell id, actual cell id, area code and psc from CellIdentityLte
+     * Please note: currently logical cell id is set to actual cell id
+     * @param identity
+     */
+    public void fromLteIdentity(CellIdentityLte identity) {
+        setLogicalCellId(identity.getCi());
+        // set actual CID = logical CID, we don't know better at the moment
+        setActualCid(identity.getCi());
+        setArea(identity.getTac());
+        setPsc(identity.getPci());
+
+    }
 }

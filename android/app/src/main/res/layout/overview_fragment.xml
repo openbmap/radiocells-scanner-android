@@ -162,11 +162,11 @@
         android:layout_height="0dp"
         android:layout_gravity="fill_horizontal"
         android:layout_weight="50">
-        <com.jjoe64.graphview.GraphView
+        <com.github.mikephil.charting.charts.LineChart
             android:id="@+id/overview_graph"
             android:layout_gravity="bottom"
             android:layout_width="match_parent"
-            android:layout_height="220dip" />
+            android:layout_height="match_parent" />
     </LinearLayout>
 
 </LinearLayout>

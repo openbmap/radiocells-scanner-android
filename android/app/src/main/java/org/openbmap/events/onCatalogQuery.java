@@ -35,16 +35,14 @@ package org.openbmap.events;
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import org.openbmap.utils.CatalogObject;
+import org.mapsforge.core.model.BoundingBox;
 
-import java.util.Collection;
+public class onCatalogQuery {
 
-public class onCatalogUpdateAvailable {
+    public final BoundingBox bbox;
 
-    public Collection<CatalogObject> items;
-
-    public onCatalogUpdateAvailable(Collection<CatalogObject> items) {
-        this.items = items;
+    public onCatalogQuery(BoundingBox bbox) {
+        this.bbox = bbox;
     }
 
 }

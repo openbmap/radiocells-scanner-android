@@ -526,7 +526,7 @@ implements SessionListFragment.SessionFragementListener,
 		mTabManager.addTab(mTabHost.newTabSpec("sessions").setIndicator(getResources().getString(R.string.sessions)),
 				SessionListFragment.class, null);
 
-		//mTabManager.addTab(mTabHost.newTabSpec("overview").setIndicator("Overview"),
+		//mTabManager.addTab(mTabHost.newTabSpec("overview_fragment").setIndicator("Overview"),
 		//		OverviewFragment.class, null);
 
 		if (savedInstanceState != null) {

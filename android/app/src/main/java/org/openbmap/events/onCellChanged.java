@@ -25,22 +25,35 @@ import android.telephony.CellInfoLte;
 import android.telephony.CellInfoWcdma;
 import android.util.Log;
 
+import org.openbmap.db.models.CellRecord;
+
 public class onCellChanged {
 
     public static final String TAG = onCellChanged.class.getSimpleName();
 
-    public onCellChanged(final CellInfo cell) {
-        if (cell instanceof CellInfoGsm) {
+    /**
+     * Cell Id; may be null
+     */
+    public String cellId = null;
 
-        } else if (cell instanceof CellInfoWcdma) {
-
-        } else if (cell instanceof CellInfoLte) {
-
-        } else if (cell instanceof CellInfoCdma) {
-
+    public onCellChanged(final CellInfo info) {
+        CellRecord cell = new CellRecord();
+        if (info instanceof CellInfoGsm) {
+            cell.fromGsmIdentiy(((CellInfoGsm)info).getCellIdentity());
+            cellId = String.valueOf(cell.getActualCellId());
+        } else if (info instanceof CellInfoWcdma) {
+            cell.fromWcdmaIdentity(((CellInfoWcdma)info).getCellIdentity());
+            cellId = String.valueOf(cell.getActualCellId());
+        } else if (info instanceof CellInfoLte) {
+            cell.fromLteIdentity(((CellInfoLte)info).getCellIdentity());
+            cellId = String.valueOf(cell.getActualCellId());
+        } else if (info instanceof CellInfoCdma) {
+            cell.fromCdmaIdentity(((CellInfoCdma)info).getCellIdentity());
+            cellId = String.valueOf(cell.getSystemId() + "/" + cell.getNetworkId() + "/" +  cell.getBaseId() );
         } else {
             Log.v(TAG, "Cell info null or unknown type");
         }
+
     }
 
 }

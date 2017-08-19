@@ -22,12 +22,8 @@ import android.location.Location;
 
 public class onLocationUpdated {
     public final Location location;
-    public String satStatus = "--";
-    public int satCount = -1;
 
-    public onLocationUpdated(final Location location, String satStatus, int satCount) {
+    public onLocationUpdated(final Location location) {
         this.location = location;
-        this.satStatus = satStatus;
-        this.satCount = satCount;
     }
 }

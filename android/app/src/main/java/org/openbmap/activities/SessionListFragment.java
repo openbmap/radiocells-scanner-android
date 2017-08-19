@@ -157,7 +157,7 @@ LoaderCallbacks<Cursor>, LongClickCallback, OnAlertClickInterface {
         };
 
 		mAdapter = new SimpleCursorAdapter(getActivity().getBaseContext(),
-				R.layout.sessionlistfragment, null, from, to, 0);
+				R.layout.sessionlist_fragment, null, from, to, 0);
 		mAdapter.setViewBinder(new SessionViewBinder());
 
 		// Trying to add a Header View.

@@ -18,24 +18,16 @@
 
 package org.openbmap.events;
 
-import org.openbmap.Constants;
+import android.location.Location;
 
-public class onLocationStart {
-    public final long session;
+public class onSatInfo {
+    public final Location location;
+    public String satStatus = "--";
+    public int satCount = -1;
 
-    /**
-     * Default constructor: no session id provided, database will auto-assign session id
-     */
-    public onLocationStart() {
-        this.session = Constants.SESSION_NOT_TRACKING;
-     }
-
-    /**
-     * Constructor to resume an existing session
-     * @param session session id to resume
-     */
-    public onLocationStart(int session) {
-        this.session = session;
+    public onSatInfo(final Location location, String satStatus, int satCount) {
+        this.location = location;
+        this.satStatus = satStatus;
+        this.satCount = satCount;
     }
-
 }

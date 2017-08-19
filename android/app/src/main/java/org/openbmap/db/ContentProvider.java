@@ -81,10 +81,10 @@ public class ContentProvider extends android.content.ContentProvider {
     public static final Uri CONTENT_URI_SESSION = Uri.parse("content://" + AUTHORITY + "/" + Schema.TBL_SESSIONS);
 
     /**
-     * Can be appended to certain URIs to get overview instead of all items
+     * Can be appended to certain URIs to get overview_fragment instead of all items
      * Typically this are sort of SELECT DISTINCT queries
      */
-    public static final String CONTENT_URI_OVERVIEW_SUFFIX = "overview";
+    public static final String CONTENT_URI_OVERVIEW_SUFFIX = "overview_fragment";
 
     /**
      * Can be appended to certain URIs to get only items of specific session

@@ -18,24 +18,7 @@
 
 package org.openbmap.events;
 
-import org.openbmap.Constants;
-
-public class onLocationStart {
-    public final long session;
-
-    /**
-     * Default constructor: no session id provided, database will auto-assign session id
-     */
-    public onLocationStart() {
-        this.session = Constants.SESSION_NOT_TRACKING;
-     }
-
-    /**
-     * Constructor to resume an existing session
-     * @param session session id to resume
-     */
-    public onLocationStart(int session) {
-        this.session = session;
+public class onCatalogStop {
+    public onCatalogStop() {
     }
-
 }

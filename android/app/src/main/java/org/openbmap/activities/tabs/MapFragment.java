@@ -61,8 +61,8 @@ import org.openbmap.R;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.PositionRecord;
 import org.openbmap.db.models.WifiRecord;
-import org.openbmap.events.onCatalogUpdateAvailable;
-import org.openbmap.events.onCatalogUpdateRequested;
+import org.openbmap.events.onCatalogResults;
+import org.openbmap.events.onCatalogQuery;
 import org.openbmap.events.onGpxUpdateAvailable;
 import org.openbmap.events.onLocationUpdated;
 import org.openbmap.events.onSessionUpdateAvailable;
@@ -84,7 +84,7 @@ import java.util.List;
  * Caution: due to ViewPager default implementation, this fragment is loaded even before it becomes
  * visible
  */
-@EFragment(R.layout.mapview)
+@EFragment(R.layout.mapview_fragment)
 public class MapFragment extends BaseMapFragment implements
         ActionBar.OnNavigationListener, onLongPressHandler {
 
@@ -689,7 +689,7 @@ public class MapFragment extends BaseMapFragment implements
 
         if (!isUpdatingCatalog) {
             isUpdatingCatalog = true;
-            EventBus.getDefault().post(new onCatalogUpdateRequested(this.mMapView.getBoundingBox()));
+            EventBus.getDefault().post(new onCatalogQuery(this.mMapView.getBoundingBox()));
             mCatalogLayerRefreshMillis = System.currentTimeMillis();
         }
     }
@@ -731,7 +731,7 @@ public class MapFragment extends BaseMapFragment implements
      * @param event the event
      */
     @Subscribe
-    public void onEvent(onCatalogUpdateAvailable event){
+    public void onEvent(onCatalogResults event){
         if (event.items == null) {
             Log.d(TAG, "Catalog objects null");
             return;
@@ -1063,7 +1063,7 @@ public class MapFragment extends BaseMapFragment implements
     /**
      * Gets persistable id.
      *
-     * @return the id that is used to save this mapview
+     * @return the id that is used to save this mapview_fragment
      */
     protected final String getPersistableId() {
         return this.getClass().getSimpleName();

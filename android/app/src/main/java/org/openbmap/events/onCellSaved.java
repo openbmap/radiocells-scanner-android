@@ -48,7 +48,10 @@ public class onCellSaved {
      * @param technology cell technology
      * @param level level (in dbm)
      */
-    public onCellSaved(final String operatorName, final String mcc, final String mnc, final String sid, final String nid, final String bid, final int area, final String cell_id, final String technology, final int level) {
+    public onCellSaved(
+            final String operatorName, final String mcc, final String mnc, final String sid,
+            final String nid, final String bid, final int area, final String cell_id,
+            final String technology, final int level) {
         this.operator = operatorName;
         this.mcc = mcc;
         this.mnc = mnc;
