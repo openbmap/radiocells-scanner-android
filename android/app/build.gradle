@@ -101,7 +101,7 @@ dependencies {
     compile 'org.greenrobot:eventbus:3.0.0'
     annotationProcessor 'org.greenrobot:eventbus-annotation-processor:3.0.1'
     compile 'org.apache.commons:commons-lang3:3.4'
-    compile 'com.github.PhilJay:MPAndroidChart:v3.0.2'
+    compile 'com.github.PhilJay:MPAndroidChart:v3.0.1'
 
     compile 'com.caverock:androidsvg:1.2.1'
     compile 'org.mapsforge:mapsforge-core:0.8.0'

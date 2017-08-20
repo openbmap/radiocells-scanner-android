@@ -33,7 +33,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
@@ -107,6 +106,8 @@ public class OverviewFragment extends Fragment {
     @ViewById(R.id.overview_cell_details_button)
     public ImageButton btnCellDetails;
 
+    private String lastCid;
+    private String lastTech;
     //private LineGraphSeries mMeasurements;
     //private PointsGraphSeries highlight;
 
@@ -308,15 +309,30 @@ public class OverviewFragment extends Fragment {
         LineData data = gvGraph.getData();
         ILineDataSet set = data.getDataSetByIndex(0);
         if (set != null) {
-            LimitLine verticalLine = new LimitLine((float) set.getEntryCount(),
-                    event.cellId != null ? getString(R.string.handover) + " " + event.cellId :
-                    getString(R.string.handover));
-            verticalLine.setLineWidth(4f);
-            verticalLine.enableDashedLine(10f, 10f, 0f);
-            verticalLine.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
-            verticalLine.setTextSize(10f);
+            String label = "";
+            float width = 4f;
+            float textSize = 12f;
+            if (event.cellId != null && !event.cellId.equals(lastCid)) {
+                lastCid = event.cellId;
+
+                label = getString(R.string.handover) + event.cellId;
+                width = 4f;
+                textSize = 12f;
+            } else if (event.technology != null) {
+                label = event.technology;
+                width = 2f;
+                textSize = 8f;
+            }
+            lastTech = event.technology;
+
+            LimitLine ll = new LimitLine((float) set.getEntryCount(), label);
+            ll.setLineColor(Color.RED);
+            ll.setLineWidth(width);
+            ll.setTextColor(Color.WHITE);
+            ll.setTextSize(textSize);
+
             XAxis xAxis = gvGraph.getXAxis();
-            xAxis.addLimitLine(verticalLine);
+            xAxis.addLimitLine(ll);
         }
     }
 
@@ -332,6 +348,7 @@ public class OverviewFragment extends Fragment {
         gvGraph.setDragEnabled(true);
         gvGraph.setScaleEnabled(true);
         gvGraph.setDrawGridBackground(false);
+        gvGraph.getDescription().setEnabled(false);
 
         // if disabled, scaling can be done on x- and y-axis separately
         gvGraph.setPinchZoom(true);
@@ -343,24 +360,24 @@ public class OverviewFragment extends Fragment {
         gvGraph.setData(data);
 
         // get the legend (only possible after setting data)
-        Legend l = gvGraph.getLegend();
-        l.setForm(Legend.LegendForm.LINE);
-        l.setTextColor(Color.WHITE);
+        //Legend l = gvGraph.getLegend();
+        //l.setForm(Legend.LegendForm.LINE);
+        //l.setTextColor(Color.WHITE);
 
-        XAxis xl = gvGraph.getXAxis();
-        xl.setTextColor(Color.WHITE);
-        xl.setDrawGridLines(false);
-        xl.setAvoidFirstLastClipping(true);
-        xl.setEnabled(false);
+        XAxis x = gvGraph.getXAxis();
+        x.setTextColor(Color.WHITE);
+        x.setDrawGridLines(false);
+        x.setAvoidFirstLastClipping(true);
+        x.setEnabled(false);
 
-        YAxis leftAxis = gvGraph.getAxisLeft();
-        leftAxis.setTextColor(Color.WHITE);
-        leftAxis.setAxisMaximum(-50f);
-        leftAxis.setAxisMinimum(-120f);
-        leftAxis.setDrawGridLines(true);
+        YAxis y = gvGraph.getAxisLeft();
+        y.setTextColor(Color.WHITE);
+        y.setAxisMaximum(-50f);
+        y.setAxisMinimum(-110f);
+        y.setDrawGridLines(true);
 
-        YAxis rightAxis = gvGraph.getAxisRight();
-        rightAxis.setEnabled(false);
+        YAxis yr = gvGraph.getAxisRight();
+        yr.setEnabled(false);
     }
 
     @Click(R.id.overview_wifi_details_button)
@@ -410,32 +427,6 @@ public class OverviewFragment extends Fragment {
      * Redraws cell strength graph
      */
     private void updateGraph() {
-        /*if (mMeasurements == null) {
-            //Log.i(TAG, "Adding new data series to chart");
-            mMeasurements = new LineGraphSeries<>();
-            gvGraph.addSeries(mMeasurements);
-        }
-
-        if (highlight == null) {
-            highlight = new PointsGraphSeries<>();
-            highlight.setColor(Color.argb(100, 255, 255, 0));
-            gvGraph.addSeries(highlight);
-        }
-
-        if (mCurrentLevel != -1) {
-            mMeasurements.appendData(new DataPoint(graph2LastXValue, mCurrentLevel), true, 60);
-        } else {
-            mMeasurements.appendData(new DataPoint(graph2LastXValue, -100d), true, 60);
-        }
-
-        if (mCurrentLevel > -60 && mCurrentLevel < -1) {
-            highlight.appendData(new DataPoint(graph2LastXValue, mCurrentLevel), true, 60);
-        } else {
-            highlight.appendData(new DataPoint(graph2LastXValue, -105d), true, 60);
-        }
-        graph2LastXValue += 1d;
-        mCurrentLevel = -1;*/
-
         LineData data = gvGraph.getData();
 
         if (data != null) {
@@ -443,12 +434,14 @@ public class OverviewFragment extends Fragment {
             ILineDataSet set = data.getDataSetByIndex(0);
             if (set == null) {
                 set = createDefaultSet();
-                data.addDataSet(set);
-            }
+                ILineDataSet highlightSet = createHighlightedSet();
 
-            ILineDataSet highlightSet = data.getDataSetByIndex(0);
-            if (highlightSet == null) {
-                highlightSet = createHighlightedSet();
+                // WORK-AROUND: Add dummy data, otherwise MPCharts crashes
+                // see https://github.com/PhilJay/MPAndroidChart/issues/2455
+                set.addEntry(new Entry(0, 0));
+                highlightSet.addEntry(new Entry(0, 0));
+
+                data.addDataSet(set);
                 data.addDataSet(highlightSet);
             }
 
@@ -460,8 +453,9 @@ public class OverviewFragment extends Fragment {
                 data.addEntry(new Entry(set.getEntryCount(), (float) -100f), 0);
             }
 
-            if (mCurrentLevel > -65 && mCurrentLevel < -1) {
-                data.addEntry(new Entry(highlightSet.getEntryCount(), (float) mCurrentLevel), 0);
+            if (mCurrentLevel > -70 && mCurrentLevel < -1) {
+                // draw at set (!) position, add to dataset 1
+                data.addEntry(new Entry(set.getEntryCount(), (float) mCurrentLevel), 1);
             }
 
             data.notifyDataChanged();
@@ -494,17 +488,17 @@ public class OverviewFragment extends Fragment {
         set.setCircleColor(Color.WHITE);
         set.setCircleRadius(5f);
         set.setCircleHoleRadius(4f);
-
-        //set.setHighLightColor(Color.rgb(244, 117, 117));
         set.setDrawValues(false);
         return set;
     }
 
     private LineDataSet createHighlightedSet() {
         LineDataSet highlight = createDefaultSet();
-        highlight.setCircleColor(Color.YELLOW);
+        highlight.setLabel("");
+        highlight.setCircleColor(Color.GREEN);
         highlight.setCircleRadius(6f);
         highlight.setFillAlpha(65);
+        //highlight.setDrawFilled(true);
         return highlight;
     }
     /**

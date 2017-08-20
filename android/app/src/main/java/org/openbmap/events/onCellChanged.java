@@ -18,11 +18,11 @@
 
 package org.openbmap.events;
 
-import android.telephony.CellInfo;
 import android.telephony.CellInfoCdma;
 import android.telephony.CellInfoGsm;
 import android.telephony.CellInfoLte;
 import android.telephony.CellInfoWcdma;
+import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
 
 import org.openbmap.db.models.CellRecord;
@@ -36,22 +36,34 @@ public class onCellChanged {
      */
     public String cellId = null;
 
-    public onCellChanged(final CellInfo info) {
+    public String technology = null;
+
+    public onCellChanged(final Object info, final int tech) {
         CellRecord cell = new CellRecord();
+        // Identity cell infos
         if (info instanceof CellInfoGsm) {
             cell.fromGsmIdentiy(((CellInfoGsm)info).getCellIdentity());
             cellId = String.valueOf(cell.getActualCellId());
+            technology = CellRecord.TECHNOLOGY_MAP().get(tech);
         } else if (info instanceof CellInfoWcdma) {
             cell.fromWcdmaIdentity(((CellInfoWcdma)info).getCellIdentity());
             cellId = String.valueOf(cell.getActualCellId());
+            technology = CellRecord.TECHNOLOGY_MAP().get(tech);
         } else if (info instanceof CellInfoLte) {
             cell.fromLteIdentity(((CellInfoLte)info).getCellIdentity());
             cellId = String.valueOf(cell.getActualCellId());
+            technology = CellRecord.TECHNOLOGY_MAP().get(tech);
         } else if (info instanceof CellInfoCdma) {
             cell.fromCdmaIdentity(((CellInfoCdma)info).getCellIdentity());
-            cellId = String.valueOf(cell.getSystemId() + "/" + cell.getNetworkId() + "/" +  cell.getBaseId() );
+            cellId = String.valueOf(cell.getSystemId() + "/" + cell.getNetworkId() + "/" + cell.getBaseId());
+            technology = CellRecord.TECHNOLOGY_MAP().get(tech);
+        } else if (info instanceof GsmCellLocation) {
+            cell.fromGsmCellLocation((GsmCellLocation) info);
+            cellId = String.valueOf(cell.getSystemId() + "/" + cell.getNetworkId() + "/" + cell.getBaseId());
+            technology = CellRecord.TECHNOLOGY_MAP().get(tech);
         } else {
-            Log.v(TAG, "Cell info null or unknown type");
+            Log.v(TAG, "Cell info null or unknown type: " + (info != null ? info.getClass().getSimpleName() : "null"));
+            technology = CellRecord.TECHNOLOGY_MAP().get(tech);
         }
 
     }

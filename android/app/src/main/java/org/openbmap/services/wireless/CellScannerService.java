@@ -413,7 +413,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
                     CellInfo first = cellInfo.get(0);
                     if (!first.equals(currentCell)) {
                         Log.v(TAG, "Cell info changed: " + first.toString());
-                        EventBus.getDefault().post(new onCellChanged(first));
+                        EventBus.getDefault().post(new onCellChanged(first, tm.getNetworkType()));
                     }
                     currentCell = first;
                 }
@@ -423,7 +423,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
             @Override
             public void onCellLocationChanged(CellLocation location) {
                 Log.d(TAG, "onCellLocationChanged fired");
-                EventBus.getDefault().post(new onCellChanged(null));
+                EventBus.getDefault().post(new onCellChanged(location, tm.getNetworkType()));
                 super.onCellLocationChanged(location);
             }
         };
@@ -719,7 +719,6 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
                 Log.i(TAG, "Processing LTE cell " + lteIdentity.getCi());
                 final CellRecord result = new CellRecord(session);
                 result.fromLteIdentity(lteIdentity);
-
                 result.setIsCdma(false);
 
                 // generic cell info
@@ -804,22 +803,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
         serving.setIsServing(true);
         serving.setIsNeighbor(false);
 
-        // GSM specific
-        serving.setLogicalCellId(gsmLocation.getCid());
-
-        // add UTRAN ids, if needed
-        if (gsmLocation.getCid() > 0xFFFFFF) {
-            serving.setUtranRnc(gsmLocation.getCid() >> 16);
-            serving.setActualCid(gsmLocation.getCid() & 0xFFFF);
-        } else {
-            serving.setActualCid(gsmLocation.getCid());
-        }
-
-        if (SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-            // at least for Nexus 4, even HSDPA networks broadcast psc
-            serving.setPsc(gsmLocation.getPsc());
-        }
-
+        serving.fromGsmCellLocation(gsmLocation);
         final String operator = tm.getNetworkOperator();
         // getNetworkOperator() may return empty string, probably due to dropped connection
         if (operator != null && operator.length() > 3) {
@@ -839,7 +823,6 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
             return null;
         }
 
-        serving.setArea(gsmLocation.getLac());
         serving.setStrengthdBm(gsmStrengthDbm);
         serving.setStrengthAsu(gsmStrengthAsu);
         return serving;

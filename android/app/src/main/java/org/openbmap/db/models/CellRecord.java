@@ -575,7 +575,6 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
      */
     public void fromGsmIdentiy(CellIdentityGsm identity) {
         setIsCdma(false);
-
 		setLogicalCellId(identity.getCid());
 		// add UTRAN ids, if needed
 		if (identity.getCid() > 0xFFFFFF) {
@@ -588,6 +587,22 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
 		// at least for Nexus 4, even HSDPA networks broadcast psc
 		setPsc(identity.getPsc());
 		setArea(identity.getLac());
+    }
+
+    public void fromGsmCellLocation(GsmCellLocation location) {
+        setIsCdma(false);
+        setLogicalCellId(location.getCid());
+        // add UTRAN ids, if needed
+        if (location.getCid() > 0xFFFFFF) {
+            setUtranRnc(location.getCid() >> 16);
+            setActualCid(location.getCid() & 0xFFFF);
+        } else {
+            setActualCid(location.getCid());
+        }
+
+        setArea(location.getLac());
+        // at least for Nexus 4, even HSDPA networks broadcast psc
+        setPsc(location.getPsc());
     }
 
     /**
@@ -636,4 +651,5 @@ public class CellRecord extends AbstractLogEntry<CellRecord> {
         setPsc(identity.getPci());
 
     }
+
 }
