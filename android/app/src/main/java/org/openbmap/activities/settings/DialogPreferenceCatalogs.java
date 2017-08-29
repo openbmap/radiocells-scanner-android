@@ -64,7 +64,7 @@ public class DialogPreferenceCatalogs extends DialogPreference implements ICatal
 
     private static String TAG = DialogPreferenceCatalogs.class.getSimpleName();
 
-    public static final String LIST_DOWNLOADS_URL = Constants.SERVER_BASE + "/downloads/catalog_downloads.json";
+    public static final String LIST_DOWNLOADS_URL = Constants.SERVER_BASE + "/downloads/catalogs.json";
 
     private DialogPreferenceCatalogsListAdapter mAdapter;
     private final Context mContext;
