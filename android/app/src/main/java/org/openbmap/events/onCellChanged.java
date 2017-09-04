@@ -59,7 +59,7 @@ public class onCellChanged {
             technology = CellRecord.TECHNOLOGY_MAP().get(tech);
         } else if (info instanceof GsmCellLocation) {
             cell.fromGsmCellLocation((GsmCellLocation) info);
-            cellId = String.valueOf(cell.getSystemId() + "/" + cell.getNetworkId() + "/" + cell.getBaseId());
+            cellId = String.valueOf(cell.getActualCellId());
             technology = CellRecord.TECHNOLOGY_MAP().get(tech);
         } else {
             Log.v(TAG, "Cell info null or unknown type: " + (info != null ? info.getClass().getSimpleName() : "null"));
