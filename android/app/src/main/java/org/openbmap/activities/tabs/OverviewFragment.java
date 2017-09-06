@@ -59,6 +59,12 @@ import org.openbmap.events.onCellSaved;
 import org.openbmap.events.onFreeWifi;
 import org.openbmap.events.onWifisAdded;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.github.mikephil.charting.components.LimitLine.LimitLabelPosition.RIGHT_BOTTOM;
+import static com.github.mikephil.charting.components.LimitLine.LimitLabelPosition.RIGHT_TOP;
+
 
 /**
  * Activity for displaying basic session infos (# of cells, wifis, etc.)
@@ -106,25 +112,26 @@ public class OverviewFragment extends Fragment {
     @ViewById(R.id.overview_cell_details_button)
     public ImageButton btnCellDetails;
 
+    final int greenColor = android.R.color.holo_green_dark;
+    final int redColor = android.R.color.holo_red_dark;
+
     private String lastCid;
     private String lastTech;
-    //private LineGraphSeries mMeasurements;
-    //private PointsGraphSeries highlight;
 
     /**
      * Last wifi as displayed
      */
-    private String mLastBssid;
+    private String prevBssid;
 
     /**
      * Time of last new wifi in millis
      */
-    private long mLastWifiUpdate;
+    private long prevWifiUpdateTime;
 
     /**
      * Time of last new cell in millis
      */
-    private long mCellUpdateTime;
+    private long prevCellUpdateTime;
 
     /**
      * Fades ignore messages after certain time
@@ -138,12 +145,16 @@ public class OverviewFragment extends Fragment {
     /**
      * Update certain infos at periodic intervals
      */
-    private Runnable mRefreshTask;
-    private final Handler mRefreshHandler = new Handler();
+    private Runnable refreshTask;
+    private final Handler refreshHandler = new Handler();
 
-    private int mCurrentLevel;
+    private int currentLevel;
+    private String prevTechnology;
 
-    private String mCurrentTechnology;
+    private float prevHandoverLabel;
+    private int prevLabelOffset = -1;
+
+    private List<Integer> colors = new ArrayList<>();
 
     @Override
     public void onCreate(final Bundle savedInstanceState) {
@@ -163,10 +174,10 @@ public class OverviewFragment extends Fragment {
             }
         };
 
-        mRefreshTask = () -> {
+        refreshTask = () -> {
             updateTimeSinceUpdate();
             updateGraph();
-            mRefreshHandler.postDelayed(mRefreshTask, REFRESH_INTERVAL);
+            refreshHandler.postDelayed(refreshTask, REFRESH_INTERVAL);
         };
 
         // setup broadcast filters
@@ -191,16 +202,16 @@ public class OverviewFragment extends Fragment {
 
     @Subscribe
     public void onEvent(onWifisAdded event) {
-        if (event.items.size() > 0) {
+        if (event.items != null && event.items.size() > 0) {
             tvWifiDescription.setText(event.items.get(0).getSsid());
             tvWifiStrength.setText(String.format("%d dBm", event.items.get(0).getLevel()));
-            mLastBssid = event.items.get(0).getBssid();
+            prevBssid = event.items.get(0).getBssid();
         } else {
             tvWifiDescription.setText(getString(R.string.n_a));
             tvWifiStrength.setText("");
         }
 
-        mLastWifiUpdate = System.currentTimeMillis();
+        prevWifiUpdateTime = System.currentTimeMillis();
     }
 
     @Subscribe
@@ -242,11 +253,10 @@ public class OverviewFragment extends Fragment {
 
     @Subscribe
     public void onEvent(final onCellSaved event) {
-
         Log.d(TAG, "Cell update received, level" + event.level);
 
-        mCurrentLevel = event.level;
-        mCellUpdateTime = System.currentTimeMillis();
+        currentLevel = event.level;
+        prevCellUpdateTime = System.currentTimeMillis();
 
         String description = event.operator;
 
@@ -257,17 +267,19 @@ public class OverviewFragment extends Fragment {
             // typical available information for GSM/LTE cells: MCC, MNC and area
             description += String.format("%s/%s/%s", event.mcc, event.mnc, event.area);
         }
-        if (!event.sid.equals(CellRecord.SYSTEM_ID_UNKNOWN) && !event.nid.equals(CellRecord.NETWORK_ID_UNKOWN) && !event.bid.equals(CellRecord.BASE_ID_UNKNOWN)) {
+        if (!event.sid.equals(CellRecord.SYSTEM_ID_UNKNOWN) &&
+                !event.nid.equals(CellRecord.NETWORK_ID_UNKOWN) &&
+                !event.bid.equals(CellRecord.BASE_ID_UNKNOWN)) {
             // typical available information for CDMA cells: system id, network id and base id
             description += String.format("%s/%s/%s", event.sid, event.nid, event.bid);
         }
         description += String.format("/%s", event.cell_id);
 
         tvCellDescription.setText(description);
-        tvCellStrength.setText(String.format("%d dBm", mCurrentLevel));
+        tvCellStrength.setText(String.format("%d dBm", currentLevel));
 
-        if (!event.technology.equals(mCurrentTechnology)) {
-            mCurrentTechnology = event.technology;
+        if (!event.technology.equals(prevTechnology)) {
+            prevTechnology = event.technology;
             final Animation in = new AlphaAnimation(0.0f, 1.0f);
             in.setDuration(2000);
             final Animation out = new AlphaAnimation(1.0f, 0.0f);
@@ -292,11 +304,11 @@ public class OverviewFragment extends Fragment {
     }
 
     private void startRepeatingTask() {
-        mRefreshTask.run();
+        refreshTask.run();
     }
 
     private void stopRepeatingTask() {
-        mRefreshHandler.removeCallbacks(mRefreshTask);
+        refreshHandler.removeCallbacks(refreshTask);
     }
 
 
@@ -309,27 +321,42 @@ public class OverviewFragment extends Fragment {
         LineData data = gvGraph.getData();
         ILineDataSet set = data.getDataSetByIndex(0);
         if (set != null) {
-            String label = "";
-            float width = 4f;
-            float textSize = 12f;
-            if (event.cellId != null && !event.cellId.equals(lastCid)) {
-                lastCid = event.cellId;
-
-                label = getString(R.string.handover) + event.cellId;
-                width = 4f;
-                textSize = 12f;
-            } else if (event.technology != null) {
-                label = event.technology;
-                width = 2f;
-                textSize = 8f;
-            }
-            lastTech = event.technology;
-
-            LimitLine ll = new LimitLine((float) set.getEntryCount(), label);
+            float pos = (float) set.getEntryCount();
+            LimitLine ll = new LimitLine(pos);
             ll.setLineColor(Color.RED);
-            ll.setLineWidth(width);
             ll.setTextColor(Color.WHITE);
-            ll.setTextSize(textSize);
+
+            if (event.cellId != null && !event.cellId.equals(lastCid)) {
+                Log.i(TAG, "Cell handover from " + lastCid + " to " + event.cellId + "(" + event.technology + ")");
+                ll.setLabel(getString(R.string.handover) + "\n" + event.cellId);
+                ll.setLineWidth(4f);
+                ll.setTextSize(12f);
+                ll.setLabelPosition(RIGHT_TOP);
+                if (pos - prevHandoverLabel < 20f) {
+                    ll.setYOffset((prevLabelOffset + 1) * 15f);
+                    if (prevLabelOffset < 2) {
+                        prevLabelOffset += 1;
+                    } else {
+                        prevLabelOffset = -1;
+                    }
+                } else {
+                    // last limit line far enough away - probably nothing overlapping
+                    prevLabelOffset = -1;
+                }
+                prevHandoverLabel = pos;
+                lastCid = event.cellId;
+                lastTech = event.technology;
+            } else if (event.technology != null) {
+                Log.i(TAG, "Cell type changed from " + lastTech + " to " + event.technology + "(cell " + event.cellId + ")");
+                ll.setLabel(event.technology);
+                ll.setLineWidth(2f);
+                ll.setTextSize(8f);
+                ll.setLabelPosition(RIGHT_BOTTOM);
+                if (event.cellId != null) {
+                    lastCid = event.cellId;
+                }
+                lastTech = event.technology;
+            }
 
             XAxis xAxis = gvGraph.getXAxis();
             xAxis.addLimitLine(ll);
@@ -363,6 +390,7 @@ public class OverviewFragment extends Fragment {
         //Legend l = gvGraph.getLegend();
         //l.setForm(Legend.LegendForm.LINE);
         //l.setTextColor(Color.WHITE);
+        gvGraph.getLegend().setEnabled(false);
 
         XAxis x = gvGraph.getXAxis();
         x.setTextColor(Color.WHITE);
@@ -382,12 +410,12 @@ public class OverviewFragment extends Fragment {
 
     @Click(R.id.overview_wifi_details_button)
     void wifiDetailsClicked() {
-        if (mLastBssid != null) {
+        if (prevBssid != null) {
             DataHelper helper = new DataHelper(getActivity().getApplicationContext());
             int session = helper.getCurrentSessionID();
             final Intent intent = new Intent();
             intent.setClass(getActivity(), WifiDetailsActivity_.class);
-            intent.putExtra(Schema.COL_BSSID, mLastBssid);
+            intent.putExtra(Schema.COL_BSSID, prevBssid);
             intent.putExtra(Schema.COL_SESSION_ID, session);
             startActivity(intent);
         } else {
@@ -416,11 +444,8 @@ public class OverviewFragment extends Fragment {
      * Displays time since last cell/wifi update
      */
     private void updateTimeSinceUpdate() {
-        final String deltaCellString = "Last cell update " + getTimeSinceLastUpdate(mCellUpdateTime) + " ago";
-        final String deltaWifiString = "Last cell update " + getTimeSinceLastUpdate(mLastWifiUpdate) + " ago";
-
-        // Log.d(TAG, deltaCellString);
-        // Log.d(TAG, deltaWifiString);
+        final String deltaCellString = "Last cell update " + getTimeSinceLastUpdate(prevCellUpdateTime) + " ago";
+        final String deltaWifiString = "Last cell update " + getTimeSinceLastUpdate(prevWifiUpdateTime) + " ago";
     }
 
     /**
@@ -434,32 +459,26 @@ public class OverviewFragment extends Fragment {
             ILineDataSet set = data.getDataSetByIndex(0);
             if (set == null) {
                 set = createDefaultSet();
-                ILineDataSet highlightSet = createHighlightedSet();
-
                 // WORK-AROUND: Add dummy data, otherwise MPCharts crashes
                 // see https://github.com/PhilJay/MPAndroidChart/issues/2455
                 set.addEntry(new Entry(0, 0));
-                highlightSet.addEntry(new Entry(0, 0));
-
                 data.addDataSet(set);
-                data.addDataSet(highlightSet);
             }
 
-            if (mCurrentLevel != -1) {
-                //mMeasurements.appendData(new DataPoint(graph2LastXValue, mCurrentLevel), true, 60);
-                data.addEntry(new Entry(set.getEntryCount(), (float) mCurrentLevel), 0);
+            if (currentLevel != -1) {
+                //mMeasurements.appendData(new DataPoint(graph2LastXValue, currentLevel), true, 60);
+                data.addEntry(new Entry(set.getEntryCount(), (float) currentLevel), 0);
             } else {
                 //mMeasurements.appendData(new DataPoint(graph2LastXValue, -100d), true, 60);
                 data.addEntry(new Entry(set.getEntryCount(), (float) -100f), 0);
             }
 
-            if (mCurrentLevel > -70 && mCurrentLevel < -1) {
-                // draw at set (!) position, add to dataset 1
-                data.addEntry(new Entry(set.getEntryCount(), (float) mCurrentLevel), 1);
-            }
+            colors.add(currentLevel >= -70 ? Color.parseColor("#11702b") : Color.WHITE);
+            colors = set.getColors();
+            ((LineDataSet) set).setCircleColors(colors);
 
             data.notifyDataChanged();
-            //mCurrentLevel = -1;
+            //currentLevel = -1;
 
             // let the chart know it's data has changed
             gvGraph.notifyDataSetChanged();
@@ -487,20 +506,11 @@ public class OverviewFragment extends Fragment {
 
         set.setCircleColor(Color.WHITE);
         set.setCircleRadius(5f);
-        set.setCircleHoleRadius(4f);
+        //set.setCircleHoleRadius(4f);
         set.setDrawValues(false);
         return set;
     }
 
-    private LineDataSet createHighlightedSet() {
-        LineDataSet highlight = createDefaultSet();
-        highlight.setLabel("");
-        highlight.setCircleColor(Color.GREEN);
-        highlight.setCircleRadius(6f);
-        highlight.setFillAlpha(65);
-        //highlight.setDrawFilled(true);
-        return highlight;
-    }
     /**
      * Returns time since base value as human-readable string
      *
