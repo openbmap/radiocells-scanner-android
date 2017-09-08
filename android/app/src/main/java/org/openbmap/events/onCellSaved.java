@@ -44,7 +44,7 @@ public class onCellSaved {
      * @param bid base station id (CDMA only)
      * @param nid network id (CDMA only)
      * @param area location area
-     * @param cell_id cell id
+     * @param cell_id cell id (logical)
      * @param technology cell technology
      * @param level level (in dbm)
      */

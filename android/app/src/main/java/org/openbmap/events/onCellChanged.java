@@ -43,15 +43,15 @@ public class onCellChanged {
         // Identity cell infos
         if (info instanceof CellInfoGsm) {
             cell.fromGsmIdentiy(((CellInfoGsm)info).getCellIdentity());
-            cellId = String.valueOf(cell.getActualCellId());
+            cellId = String.valueOf(cell.getLogicalCellId());
             technology = CellRecord.TECHNOLOGY_MAP().get(tech);
         } else if (info instanceof CellInfoWcdma) {
             cell.fromWcdmaIdentity(((CellInfoWcdma)info).getCellIdentity());
-            cellId = String.valueOf(cell.getActualCellId());
+            cellId = String.valueOf(cell.getLogicalCellId());
             technology = CellRecord.TECHNOLOGY_MAP().get(tech);
         } else if (info instanceof CellInfoLte) {
             cell.fromLteIdentity(((CellInfoLte)info).getCellIdentity());
-            cellId = String.valueOf(cell.getActualCellId());
+            cellId = String.valueOf(cell.getLogicalCellId());
             technology = CellRecord.TECHNOLOGY_MAP().get(tech);
         } else if (info instanceof CellInfoCdma) {
             cell.fromCdmaIdentity(((CellInfoCdma)info).getCellIdentity());
@@ -59,13 +59,11 @@ public class onCellChanged {
             technology = CellRecord.TECHNOLOGY_MAP().get(tech);
         } else if (info instanceof GsmCellLocation) {
             cell.fromGsmCellLocation((GsmCellLocation) info);
-            cellId = String.valueOf(cell.getActualCellId());
+            cellId = String.valueOf(cell.getLogicalCellId());
             technology = CellRecord.TECHNOLOGY_MAP().get(tech);
         } else {
             Log.v(TAG, "Cell info null or unknown type: " + (info != null ? info.getClass().getSimpleName() : "null"));
             technology = CellRecord.TECHNOLOGY_MAP().get(tech);
         }
-
     }
-
 }
