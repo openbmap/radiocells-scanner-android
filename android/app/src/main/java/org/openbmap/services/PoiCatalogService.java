@@ -76,7 +76,6 @@ public class PoiCatalogService extends Service {
     @Override
     public final void onCreate() {
         super.onCreate();
-        Log.d(TAG, "PoiCatalogService created");
 
         if (!EventBus.getDefault().isRegistered(this)) {
             EventBus.getDefault().register(this);
