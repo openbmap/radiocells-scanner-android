@@ -111,7 +111,8 @@ public final class SsidBlackListBootstraper {
 		{"German long haul buses", "MeinFernbus"},
 		{"German long haul buses", "adac_postbus"},
 		{"German long haul buses", "flixbus"},
-		{"Long haul buses", "eurolines"},	
+            {"German fast trains", "WIFIonICE"},
+            {"Long haul buses", "eurolines"},
 		{"Long haul buses", "ecolines"},
 		{"Hurtigen lines", "guest@MS"},
 		{"Hurtigen lines", "admin@MS"},
@@ -136,7 +137,6 @@ public final class SsidBlackListBootstraper {
 		{"xperia tablet", "androidhotspot"},
         {"HP laptops", "HP envy"},
 		{"empty ssid (not really hidden, just not broadcasting..)", ""},
-
 
 		// some ssids from our friends at https://github.com/dougt/MozStumbler
 		{"default", "ac_transit_wifi_bus"},
