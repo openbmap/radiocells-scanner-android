@@ -285,7 +285,7 @@ public final class Preferences {
 	 * Default wifi catalog folder name, relative to application root dir.
 	 * Can be overwritten in settings by specifying KEY_WIFI_CATALOG_FOLDER
 	 */
-	public static final String CATALOG_SUBDIR = "databases";
+    public static final String CATALOG_SUBDIR = "databases";
 
 	/**
 	 * Directory containing wifi blacklists, relative to application root dir.

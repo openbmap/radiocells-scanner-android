@@ -300,7 +300,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
         dataHelper = new DataHelper(this);
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            registerPhoneStateManager();
+            registerPhoneStateListener();
         } else {
             Log.w(TAG, "PhoneStateManager requires ACCESS_COARSE_LOCATION permission - can't register");
             return;
@@ -316,7 +316,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
             if (permissions[i].equals(Manifest.permission.ACCESS_FINE_LOCATION) && (grantResults[i] == PackageManager.PERMISSION_GRANTED))
                 isGranted = true;
         if (isGranted) {
-            registerPhoneStateManager();
+            registerPhoneStateListener();
         }
         else {
             Log.w(TAG, "ACCESS_COARSE_LOCATION permission denied - Can't start scanning");
@@ -340,7 +340,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
     /**
      * Register phone state listener for permanently measuring cell signal strength
      */
-    private void registerPhoneStateManager() {
+    private void registerPhoneStateListener() {
         Log.i(TAG, "Booting telephony manager");
         tm = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
 
@@ -408,7 +408,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
 
             @Override
             public void onCellInfoChanged(List<CellInfo> cellInfo) {
-                Log.d(TAG, "onCellInfoChanged fired");
+                Log.v(TAG, "onCellInfoChanged fired");
                 if (cellInfo != null && cellInfo.size() > 0) {
                     CellInfo first = cellInfo.get(0);
                     if (!first.equals(currentCell)) {
@@ -422,7 +422,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
 
             @Override
             public void onCellLocationChanged(CellLocation location) {
-                Log.d(TAG, "onCellLocationChanged fired");
+                Log.v(TAG, "onCellLocationChanged fired");
                 EventBus.getDefault().post(new onCellChanged(location, tm.getNetworkType()));
                 super.onCellLocationChanged(location);
             }
@@ -587,7 +587,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
             final CellIdentityGsm gsmIdentity = ((CellInfoGsm) cell).getCellIdentity();
 
             if (isValidCellIdentity(gsmIdentity)) {
-                Log.i(TAG, "Processing gsm cell " + gsmIdentity.getCid());
+                Log.v(TAG, "Processing gsm cell " + gsmIdentity.getCid());
                 final CellRecord result = new CellRecord(session);
                 result.fromGsmIdentiy(gsmIdentity);
 
@@ -628,7 +628,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
         } else if (cell instanceof CellInfoWcdma) {
             final CellIdentityWcdma wcdmaIdentity = ((CellInfoWcdma) cell).getCellIdentity();
             if (isValidCellIdentity(wcdmaIdentity)) {
-                Log.i(TAG, "Processing wcdma cell " + wcdmaIdentity.getCid());
+                Log.v(TAG, "Processing wcdma cell " + wcdmaIdentity.getCid());
                 final CellRecord result = new CellRecord(session);
                 result.fromWcdmaIdentity(wcdmaIdentity);
 
@@ -674,7 +674,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
 				 * In case of CDMA network set CDMA specific values
 				 * Assume CDMA network, if cdma location and basestation, network and system id are available
 				 */
-                Log.i(TAG, "Processing cdma cell " + cdmaIdentity.getBasestationId());
+                Log.v(TAG, "Processing cdma cell " + cdmaIdentity.getBasestationId());
                 final CellRecord result = new CellRecord(session);
                 result.fromCdmaIdentity(cdmaIdentity);
 
@@ -716,7 +716,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
         } else if (cell instanceof CellInfoLte) {
             final CellIdentityLte lteIdentity = ((CellInfoLte) cell).getCellIdentity();
             if (isValidCellIdentity(lteIdentity)) {
-                Log.i(TAG, "Processing LTE cell " + lteIdentity.getCi());
+                Log.v(TAG, "Processing LTE cell " + lteIdentity.getCi());
                 final CellRecord result = new CellRecord(session);
                 result.fromLteIdentity(lteIdentity);
                 result.setIsCdma(false);

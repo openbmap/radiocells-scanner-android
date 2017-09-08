@@ -19,7 +19,7 @@
 
 package org.openbmap.utils;
 
-        import android.net.Uri;
+import android.net.Uri;
 
 import java.io.Serializable;
 import java.util.Locale;

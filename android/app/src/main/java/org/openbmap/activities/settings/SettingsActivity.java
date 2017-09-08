@@ -351,7 +351,7 @@ public class SettingsActivity extends PreferenceActivity {
      * @param folder
      * @return new file name
      */
-    private String moveToFolder(final String file, final String folder) {
+    private static String moveToFolder(final String file, final String folder) {
         // file path contains external cache dir, so we have to move..
         final File source = new File(file);
         final File destination = new File(folder + File.separator + source.getName());

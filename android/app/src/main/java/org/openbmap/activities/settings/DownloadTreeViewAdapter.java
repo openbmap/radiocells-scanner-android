@@ -104,10 +104,10 @@ public class DownloadTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile>
                                    final int numberOfLevels) {
         super(activity, treeStateManager, numberOfLevels);
         this.manager = treeStateManager;
-        listTasks = new HashMap<RemoteDirListTask, RemoteFile>();
-        downloadsByReference = new HashMap<Long, DownloadInfo>();
-        downloadsByUri = new HashMap<Uri, DownloadInfo>();
-        downloadsByFile = new HashMap<File, DownloadInfo>();
+        listTasks = new HashMap<>();
+        downloadsByReference = new HashMap<>();
+        downloadsByUri = new HashMap<>();
+        downloadsByFile = new HashMap<>();
         df.setTimeZone(TimeZone.getDefault());
         downloadManager = (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
@@ -175,9 +175,12 @@ public class DownloadTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile>
      * Registers the receiver for download events.
      */
     public void registerIntentReceiver() {
-        getActivity().getApplicationContext().registerReceiver(downloadReceiver, new IntentFilter(DOWNLOAD_RECEIVER_REGISTERED));
-        getActivity().getApplicationContext().registerReceiver(downloadReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-        getActivity().getApplicationContext().registerReceiver(downloadReceiver, new IntentFilter(DownloadManager.ACTION_NOTIFICATION_CLICKED));
+        getActivity().getApplicationContext().registerReceiver(downloadReceiver,
+                new IntentFilter(DOWNLOAD_RECEIVER_REGISTERED));
+        getActivity().getApplicationContext().registerReceiver(downloadReceiver,
+                new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+        getActivity().getApplicationContext().registerReceiver(downloadReceiver,
+                new IntentFilter(DownloadManager.ACTION_NOTIFICATION_CLICKED));
         isReleased = false;
     	/*
     	 * Send a DOWNLOAD_RECEIVER_REGISTERED broadcast, causing all released receivers to unregister.
@@ -210,7 +213,8 @@ public class DownloadTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile>
     @Override
     public View getNewChildView(final TreeNodeInfo<RemoteFile> treeNodeInfo) {
         final LinearLayout viewLayout;
-        viewLayout = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.download_list_item, null);
+        viewLayout = (LinearLayout) getActivity().getLayoutInflater().inflate(
+                R.layout.download_list_item, null);
         return updateView(viewLayout, treeNodeInfo);
     }
 
@@ -275,9 +279,11 @@ public class DownloadTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile>
                     downloadIcon.setImageDrawable(getActivity().getResources().getDrawable(R.drawable.ic_file_download));
                 else if (mapFile.lastModified() < rfile.timestamp)
                     // TODO recheck this condition (granularity of timestamps, botched timezones)
-                    downloadIcon.setImageDrawable(getActivity().getResources().getDrawable(R.drawable.ic_refresh));
+                    downloadIcon.setImageDrawable(
+                            getActivity().getResources().getDrawable(R.drawable.ic_refresh));
                 else
-                    downloadIcon.setImageDrawable(getActivity().getResources().getDrawable(R.drawable.ic_check));
+                    downloadIcon.setImageDrawable(
+                            getActivity().getResources().getDrawable(R.drawable.ic_check));
                 downloadIcon.setVisibility(View.VISIBLE);
             }
         }
@@ -294,7 +300,7 @@ public class DownloadTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile>
                 if (remoteFile.children.length > 0)
                     super.handleItemClick(view, id);
                 else {
-                    String message = "Folder empty";
+                    String message = getActivity().getString(R.string.folder_empty);
                     Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
                 }
             } else {
@@ -431,7 +437,8 @@ public class DownloadTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile>
             //request.setDescription("SatStat map download");
             //request.setDestinationInExternalFilesDir(getActivity(), dirType, subPath)
             request.setDestinationUri(destUri);
-            Log.d(TAG, String.format("Ready to download %s to %s (local name %s)", uri.toString(), destUri.toString(), mapFile.getName()));
+            Log.d(TAG, String.format("Ready to download %s to %s (local name %s)",
+                    uri.toString(), destUri.toString(), mapFile.getName()));
             Long reference = downloadManager.enqueue(request);
             DownloadInfo info = new DownloadInfo(rfile, uri, mapFile, reference);
             downloadsByReference.put(reference, info);
@@ -443,7 +450,8 @@ public class DownloadTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile>
             downloadFileProgress.setProgress(0);
             startProgressChecker();
         } catch (SecurityException e) {
-            Log.w(TAG, String.format("Permission not granted to download %s to %s", uri.toString(), destUri.toString()));
+            Log.w(TAG, String.format("Permission not granted to download %s to %s",
+                    uri.toString(), destUri.toString()));
         }
     }
 

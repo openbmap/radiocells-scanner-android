@@ -61,8 +61,8 @@ import org.openbmap.R;
 import org.openbmap.db.DataHelper;
 import org.openbmap.db.models.PositionRecord;
 import org.openbmap.db.models.WifiRecord;
-import org.openbmap.events.onCatalogResults;
 import org.openbmap.events.onCatalogQuery;
+import org.openbmap.events.onCatalogResults;
 import org.openbmap.events.onGpxUpdateAvailable;
 import org.openbmap.events.onLocationUpdated;
 import org.openbmap.events.onSessionUpdateAvailable;
@@ -969,8 +969,8 @@ public class MapFragment extends BaseMapFragment implements
                 }
             }
 
-            final SessionObjectsLoader task = new SessionObjectsLoader(getActivity().getApplicationContext(), sessions);
-            task.execute(minLatitude, maxLatitude, minLongitude, maxLongitude, null);
+            final SessionObjectsLoader loader = new SessionObjectsLoader(getActivity().getApplicationContext(), sessions);
+            loader.execute(minLatitude, maxLatitude, minLongitude, maxLongitude, null);
         } else {
             // draw specific wifi
             final List<Integer> sessions = new ArrayList<>();
