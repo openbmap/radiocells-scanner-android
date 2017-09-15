@@ -28,6 +28,7 @@ import android.location.Location;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.Messenger;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -473,6 +474,8 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
             Log.i(TAG, "Roaming: " + tm.isNetworkRoaming());
             Log.i(TAG, "Device Manufactorer:" + Build.MANUFACTURER);
             Log.i(TAG, "Android version:" + Build.VERSION.RELEASE);
+            PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            Log.i(TAG, "Power Safe Mode:" + powerManager.isPowerSaveMode());
             Log.wtf(TAG, "------------ YOU MAY WANT TO REDACT INFO BELOW ABOVE POSTING THIS TO THE INTERNET ------------ ");
         }
     }
@@ -591,10 +594,10 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
     @Nullable
     private CellRecord parseCell(@NonNull CellInfo cell, @NonNull final PositionRecord position) {
 
-        float age = (float) ((SystemClock.elapsedRealtimeNanos() - cell.getTimeStamp()) / 1e-9);
-        if (age > (float) MAX_AGE_SECONDS) {
-            Log.w(TAG, String.format("Cell measurement to old: %d s, skipping cell", age));
-            return null;
+        float age = (float) ((SystemClock.elapsedRealtimeNanos() - cell.getTimeStamp()) / 1000000000);
+        if (cell.getTimeStamp() < Long.MAX_VALUE && age > (float) MAX_AGE_SECONDS) {
+            Log.w(TAG, String.format("Cell measurement old: %.2f s, skipping cell", age));
+            //return null;
         }
 
         if (cell instanceof CellInfoGsm) {
@@ -857,7 +860,9 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
      *                Current position
      * @return list of neigboring cell records
      */
-    private ArrayList<CellRecord> parseNeighbors(final ArrayList<NeighboringCellInfo> neighboringCellInfos, final CellRecord serving, final PositionRecord cellPos) {
+    private ArrayList<CellRecord> parseNeighbors(final ArrayList<NeighboringCellInfo> neighboringCellInfos,
+                                                 CellRecord serving,
+                                                 final PositionRecord cellPos) {
         final ArrayList<CellRecord> neighbors = new ArrayList<>();
 
         if (serving == null) {
