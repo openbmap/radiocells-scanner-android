@@ -75,7 +75,7 @@ public class DownloadTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile>
      * Progress update delay in milliseconds
      */
     private static final int PROGRESS_DELAY = 1000;
-    private static final String DOWNLOAD_RECEIVER_REGISTERED = "org.openbmap.DOWNLOAD_RECEIVER_REGISTERED";
+    private static final String DOWNLOAD_RECEIVER_REGISTERED = "org.openbmap.MAP_DOWNLOAD_RECEIVER_REGISTERED";
 
     TreeStateManager<RemoteFile> manager;
     Map<RemoteDirListTask, RemoteFile> listTasks;
@@ -142,10 +142,15 @@ public class DownloadTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile>
         	 */
             DownloadInfo info;
             Long reference = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_ID));
-            Uri uri = Uri.parse(cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_URI)));
-            String downloadFileName = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME));
+            Uri remoteUri = Uri.parse(cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_URI)));
+
+            String downloadFileName = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
+            if (downloadFileName != null && downloadFileName.substring(0, 7).matches("file://")) {
+                downloadFileName = downloadFileName.substring(7);
+            }
+
             File downloadFile = (downloadFileName != null) ? new File(downloadFileName) : null;
-            File targetFile = (downloadFile != null) ? new File(downloadFile.getParent(), uri.getLastPathSegment()) : null;
+            File targetFile = (downloadFile != null) ? new File(downloadFile.getParent(), remoteUri.getLastPathSegment()) : null;
             int progress = (int) (cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)) / 1024);
             if (downloadsByReference.containsKey(reference)) {
                 info = downloadsByReference.get(reference);
@@ -157,7 +162,7 @@ public class DownloadTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile>
                 }
                 info.progress = progress;
             } else {
-                info = new DownloadInfo(uri, targetFile, downloadFile, reference, progress);
+                info = new DownloadInfo(remoteUri, targetFile, downloadFile, reference, progress);
                 downloadsByReference.put(info.reference, info);
                 downloadsByUri.put(info.uri, info);
                 if (info.targetFile != null)
@@ -412,7 +417,8 @@ public class DownloadTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile>
                 getActivity().getApplicationContext().unregisterReceiver(downloadReceiver);
             new MediaScanner(getActivity(), new File(sharedPreferences.getString(
                     Preferences.KEY_MAP_FOLDER,
-                    getActivity().getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.MAPS_SUBDIR
+                    getActivity().getExternalFilesDir(null).getAbsolutePath() +
+                            File.separator + Preferences.MAPS_SUBDIR
             )));
             Toast.makeText(getActivity(), R.string.download_completed, Toast.LENGTH_SHORT).show();
         }
