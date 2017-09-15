@@ -28,8 +28,10 @@ import android.location.Location;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.Messenger;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.telephony.CellIdentityCdma;
@@ -84,6 +86,12 @@ import static org.openbmap.utils.CellValidator.isValidCellIdentity;
 public class CellScannerService extends Service implements ActivityCompat.OnRequestPermissionsResultCallback {
 
     public static final String TAG = CellScannerService.class.getSimpleName();
+
+    /**
+     * Max. age of cell measurement; older measurements are ignored to prevent
+     * staled readings
+     */
+    final static long MAX_AGE_SECONDS = 60;
 
     /**
      * Keeps the SharedPreferences
@@ -574,12 +582,21 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
 
     /**
      * Create a {@link CellRecord} by parsing {@link CellInfo}
-     *
+     * - Cells older than {@link MAX_AGE_SECONDS} are ignored
+     * - Cells with missing operator or operator name are ignored
      * @param cell     {@linkplain CellInfo}
      * @param position {@linkplain PositionRecord Current position}
-     * @return {@link CellRecord}
+     * @return {@link CellRecord} or null on invalid cell
      */
-    private CellRecord parseCell(final CellInfo cell, final PositionRecord position) {
+    @Nullable
+    private CellRecord parseCell(@NonNull CellInfo cell, @NonNull final PositionRecord position) {
+
+        float age = (float) ((SystemClock.elapsedRealtimeNanos() - cell.getTimeStamp()) / 1e-9);
+        if (age > (float) MAX_AGE_SECONDS) {
+            Log.w(TAG, String.format("Cell measurement to old: %d s, skipping cell", age));
+            return null;
+        }
+
         if (cell instanceof CellInfoGsm) {
             /*
 			 * In case of GSM network set GSM specific values
@@ -650,7 +667,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
                     result.setMcc(operator.substring(0, 3));
                     result.setMnc(operator.substring(3));
                 } else {
-                    Log.e(TAG, "Couldn't determine network operator, skipping cell");
+                    Log.w(TAG, "Couldn't determine network operator, skipping cell");
                     return null;
                 }
 
@@ -658,7 +675,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
                 if (networkOperatorName != null) {
                     result.setOperatorName(tm.getNetworkOperatorName());
                 } else {
-                    Log.e(TAG, "Error retrieving network operator's name, skipping cell");
+                    Log.w(TAG, "Error retrieving network operator's name, skipping cell");
                     return null;
                 }
 
@@ -739,7 +756,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
                     result.setMcc(operator.substring(0, 3));
                     result.setMnc(operator.substring(3));
                 } else {
-                    Log.e(TAG, "Couldn't determine network operator, skipping cell");
+                    Log.w(TAG, "Couldn't determine network operator, skipping cell");
                     return null;
                 }
 
@@ -747,7 +764,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
                 if (networkOperatorName != null) {
                     result.setOperatorName(tm.getNetworkOperatorName());
                 } else {
-                    Log.e(TAG, "Error retrieving network operator's name, skipping cell");
+                    Log.w(TAG, "Error retrieving network operator's name, skipping cell");
                     return null;
                 }
 
