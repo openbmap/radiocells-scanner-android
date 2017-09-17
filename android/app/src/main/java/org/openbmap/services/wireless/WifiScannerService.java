@@ -241,7 +241,7 @@ public class WifiScannerService extends Service {
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         if (!prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.DEFAULT_CATALOG_FILE).equals(Preferences.VAL_CATALOG_NONE)) {
-            final String catalogPath = prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
+            final String catalogPath = prefs.getString(Preferences.KEY_CATALOG_FOLDER,
                     getApplicationContext().getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.CATALOG_SUBDIR)
                     + File.separator + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.DEFAULT_CATALOG_FILE);
 

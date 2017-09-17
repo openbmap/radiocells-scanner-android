@@ -18,14 +18,12 @@
  * along with LSRN Tools.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openbmap.activities.settings;
+package org.openbmap.utils.remote_treeview;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -36,7 +34,6 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -46,10 +43,8 @@ import android.widget.Toast;
 
 import org.openbmap.Preferences;
 import org.openbmap.R;
+import org.openbmap.activities.settings.MapDownloadActivity;
 import org.openbmap.utils.MediaScanner;
-import org.openbmap.utils.RemoteDirListListener;
-import org.openbmap.utils.RemoteDirListTask;
-import org.openbmap.utils.RemoteFile;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -68,27 +63,29 @@ import pl.polidea.treeview.TreeStateManager;
  * simple item description.
  *
  */
-public class DownloadTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile> implements RemoteDirListListener {
-    private static final String TAG = DownloadTreeViewAdapter.class.getSimpleName();
+public class RemoteFileTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile> implements RemoteDirListListener {
+    private static final String TAG = RemoteFileTreeViewAdapter.class.getSimpleName();
 
     /**
      * Progress update delay in milliseconds
      */
     private static final int PROGRESS_DELAY = 1000;
-    private static final String DOWNLOAD_RECEIVER_REGISTERED = "org.openbmap.MAP_DOWNLOAD_RECEIVER_REGISTERED";
+    protected static final String DOWNLOAD_RECEIVER_REGISTERED = "org.openbmap.MAP_DOWNLOAD_RECEIVER_REGISTERED";
 
-    TreeStateManager<RemoteFile> manager;
-    Map<RemoteDirListTask, RemoteFile> listTasks;
-    Map<Long, DownloadInfo> downloadsByReference;
-    Map<Uri, DownloadInfo> downloadsByUri;
-    Map<File, DownloadInfo> downloadsByFile;
-    DownloadManager downloadManager;
-    SharedPreferences sharedPreferences;
-    Bundle savedInstanceState = null;
+    protected final String targetFolder;
 
-    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.ROOT);
+    protected TreeStateManager<RemoteFile> manager;
+    protected Map<BrowseAbstractTask, RemoteFile> listTasks;
+    protected Map<Long, DownloadInfo> downloadsByReference;
+    protected Map<Uri, DownloadInfo> downloadsByUri;
+    protected Map<File, DownloadInfo> downloadsByFile;
+    protected DownloadManager downloadManager;
+    protected SharedPreferences sharedPreferences;
+    protected Bundle savedInstanceState = null;
 
-    Handler handler = new Handler();
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.ROOT);
+
+    protected Handler handler = new Handler();
 
     private boolean isProgressCheckerRunning = false;
     private boolean isReleased = true;
@@ -99,18 +96,20 @@ public class DownloadTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile>
      * @param treeStateManager
      * @param numberOfLevels
      */
-    public DownloadTreeViewAdapter(final Activity activity,
-                                   final TreeStateManager<RemoteFile> treeStateManager,
-                                   final int numberOfLevels) {
+    public RemoteFileTreeViewAdapter(final Activity activity,
+                                     final TreeStateManager<RemoteFile> treeStateManager,
+                                     final int numberOfLevels,
+                                     final String targetFolder) {
         super(activity, treeStateManager, numberOfLevels);
         this.manager = treeStateManager;
         listTasks = new HashMap<>();
         downloadsByReference = new HashMap<>();
         downloadsByUri = new HashMap<>();
         downloadsByFile = new HashMap<>();
-        df.setTimeZone(TimeZone.getDefault());
+        dateFormat.setTimeZone(TimeZone.getDefault());
         downloadManager = (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity);
+        this.targetFolder = targetFolder;
 
         checkProgress();
         if (!downloadsByReference.isEmpty())
@@ -200,7 +199,7 @@ public class DownloadTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile>
     }
 
     /**
-     * Notifies the {@code DownloadTreeViewAdapter} that the caller no longer needs the receiver.
+     * Notifies the {@code RemoteFileTreeViewAdapter} that the caller no longer needs the receiver.
      *
      * Calling this method will unregister the receiver only if no downloads are currently in progress. If
      * downloads are in progress, a flag will be set, causing the receiver to be unregistered after the last
@@ -252,7 +251,7 @@ public class DownloadTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile>
         } else {
             view.setPadding(8, 8, 8, 0);
             downloadSize.setText(rfile.getFriendlySize());
-            downloadDate.setText(df.format(new Date(rfile.timestamp)));
+            downloadDate.setText(dateFormat.format(new Date(rfile.timestamp)));
             downloadSize.setVisibility(View.VISIBLE);
             downloadDate.setVisibility(View.VISIBLE);
             downloadDirProgress.setVisibility(View.GONE);
@@ -263,25 +262,24 @@ public class DownloadTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile>
                 downloadFileProgress.setProgress(downloadsByUri.get(rfile.getUri()).progress);
                 downloadIcon.setVisibility(View.GONE);
                 downloadCancel.setVisibility(View.VISIBLE);
-                downloadCancel.setOnClickListener(new OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (downloadManager.remove(info.reference) > 0) {
-                            removeDownload(info.reference, false);
-                        }
+                downloadCancel.setOnClickListener(v -> {
+                    if (downloadManager.remove(info.reference) > 0) {
+                        removeDownload(info.reference, false);
                     }
                 });
             } else {
                 File mapFile = new File(
                         sharedPreferences.getString(
                                 Preferences.KEY_MAP_FOLDER,
-                                getActivity().getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.MAPS_SUBDIR
+                                getActivity().getExternalFilesDir(null).getAbsolutePath()
+                                        + File.separator + Preferences.MAPS_SUBDIR
                         ),
                         rfile.name);
                 downloadFileProgress.setVisibility(View.INVISIBLE);
                 downloadCancel.setVisibility(View.GONE);
                 if (!mapFile.exists())
-                    downloadIcon.setImageDrawable(getActivity().getResources().getDrawable(R.drawable.ic_file_download));
+                    downloadIcon.setImageDrawable(
+                            getActivity().getResources().getDrawable(R.drawable.ic_file_download));
                 else if (mapFile.lastModified() < rfile.timestamp)
                     // TODO recheck this condition (granularity of timestamps, botched timezones)
                     downloadIcon.setImageDrawable(
@@ -297,85 +295,23 @@ public class DownloadTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile>
     }
 
     @Override
-    public void handleItemClick(final View view, final Object id) {
-        final RemoteFile remoteFile = (RemoteFile) id;
-        if (remoteFile.isDirectory) {
-            if (remoteFile.children != null) {
-                // Show directory contents (warn if directory is empty)
-                if (remoteFile.children.length > 0)
-                    super.handleItemClick(view, id);
-                else {
-                    String message = getActivity().getString(R.string.folder_empty);
-                    Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
-                }
-            } else {
-                String urlStr = remoteFile.getUriString();
-                // Retrieve directory contents from server
-                RemoteDirListTask task = new RemoteDirListTask(this, remoteFile);
-                listTasks.put(task, remoteFile);
-                task.execute(urlStr);
-                ProgressBar downloadDirProgress = (ProgressBar) view.findViewById(R.id.downloadDirProgress);
-                downloadDirProgress.setVisibility(View.VISIBLE);
-            }
-        } else {
-            // check if a download is already in progress
-            if (!downloadsByUri.containsValue(remoteFile.getUri())) {
-                // Download file
-                final File mapFile = new File(
-                        sharedPreferences.getString(
-                                Preferences.KEY_MAP_FOLDER,
-                                getActivity().getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.MAPS_SUBDIR),
-                        remoteFile.name);
-
-                if (downloadsByFile.containsKey(mapFile)) {
-                    // prevent multiple downloads with same map file name
-                    Toast.makeText(getActivity(), R.string.already_downloading, Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-                // check if we have a current version
-                // TODO recheck this condition (granularity of timestamps, botched timezones)
-                if (mapFile.exists() && (mapFile.lastModified() >= remoteFile.timestamp)) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                    builder.setTitle(R.string.overwrite_map_title);
-                    builder.setMessage(R.string.overwrite_map_message);
-                    builder.setPositiveButton(getActivity().getString(R.string.yes), new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            mapFile.delete();
-                            startDownload(remoteFile, mapFile, view);
-                        }
-                    });
-
-                    builder.setNegativeButton(getActivity().getString(R.string.no), new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            // NOP
-                        }
-                    });
-
-                    builder.show();
-                } else
-                    startDownload(remoteFile, mapFile, view);
-            }
-        }
-    }
-
-    @Override
     public long getItemId(final int position) {
         return getTreeId(position).hashCode();
     }
 
     @Override
-    public void onRemoteDirListReady(RemoteDirListTask task, RemoteFile[] rfiles) {
+    public void onRemoteDirListReady(BrowseAbstractTask task, RemoteFile[] rfiles) {
         RemoteFile parent = listTasks.get(task);
-
         listTasks.remove(task);
 
         if (rfiles.length == 0) {
             manager.refresh();
             handleItemClick(null, parent);
-        } else
-            for (RemoteFile rf : rfiles)
+        } else {
+            for (RemoteFile rf : rfiles) {
                 manager.addAfterChild(parent, rf, null);
+            }
+        }
     }
 
     /**
@@ -426,17 +362,17 @@ public class DownloadTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile>
     }
 
     /**
-     * Starts a map download.
+     * Starts a download.
      *
      * This will also start the progress checker.
      *
      * @param rfile The remote file to download
-     * @param mapFile The local file to which the map will be saved
+     * @param destFile The local file to which the map will be saved
      * @param view The {@link View} displaying the map file
      */
-    private void startDownload(RemoteFile rfile, File mapFile, View view) {
+    protected void startDownload(RemoteFile rfile, File destFile, View view) {
         Uri uri = rfile.getUri();
-        Uri destUri = Uri.fromFile(mapFile);
+        Uri destUri = Uri.fromFile(destFile);
         try {
             DownloadManager.Request request = new DownloadManager.Request(uri);
             //request.setTitle(rfile.name);
@@ -444,12 +380,12 @@ public class DownloadTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile>
             //request.setDestinationInExternalFilesDir(getActivity(), dirType, subPath)
             request.setDestinationUri(destUri);
             Log.d(TAG, String.format("Ready to download %s to %s (local name %s)",
-                    uri.toString(), destUri.toString(), mapFile.getName()));
+                    uri.toString(), destUri.toString(), destFile.getName()));
             Long reference = downloadManager.enqueue(request);
-            DownloadInfo info = new DownloadInfo(rfile, uri, mapFile, reference);
+            DownloadInfo info = new DownloadInfo(rfile, uri, destFile, reference);
             downloadsByReference.put(reference, info);
             downloadsByUri.put(rfile.getUri(), info);
-            downloadsByFile.put(mapFile, info);
+            downloadsByFile.put(destFile, info);
             ProgressBar downloadFileProgress = (ProgressBar) view.findViewById(R.id.downloadFileProgress);
             downloadFileProgress.setVisibility(View.VISIBLE);
             downloadFileProgress.setMax((int) (rfile.size / 1024));
@@ -548,7 +484,8 @@ public class DownloadTreeViewAdapter extends AbstractTreeViewAdapter<RemoteFile>
                     // The other status values are unusable because they don't fire reliably.
                 }
             } else if (intent.getAction().equals(DownloadManager.ACTION_NOTIFICATION_CLICKED)) {
-                Intent mapDownloadIntent = new Intent(getActivity().getApplicationContext(), MapDownloadActivity.class);
+                Intent mapDownloadIntent = new Intent(
+                        getActivity().getApplicationContext(), MapDownloadActivity.class);
                 mapDownloadIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                 if (savedInstanceState != null)
                     mapDownloadIntent.putExtra("savedInstanceState", savedInstanceState);

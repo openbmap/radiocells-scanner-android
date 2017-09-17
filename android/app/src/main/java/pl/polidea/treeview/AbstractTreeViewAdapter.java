@@ -26,6 +26,7 @@ import org.openbmap.R;
 public abstract class AbstractTreeViewAdapter<T> extends BaseAdapter implements
         ListAdapter {
     private static final String TAG = AbstractTreeViewAdapter.class.getSimpleName();
+
     private final TreeStateManager<T> treeStateManager;
     private final int numberOfLevels;
     private final LayoutInflater layoutInflater;

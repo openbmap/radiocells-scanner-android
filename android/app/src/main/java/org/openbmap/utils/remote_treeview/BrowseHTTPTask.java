@@ -17,13 +17,12 @@
  * along with LSRN Tools.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openbmap.utils;
+package org.openbmap.utils.remote_treeview;
 
-        import android.net.Uri;
-import android.os.AsyncTask;
+import android.net.Uri;
 import android.util.Log;
 
-        import java.text.SimpleDateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -31,19 +30,19 @@ import java.util.TimeZone;
  * A task which retrieves the contents of a remote directory in the background and notifies a listener
  * upon completion.
  */
-public class RemoteDirListTask extends AsyncTask<String, Void, RemoteFile[]> {
-    private static final String TAG = RemoteDirListTask.class.getSimpleName();
+public class BrowseHTTPTask extends BrowseAbstractTask {
+    private static final String TAG = BrowseHTTPTask.class.getSimpleName();
     private RemoteDirListListener listener = null;
     private RemoteFile parent = null;
 
     /**
-     * Creates a new {@code RemoteDirListTask} task, and registers it with a listener.
+     * Creates a new {@code BrowseHTTPTask} task, and registers it with a listener.
      *
      * @param listener The {@link RemoteDirListListener} which will be notified when the task has completed.
      * @param parent The directory to be listed. When this task finishes, it populates the {@code children}
      * member of {@code parent} with the objects it retrieved. May be {@code null}.
      */
-    public RemoteDirListTask(RemoteDirListListener listener, RemoteFile parent) {
+    public BrowseHTTPTask(RemoteDirListListener listener, RemoteFile parent) {
         super();
         this.listener = listener;
         this.parent = parent;
@@ -59,7 +58,7 @@ public class RemoteDirListTask extends AsyncTask<String, Void, RemoteFile[]> {
         if (uri.getScheme() == null)
             return null;
         if (uri.getScheme().equals("http") || uri.getScheme().equals("https"))
-            rfiles = HttpDownloader.list(params[0]);
+            rfiles = HttpFileBrowser.list(params[0]);
 
         if (rfiles == null)
             Log.w(TAG, "Error – could not retrieve content!");
@@ -80,9 +79,11 @@ public class RemoteDirListTask extends AsyncTask<String, Void, RemoteFile[]> {
     }
 
     protected void onPostExecute(RemoteFile[] result) {
-        if (parent != null)
+        if (parent != null) {
             parent.children = result;
-        if (listener != null)
+        }
+        if (listener != null) {
             listener.onRemoteDirListReady(this, result);
+        }
     }
 }

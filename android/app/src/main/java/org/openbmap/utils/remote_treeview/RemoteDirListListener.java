@@ -1,4 +1,3 @@
-
 /*
  * Copyright © 2013–2016 Michael von Glasow.
  *
@@ -18,7 +17,7 @@
  * along with LSRN Tools.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openbmap.utils;
+package org.openbmap.utils.remote_treeview;
 
 /**
  * Receives notifications when a remote directory listing has completed.
@@ -29,5 +28,5 @@ public interface RemoteDirListListener {
      *
      * @param rfiles An array of all objects in the remote directory.
      */
-    public void onRemoteDirListReady(RemoteDirListTask task, RemoteFile[] rfiles);
+    void onRemoteDirListReady(BrowseAbstractTask task, RemoteFile[] rfiles);
 }

@@ -38,7 +38,7 @@ public final class Preferences {
 	public static final String KEY_MAP_FOLDER = "data.folder_map";
 
     // absolute wifi catalog folder
-	public static final String KEY_WIFI_CATALOG_FOLDER = "data.folder_catalog";
+    public static final String KEY_CATALOG_FOLDER = "data.folder_catalog";
 
 	/**
 	 * Selected map file
@@ -283,8 +283,8 @@ public final class Preferences {
 
 	/**
 	 * Default wifi catalog folder name, relative to application root dir.
-	 * Can be overwritten in settings by specifying KEY_WIFI_CATALOG_FOLDER
-	 */
+     * Can be overwritten in settings by specifying KEY_CATALOG_FOLDER
+     */
     public static final String CATALOG_SUBDIR = "databases";
 
 	/**

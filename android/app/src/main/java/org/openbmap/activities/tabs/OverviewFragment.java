@@ -65,7 +65,6 @@ import java.util.List;
 import static com.github.mikephil.charting.components.LimitLine.LimitLabelPosition.RIGHT_BOTTOM;
 import static com.github.mikephil.charting.components.LimitLine.LimitLabelPosition.RIGHT_TOP;
 
-
 /**
  * Activity for displaying basic session infos (# of cells, wifis, etc.)
  */
@@ -359,6 +358,7 @@ public class OverviewFragment extends Fragment {
             }
 
             XAxis xAxis = gvGraph.getXAxis();
+            xAxis.setDrawLimitLinesBehindData(true);
             xAxis.addLimitLine(ll);
         }
     }

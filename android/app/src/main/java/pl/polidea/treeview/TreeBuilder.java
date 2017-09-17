@@ -1,7 +1,5 @@
 package pl.polidea.treeview;
 
-import android.util.Log;
-
 /**
  * Allows to build tree easily in sequential mode (you have to know levels of
  * all the tree elements upfront). You should rather use this class rather than
@@ -64,7 +62,7 @@ public class TreeBuilder<T> {
      *            its level
      */
     public synchronized void sequentiallyAddNextNode(final T id, final int level) {
-        //Log.d(TAG, "Adding sequentiall node " + id + " at level " + level);
+        //Log.d(TAG, "Adding sequential node " + id + " at level " + level);
         if (lastAddedId == null) {
             addNodeToParentOneLevelDown(null, id, level);
         } else {

@@ -51,6 +51,9 @@
             android:name=".activities.settings.MapDownloadActivity"
             android:label="@string/activity_map_downloads_activity" />
         <activity
+            android:name=".activities.settings.CatalogDownloadActivity"
+            android:label="@string/activity_catalog_downloads_activity" />
+        <activity
             android:name=".activities.settings.AdvancedSettingsActivity"
             android:label="@string/activity_advanced_settings_activity" />
         <activity

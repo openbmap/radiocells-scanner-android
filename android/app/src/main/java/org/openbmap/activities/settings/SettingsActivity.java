@@ -56,16 +56,6 @@ public class SettingsActivity extends PreferenceActivity {
 
     private DownloadManager mDownloadManager;
 
-    /*
-     * Id of the active catalog download or -1 if no active download
-     */
-    private long mCurrentCatalogDownloadId = -1;
-
-    /*
-     * Id of the active map download or -1 if no active download
-     */
-    private long mCurrentMapDownloadId = -1;
-
     private BroadcastReceiver mReceiver = null;
 
     @Override
@@ -77,6 +67,7 @@ public class SettingsActivity extends PreferenceActivity {
         initDownloadManager();
 
         initAlternativeMapDownloadButton();
+        initAlternativeCatalogDownloadButton();
 
         initActiveCatalogControl();
 
@@ -86,7 +77,6 @@ public class SettingsActivity extends PreferenceActivity {
 
         initAdvancedSettingsButton();
 
-        DialogPreferenceCatalogs catalogs = (DialogPreferenceCatalogs) findPreference(Preferences.KEY_CATALOGS_DIALOG);
     }
 
     /**
@@ -145,13 +135,18 @@ public class SettingsActivity extends PreferenceActivity {
     }
 
     private void initAlternativeMapDownloadButton() {
-        Preference pref = (Preference)findPreference("data.alternative_download");
-        pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                startActivity(new Intent(pref.getContext(), MapDownloadActivity.class));
-                return true;
-            }
+        Preference pref = findPreference("data.alternative_download");
+        pref.setOnPreferenceClickListener(preference -> {
+            startActivity(new Intent(pref.getContext(), MapDownloadActivity.class));
+            return true;
+        });
+    }
+
+    private void initAlternativeCatalogDownloadButton() {
+        Preference pref = findPreference("data.alternative_catalog_download");
+        pref.setOnPreferenceClickListener(preference -> {
+            startActivity(new Intent(pref.getContext(), CatalogDownloadActivity.class));
+            return true;
         });
     }
 
@@ -175,7 +170,9 @@ public class SettingsActivity extends PreferenceActivity {
     private void initGpsLogIntervalControl() {
         final Preference pref = findPreference(org.openbmap.Preferences.KEY_GPS_LOGGING_INTERVAL);
         pref.setSummary(
-                PreferenceManager.getDefaultSharedPreferences(this).getString(org.openbmap.Preferences.KEY_GPS_LOGGING_INTERVAL, org.openbmap.Preferences.DEFAULT_GPS_LOGGING_INTERVAL)
+                PreferenceManager.getDefaultSharedPreferences(this).getString(
+                        org.openbmap.Preferences.KEY_GPS_LOGGING_INTERVAL,
+                        org.openbmap.Preferences.DEFAULT_GPS_LOGGING_INTERVAL)
                         + " " + getResources().getString(R.string.prefs_gps_logging_interval_seconds)
                         + ". " + getResources().getString(R.string.prefs_gps_logging_interval_summary));
         pref.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
@@ -237,7 +234,7 @@ public class SettingsActivity extends PreferenceActivity {
     @NonNull
     private File getCatalogFolder() {
         return new File(PreferenceManager.getDefaultSharedPreferences(SettingsActivity.this).getString(
-                Preferences.KEY_WIFI_CATALOG_FOLDER,
+                Preferences.KEY_CATALOG_FOLDER,
                 SettingsActivity.this.getExternalFilesDir(null) + File.separator + Preferences.CATALOG_SUBDIR));
     }
 
@@ -330,7 +327,6 @@ public class SettingsActivity extends PreferenceActivity {
         file = file.replace("file://", "");
 
         if (extension.equals(org.openbmap.Preferences.CATALOG_FILE_EXTENSION)) {
-            mCurrentCatalogDownloadId = -1;
             if (file.contains(SettingsActivity.this.getExternalCacheDir().getPath())) {
                 Log.i(TAG, "Moving file to " + getCatalogFolder().getAbsolutePath());
                 file = moveToFolder(file, getCatalogFolder().getAbsolutePath());

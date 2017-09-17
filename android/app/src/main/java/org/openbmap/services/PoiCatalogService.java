@@ -84,7 +84,7 @@ public class PoiCatalogService extends Service {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         if (!prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.VAL_CATALOG_NONE).equals(Preferences.VAL_CATALOG_NONE)) {
             // Open catalog database
-            String folder = prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
+            String folder = prefs.getString(Preferences.KEY_CATALOG_FOLDER,
                     this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.CATALOG_SUBDIR);
 
             Log.i(TAG, "Using catalog folder:" + folder);

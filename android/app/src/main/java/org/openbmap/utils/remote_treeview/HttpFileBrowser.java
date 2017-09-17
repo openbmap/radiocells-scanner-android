@@ -17,7 +17,7 @@
  * along with LSRN Tools.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openbmap.utils;
+package org.openbmap.utils.remote_treeview;
 
 import android.text.Html;
 import android.text.Spanned;
@@ -37,8 +37,8 @@ import java.util.Collections;
 /**
  * Provides methods to browse and download from HTTP sites with an FTP-like UI (folder lists).
  */
-public class HttpDownloader {
-    private static final String TAG = "HttpDownloader";
+public class HttpFileBrowser {
+    private static final String TAG = HttpFileBrowser.class.getSimpleName();
 
     private static final RemoteFileComparator comparator = new RemoteFileComparator();
 
@@ -133,7 +133,7 @@ public class HttpDownloader {
      * @brief Lists a remote directory.
      */
     public static RemoteFile[] list(String urlStr) {
-        ArrayList<RemoteFile> rfiles = new ArrayList<RemoteFile>();
+        ArrayList<RemoteFile> rfiles = new ArrayList<>();
         URL url;
         HttpURLConnection http = null;
         Spanned parsedHtml;

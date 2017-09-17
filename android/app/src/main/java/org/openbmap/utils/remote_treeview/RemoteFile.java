@@ -17,7 +17,7 @@
  * along with LSRN Tools.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openbmap.utils;
+package org.openbmap.utils.remote_treeview;
 
 import android.net.Uri;
 

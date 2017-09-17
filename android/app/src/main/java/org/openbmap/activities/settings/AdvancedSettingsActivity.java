@@ -185,8 +185,8 @@ public class AdvancedSettingsActivity extends PreferenceActivity {
 	 * Initializes wifi catalog folder preference.
 	 */
 	private void initWifiCatalogFolderControl() {
-		final Preference button = findPreference(Preferences.KEY_WIFI_CATALOG_FOLDER);
-		button.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+        final Preference button = findPreference(Preferences.KEY_CATALOG_FOLDER);
+        button.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			private String mChosenDir = FileUtils.getCatalogFolder(AdvancedSettingsActivity.this).getAbsolutePath();
 
 			private boolean mNewFolderEnabled = false;
@@ -201,8 +201,8 @@ public class AdvancedSettingsActivity extends PreferenceActivity {
 							public void onChosenDir(final String chosenDir) {
 								mChosenDir = chosenDir;
 								final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(AdvancedSettingsActivity.this);
-								settings.edit().putString(Preferences.KEY_WIFI_CATALOG_FOLDER, chosenDir).apply();
-								//Toast.makeText(SettingsActivity.this, chosenDir, Toast.LENGTH_LONG).show();
+                                settings.edit().putString(Preferences.KEY_CATALOG_FOLDER, chosenDir).apply();
+                                //Toast.makeText(SettingsActivity.this, chosenDir, Toast.LENGTH_LONG).show();
 							}
 						});
 

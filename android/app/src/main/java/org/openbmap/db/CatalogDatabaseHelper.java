@@ -56,7 +56,7 @@ public class CatalogDatabaseHelper extends SQLiteOpenHelper {
         if (sInstance == null) {
             // Open catalog database
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            mFileLocation = prefs.getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
+            mFileLocation = prefs.getString(Preferences.KEY_CATALOG_FOLDER,
                     context.getApplicationContext().getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.CATALOG_SUBDIR)
                     + File.separator + prefs.getString(Preferences.KEY_CATALOG_FILE, Preferences.DEFAULT_CATALOG_FILE);
             sInstance = new CatalogDatabaseHelper(context.getApplicationContext());

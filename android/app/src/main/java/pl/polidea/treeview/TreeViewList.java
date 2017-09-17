@@ -5,8 +5,6 @@ import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.Gravity;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
@@ -103,13 +101,7 @@ public class TreeViewList extends ListView {
         treeAdapter.setRowBackgroundDrawable(rowBackgroundDrawable);
         treeAdapter.setCollapsible(collapsible);
         if (handleTrackballPress) {
-            setOnItemClickListener(new OnItemClickListener() {
-                @Override
-                public void onItemClick(final AdapterView< ? > parent,
-                        final View view, final int position, final long id) {
-                    treeAdapter.handleItemClick(view, view.getTag());
-                }
-            });
+            setOnItemClickListener((parent, view, position, id) -> treeAdapter.handleItemClick(view, view.getTag()));
         } else {
             setOnClickListener(null);
         }

@@ -141,7 +141,7 @@ public class WifiDetailsActivity extends FragmentActivity {
     private String getManufactorName(String search) {
         String result = null;
         // Open catalog database
-        final String file = PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
+        final String file = PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_CATALOG_FOLDER,
                 this.getExternalFilesDir(null).getAbsolutePath() + File.separator + Preferences.CATALOG_SUBDIR)
                 + File.separator + PreferenceManager.getDefaultSharedPreferences(this).getString(Preferences.KEY_CATALOG_FILE, Preferences.DEFAULT_CATALOG_FILE);
         try {

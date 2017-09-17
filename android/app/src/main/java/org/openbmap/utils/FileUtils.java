@@ -208,7 +208,7 @@ public final class FileUtils {
     @NonNull
     public static File getCatalogFolder(final Context context) {
         infoExternalStoragePermission();
-        return new File(PreferenceManager.getDefaultSharedPreferences(context).getString(Preferences.KEY_WIFI_CATALOG_FOLDER,
+        return new File(PreferenceManager.getDefaultSharedPreferences(context).getString(Preferences.KEY_CATALOG_FOLDER,
                 context.getExternalFilesDir(null) + File.separator + Preferences.CATALOG_SUBDIR + File.separator));
     }
 

@@ -31,8 +31,8 @@ import android.widget.ProgressBar;
 import org.openbmap.Preferences;
 import org.openbmap.R;
 import org.openbmap.utils.remote_treeview.BrowseAbstractTask;
-import org.openbmap.utils.remote_treeview.BrowseHTTPTask;
-import org.openbmap.utils.remote_treeview.HttpBrowserTreeViewAdapter;
+import org.openbmap.utils.remote_treeview.BrowseJSONTask;
+import org.openbmap.utils.remote_treeview.JsonBrowserTreeViewAdapter;
 import org.openbmap.utils.remote_treeview.RemoteDirListListener;
 import org.openbmap.utils.remote_treeview.RemoteFile;
 
@@ -47,20 +47,20 @@ import pl.polidea.treeview.TreeViewList;
  * An activity which displays a list of maps available on the download server and lets the user
  * select maps to download.
  */
-public class MapDownloadActivity extends AppCompatActivity implements RemoteDirListListener {
-    private static final String TAG = MapDownloadActivity.class.getSimpleName();
+public class CatalogDownloadActivity extends AppCompatActivity implements RemoteDirListListener {
+    private static final String TAG = CatalogDownloadActivity.class.getSimpleName();
 
-    public static final String MAP_DOWNLOAD_BASE_URL = "https://ftp-stud.hs-esslingen.de/pub/Mirrors/download.mapsforge.org/maps/";
+    public static final String CATALOG_DOWNLOAD_BASE_URL = "https://radiocells.org/openbmap/downloads/catalogs.json";
 
-    private static final String STATE_KEY_TREE_MANAGER = "map_tree_manager";
+    private static final String STATE_KEY_TREE_MANAGER = "catalog_tree_manager";
     private static final String STATE_KEY_DOWNLOADS = "downloads";
 
-    private BrowseHTTPTask dirListTask = null;
+    private BrowseJSONTask dirListTask = null;
     private ProgressBar downloadProgress;
     private TreeViewList treeView;
     private DownloadTreeStateManager manager = null;
     private TreeBuilder<RemoteFile> builder = null;
-    private HttpBrowserTreeViewAdapter treeViewAdapter;
+    private JsonBrowserTreeViewAdapter treeViewAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,8 +74,9 @@ public class MapDownloadActivity extends AppCompatActivity implements RemoteDirL
         if (state != null) {
             manager = (DownloadTreeStateManager) state.getSerializable(STATE_KEY_TREE_MANAGER);
         }
-        if (manager == null)
+        if (manager == null) {
             manager = new DownloadTreeStateManager();
+        }
         builder = new TreeBuilder<>(manager);
 
         setContentView(R.layout.activity_map_download);
@@ -86,21 +87,20 @@ public class MapDownloadActivity extends AppCompatActivity implements RemoteDirL
         downloadProgress = (ProgressBar) findViewById(R.id.downloadProgress);
         treeView = (TreeViewList) findViewById(R.id.downloadList);
         /*
-		 * FIXME: Android wants the number of distinct layouts, which here is the same as the number of
+         * FIXME: Android wants the number of distinct layouts, which here is the same as the number of
 		 * levels and in theory unlimited. Using more levels than specified here will cause exceptions which
 		 * are beyond our control (only system functions in the call stack) and semi-random (creating more
 		 * levels than specified will work initially but the code will barf sometime later, e.g. on scroll).
 		 *
-		 * The maximum number of levels is currently 4 (multilingual/continent/country/region.map),
-		 * therefore 5 is safe even if another one level is added. However, if the layout on the server ever
+		 * The maximum number of levels is currently 3 (continent/country/region.map),
+		 * therefore 3 is safe even if another one level is added. However, if the layout on the server ever
 		 * changes and goes beyond that, we'll get semi-random crashes.
 		 */
-        treeViewAdapter = new HttpBrowserTreeViewAdapter(this, manager, 5,
+        treeViewAdapter = new JsonBrowserTreeViewAdapter(this, manager, 3,
                 PreferenceManager.getDefaultSharedPreferences(this).getString(
-                        Preferences.KEY_MAP_FOLDER,
+                        org.openbmap.Preferences.KEY_CATALOG_FOLDER,
                         this.getExternalFilesDir(null).getAbsolutePath()
-                                + File.separator + Preferences.MAPS_SUBDIR));
-
+                                + File.separator + Preferences.CATALOG_SUBDIR));
         treeView.setAdapter(treeViewAdapter);
         treeView.setCollapsible(true);
         treeView.setCollapsedDrawable(getResources().getDrawable(R.drawable.ic_expand_more));
@@ -110,9 +110,8 @@ public class MapDownloadActivity extends AppCompatActivity implements RemoteDirL
         List<RemoteFile> topItems = manager.getChildren(null);
         if ((topItems == null) || (topItems.size() == 0)) {
             downloadProgress.setVisibility(View.VISIBLE);
-            // get data from FTP
-            dirListTask = new BrowseHTTPTask(this, null);
-            dirListTask.execute(MAP_DOWNLOAD_BASE_URL);
+            dirListTask = new BrowseJSONTask(this, null);
+            dirListTask.execute(CATALOG_DOWNLOAD_BASE_URL);
         }
 
         treeViewAdapter.registerIntentReceiver();
@@ -122,6 +121,7 @@ public class MapDownloadActivity extends AppCompatActivity implements RemoteDirL
     protected void onDestroy() {
         if ((dirListTask != null) && (!dirListTask.isCancelled()))
             dirListTask.cancel(true);
+
         treeViewAdapter.releaseIntentReceiver();
         super.onDestroy();
     }
@@ -147,8 +147,13 @@ public class MapDownloadActivity extends AppCompatActivity implements RemoteDirL
             return;
         }
 
-        for (RemoteFile rf : rfiles)
+        for (RemoteFile rf : rfiles) {
             builder.sequentiallyAddNextNode(rf, 0);
+            for (int i = 0; i < rf.children.length; i++) {
+                builder.addRelation(rf, rf.children[i]);
+            }
+        }
+        manager.collapseChildren(null);
     }
 
     @Override

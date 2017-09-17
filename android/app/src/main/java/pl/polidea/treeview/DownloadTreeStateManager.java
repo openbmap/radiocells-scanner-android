@@ -20,11 +20,11 @@
 
 package pl.polidea.treeview;
 
-import org.openbmap.utils.RemoteFile;
+import org.openbmap.utils.remote_treeview.RemoteFile;
 
 import java.util.List;
 /**
- * In-memory manager of tree state, adapted for use with {@link com.conglasow.michael.satstat.utils.RemoteFile}
+ * In-memory manager of tree state, adapted for use with {@link org.openbmap.utils.remote_treeview.RemoteFile}
  * and branches loaded dynamically.
  */
 public class DownloadTreeStateManager extends
@@ -36,11 +36,13 @@ public class DownloadTreeStateManager extends
         final InMemoryTreeNode<RemoteFile> node = getNodeFromTreeOrThrow(id);
         final List<InMemoryTreeNode<RemoteFile>> children = node.getChildren();
         boolean expanded = false;
+
         if (!children.isEmpty() && children.get(0).isVisible()) {
             expanded = true;
         }
+
         boolean hasChildren = id.isDirectory | !children.isEmpty();
-        return new TreeNodeInfo<RemoteFile>(id, node.getLevel(), hasChildren,
+        return new TreeNodeInfo<>(id, node.getLevel(), hasChildren,
                 node.isVisible(), expanded);
     }
 
