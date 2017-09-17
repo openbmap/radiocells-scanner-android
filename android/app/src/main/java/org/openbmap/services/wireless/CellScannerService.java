@@ -318,6 +318,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
         initBlacklists();
     }
 
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         boolean isGranted = false;
@@ -388,6 +389,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
                 }
             }
 
+
             @Override
             public void onServiceStateChanged(final ServiceState serviceState) {
                 switch (serviceState.getState()) {
@@ -415,6 +417,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
                 }
             }
 
+
             @Override
             public void onCellInfoChanged(List<CellInfo> cellInfo) {
                 Log.v(TAG, "onCellInfoChanged fired");
@@ -428,6 +431,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
                 }
                 super.onCellInfoChanged(cellInfo);
             }
+
 
             @Override
             public void onCellLocationChanged(CellLocation location) {

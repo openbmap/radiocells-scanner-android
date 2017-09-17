@@ -6,16 +6,19 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.0-beta5'
+        classpath 'com.android.tools.build:gradle:3.0.0-beta6'
           classpath 'com.github.ben-manes:gradle-versions-plugin:0.11.3'
-          classpath 'com.github.dcendents:android-maven-gradle-plugin:1.4.1'
+          classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
     }
 }
 
 allprojects {
     repositories {
         jcenter()
-        maven { url "https://jitpack.io" }
+        maven {
+            url "https://jitpack.io"
+        }
+        google()
     }
 }
 
