@@ -72,9 +72,7 @@ import org.openbmap.utils.CellValidator;
 import org.openbmap.utils.GeometryUtils;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import static android.os.Build.VERSION.SDK_INT;
@@ -127,37 +125,37 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
      * 	Cells Strength information
      */
     private static int INVALID_STRENGTH = -1;
-    private int gsmStrengthDbm = INVALID_STRENGTH;
-    private int gsmStrengthAsu = INVALID_STRENGTH;
-    private int cdmaStrengthDbm = INVALID_STRENGTH;
-    private int cdmaEcIo = INVALID_STRENGTH;
-    private int signalStrengthEvdodBm = INVALID_STRENGTH;
-    private int signalStrengthEvdoEcio = INVALID_STRENGTH;
-    private int signalStrengthSnr = INVALID_STRENGTH;
-    private int gsmBitErrorRate = INVALID_STRENGTH;
-    private final int signalStrengthGsm = INVALID_STRENGTH;
-    private final boolean signalStrengthIsGsm = false;
-
-    /*
-     * last known location
-     */
-    private Location lastLocation = new Location("DUMMY");
-    private String lastLocationProvider;
-
-    /*
-     * location of last saved cell
-     */
-    private Location savedAt = new Location("DUMMY");
-
-    /*
-     * Position where wifi scan has been initiated.
-     */
-    private Location startScanLocation;
 
     /**
-     * Location provider's name (e.g. GPS)
+     * Strength values used for old style API
      */
-    private String startScanLocationProvider;
+    private int gsmStrengthDbm = INVALID_STRENGTH;
+    private int gsmStrengthAsu = INVALID_STRENGTH;
+
+    /**
+     * Location of last saved cell
+     */
+    private Location locationWhereSaved = new Location("DUMMY");
+    private long millisWhenSaved;
+
+
+    /**
+     * Location where scan has started or resumed.
+     * (more detailed: the location/time where first GPS fix has been received)
+     */
+    private Location locationWhereStarted = new Location("DUMMY");
+    private long millisWhenStarted;
+
+    /**
+     * Last known location
+     */
+    private Location lastLocation = new Location("DUMMY");
+
+
+    /**
+     * Distance traveled in meter
+     */
+    private long traveled = 0;
 
     /**
      * Are we currently tracking ?
@@ -207,7 +205,14 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
         Log.d(TAG, "ACK onCellScannerStart event");
         session = event.session;
         session = event.session;
-        savedAt = new Location("DUMMY");
+
+        // reset position and track counter
+        locationWhereSaved = new Location("DUMMY");
+        locationWhereStarted = new Location("DUMMY");
+        millisWhenStarted = System.currentTimeMillis();
+        lastLocation = new Location("DUMMY");
+        traveled = 0;
+
         startTracking(session);
     }
 
@@ -215,6 +220,9 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
     @Subscribe
     public void onEvent(onCellScannerStop event) {
         Log.d(TAG, "ACK onCellScannerStop event");
+        Log.i(TAG, String.format("Distance traveled: %.2f km", traveled / 1000f));
+        Log.i(TAG, String.format("Time scanned: %.2f min", (System.currentTimeMillis() - millisWhenStarted) / 1000f / 60f));
+
         stopTracking();
     }
 
@@ -237,25 +245,34 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
             return;
         }
 
+        // check if this is the first GPS fix, i.e. locationWhereStarted uninitialized
+        if (locationWhereStarted.getProvider().equals("DUMMY")) {
+            locationWhereStarted = location;
+            millisWhenStarted = System.currentTimeMillis();
+        }
+
         /*
          * two criteria are required for cells updates
          * 		distance > MIN_CELL_DISTANCE
          * 		elapsed time (in milli seconds) > MIN_CELL_TIME_INTERVAL
          */
-        if (acceptableDistance(location, savedAt)) {
-            Log.d(TAG, "Cell update. Distance " + location.distanceTo(savedAt));
+        if (acceptableDistance(location, locationWhereSaved)) {
+            Log.d(TAG, "Cell update. Distance " + location.distanceTo(locationWhereSaved));
             final boolean resultOk = updateCells(location, source);
 
             if (resultOk) {
                 //Log.i(TAG, "Successfully saved cell");
-                savedAt = location;
+                locationWhereSaved = location;
+                millisWhenSaved = System.currentTimeMillis();
             }
         } else {
             Log.i(TAG, "Cell update skipped: either to close to last location or interval < " + MIN_CELL_TIME_INTERVAL / 2000 + " seconds");
         }
 
+        if (!lastLocation.getProvider().equals("DUMMY")) {
+            traveled += lastLocation.distanceTo(location);
+        }
         lastLocation = location;
-        lastLocationProvider = source;
     }
 
     /**
@@ -298,10 +315,6 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
         } else {
             Log.w(TAG, "Event bus receiver already registered");
         }
-
-        // Set savedAt and mWifiSavedAt to default values (Lat 0, Lon 0)
-        // Thus MIN_CELL_DISTANCE filters are always fired on startup
-        savedAt = new Location("DUMMY");
 
 		/*
          * Setting up database connection
@@ -368,22 +381,9 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
             public void onSignalStrengthsChanged(final SignalStrength signalStrength) {
                 // TODO we need a timestamp for signal strength
                 try {
-                    gsmBitErrorRate = signalStrength.getGsmBitErrorRate();
+                    //gsmBitErrorRate = signalStrength.getGsmBitErrorRate();
                     gsmStrengthAsu = signalStrength.getGsmSignalStrength();
                     gsmStrengthDbm = -113 + 2 * gsmStrengthAsu; // conversion ASU in dBm
-                } catch (final Exception e) {
-                    Log.e(TAG, e.toString(), e);
-                }
-                try {
-                    cdmaStrengthDbm = signalStrength.getCdmaDbm();
-                    cdmaEcIo = signalStrength.getCdmaEcio();
-                } catch (final Exception e) {
-                    Log.e(TAG, e.toString(), e);
-                }
-                try {
-                    signalStrengthEvdodBm = signalStrength.getEvdoDbm();
-                    signalStrengthEvdoEcio = signalStrength.getEvdoEcio();
-                    signalStrengthSnr = signalStrength.getEvdoSnr();
                 } catch (final Exception e) {
                     Log.e(TAG, e.toString(), e);
                 }
@@ -396,21 +396,15 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
                     case ServiceState.STATE_POWER_OFF:
                         try {
                             Log.i(TAG, "Service state: power off");
-                            final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
-                            final Date now = new Date();
-                            final String date = formatter.format(now);
                         } catch (final Exception e) {
-                            Log.e(TAG, e.toString(), e);
+                            Log.e(TAG, e.getMessage());
                         }
                         break;
                     case ServiceState.STATE_OUT_OF_SERVICE:
                         try {
                             Log.i(TAG, "Service state: out of service");
-                            final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
-                            final Date now = new Date();
-                            final String date = formatter.format(now);
                         } catch (final Exception e) {
-                            Log.e(TAG, e.toString(), e);
+                            Log.e(TAG, e.getMessage());
                         }
                         break;
                     default:
@@ -476,7 +470,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
             Log.i(TAG, "Network operator: " + tm.getNetworkOperator());
             Log.i(TAG, tm.getNetworkOperatorName());
             Log.i(TAG, "Roaming: " + tm.isNetworkRoaming());
-            Log.i(TAG, "Device Manufactorer:" + Build.MANUFACTURER);
+            Log.i(TAG, "Device Manufacturer:" + Build.MANUFACTURER);
             Log.i(TAG, "Android version:" + Build.VERSION.RELEASE);
             PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
             Log.i(TAG, "Power Safe Mode:" + powerManager.isPowerSaveMode());
@@ -521,10 +515,10 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
         }
 
         // if we're in blocked area, skip everything
-        // set savedAt nevertheless, so next scan can be scheduled properly
+        // set locationWhereSaved nevertheless, so next scan can be scheduled properly
         if (locationBlacklist.contains(here)) {
             Log.i(TAG, "Didn't save cells: location blacklisted");
-            savedAt = here;
+            locationWhereSaved = here;
             return false;
         }
 
@@ -589,8 +583,11 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
 
     /**
      * Create a {@link CellRecord} by parsing {@link CellInfo}
-     * - Cells older than {@link MAX_AGE_SECONDS} are ignored
+     * - There's a warning if cell's timestamp is older than MAX_AGE_SECONDS (default 60s)
+     *   this works only for new API!
+     *
      * - Cells with missing operator or operator name are ignored
+     *
      * @param cell     {@linkplain CellInfo}
      * @param position {@linkplain PositionRecord Current position}
      * @return {@link CellRecord} or null on invalid cell
@@ -601,7 +598,8 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
         float age = (float) ((SystemClock.elapsedRealtimeNanos() - cell.getTimeStamp()) / 1000000000);
         if (cell.getTimeStamp() < Long.MAX_VALUE && age > (float) MAX_AGE_SECONDS) {
             Log.w(TAG, String.format("Cell measurement old: %.2f s, skipping cell", age));
-            //return null;
+            // TODO: check if we discard too old cells per default in the future
+            // DO NOTHING YET
         }
 
         if (cell instanceof CellInfoGsm) {
@@ -622,7 +620,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
                 result.setBeginPosition(position);
                 // so far we set end position = begin position
                 result.setEndPosition(position);
-                result.setIsServing(true);
+                result.setIsServing(cell.isRegistered());
                 result.setIsNeighbor(!cell.isRegistered());
 
                 final String operator = tm.getNetworkOperator();
@@ -664,7 +662,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
                 // so far we set end position = begin position
                 result.setEndPosition(position);
 
-                result.setIsServing(true);
+                result.setIsServing(cell.isRegistered());
                 result.setIsNeighbor(!cell.isRegistered());
 
                 final String operator = tm.getNetworkOperator();
@@ -709,8 +707,8 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
                 result.setBeginPosition(position);
                 // so far we set end position = begin position
                 result.setEndPosition(position);
-                result.setIsServing(true);
-                result.setIsNeighbor(false);
+                result.setIsServing(cell.isRegistered());
+                result.setIsNeighbor(!cell.isRegistered());
 
                 // getNetworkOperator can be unreliable in CDMA networks, thus be careful
                 // {@link http://developer.android.com/reference/android/telephony/TelephonyManager.html#getNetworkOperator()}
@@ -753,7 +751,7 @@ public class CellScannerService extends Service implements ActivityCompat.OnRequ
                 // so far we set end position = begin position
                 result.setEndPosition(position);
 
-                result.setIsServing(true);
+                result.setIsServing(cell.isRegistered());
                 result.setIsNeighbor(!cell.isRegistered());
 
                 final String operator = tm.getNetworkOperator();
