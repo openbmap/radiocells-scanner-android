@@ -23,7 +23,8 @@ allprojects {
 }
 
 project.ext.androidapkprojects = ["android"]
-project.ext.androidlibraryprojects = ["spatialite-android"]
+//project.ext.androidlibraryprojects = ["spatialite-android"]
+project.ext.androidlibraryprojects = []
 project.ext.androidprojects = project.androidlibraryprojects + project.androidapkprojects
 
 def filterProjects(filter) {
@@ -59,7 +60,7 @@ configure(filterProjects(project.androidprojects)) {
         buildToolsVersion '25.0.3'
         defaultConfig {
             minSdkVersion 22
-            targetSdkVersion 23
+            targetSdkVersion 25
         }
 
         lintOptions {

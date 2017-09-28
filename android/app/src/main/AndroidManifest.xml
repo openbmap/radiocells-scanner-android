@@ -91,9 +91,9 @@
         </service>
 
         <!-- Cell logger service -->
-        <service android:name=".services.wireless.CellScannerService" />
+        <service android:name=".services.CellScannerService" />
         <!-- Wifi logger service -->
-        <service android:name=".services.wireless.WifiScannerService" />
+        <service android:name=".services.WifiScannerService" />
 
         <!-- GPX logger service -->
         <service android:name=".services.GpxLoggerService" />

@@ -25,12 +25,12 @@ import android.preference.PreferenceManager;
 import org.greenrobot.eventbus.EventBus;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
 import org.mapsforge.map.model.DisplayModel;
+import org.openbmap.services.CellScannerService;
 import org.openbmap.services.GpxLoggerService;
 import org.openbmap.services.LocationService;
 import org.openbmap.services.ManagerService;
 import org.openbmap.services.PoiCatalogService;
-import org.openbmap.services.wireless.CellScannerService;
-import org.openbmap.services.wireless.WifiScannerService;
+import org.openbmap.services.WifiScannerService;
 
 public class ScannerApplication extends Application {
 

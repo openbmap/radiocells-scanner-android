@@ -99,7 +99,7 @@ public class BrowseJSONTask extends BrowseAbstractTask {
                                 c.getString("url").substring(
                                         c.getString("url").lastIndexOf('/') + 1,
                                         c.getString("url").length()),
-                                -1, 0));
+                                c.getInt("size"), 0));
                     }
                     rf.children = (children.toArray(new RemoteFile[children.size()]));
                     list.add(rf);

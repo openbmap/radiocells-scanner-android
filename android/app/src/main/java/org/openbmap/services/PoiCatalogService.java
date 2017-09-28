@@ -21,6 +21,7 @@ package org.openbmap.services;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.os.Messenger;
@@ -36,14 +37,13 @@ import org.openbmap.events.onCatalogResults;
 import org.openbmap.events.onCatalogStart;
 import org.openbmap.events.onCatalogStop;
 import org.openbmap.utils.CatalogObject;
+import org.spatialite.database.SQLiteDatabase;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import jsqlite.Database;
-import jsqlite.Exception;
-import jsqlite.Stmt;
+import static org.openbmap.utils.CatalogObject.ObjectType.WIFI_OBJECT;
 
 public class PoiCatalogService extends Service {
 
@@ -68,10 +68,10 @@ public class PoiCatalogService extends Service {
                     "wifis.ROWID IN ( " +
                     "SELECT ROWID FROM SpatialIndex WHERE " +
                     "f_table_name = 'wifis' AND " +
-                    "search_frame = BuildMbr(?, ?, ?, ?)) LIMIT ?;";
+                    "search_frame = BuildMbr(?, ?, ?, ?)) LIMIT ?";
 
     private boolean inSync = false;
-    private Database dbSpatialite;
+    private SQLiteDatabase dbSpatialite;
 
     @Override
     public final void onCreate() {
@@ -132,18 +132,17 @@ public class PoiCatalogService extends Service {
             return;
         }
         try {
-            if (dbSpatialite == null) {
-                dbSpatialite = new jsqlite.Database();
-            } else {
+            if (dbSpatialite != null) {
                 dbSpatialite.close();
             }
-            dbSpatialite.open(catalogLocation, jsqlite.Constants.SQLITE_OPEN_READWRITE | jsqlite.Constants.SQLITE_OPEN_CREATE);
+            dbSpatialite = SQLiteDatabase.openDatabase(catalogLocation, null, 0);
+            //dbSpatialite.open(catalogLocation, jsqlite.Constants.SQLITE_OPEN_READWRITE | jsqlite.Constants.SQLITE_OPEN_CREATE);
         } catch (Exception e) {
             Log.e(TAG, "Error opening catalog file " + catalogLocation + ":" + e.getMessage());
         }
     }
 
-    private Collection<CatalogObject> queryDatabase(BoundingBox bbox, int maxObjects) {
+    private Collection<CatalogObject> queryWifis(BoundingBox bbox, int maxObjects) {
         Log.i(TAG, "Searching within " + bbox.toString());
         ArrayList<CatalogObject> pois = new ArrayList<>();
 
@@ -152,29 +151,37 @@ public class PoiCatalogService extends Service {
         }
 
         try {
-            Stmt stmt = dbSpatialite.prepare(FIND_WIFI_IN_BOX_STATEMENT);
 
-            stmt.reset();
-            stmt.clear_bindings();
-
+            /*
+              "SELECT OGC_FID as id, Y(Geometry) as lat, X(Geometry) as lon FROM wifis " +
+                    "WHERE ST_Intersects(GEOMETRY, BuildMbr(?, ?, ?, ?)) = 1 AND " +
+                    "wifis.ROWID IN ( " +
+                    "SELECT ROWID FROM SpatialIndex WHERE " +
+                    "f_table_name = 'wifis' AND " +
+                    "search_frame = BuildMbr(?, ?, ?, ?)) LIMIT ?;";
+            */
             // MIN_LON, MIN_LAT, MAX_LON, MAX_LAT, MIN_LON, MIN_LAT, MAX_LON, MAX_LAT, LIMIT
-            stmt.bind(1, bbox.minLongitude);
-            stmt.bind(2, bbox.minLatitude);
-            stmt.bind(3, bbox.maxLongitude);
-            stmt.bind(4, bbox.maxLatitude);
-            stmt.bind(5, bbox.minLongitude);
-            stmt.bind(6, bbox.minLatitude);
-            stmt.bind(7, bbox.maxLongitude);
-            stmt.bind(8, bbox.maxLatitude);
-            stmt.bind(9, maxObjects);
 
-            while (stmt.step()) {
-                long id = stmt.column_long(0);
-                double lat = stmt.column_double(1);
-                double lon = stmt.column_double(2);
-                CatalogObject poi = new CatalogObject(id, lat, lon, null, "Radiocells.org");
-
-                pois.add(poi);
+            Log.v(TAG, "Min Lat/Lon: " + bbox.minLatitude + "/" + bbox.minLongitude);
+            try (Cursor c = dbSpatialite.rawQuery(FIND_WIFI_IN_BOX_STATEMENT,
+                    new Object[]{
+                            bbox.minLongitude, bbox.minLatitude,
+                            bbox.maxLongitude, bbox.maxLatitude,
+                            bbox.minLongitude, bbox.minLatitude,
+                            bbox.maxLongitude, bbox.maxLatitude,
+                            String.valueOf(maxObjects)
+                    }
+            )) {
+                int idCol = c.getColumnIndex("id");
+                int latCol = c.getColumnIndex("lat");
+                int lonCol = c.getColumnIndex("lon");
+                while (c.moveToNext()) {
+                    long id = c.getLong(idCol);
+                    double lat = c.getDouble(latCol);
+                    double lon = c.getDouble(lonCol);
+                    CatalogObject poi = new CatalogObject(id, lat, lon, null, WIFI_OBJECT, "Radiocells.org");
+                    pois.add(poi);
+                }
             }
         } catch (Exception e) {
             Log.e(TAG, "Error executing catalog query: " + e.getMessage());
@@ -247,7 +254,7 @@ public class PoiCatalogService extends Service {
                 maxLongitude += lonSpan * 1.0;
                 final BoundingBox range = new BoundingBox(minLatitude, minLongitude, maxLatitude, maxLongitude);
 
-                return queryDatabase(range, MAX_OBJECTS);
+                return queryWifis(range, MAX_OBJECTS);
             } catch (Throwable t) {
                 Log.e(TAG, t.getMessage(), t);
             } finally {

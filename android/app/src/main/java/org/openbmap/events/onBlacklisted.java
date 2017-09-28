@@ -18,7 +18,7 @@
 
 package org.openbmap.events;
 
-import org.openbmap.services.wireless.blacklists.BlacklistReasonType;
+import org.openbmap.services.blacklists.BlacklistReasonType;
 
 public class onBlacklisted {
 

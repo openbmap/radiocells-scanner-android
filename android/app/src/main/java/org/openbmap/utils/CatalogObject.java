@@ -20,16 +20,20 @@ import org.mapsforge.core.model.LatLong;
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 public class CatalogObject {
-    public long id;
-    public LatLong latLong;
+    public enum ObjectType {WIFI_OBJECT, CELL_TOWER_OBJECT}
 
+    ;
+    public long id;
+    public ObjectType type;
+    public LatLong latLong;
     public String data;
     public String category;
 
-    public CatalogObject(long id, double lat, double lon, String data, String category) {
+    public CatalogObject(long id, double lat, double lon, String data, ObjectType type, String category) {
         this.id = id;
         this.latLong = new LatLong(lat,lon);
         this.data = data;
+        this.type = type;
         this.category = category;
     }
 }

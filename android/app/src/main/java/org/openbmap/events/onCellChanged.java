@@ -38,8 +38,16 @@ public class onCellChanged {
 
     public String technology = null;
 
+    /**
+     * Parses {@link PhoneStateListener} events onCellInfoChanged  and onCellLocationChanged
+     * Extracts cell id and technology
+     *
+     * @param info cell object (either CellInfo or CellLocation)
+     * @param tech technology
+     */
     public onCellChanged(final Object info, final int tech) {
         CellRecord cell = new CellRecord();
+
         // Identity cell infos
         if (info instanceof CellInfoGsm) {
             cell.fromGsmIdentiy(((CellInfoGsm)info).getCellIdentity());

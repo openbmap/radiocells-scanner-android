@@ -23,19 +23,8 @@ android {
         abi {
             enable true
             reset()
-            include 'armeabi', 'armeabi-v7a'
+            include 'armeabi', 'armeabi-v7a', 'arm64-v8a'
             universalApk true
-        }
-    }
-
-    sourceSets {
-        main {
-            file("${rootDir}/spatialite-android/natives").eachDir() { dir ->
-                jniLibs.srcDirs += "${dir.path}/lib"
-            }
-        }
-        androidTest {
-            java.srcDirs = ['src/androidTest']
         }
     }
 
@@ -107,11 +96,8 @@ dependencies {
     compile 'org.mapsforge:mapsforge-map:0.8.0'
     compile 'org.mapsforge:mapsforge-themes:0.8.0'
     compile 'org.mapsforge:mapsforge-map-android:0.8.0'
-    compile 'org.mapsforge:mapsforge-poi:0.8.0'
-    compile 'org.mapsforge:mapsforge-poi-android:0.8.0'
-    compile 'org.mapsforge:spatialite-android:0.8.0'
-    compile 'org.mapsforge:spatialite-android:0.8.0:natives-armeabi'
     compile 'org.mapsforge:mapsforge-map-reader:0.8.0'
+    compile 'com.github.sevar83:android-spatialite:2.0.0'
 }
 
 task writeVersionInfo {
