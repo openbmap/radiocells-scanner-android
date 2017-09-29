@@ -19,28 +19,26 @@
 package org.openbmap.soapclient;
 
 import android.os.AsyncTask;
-import android.util.Base64;
 import android.util.Log;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.StringBody;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
 
 import java.io.File;
 import java.io.IOException;
+
+import okhttp3.Credentials;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Uploads xml files as multipart message to webservice.
  */
 public class AsyncUploader extends AsyncTask<String, Integer, Boolean> {
+    private static final String TAG = AsyncUploader.class.getSimpleName();
 
-    private UploadResult mResult;
+    private UploadResult result;
 
     public enum UploadResult {
 		UNDEFINED, OK, ERROR, WRONG_PASSWORD
@@ -51,7 +49,7 @@ public class AsyncUploader extends AsyncTask<String, Integer, Boolean> {
 	//private static final int SOCKET_TIMEOUT = 30000;
 	//private static final int CONNECTION_TIMEOUT = 30000;
 
-	private static final String TAG = AsyncUploader.class.getSimpleName();
+    private static final MediaType MEDIA_TYPE_XML = MediaType.parse("text/xml");
 
     /**
      * Multipart message field: one-time token (for anonymous upload)
@@ -73,7 +71,7 @@ public class AsyncUploader extends AsyncTask<String, Integer, Boolean> {
 	/**
 	 * Used for callbacks.
 	 */
-	private final FileUploadListener mListener;
+    private final FileUploadListener listener;
 
     public interface FileUploadListener {
 		/**
@@ -100,56 +98,56 @@ public class AsyncUploader extends AsyncTask<String, Integer, Boolean> {
     /**
      * Either user/password oder token must be provided
      */
-	private final String mUser;
-	private final String mPassword;
-    private final String mToken;
+    private final String user;
+    private final String password;
+    private final String token;
 
     private boolean passwordValidated = false;
 
     /**
-     * Upload target address
+     * Upload endpoint address
      */
-	private final String mServer;
+    private final String serverUrl;
 
 	private String mFile;
 
     /**
      * Tells the length of upload (in bytes)
      */
-    private long mSize;
+    private long size;
 
     /**
      * Achieved upload speed (in KB)
      */
-    private long mSpeed;
+    private long speed;
 
 	/**
 	 * 
 	 * @param listener UploadTaskListener which is informed about upload result
 	 * @param user	   user name
 	 * @param password password
-	 * @param server   remote URL
-	 */
+     * @param server   remote endpoint URL
+     */
 	public AsyncUploader(final FileUploadListener listener, final String user, final String password, final String server) {
-		mListener = listener;
-		mUser = user;
-		mPassword = password;
-        mToken = null;
-		mServer = server;
-	}
+        this.listener = listener;
+        this.user = user;
+        this.password = password;
+        this.token = null;
+        this.serverUrl = server;
+    }
 
     /**
      *
      * @param listener UploadTaskListener which is informed about upload result
      * @param token    server generated one-time token
-     * @param server   remote URL
+     * @param serverUrl   remote endpoint URL
      */
-    public AsyncUploader(final FileUploadListener listener, final String token, final String server) {
-        mListener = listener;
-        mUser = null;
-        mPassword = null;
-        mToken = token;
-        mServer = server;
+    public AsyncUploader(final FileUploadListener listener, final String token, final String serverUrl) {
+        this.listener = listener;
+        this.user = null;
+        this.password = null;
+        this.token = token;
+        this.serverUrl = serverUrl;
     }
 
 	/**
@@ -165,88 +163,95 @@ public class AsyncUploader extends AsyncTask<String, Integer, Boolean> {
 		mFile = params[0];
         long beforeTime = System.currentTimeMillis();
 
-        mResult = upload(mFile);
-        if (mResult == UploadResult.WRONG_PASSWORD) {
+        result = upload(mFile);
+        if (result == UploadResult.WRONG_PASSWORD) {
             return false;
         }
 
-        mSpeed = calcSpeed(System.currentTimeMillis(), beforeTime, mSize);
+        speed = calcSpeed(System.currentTimeMillis(), beforeTime, size);
 
-		return (mResult == UploadResult.OK);
-	}
+        return (result == UploadResult.OK);
+    }
 
 	@Override
 	protected final void onPostExecute(final Boolean success) {
-        if (mListener == null) {
+        if (listener == null) {
             Log.e(TAG, "Listener is null!");
         }
 
-		if (mResult == UploadResult.OK) {
-			mListener.onUploadCompleted(mFile, mSize, mSpeed);
-		} else {
+        if (result == UploadResult.OK) {
+            listener.onUploadCompleted(mFile, size, speed);
+        } else {
             Log.e(TAG, "Upload failed " + lastErrorMsg);
-            mListener.onUploadFailed(mFile, lastErrorMsg);
-		}
+            listener.onUploadFailed(mFile, lastErrorMsg);
+        }
 	}
-
 
     /**
      * Sends an authenticated http post request to upload file
-     * @param file File to upload (full path)
+     * @param fileName Full path to upload file
      * @return true on response code 200, false otherwise
      */
-    private UploadResult httpPostRequest(final String file) {
+    private UploadResult httpPostRequest(final String fileName) {
         // TODO check network state
         // @see http://developer.android.com/training/basics/network-ops/connecting.html
 
-        // Adjust HttpClient parameters
-        final HttpParams httpParameters = new BasicHttpParams();
-        // Set the timeout in milliseconds until a connection is established.
-        // The default value is zero, that means the timeout is not used.
-        // HttpConnectionParams.setConnectionTimeout(httpParameters, CONNECTION_TIMEOUT);
-        // Set the default socket timeout (SO_TIMEOUT)
-        // in milliseconds which is the timeout for waiting for data.
-        //HttpConnectionParams.setSoTimeout(httpParameters, SOCKET_TIMEOUT);
-        final DefaultHttpClient httpclient = new DefaultHttpClient(httpParameters);
-        final HttpPost httppost = new HttpPost(mServer);
-        try {
-            final MultipartEntity entity = new MultipartEntity();
-            entity.addPart(FILE_FIELD, new FileBody(new File(file), "text/xml"));
+        OkHttpClient client = new OkHttpClient.Builder()
+                .authenticator((route, response) -> {
+                    if (response.request().header("Authorization") != null) {
+                        return null; // Give up, we've already attempted to authenticate.
+                    }
 
-            if ((mUser != null) && (mPassword != null)) {
-                final String authorizationString = "Basic " + Base64.encodeToString((mUser + ":" + mPassword).getBytes(), Base64.NO_WRAP);
-                httppost.setHeader("Authorization", authorizationString);
-            }
+                    if (user == null || password == null) {
+                        Log.i(TAG, "No user name or password set - trying anonymous");
+                        return null; // Anonymous mode - no need for authentication
+                    }
+                    String credential = Credentials.basic(user, password);
+                    return response.request().newBuilder()
+                            .header("Authorization", credential)
+                            .build();
+                })
+                .build();
 
-            if (mToken != null) {
-                entity.addPart(API_FIELD, new StringBody(mToken));
-            }
+        File file = new File(fileName);
+        MultipartBody.Builder builder = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                //.addFormDataPart("title", "Square Logo")
+                .addFormDataPart(FILE_FIELD, file.getName(),
+                        RequestBody.create(MEDIA_TYPE_XML, file));
 
-            httppost.setEntity(entity);
-            final HttpResponse response = httpclient.execute(httppost);
+        if (token != null) {
+            Log.i(TAG, "Setting token");
+            builder.addFormDataPart(API_FIELD, token);
+        }
 
-            final int reply = response.getStatusLine().getStatusCode();
-            if (reply == 200) {
-                // everything is ok if we receive HTTP 200
-                mSize = entity.getContentLength();
-                Log.i(TAG, "Uploaded " + file + ": Server reply " + reply);
-                return UploadResult.OK;
-            } else if (reply == 401) {
-                Log.e(TAG, "Wrong username or password");
+        RequestBody requestBody = builder.build();
+        Request request = new Request.Builder()
+                .url(serverUrl)
+                .post(requestBody)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (response.code() == 401) {
+                Log.i(TAG, "Server reply 401: bad password");
                 return UploadResult.WRONG_PASSWORD;
             }
-			else {
-                Log.w(TAG, "Error while uploading" + file + ": Server reply " + reply);
-                return UploadResult.ERROR;
-            }
+
             // TODO: redirects (301, 302) are NOT handled here
             // thus if something changes on the server side we're dead here
-        } catch (final ClientProtocolException e) {
-            Log.e(TAG, e.getMessage());
-        } catch (final IOException e) {
-            Log.e(TAG, "I/O exception on file " + file);
+            if (response.isSuccessful()) {
+                Log.i(TAG, "Uploaded " + fileName + ": Server reply " + response.code());
+                size = response.body().contentLength();
+                return UploadResult.OK;
+            } else {
+                Log.i(TAG, "Server error while uploading " + fileName + ": Server reply " + response.code());
+                return UploadResult.ERROR;
+            }
+            //System.out.println(response.body().string());
+        } catch (IOException e) {
+            Log.e(TAG, "IOException while executing http request");
+            return UploadResult.ERROR;
         }
-        return UploadResult.UNDEFINED;
     }
 
 	/**

@@ -24,13 +24,8 @@ import android.net.NetworkInfo;
 import android.net.NetworkInfo.State;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
-import android.util.Base64;
 import android.util.Log;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.openbmap.Preferences;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -43,6 +38,13 @@ import java.net.URL;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
+import okhttp3.Credentials;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Checks whether this client version is outdated.
@@ -189,37 +191,53 @@ public final class CheckServerTask extends AsyncTask<String, Object, Object[]> {
     private boolean credentialsAccepted(String user, String password) {
 
         if (user == null || password == null) {
+            Log.i(TAG, "Can't check user or password - no set");
             return false;
         }
 
-        final DefaultHttpClient httpclient = new DefaultHttpClient();
-        final HttpPost httppost = new HttpPost(Preferences.PASSWORD_VALIDATION_URL);
-        try {
-            final String authorizationString = "Basic " + Base64.encodeToString(
-                    (user + ":" + password).getBytes(), Base64.NO_WRAP);
-            httppost.setHeader("Authorization", authorizationString);
-            final HttpResponse response = httpclient.execute(httppost);
+        OkHttpClient client = new OkHttpClient.Builder()
+                .authenticator((route, response) -> {
+                    if (response.request().header("Authorization") != null) {
+                        return null; // Give up, we've already attempted to authenticate.
+                    }
 
-            final int reply = response.getStatusLine().getStatusCode();
-            if (reply == 200) {
-                Log.v(TAG, "Server accepted credentials");
+                    if (user == null || password == null) {
+                        Log.i(TAG, "No user name or password set - trying anonymous");
+                        return null; // Anonymous mode - no need for authentication
+                    }
+                    String credential = Credentials.basic(user, password);
+                    return response.request().newBuilder()
+                            .header("Authorization", credential)
+                            .build();
+                })
+                .build();
+
+        MultipartBody.Builder builder = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                //.addFormDataPart("title", "Square Logo")
+                .addFormDataPart("CHECK", "CREDENTIALS");
+
+
+        RequestBody requestBody = builder.build();
+        Request request = new Request.Builder()
+                .url(Preferences.PASSWORD_VALIDATION_URL)
+                .post(requestBody)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            // TODO: redirects (301, 302) are NOT handled here
+            // thus if something changes on the server side we're dead here
+            if (response.isSuccessful()) {
+                Log.i(TAG, "Server accepted credentials");
                 return true;
-            } else if (reply == 401) {
+            } else {
                 Log.e(TAG, "Server authentication failed");
                 return false;
             }
-            else {
-                Log.w(TAG, "Generic error: server reply " + reply);
-                return false;
-            }
-            // TODO: redirects (301, 302) are NOT handled here
-            // thus if something changes on the server side we're dead here
-        } catch (final ClientProtocolException e) {
-            Log.e(TAG, e.getMessage(), e);
-        } catch (final IOException e) {
-            Log.e(TAG, "I/O exception while checking credentials " + e.getMessage(), e);
+        } catch (IOException e) {
+            Log.e(TAG, "IOException while executing http request");
+            return false;
         }
-        return false;
     }
 
     @Override
