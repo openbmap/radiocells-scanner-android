@@ -61,7 +61,7 @@
             android:label="@string/activity_credits_activity" />
 
         <!-- Permission Helper -->
-        <activity android:name=".utils.PermissionHelper$PermissionRequestActivity" />
+        <activity android:name=".utils.PermissionRequestActivity" />
 
         <!-- Exported activities, which can be used to automate Radiobeacon -->
 
