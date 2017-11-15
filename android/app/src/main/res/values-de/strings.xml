@@ -16,14 +16,14 @@
     <string name="graph_title">Signalstärke Funkzelle</string>
     <string name="info_using_online_map">Keine Offlinekarte gefunden. Verwende Onlineverbindung</string>
     <string name="is_new">Neu?</string>
-    <string name="map_data_license">Odbl Lizenz</string>
+    <string name="map_data_license">ODbL Lizenz</string>
     <string name="map_data_source">Kartendaten: Openstreetmap</string>
     <string name="mapsforge_license">GNU LGPL3 Lizenz</string>
     <string name="networkTypeCaption">Technologie</string>
     <string name="new_session">Neue Session</string>
     <string name="no">Nein</string>
     <string name="no_sat_signal">Kein Sat-Signal</string>
-    <string name="openbmap_license">CC-by-SA 3.0 / Odbl Lizenz</string>
+    <string name="openbmap_license">CC BY-SA 3.0 / ODbL Lizenz</string>
     <string name="prefs_clean_database_title">Datenbank optimieren</string>
     <string name="prefs_credentials_password">Passwort</string>
     <string name="prefs_credentials_user">User</string>

@@ -49,12 +49,12 @@
 	<string name="strenghtDbmCaption">强度 (dbm)</string>
 	<string name="radiobeacon_licence">许可协议 AGPL v3</string>
 	<string name="openbmap_licence_caption">数据：OpenBmap</string>
-	<string name="openbmap_license">CC-by-SA 3.0 / Odbl 许可协议</string>
+	<string name="openbmap_license">CC BY-SA 3.0 / ODbL 许可协议</string>
 	<string name="mapsforge_source">地图库：Mapsforge 库</string>
 	<string name="mapsforge_license">GNU LGPL3 许可协议</string>
 	<string name="credits">贡献人员</string>
 	<string name="map_data_source">地图数据：Openstreetmap</string>
-	<string name="map_data_license">Odbl 许可协议</string>
+	<string name="map_data_license">ODbL 许可协议</string>
 	<string name="sessions">会话</string>
 	<string name="n_a">不可用</string>
 	<string name="capabilities">能力</string>

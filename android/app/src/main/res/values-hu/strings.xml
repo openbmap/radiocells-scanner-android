@@ -41,7 +41,7 @@
 	<string name="is_serving_cell_caption">Kiszolgáló cella?</string>
 	<string name="radiobeacon_licence">AGPL v3 alatt licencelve</string>
 	<string name="openbmap_licence_caption">Adatok: OpenBmap</string>
-	<string name="openbmap_license">CC-by-SA 3.0 / Odbl Licenc</string>
+	<string name="openbmap_license">CC BY-SA 3.0 / ODbL Licenc</string>
 	<string name="mapsforge_source">Térkép könyvtár: Mapsforge Library</string>
 	<string name="mapsforge_license">GNU LGPL3 licenc</string>
 	<string name="credits">Köszönet</string>

@@ -73,12 +73,12 @@
     <string name="is_serving_cell_caption">Is serving cell?</string>
     <string name="radiobeacon_licence">Licensed under AGPL v3</string>
     <string name="openbmap_licence_caption">Data: RadioCells</string>
-    <string name="openbmap_license">CC-by-SA 3.0 / Odbl Licence</string>
+    <string name="openbmap_license">CC BY-SA 3.0 / ODbL Licence</string>
     <string name="mapsforge_source">Maps library: MapsForge Library</string>
     <string name="mapsforge_license">GNU LGPL v3 licence</string>
     <string name="credits">Credits</string>
     <string name="map_data_source">Map data: OpenStreetMap</string>
-    <string name="map_data_license">Odbl Licence</string>
+    <string name="map_data_license">ODbL Licence</string>
     <string name="other_credits">Many thanks to all the contributors and translators!\nSpecial thanks to the MapsForge people and the OSMTracker developers.</string>
     <string name="bug_report">Always find the latest version (and the issue tracker) at </string>
     <string name="subtitle">RadioCells WiFi &amp; Cell Logger</string>

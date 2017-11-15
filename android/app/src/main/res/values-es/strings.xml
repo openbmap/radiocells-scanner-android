@@ -41,12 +41,12 @@
 	<string name="strenghtDbmCaption">Fuerza (dbm)</string>
 	<string name="radiobeacon_licence">Licenciado bajo AGPL v3</string>
 	<string name="openbmap_licence_caption">Datos: OpenBmap</string>
-	<string name="openbmap_license">CC-by-SA 3.0 / Licencia Odbl</string>
+	<string name="openbmap_license">CC BY-SA 3.0 / Licencia ODbL</string>
 	<string name="mapsforge_source">Librería de mapas: Librería Mapsforge</string>
 	<string name="mapsforge_license">Licencia GNU LGPL3</string>
 	<string name="credits">Créditos</string>
 	<string name="map_data_source">Datos del mapa: OpenStreetMap</string>
-	<string name="map_data_license">Licencia Odbl</string>
+	<string name="map_data_license">Licencia ODbL</string>
 	<string name="sessions">Sesiones</string>
 	<string name="n_a">S/D</string>
 	<string name="frequency">Frecuencia</string>
