@@ -58,12 +58,12 @@
 	<string name="is_serving_cell_caption">稼働中の基地局ですか?</string>
 	<string name="radiobeacon_licence">AGPL v3 の下でライセンスされます</string>
 	<string name="openbmap_licence_caption">データ: OpenBmap</string>
-	<string name="openbmap_license">CC-by-SA 3.0 / Odbl ライセンス</string>
+	<string name="openbmap_license">CC BY-SA 3.0 / ODbL ライセンス</string>
 	<string name="mapsforge_source">マップ ライブラリー: Mapsforge ライブラリー</string>
 	<string name="mapsforge_license">GNU LGPL3 ライセンス</string>
 	<string name="credits">クレジット</string>
 	<string name="map_data_source">マップ データ: Openstreetmap</string>
-	<string name="map_data_license">Odbl ライセンス</string>
+	<string name="map_data_license">ODbL ライセンス</string>
 	<string name="other_credits">"すべての貢献者と翻訳者のおかげです!\n特に Mapsforge の人々と OSMTracker の開発者に感謝します。 "</string>
 	<string name="bug_report">"常に最新バージョン (およびバグ追跡システム) を見つける "</string>
 	<string name="subtitle">OpenBmap Wifi &amp; 基地局ログ取得</string>

@@ -17,10 +17,10 @@
 	<string name="is_serving_cell_caption">Attualmente connessa?</string>
 	<string name="radiobeacon_licence">Offerto secondo i termini della licenza AGPL v3</string>
 	<string name="openbmap_licence_caption">Dati forniti da Openbmap</string>
-	<string name="openbmap_license">sotto licenza CC-BY-SA 3.0 / ODBL</string>
+	<string name="openbmap_license">sotto licenza CC BY-SA 3.0 / ODbL</string>
 	<string name="mapsforge_license">sotto licenza LGPL v3</string>
 	<string name="map_data_source">Mappe: OpenStreetMap</string>
-	<string name="map_data_license">sotto licenza ODBL</string>
+	<string name="map_data_license">sotto licenza ODbL</string>
 	<string name="other_credits">"Ringraziamo tutti i contributori ed i traduttori!\nIn particolare il team di Mapsforge e gli sviluppatori di OSMTracker. "</string>
 	<string name="bug_report">"Troverai sempre l\'ultima versione (ed il servizio di bug report) su "</string>
 	<string name="sessions">Sessioni</string>

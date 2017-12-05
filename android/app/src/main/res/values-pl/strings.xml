@@ -65,12 +65,12 @@
     <string name="is_serving_cell_caption">Is serving cell?</string>
     <string name="radiobeacon_licence">Pod licencją AGPL v3</string>
     <string name="openbmap_licence_caption">Dane: OpenBmap</string>
-    <string name="openbmap_license">Licencja CC-by-SA 3.0 / Licencja Odbl</string>
+    <string name="openbmap_license">Licencja CC BY-SA 3.0 / Licencja ODbL</string>
     <string name="mapsforge_source">Biblioteka map: Mapsforge Library</string>
     <string name="mapsforge_license">Licencja GNU LGPL3</string>
     <string name="credits">Uznanie</string>
     <string name="map_data_source">Dane map: Openstreetmap</string>
-    <string name="map_data_license">Licencja Odbl</string>
+    <string name="map_data_license">Licencja ODbL</string>
 	<string name="other_credits">Niektóre wspaniałe pomysły były wzięte z OSMTracker, dyskusji stack overflow i wielu, wielu innych</string>
 	<string name="bug_report">Znajdź zawsze najnowszą wersję (i sledzenie błędów) na</string>
     <string name="subtitle">OpenBmap Wifi &amp; Cell Logger</string>

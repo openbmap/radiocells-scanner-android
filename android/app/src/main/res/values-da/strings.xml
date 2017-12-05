@@ -50,7 +50,7 @@
 	<string name="strenghtDbmCaption">Styrke (dbm)</string>
 	<string name="radiobeacon_licence">Licenseret under AGPL v3</string>
 	<string name="openbmap_licence_caption">Data: OpenBmap</string>
-	<string name="openbmap_license">CC-by-SA 3.0 / Odbl licens</string>
+	<string name="openbmap_license">CC BY-SA 3.0 / ODbL licens</string>
 	<string name="mapsforge_source">Kort bibliotek: Mapsforge bibliotek</string>
 	<string name="mapsforge_license">GNU LGPL3 licens</string>
 	<string name="map_data_source">Kortdata: Openstreetmap</string>
