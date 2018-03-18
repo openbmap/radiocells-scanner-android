@@ -128,6 +128,7 @@ public final class SsidBlackListBootstraper {
 		{"Swiss Post Auto Wifi Italian", "AutoPostale"},
 		{"Huawei Smartphones", "Huawei"},
 		{"Huawei Smartphones", "huawei"},
+		{"Android error", "NVRAM WARNING"},
 		
 		// mobile hotspots
 		{"German 1und1 mobile hotspots", "1und1 mobile"},
