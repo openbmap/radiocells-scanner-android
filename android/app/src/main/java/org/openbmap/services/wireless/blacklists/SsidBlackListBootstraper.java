@@ -192,7 +192,7 @@ public final class SsidBlackListBootstraper {
 		{"Taipei City on-bus WiFi (Taiwan)", "NewTaipeiBusWiFi"},
 		{"Taiwan transport on-bus WiFi (Taiwan)", "Y5Bus_4G"},
 		{"Taiwan transport on-bus WiFi (Taiwan)", "Y5Bus_LTE"},
-        {"(Taiwan) Taoyuan MRT", "TyMetro"},
+        	{"(Taiwan) Taoyuan MRT", "TyMetro"},
 		{"Taiwan High Speed Rail on-train WiFi", "THSR-VeeTIME"},
 		{"Triangle Transit on-bus WiFi"	,"TriangleTransitWiFi_"},
 		{"Nederlandse Spoorwegen on-train WiFi by T-Mobile (Netherlands)", "tmobile"},
