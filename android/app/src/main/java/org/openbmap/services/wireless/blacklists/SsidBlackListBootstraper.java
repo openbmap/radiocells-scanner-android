@@ -128,6 +128,7 @@ public final class SsidBlackListBootstraper {
 		{"Swiss Post Auto Wifi Italian", "AutoPostale"},
 		{"Huawei Smartphones", "Huawei"},
 		{"Huawei Smartphones", "huawei"},
+		{"Xiaomi Smartphones", "紅米手機"},
 		
 		// mobile hotspots
 		{"German 1und1 mobile hotspots", "1und1 mobile"},
@@ -188,6 +189,10 @@ public final class SsidBlackListBootstraper {
 		{"Stagecoach on-bus WiFi (United Kingdom)" ,"stagecoach-wifi"},
 		 
 		{"Taipei City on-bus WiFi (Taiwan)", "TPE-Free Bus"},
+		{"Taipei City on-bus WiFi (Taiwan)", "NewTaipeiBusWiFi"},
+		{"Taiwan transport on-bus WiFi (Taiwan)", "Y5Bus_4G"},
+		{"Taiwan transport on-bus WiFi (Taiwan)", "Y5Bus_LTE"},
+        	{"(Taiwan) Taoyuan MRT", "TyMetro"},
 		{"Taiwan High Speed Rail on-train WiFi", "THSR-VeeTIME"},
 		{"Triangle Transit on-bus WiFi"	,"TriangleTransitWiFi_"},
 		{"Nederlandse Spoorwegen on-train WiFi by T-Mobile (Netherlands)", "tmobile"},
