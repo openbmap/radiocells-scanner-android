@@ -4,6 +4,12 @@ build
 *.iml
 /gradle
 local.properties
+/android/app/src/main/.classpath
+/android/app/src/main/.project
+/android/app/src/main/.settings
+/android/app/src/main/bin
+/android/app/src/main/gen
+/android/app/src/main/project.properties
 /android/app/src/main/res/raw/build.txt
 /artwork
 /android/captures
