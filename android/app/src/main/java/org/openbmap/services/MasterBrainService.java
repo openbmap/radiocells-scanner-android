@@ -209,7 +209,7 @@ public class MasterBrainService extends Service {
     @Override
     public void onDestroy() {
         unregisterReceiver();
-        hideNotification();
+        stopForeground(true);
         EventBus.getDefault().unregister(this);
 
         unbindAll();
@@ -331,7 +331,38 @@ public class MasterBrainService extends Service {
             mSession = setupNewSession();
         }
         bindAll();
-        showNotification();
+
+        PendingIntent intent = PendingIntent.getActivity(this, 0, new Intent(this, TabHostActivity.class), 0);
+
+        // Set the icon, scrolling text and timestamp
+        //final Notification notification = new Notification(R.drawable.icon_greyed_25x25, getString(R.string.notification_caption),
+        //        System.currentTimeMillis());
+        //notification.setLatestEventInfo(this, getString(R.string.app_name), getString(R.string.notification_caption), contentIntent);
+
+        // Set the info for the views that show in the notification panel.
+
+        Notification notification;
+        if (VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN) {
+            Notification.Builder builder = new Notification.Builder(this.getApplicationContext());
+            builder.setAutoCancel(false);
+            builder.setContentTitle(getString(R.string.app_name));
+            builder.setContentText(getString(R.string.notification_caption));
+            builder.setSmallIcon(R.drawable.icon_greyed_25x25);
+            builder.setContentIntent(intent);
+            builder.setOngoing(true);
+            notification = builder.build();
+        } else {
+            NotificationCompat.Builder compat = new NotificationCompat.Builder(getApplicationContext());
+            compat.setAutoCancel(false);
+            compat.setContentTitle(getString(R.string.app_name));
+            compat.setContentText(getString(R.string.notification_caption));
+            compat.setSmallIcon(R.drawable.icon_greyed_25x25);
+            compat.setContentIntent(intent);
+            compat.setOngoing(true);
+            notification = compat.build();
+        }
+
+        startForeground(NOTIFICATION_ID, notification);
     }
 
     /**
@@ -354,7 +385,7 @@ public class MasterBrainService extends Service {
             }
         }
 
-        hideNotification();
+        stopForeground(true);
     }
 
     /**
@@ -448,42 +479,6 @@ public class MasterBrainService extends Service {
      * Shows Android notification while this service is running.
      */
     private void showNotification() {
-        PendingIntent intent = PendingIntent.getActivity(this, 0, new Intent(this, TabHostActivity.class), 0);
-
-        // Set the icon, scrolling text and timestamp
-        //final Notification notification = new Notification(R.drawable.icon_greyed_25x25, getString(R.string.notification_caption),
-        //        System.currentTimeMillis());
-        //notification.setLatestEventInfo(this, getString(R.string.app_name), getString(R.string.notification_caption), contentIntent);
-
-        // Set the info for the views that show in the notification panel.
-
-
-        if (VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN) {
-            Notification.Builder builder = new Notification.Builder(this.getApplicationContext());
-            builder.setAutoCancel(false);
-            builder.setContentTitle(getString(R.string.app_name));
-            builder.setContentText(getString(R.string.notification_caption));
-            builder.setSmallIcon(R.drawable.icon_greyed_25x25);
-            builder.setContentIntent(intent);
-            builder.setOngoing(true);
-            mNotificationManager.notify(NOTIFICATION_ID, builder.build());
-        } else if (VERSION.SDK_INT < VERSION_CODES.JELLY_BEAN) {
-            NotificationCompat.Builder compat = new NotificationCompat.Builder(getApplicationContext());
-            compat.setAutoCancel(false);
-            compat.setContentTitle(getString(R.string.app_name));
-            compat.setContentText(getString(R.string.notification_caption));
-            compat.setSmallIcon(R.drawable.icon_greyed_25x25);
-            compat.setContentIntent(intent);
-            compat.setOngoing(true);
-            mNotificationManager.notify(NOTIFICATION_ID, compat.build());
-        }
-    }
-
-    /**
-     * Hides Android notification
-     */
-    private void hideNotification() {
-        mNotificationManager.cancel(NOTIFICATION_ID);
     }
 
 }
