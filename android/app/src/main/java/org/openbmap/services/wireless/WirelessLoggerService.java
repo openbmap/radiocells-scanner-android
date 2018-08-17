@@ -355,7 +355,7 @@ public class WirelessLoggerService extends AbstractService {
                 // TODO we need a timestamp for signal strength
                 try {
                     mCdmaStrengthDbm = signalStrength.getCdmaDbm();
-                    mCdmaEcIo = signalStrength.getmCdmaEcIo();
+                    mCdmaEcIo = signalStrength.getCdmaEcio();
                 } catch (final Exception e) {
                     Log.e(TAG, e.toString(), e);
                 }
@@ -368,7 +368,7 @@ public class WirelessLoggerService extends AbstractService {
                 }
 
                 try {
-                    mGsmBitErrorRate = signalStrength.getmGsmBitErrorRate();
+                    mGsmBitErrorRate = signalStrength.getGsmBitErrorRate();
                     mGsmStrengthAsu = signalStrength.getGsmSignalStrength();
                     mGsmStrengthDbm = -113 + 2 * mGsmStrengthAsu; // conversion ASU in dBm
                 } catch (final Exception e) {
