@@ -1,5 +1,4 @@
 apply plugin: 'com.android.application'
-apply plugin: 'com.neenbedankt.android-apt'
 
 android {
     packagingOptions {
@@ -43,8 +42,16 @@ buildscript {
     dependencies {
         // replace with the current version of the Android plugin
         classpath 'com.android.tools.build:gradle:2.3.0'
-        // the latest version of the android-apt plugin
-        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+    }
+}
+
+android {
+    defaultConfig {
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [ eventBusIndex : 'org.openbmap.MyEventBusIndex' ]
+            }
+        }
     }
 }
 
@@ -55,7 +62,7 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.2.1'
     compile 'com.android.support:support-v13:23.2.1'
     compile 'org.greenrobot:eventbus:3.0.0'
-    apt 'org.greenrobot:eventbus-annotation-processor:3.0.1'
+    annotationProcessor 'org.greenrobot:eventbus-annotation-processor:3.0.1'
     compile 'com.caverock:androidsvg:1.2.1'
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'com.jjoe64:graphview:4.1.0'
@@ -65,12 +72,6 @@ dependencies {
     compile 'org.mapsforge:mapsforge-map:0.6.1'
     compile 'org.mapsforge:mapsforge-map-android:0.6.1'
     compile 'org.mapsforge:mapsforge-map-reader:0.6.1'
-}
-
-apt {
-    arguments {
-        eventBusIndex "org.openbmap.MyEventBusIndex"
-    }
 }
 
 task writeVersionInfo {
